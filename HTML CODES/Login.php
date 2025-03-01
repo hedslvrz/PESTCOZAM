@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Login - PESTCOZAM</title>
   <link rel="stylesheet" href="../CSS CODES/Login.css" />
+  <script src="../JS CODES/login.js"></script>
 </head>
 <body>
 
@@ -27,25 +29,26 @@
       <h1 class="login-title">Login</h1>
       <hr class="title-underline" />
 
-      <form class="login-form">
-        <div class="input-group">
-          <label for="email">Your Email</label>
-          <input type="email" id="email" placeholder="Enter your email address" />
-        </div>
+      <form id="loginUser" name="loginUser" class="login-form">
+    <div class="input-group">
+        <label for="email">Your Email</label>
+        <input type="email" id="email" name="email" placeholder="Enter your email address" />
+    </div>
 
-        <div class="input-group">
-          <label for="password">Password</label>
-          <input type="password" id="password" placeholder="Enter your password" />
-        </div>
+    <div class="input-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="Enter your password" />
+    </div>
 
-        <div class="bottom-row">
-          <p class="signup-text">
+    <div class="bottom-row">
+        <p class="signup-text">
             Don't have an account?
-            <a href="../HTML CODES/Signup.html">Sign up here</a>
-          </p>
-          <button type="button" class="login-btn" onclick="window.location.href='../HTML CODES/Home_page.html'">Login</button>
-        </div>
-      </form>
+            <a href="../HTML CODES/Signup.php">Sign up here</a>
+        </p>
+        <button type="submit" value="login" class="login-btn">Login</button>
+    </div>
+</form>
+
     </div>
   </div>
 </body>

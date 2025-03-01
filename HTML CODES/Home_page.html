@@ -10,39 +10,39 @@
 <body>
   
     <div class="header-wrapper">
-        <!-- HEADER -->
-        <header class="top-header">
-            <div class="container">
-                <div class="location">
-                    <span>• <strong>Zamboanga</strong> • <strong>Pagadian</strong> • <strong>Pasay</strong> • <strong>Davao</strong></span>
-                </div>
-                <div class="contact-info">
-                    <img src="../Pictures/phone.png" alt="Phone Icon" class="icon">
-                    <span>0905 - 177 - 5662</span>
-                    <span class="divider"></span>
-                    <img src="../Pictures/email.png" alt="Email Icon" class="icon">
-                    <span>pestcozam@yahoo.com</span>
-                </div>
-            </div>
-        </header>
+      <!-- HEADER -->
+      <header class="top-header">
+          <div class="container">
+              <div class="location">
+                  <span>• <strong>Zamboanga</strong> • <strong>Pagadian</strong> • <strong>Pasay</strong> • <strong>Davao</strong></span>
+              </div>
+              <div class="contact-info">
+                  <img src="../Pictures/phone.png" alt="Phone Icon" class="icon">
+                  <span>0905 - 177 - 5662</span>
+                  <span class="divider"></span>
+                  <img src="../Pictures/email.png" alt="Email Icon" class="icon">
+                  <span>pestcozam@yahoo.com</span>
+              </div>
+          </div>
+      </header>
 
-        <!-- NAVBAR -->
-        <header class="navbar">
-            <div class="logo-container">
-                <img src="../Pictures/pest_logo.png" alt="Flower Logo" class="flower-logo">
-                <span class="brand-name" style="font-size: 2rem;">PESTCOZAM</span>
-            </div>
-            <nav>
-              <ul>
-                <li><a href="../HTML CODES/Home_page.html">Home</a></li>
-                <li><a href="../HTML CODES/About_us.html">About Us</a></li>
-                <li><a href="../HTML CODES/Services.html" class="services">Services</a></li>
-                <li><a href="../HTML CODES/Appointment-service.php" class="btn-appointment">Appointment</a></li>
-                <li><a href="../HTML CODES/Login.php" class="btn-login"><i class='bx bx-log-in' ></i> Login</a></li>
-                <li><a href="../HTML CODES/Signup.php" class="btn-signup"><i class='bx bx-user-plus' ></i> Sign Up</a></li>
-              </ul>      
-            </nav>
-        </header>
+      <!-- NAVBAR -->
+      <header class="navbar">
+          <div class="logo-container">
+              <img src="../Pictures/pest_logo.png" alt="Flower Logo" class="flower-logo">
+              <span class="brand-name" style="font-size: 2rem;">PESTCOZAM</span>
+          </div>
+          <nav>
+            <ul>
+              <li><a href="../HTML CODES/Home_page.html">Home</a></li>
+              <li><a href="../HTML CODES/About_us.html">About Us</a></li>
+              <li><a href="../HTML CODES/Services.html" class="services">Services</a></li>
+              <li><a href="../HTML CODES/Appointment-service.php" class="btn-appointment">Appointment</a></li>
+              <li><a href="../HTML CODES/Login.php" class="btn-login"><i class='bx bx-log-in' ></i> Login</a></li>
+              <li><a href="../HTML CODES/Signup.php" class="btn-signup"><i class='bx bx-user-plus' ></i> Sign Up</a></li>
+            </ul>      
+          </nav>
+      </header>
     </div>
 
     <!-- HERO SECTION -->
@@ -87,7 +87,7 @@
             </div>
             <div class="info-text">
                 <h3>Appointment</h3>
-                <a href="../HTML CODES/Appointment-service.html">Set An Appointment</a>
+                <a href="../HTML CODES/Appointment-service.php">Set An Appointment</a>
             </div>
         </a>
     </section>
@@ -167,7 +167,7 @@
               </div>
           </div>
       </div>
-  </section>
+    </section>
   
   <!-- Analytics Section -->
   <section class="analytics-section">
@@ -289,7 +289,6 @@
             <button class="learn-more-btn" onclick="window.location.href='Lrn_more_rat.html'">Learn More</button>
           </div>
         </div>
-
       </div>
     </div>
   </section>
@@ -317,25 +316,47 @@
       </div>
     </div>
   </footer>
+
   <script>
-      let lastScrollTop = 0;
-      const headerWrapper = document.querySelector('.header-wrapper');
-      const navbarHeight = headerWrapper.offsetHeight;
-      
-      window.addEventListener('scroll', () => {
-          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-          
-          // Scroll down
-          if (scrollTop > lastScrollTop && scrollTop > navbarHeight) {
-              headerWrapper.classList.add('hide-nav-group');
-          } 
-          // Scroll up
-          else {
-              headerWrapper.classList.remove('hide-nav-group');
-          }
-          
-          lastScrollTop = scrollTop;
-      });
-  </script>
+    let lastScrollTop = 0;
+    const headerWrapper = document.querySelector('.header-wrapper');
+    const navbarHeight = headerWrapper.offsetHeight;
+    
+    window.addEventListener('scroll', () => {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        
+        // Scroll down
+        if (scrollTop > lastScrollTop && scrollTop > navbarHeight) {
+            headerWrapper.classList.add('hide-nav-group');
+        } 
+        // Scroll up
+        else {
+            headerWrapper.classList.remove('hide-nav-group');
+        }
+        
+        lastScrollTop = scrollTop;
+    });
+
+
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".appointment-btn").forEach(button => {
+            button.addEventListener("click", function (event) {
+                event.preventDefault();
+    
+                fetch("check_session.php") // Check if user is logged in
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.loggedIn) {
+                            window.location.href = "appointment-service.php";
+                        } else {
+                            sessionStorage.setItem("redirectTo", "appointment-service.php"); // Store for redirection
+                            alert("You must log in first to make an appointment.");
+                            window.location.href = "login.php";
+                        }
+                    });
+            });
+        });
+    });
+    </script> 
 </body>
 </html>
