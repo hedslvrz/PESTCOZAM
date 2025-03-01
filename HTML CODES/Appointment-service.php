@@ -1,3 +1,24 @@
+<?php
+// Include the database connection
+require_once '../database.php'; 
+session_start();
+
+if (!isset($_SESSION['user_id'])) {
+    header("Location: Login.php"); // Redirect to login if not logged in
+    exit();
+}
+
+// Initialize database class
+$database = new Database();
+$db = $database->getConnection();
+
+// Fetch services
+$query = "SELECT service_name FROM services";
+$stmt = $db->prepare($query);
+$stmt->execute();
+$services = $stmt->fetchAll(PDO::FETCH_ASSOC);
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -47,15 +68,14 @@
     <main>
         <div class="form-container">
             <h2 class="Appointment-lbl">Book an Appointment</h2>
-            <select id="service">
-                <option>Select Type of Service</option>
-                <option>Termite Control</option>
-                <option>Rodent Control</option>
-                <option>Mosquito Control</option>
-                <option>General Pest Control</option>
+            <select id="service" name="service">
+                  <option>Select Type of Service</option>
+                  <?php foreach ($services as $service): ?>
+                      <option><?= htmlspecialchars($service['service_name']) ?></option>
+                  <?php endforeach; ?>
             </select>
             
-            <div class="reminder">
+            <div class="reminder">  
                 <p>Friendly Reminder:</p>
                 <ol>
                     <li>A professional will perform an ocular inspection of the site to assess the pest problem and recommend the best treatment.</li>
