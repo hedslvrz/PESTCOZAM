@@ -53,14 +53,14 @@ $services = $stmt->fetchAll(PDO::FETCH_ASSOC);
       <span class="brand-name" style="font-size: 2rem;">PESTCOZAM</span>
     </div>
     <nav>
-      <ul>
-        <li><a href="../HTML CODES/Home_page.html">Home</a></li>
-        <li><a href="../HTML CODES/About_us.html">About Us</a></li>
-        <li><a href="../HTML CODES/Services.html" class="services">Services</a></li>
-        <li><a href="../HTML CODES/Appointment-service.html" class="btn-appointment">Appointment</a></li>
-        <li><a href="../HTML CODES/Login.html" class="btn-login"><i class='bx bx-log-in' ></i> Login</a></li>
-        <li><a href="../HTML CODES/Signup.html" class="btn-signup"><i class='bx bx-user-plus' ></i> Sign Up</a></li>
-      </ul>
+    <ul>
+          <li><a href="../HTML CODES/Home_page.html">Home</a></li>
+          <li><a href="../HTML CODES/About_us.html">About Us</a></li>
+          <li><a href="../HTML CODES/Services.html" class="services">Services</a></li>
+          <li><a href="../HTML CODES/Appointment-service.php" class="btn-appointment">Appointment</a></li>
+          <li><a href="../HTML CODES/Login.php" class="btn-login"><i class='bx bx-log-in' ></i> Login</a></li>
+          <li><a href="../HTML CODES/Signup.php" class="btn-signup"><i class='bx bx-user-plus' ></i> Sign Up</a></li>
+        </ul>
     </nav>
   </header>
 
