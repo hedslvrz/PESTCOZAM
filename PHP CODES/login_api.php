@@ -1,37 +1,46 @@
-<?php
-session_start();
-require '../database.php';
+<?php 
+    session_start();
 
-// Get JSON request body
-$data = json_decode(file_get_contents("php://input"));
+    require_once '../database.php';
+    $database = new Database();
+    $conn = $database->getConnection();
 
-if (!empty($data->email) && !empty($data->password)) {
-    try {
-        $stmt = $dbc->prepare("SELECT id, firstname, password, verified FROM users WHERE email = ?");
-        $stmt->execute([$data->email]);
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    $data = json_decode(file_get_contents("php://input"),true);
 
-        if ($user) {
-            if (!password_verify($data->password, $user['password'])) {
-                echo json_encode(["success" => false, "message" => "Incorrect password!"]);
-                exit();
-            }
-
-            if ($user['verified'] == 0) {
-                echo json_encode(["success" => false, "message" => "Account not verified. Please verify your email."]);
-                exit();
-            }
-
-            $_SESSION['user_id'] = $user['id'];
-            $_SESSION['email'] = $data->email;
-            $_SESSION['firstname'] = $user['firstname'];
-
-            echo json_encode(["success" => true, "message" => "Login successful!"]);
-        } else {
-            echo json_encode(["success" => false, "message" => "Email not found!"]);
-        }
-    } catch (PDOException $e) {
-        echo json_encode(["success" => false, "message" => "Error: " . $e->getMessage()]);
+    if (!isset($data['email']) || !isset($data['password'])) {
+        http_response_code(400);
+        echo json_encode(["success" => false, "message" => "Email and Password are required."]);
+        exit();
     }
+
+    $query = "SELECT * FROM users WHERE email = :email";
+    $stmt = $conn->prepare($query);
+    $stmt->bindParam(":email", $data['email']);
+    $stmt->execute();
+
+    if($stmt->rowCount() > 0){
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (password_verify($data['password'], $row['password'])) {
+            if (strcasecmp(trim($row['status']), 'Verified') === 0) {  // Case-insensitive check        
+            $_SESSION['user_id'] = $row['id'];
+            $_SESSION['firstname'] = $row['firstname'];
+            $_SESSION['lastname'] = $row['lastname'];
+            $_SESSION['email'] = $row['email'];
+            $_SESSION['role'] = $row['role'];
+            
+            echo json_encode(["message" => "Login successful.", "success" => true, "role" => $row['role']]);
+        }else{
+            http_response_code(403);
+            echo json_encode(["message" => "Account not verified.", "success" => false]);
+        }
+    } else {
+            http_response_code(401);
+            echo json_encode(["message" => "Invalid credentials.", "success" => false]);
+    }
+}else{
+            http_response_code(404);
+            echo json_encode(["message" => "Account not found.", "success" => false]);
 }
+
 ?>

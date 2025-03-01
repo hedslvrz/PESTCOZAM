@@ -1,71 +1,65 @@
 <?php
-session_start();
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+header("Content-Type: application/json");
+include_once "../database.php";
+include_once "User.php";
 
-require '../database.php';
-if (!$dbc) {
-    echo json_encode(["success" => false, "message" => "Database connection failed"]);
+$database = new Database();
+$db = $database->getConnection();
+
+if ($db === null) {
+    http_response_code(500);
+    echo json_encode(["message" => "Database connection failed.", "success" => false]);
     exit();
 }
 
-$data = json_decode(file_get_contents("php://input"), true); // Convert to associative array
-if (!$data) {
-    echo json_encode(["success" => false, "message" => "Invalid JSON data received."]);
-    exit;
-}
-
-
+$user = new User($db);
 $data = json_decode(file_get_contents("php://input"), true);
 
-// Validate input fields
-if (
-    empty($data['firstname']) || 
-    empty($data['lastname']) || 
-    empty($data['email']) || 
-    empty($data['mobile_number']) || 
-    empty($data['password'])
-) {
-    http_response_code(400); // Bad request
-    echo json_encode(["success" => false, "message" => "All fields are required."]);
+$user->firstname = htmlspecialchars(strip_tags(trim($data['firstname'])));
+$user->lastname = htmlspecialchars(strip_tags(trim($data['lastname'])));
+$user->email = filter_var(trim($data['email']), FILTER_SANITIZE_EMAIL);
+$user->mobile_number = preg_replace('/\D/', '', trim($data['mobile_number']));
+$user->password = trim($data['password']);
+$user->role = "user";
+$user->status = "Unverified";
+
+// Validate email format
+if (!filter_var($user->email, FILTER_VALIDATE_EMAIL)) {
+    http_response_code(400);
+    echo json_encode(["message" => "Invalid email format.", "success" => false]);
     exit();
 }
 
-try {
-    // Check if email already exists
-    $stmt = $dbc->prepare("SELECT id FROM users WHERE email = ?");
-    $stmt->execute([$data['email']]);
+// Validate mobile number length
+if (strlen($user->mobile_number) < 10 || strlen($user->mobile_number) > 15) {
+    http_response_code(400);
+    echo json_encode(["message" => "Invalid mobile number.", "success" => false]);
+    exit();
+}
 
-    if ($stmt->rowCount() > 0) {
-        http_response_code(409); // Conflict
-        echo json_encode(["success" => false, "message" => "Email already registered."]);
-        exit();
-    }
+// Check if password is empty
+if (empty($user->password)) {
+    http_response_code(400);
+    echo json_encode(["message" => "Password is required.", "success" => false]);
+    exit();
+}
 
-    // Hash the password
-    $hashed_password = password_hash($data['password'], PASSWORD_DEFAULT);
+// Hash the password
+$this->password = password_hash($this->password, PASSWORD_DEFAULT);
 
-    // Insert new user
-    $sql = "INSERT INTO users (firstname, lastname, email, mobile_number, password) VALUES (?, ?, ?, ?, ?)";
-    $stmt = $dbc->prepare($sql);
-    $stmt->execute([
-        $data['firstname'], 
-        $data['lastname'], 
-        $data['email'], 
-        $data['mobile_number'], 
-        $hashed_password
-    ]);
+// Check if email already exists
+if ($user->emailExists()) {
+    http_response_code(409);
+    echo json_encode(["message" => "Email already exists.", "success" => false]);
+    exit();
+}
 
-    // Get the inserted user ID
-    $_SESSION['user_id'] = $dbc->lastInsertId();
-    $_SESSION['email'] = $data['email'];
-    $_SESSION['firstname'] = $data['firstname'];
-
-    http_response_code(201); // Created
-    echo json_encode(["success" => true, "message" => "Registration successful!"]);
-
-}catch (PDOException $e) {
-    error_log("Database Error: " . $e->getMessage()); // Logs to server error log
-    echo json_encode(["success" => false, "message" => "Database error: " . $e->getMessage()]);
+// Create the user
+if ($user->create()) {
+    http_response_code(201);
+    echo json_encode(["message" => "User registered successfully. Please verify your account.", "success" => true]);
+} else {
+    http_response_code(500);
+    echo json_encode(["message" => "Error registering user.", "success" => false]);
 }
 ?>

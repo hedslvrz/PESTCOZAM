@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
     const form = document.getElementById("loginUser");
     form.addEventListener("submit", function (event) {
-        validateForm(event);
+        validateForm(event); // Call validateForm and pass the event object
     });
 });
 
@@ -9,23 +9,27 @@ function validateForm(event) {
     let email = document.getElementById('email').value.trim();
     let password = document.getElementById('password').value.trim();
 
-    if (email === "" || password === "") {
-        alert("Email and password are required.");
+    if (email === "") {
+        alert("Email is required.");
+        return false;
+    }
+    if (password === "") {
+        alert("Password is required.");
         return false;
     }
 
-    return loginUser(event);
+    return loginUser(event); // Pass the event object
 }
 
 function loginUser(event) {
-    event.preventDefault();
+    event.preventDefault(); // Prevent form submission
 
     let formData = {
         email: document.getElementById('email').value.trim(),
         password: document.getElementById('password').value.trim()
     };
 
-    fetch("login_api.php", {
+    fetch("../PHP CODES/login_api.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData)
@@ -33,13 +37,18 @@ function loginUser(event) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            alert("Welcome, " + data.firstname + "!");
-
-            let redirectPage = sessionStorage.getItem("redirectTo") || "profile.php"; // Default to profile if no redirect
-            sessionStorage.removeItem("redirectTo"); // Clear after use
-            window.location.href = redirectPage;
+            if (data.role === "admin") {
+                alert("Login Successful!")
+                window.location.href = "../HTML CODES/dashboard.html";
+            } else if (data.role === "employee"){
+                window.location.href = "../HTML CODES/dashboard.html"
+            } else {
+                alert("Login Successful!")
+                window.location.href = "../HTML CODES/Home_page.html";
+            }
         } else {
             alert(data.message);
+            
         }
     })
     .catch(error => {
