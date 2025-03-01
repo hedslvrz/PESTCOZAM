@@ -1,0 +1,386 @@
+@font-face {
+    font-family: 'Shrikhand';
+    src: url(../Fonts/Shrikhand-Regular.ttf);
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Roboto', sans-serif;
+    line-height: 1.6;
+    color: #333;
+}
+
+/* HEADER */
+.top-header {
+    background-color: #0C3B6F;
+    color: white;
+    padding: 12px 0;
+    font-size: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 100%;
+    margin: 0;
+    padding: 0 80px;
+}
+
+.location {
+    font-size: 15px;
+    font-weight: normal;
+    white-space: nowrap;
+    margin-left: 0;
+}
+
+.location span strong {
+    margin: 0 7px;  
+}
+
+.contact-info {
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    margin-right: 0;
+}
+
+.icon {
+    width: 18px;  
+    height: 18px;
+    filter: invert(30%) sepia(91%) saturate(1562%) hue-rotate(205deg) brightness(99%) contrast(92%);
+    margin-right: 5px;
+}
+
+.divider {
+    width: 1px;
+    height: 15px;
+    background-color: white;
+    margin: 0 10px;
+}
+
+
+/* NAVBAR */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 80px;
+    background-color: #f8f9fa;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    margin-left: 5vh;
+}
+
+.flower-logo {
+    width: 40px;
+    height: 40px;
+    margin-right: 10px;
+}
+
+.brand-name{
+    font-size: 55px;
+    font-weight: bold;
+    color: white;
+    font-family: 'Shrikhand', cursive;
+    letter-spacing: 5px;
+    -webkit-text-stroke: 0.7px black;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+    padding: 0;
+    align-items: center;
+    margin: 0;
+}
+
+.nav-items {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+nav ul li {
+    margin: 0 5px; 
+}
+
+nav ul li a {
+    text-decoration: none;
+    color: black;
+    font-size: 16px; 
+    font-weight: 500;
+    padding: 12px 20px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+nav ul li a:hover {
+    color: white;
+    background-color: #0C3B6F;
+    transform: translateY(-1px);
+}
+
+.btn-appointment{
+    margin-right: 3vh;
+    color: black;
+    padding: 10px 20px;
+    font-weight: 500;
+    font-size: 16px;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.btn-appointment:hover {
+    color: white;
+    background-color: #0C3B6F;
+    transform: translateY(-1px);
+}
+
+.btn-login, .btn-signup {
+    color: black;
+    padding: 10px 20px;
+    font-weight: 500;
+    font-size: 16px;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.btn-login:hover, .btn-signup:hover {
+    color: white;
+    background-color: #0C3B6F;
+    transform: translateY(-1px);
+}
+
+
+
+
+/* SERVICE CONTENT */
+.service-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 60px 40px;
+}
+
+.hero-section {
+    text-align: center;
+    margin-bottom: 60px;
+}
+
+.hero-section h1 {
+    font-size: 3em;
+    font-weight: 700;
+    color: #0C3B6F;
+    margin-bottom: 30px;
+    position: relative;
+}
+
+.hero-section h1::after {
+    content: '';
+    display: block;
+    width: 80px;
+    height: 4px;
+    background: #0C3B6F;
+    margin: 20px auto 0;
+}
+
+.description {
+    font-size: 1.2em;
+    line-height: 1.8;
+    color: #555;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.service-image {
+    margin: 40px auto;
+    max-width: 50%;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    transition: transform 0.3s ease;
+}
+
+.service-image:hover {
+    transform: scale(1.02);
+}
+
+.treatment-image {
+    width: 100%;
+    height: 20%;
+    display: block;
+    object-fit: cover;
+}
+
+.service-details {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+}
+
+.process-section {
+    background-color: #f8f9fa;
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.process-section h2 {
+    color: #0C3B6F;
+    margin-bottom: 20px;
+}
+
+.process-section ol {
+    padding-left: 20px;
+}
+
+.process-section li {
+    margin-bottom: 15px;
+    line-height: 1.5;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 30px;
+}
+
+.info-card {
+    background-color: #fff;
+    border: none;
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    transition: transform 0.3s ease;
+}
+
+.info-card:hover {
+    transform: translateY(-5px);
+}
+
+.info-card h3 {
+    color: #0C3B6F;
+    margin-top: 10px;
+    margin-bottom: 20px;
+    margin-left: 10px;
+    font-size: 1.4em;
+    position: relative;
+}
+
+.info-card h3::after {
+    content: '';
+    display: block;
+    width: 40px;
+    height: 3px;
+    background: #0C3B6F;
+    margin-top: 10px;
+}
+
+.info-card ul {
+    list-style: none;
+    padding: 5px;
+}
+
+.info-card li {
+    margin-bottom: 10px;
+    line-height: 1.4;
+    position: relative;
+    padding-left: 20px;
+}
+
+.info-card li:before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: #0C3B6F;
+}
+
+
+
+
+/* FOOTER */
+.footer-section {
+    background-color: #0C3B6F;
+    color: #fff;
+    padding: 40px 0;
+    box-sizing: border-box;
+}
+  
+.footer-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 40px;
+  
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+  
+.footer-left {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.footer-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+  
+.flower-icon {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+}
+  
+.brand-name {
+    margin: 0;
+    font-size: 20px;
+    font-weight: bold;
+}
+  
+.footer-copyright {
+    font-size: 14px;
+    margin: 0;
+}
+  
+.footer-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+  
+.follow-us-text {
+    margin: 0;
+    font-size: 16px;
+}
+  
+.social-icons {
+    display: flex;
+    gap: 10px;
+}
+  
+.social-icons img {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+    transition: transform 0.2s ease;
+}
+
+.social-icons img:hover {
+    transform: scale(1.15);
+}

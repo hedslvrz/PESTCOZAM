@@ -207,8 +207,20 @@ nav ul li a:hover {
 }
 
 
+/* LOCATION TITLE SECTION */
+.location-title {
+  text-align: center;
+  padding: 20px 0;
+  margin-bottom: 20px;
+}
 
-
+.location-title h2 {
+  font-size: 2.5rem;
+  color: #0C3B6F;
+  text-transform: uppercase;
+  margin: 0;
+  font-weight: bold;
+}
 
 /* MAP SECTION */
 .map-section {
