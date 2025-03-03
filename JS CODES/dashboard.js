@@ -13,12 +13,15 @@ allSideMenu.forEach(item=> {
 
 
 // TOGGLE SIDEBAR //
-
 const menuBar = document.querySelector('#content nav .bx.bx-menu');
 const sideBar = document.getElementById('sidebar');
 
 menuBar.addEventListener('click', function(){
     sideBar.classList.toggle('hide');
+    // Add small delay to ensure smooth transition
+    setTimeout(() => {
+        window.dispatchEvent(new Event('resize'));
+    }, 300);
 })
 // TOGGLE SIDEBAR //
 
@@ -42,6 +45,30 @@ const searchForm = document.querySelector('#content nav form');
         }
     }
 })
+
+function showSection(sectionId) {
+    // Hide all sections
+    document.querySelectorAll('.section').forEach(section => {
+        section.classList.remove('active');
+    });
+    
+    // Show the selected section
+    const selectedSection = document.getElementById(sectionId);
+    if (selectedSection) {
+        selectedSection.classList.add('active');
+    }
+    
+    // Update active state in sidebar
+    document.querySelectorAll('.side-menu li').forEach(item => {
+        item.classList.remove('active');
+    });
+    
+    // Find and activate the clicked sidebar item
+    const sidebarItem = document.querySelector(`a[href="#${sectionId}"]`).parentElement;
+    if (sidebarItem) {
+        sidebarItem.classList.add('active');
+    }
+}
 
 
 
