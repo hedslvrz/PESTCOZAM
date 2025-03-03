@@ -586,7 +586,7 @@ nav ul li a:hover {
     line-height: 1.6;
 }
 
-.expert-cards .card .learn-more-btn {
+.expert-cards .card .learn-btn {
     padding: 12px 24px;
     border: none;
     border-radius: 6px;
@@ -596,17 +596,17 @@ nav ul li a:hover {
     align-self: flex-start;
 }
 
-.expert-cards .white-card .learn-more-btn {
+.expert-cards .white-card .learn-btn {
     background: #0C3B6F;
     color: white;
 }
 
-.expert-cards .blue-card .learn-more-btn {
+.expert-cards .blue-card .learn-btn {
     background: white;
     color: #0C3B6F;
 }
 
-.expert-cards .card .learn-more-btn:hover {
+.expert-cards .card .learn-btn-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
@@ -766,13 +766,13 @@ nav ul li a:hover {
 
 .button-group {
     display: flex;
-    justify-content: space-between;
-    gap: 10px;
+    justify-content: center;
+    gap: 20px;
     width: 100%;
     margin-top: 15px;
 }
 
-.book-now-btn{
+.book-now-btn {
     background-color: #144578;
     color: #fff;
     border: none;
@@ -780,9 +780,7 @@ nav ul li a:hover {
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    margin: 0 auto;
-    margin-top: 3vh;
-    margin-left: 4vh;
+    margin: 0;
 }
 
 .book-now-btn:hover, .learn-more-btn:hover {
@@ -793,13 +791,11 @@ nav ul li a:hover {
     background-color: #144578;
     color: #fff;
     border: none;
-    padding: 3px 12px;
+    padding: 8px 12px;
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    margin: 0 auto;
-    margin-top: 3vh;
-    margin-right: 4vh;
+    margin: 0;
 }
   
 .learn-more-btn:hover {
