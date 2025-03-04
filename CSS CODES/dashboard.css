@@ -1,18 +1,23 @@
+/* General Styles */
+@font-face {
+    font-family: 'Shrikhand';
+    src: url(../Fonts/Shrikhand-Regular.ttf);
+}
+
 body {
     background: whitesmoke;
     margin: 0;
     padding: 0;
     overflow-x: hidden;
 }
-ul{
+
+ul {
     list-style: none;
     padding: 0;
     margin: 0;
 }
 
-
-/* SIDEBAR */
-
+/* ===== SIDEBAR STYLES ===== */
 #sidebar {
     position: fixed;
     top: 0;
@@ -21,24 +26,21 @@ ul{
     height: 100%;
     background: #144578;
     z-index: 1000;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-family: 'Roboto', sans-serif;
     transition: .3s ease;
-    overflow: hidden;
-    margin: 0;
-    padding: 0;
+    overflow-x: hidden;
+    scrollbar-width: none;
 }
-#sidebar.hide{
+
+#sidebar::-webkit-scrollbar {
+    display: none;
+}
+
+#sidebar.hide {
     width: 60px;
 }
-.flower-logo {
-    width: 40px;
-    height: 40px;
-    margin-right: 5px;
-    margin-left: 10px;
-}
 
-
-#sidebar .brand{
+#sidebar .brand {
     font-size: 24px;
     font-weight: 700;
     height: 56px;
@@ -47,19 +49,30 @@ ul{
     color: whitesmoke;
     font-style: italic;
     text-decoration: none;
+    padding: 0 16px;
+    margin: 10px 0;
 }
 
-#sidebar .brand .bx{
+#sidebar .brand .bx {
     min-width: 60px;
     display: flex;
     justify-content: center;
 }
-#sidebar .side-menu{
+
+#sidebar .brand .text {
+    font-family: 'Shrikhand';
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#sidebar .side-menu {
     width: 100%;
     margin-top: 48px;
-    padding: 1px;
+    padding: 0; /* Changed from 1px to 0 to fix white space */
 }
-#sidebar .side-menu li{
+
+#sidebar .side-menu li {
     height: 48px;
     margin-left: 6px;
     background: transparent;
@@ -67,11 +80,13 @@ ul{
     padding: 4px;
     list-style: none;
 }
-#sidebar .side-menu li.active{
-    background: var(--white-color,whitesmoke);
+
+#sidebar .side-menu li.active {
+    background: var(--white-color, whitesmoke);
     position: relative;
 }
-#sidebar .side-menu li.active::before{
+
+#sidebar .side-menu li.active::before {
     content: '';
     position: absolute;
     width: 40px;
@@ -82,7 +97,8 @@ ul{
     box-shadow: 20px 20px 0 whitesmoke;
     z-index: -1;
 }
-#sidebar .side-menu li.active::after{
+
+#sidebar .side-menu li.active::after {
     content: '';
     position: absolute;
     width: 40px;
@@ -93,7 +109,8 @@ ul{
     box-shadow: 20px -20px 0 whitesmoke;
     z-index: -1;
 }
-#sidebar .side-menu li a{
+
+#sidebar .side-menu li a {
     width: 100%;
     height: 100%;
     background: #144578;
@@ -102,42 +119,55 @@ ul{
     border-radius: 48px;
     font-size: 16px;
     text-decoration: none;
-    color: var(--white-color,whitesmoke);
+    color: var(--white-color, whitesmoke);
     white-space: nowrap;
     overflow-x: hidden;
+    font-family: 'Roboto', sans-serif;
 }
-#sidebar.hide .side-menu li.active a{
+
+#sidebar.hide .side-menu li.active a {
     color: lightskyblue;
 }
-#sidebar.hide .side-menu li a{
+
+#sidebar.hide .side-menu li a {
     width: calc(48px - (4px * 2));
     transition: width .3s ease;
 }
-#sidebar .side-menu li a.logout{
+
+#sidebar .side-menu li a.logout {
     color: lightcoral;
 }
-#sidebar .side-menu.top li a:hover{
+
+#sidebar .side-menu.top li a:hover {
     color: lightskyblue;
 }
-#sidebar .side-menu li a .bx{
+
+#sidebar .side-menu li a .bx {
     min-width: calc(60px - ((4px + 6px) * 2));
     display: flex;
     justify-content: center;
 }
-/* SIDEBAR */
 
-
-/* CONTENT */
-#content {
-    position: relative;
-    width: calc(100% - 280px);
-    left: 280px;
-    transition: .3s ease;
-    margin: 0;
-    padding: 0;
-    min-height: 100vh;
+#sidebar.hide .side-menu li {
+    margin-left: 0;
+    border-radius: 0;
+    padding: 4px 0;
 }
-#sidebar.hide ~ #content{
+
+#sidebar.hide .side-menu li.active {
+    background: whitesmoke;
+    width: 100%;
+    border-radius: 0;
+}
+
+/* Improved minimized sidebar appearance */
+#sidebar.hide .side-menu li a .bx {
+    min-width: 60px;
+    margin-left: 0;
+}
+
+#sidebar.hide .side-menu li.active::before,
+#sidebar.hide ~ #content {
     width: calc(100% - 60px);
     left: 60px;
 }
@@ -148,7 +178,8 @@ ul{
     position: relative;
     width: calc(100% - 280px);
     left: 280px;
-    padding: 20px;
+    transition: .3s ease;
+    min-height: 100vh;
 }
 
 .section.active {
@@ -160,18 +191,13 @@ ul{
 }
 
 /* Make sure all sections have the same layout structure */
-#work-orders,
-#employees,
-#customers,
-#reports,
-#billing,
-#settings {
-    transition: all 0.3s ease;
-    margin-top: 60px;  /* Same margin as the main dashboard */
+#sidebar.hide ~ .section {
+    width: calc(100% - 60px);
+    left: 60px;
 }
 
-/* NAVBAR */
-#content nav {
+/* ===== NAVBAR STYLES ===== */
+#main-navbar {
     height: 56px;
     background: #144578;
     padding: 0 24px;
@@ -183,14 +209,19 @@ ul{
     position: fixed;
     width: calc(100% - 280px);
     top: 0;
+    left: 280px;
     z-index: 1000;
     margin: 0;
     padding: 0 24px;
+    transition: .3s ease;
 }
-#sidebar.hide ~ #content nav {
+
+#sidebar.hide ~ #main-navbar {
     width: calc(100% - 60px);
+    left: 60px;
 }
-#content nav::before{
+
+#main-navbar::before {
     content: '';
     position: absolute;
     width: 40px;
@@ -200,40 +231,48 @@ ul{
     border-radius: 50%;
     box-shadow: -20px -20px 0 #144578;
 }
-#content nav a{
+
+#main-navbar a {
     color: var(--white-color, whitesmoke);
     text-decoration: none;
 }
-#content nav .bx.bx-menu{
-    cursor: pointer ;
+
+#main-navbar .bx.bx-menu {
+    cursor: pointer;
 }
-#content nav .nav-link{
+
+#main-navbar .nav-link {
     font-size: 16px;
     transition: .3s ease;
 }
-#content nav .nav-link:hover{
+
+#main-navbar .nav-link:hover {
     color: lightskyblue;
 }
-#content nav form{
+
+#main-navbar form {
     max-width: 400px;
     width: 100%;
     margin-right: auto;
 }
-#content nav form .form-input{
+
+#main-navbar form .form-input {
     display: flex;
     align-items: center;
     height: 36px;
 }
-#content nav form .form-input input{
+
+#main-navbar form .form-input input {
     flex-grow: 1;
     padding: 0 16px;
     height: 100%;
     border: none;
     background: whitesmoke;
-    border-radius:36px 0 0 36px;
+    border-radius: 36px 0 0 36px;
     outline: none;
 }
-#content nav form .form-input button{
+
+#main-navbar form .form-input button {
     width: 36px;
     height: 100%;
     display: flex;
@@ -246,11 +285,13 @@ ul{
     border-radius: 0 36px 36px 0;
     cursor: pointer;
 }
-#content nav .notification{
+
+#main-navbar .notification {
     font-size: 20px;
     position: relative;
 }
-#content nav .notification .num{
+
+#main-navbar .notification .num {
     position: absolute;
     top: -6px;
     right: -6px;
@@ -266,75 +307,66 @@ ul{
     justify-content: center;
     align-items: center;
 }
-#content nav .profile {
+
+/* Update profile styles for better centering */
+#main-navbar .profile {
     position: relative;
-    width: 36px;
-    height: 36px;
+    width: 40px;  /* Increased width */
+    height: 40px;  /* Increased height */
     border-radius: 50%;
     overflow: hidden;
     cursor: pointer;
-    margin-right: 40px;
+    margin-right: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 2px;
 }
-#content nav .profile img {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+
+#main-navbar .profile img {
+    width: 36px;
+    height: 36px;
     object-fit: cover;
+    border-radius: 50%;
+    position: relative;  /* Changed from absolute */
 }
-/* NAVBAR */
 
+#main-navbar .profile img {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: calc(100% - 4px);
+    height: calc(100% - 4px);
+    object-fit: cover;
+    border-radius: 50%;
+}
 
-
-/* MAIN */
-#content main{
-    width: 100%;
+/* ===== MAIN CONTENT LAYOUT ===== */
+.section main {
+    width: calc(100% - 90px);  /* Increased right margin */
     padding: 36px 24px;
-    margin-top: 56px;
+    margin-top: 76px; /* Increased to account for fixed navbar */
     margin-left: 30px;
+    margin-right: 30px; /* Added right margin */
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 }
-#content main .head-title{
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    grid-gap: 16px;
-    flex-wrap: wrap;    
-}
-#content main .head-title .left h1{
-    font-size: 36px;
-    font-weight: 780;
-    margin-bottom: 10px;
-}
-#content main .head-title .left .breadcrumb{
-    display: flex;
-    align-items: center;
-    grid-gap: 16px; 
-    list-style: none;
-}
-#content main .head-title .left .breadcrumb li a{
-    color: darkslategrey;
-    pointer-events: none;
-    font-weight: 500;
-    text-decoration: none;
-}
-#content main .head-title .left .breadcrumb li a.active{
-    color: skyblue;
-    pointer-events: unset;
+
+/* Clean up redundant section nav styles that are no longer needed */
+.standard-nav {
+    display: none; /* Hide any leftover standard-nav elements */
 }
 
-#content main .box-info{
+/* ===== DASHBOARD WIDGETS ===== */
+.section main .box-info {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     grid-gap: 24px;
-    margin: 36px 60px 36px 0;  /* increased right margin from 40px to 60px */
-    position: relative;
-    z-index: 1;
-    width: calc(100% - 95px);  /* adjusted width calculation to account for increased margin */
-    overflow: hidden;
+    margin: 24px 30px 36px 0;
+    width: calc(100% - 30px);
 }
-#content main .box-info li{
+
+.section main .box-info li {
     padding: 24px;
     background: white;
     border-radius: 20px;
@@ -344,7 +376,8 @@ ul{
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     min-height: 120px;
 }
-#content main .box-info li .bx{
+
+.section main .box-info li .bx {
     width: 80px;
     height: 80px;
     border-radius: 10px;
@@ -354,110 +387,410 @@ ul{
     justify-content: center;
     align-items: center;
 }
-#content main .box-info li .text h3{
+
+.section main .box-info li .text h3 {
     font-size: 24px;
     font-weight: 700;
 }
 
-
-#content main .table-data{
+/* ===== TABLE DATA ===== */
+.section main .table-data {
     display: flex;
     flex-wrap: wrap;
     grid-gap: 24px;
-    margin-top: 24px;
-    width: 100%;
+    margin: 24px 30px 24px 0;
+    width: calc(100% - 30px);
 }
-#content main .table-data > div{
+
+.section main .table-data > div {
     border-radius: 20px;
     background: white;
     padding: 24px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
-#content main .table-data .recent-appointments {
+
+.section main .table-data .recent-appointments {
     flex-grow: 1;
     flex-basis: 500px;
+    min-width: 60%;
 }
-#content main .table-data .head{
+
+.section main .table-data .head {
     display: flex;
     align-items: center;
     grid-gap: 16px;
     margin-bottom: 24px;
 }
-#content main .table-data .head h3{
+
+.section main .table-data .head h3 {
     margin-right: auto;
     font-size: 24px;
     font-weight: 600;
     color: darkslategrey;
     font-family: Poppins;
 }
-#content main .table-data .head .bx{
+
+.section main .table-data .head .bx {
     cursor: pointer;
 }
-#content main .table-data .recent-appointments table{
+
+/* Fix table styles */
+.section main .table-data .recent-appointments table {
     width: 100%;
     border-collapse: collapse;
 }
-#content main .table-data .recent-appointments table th{
+
+.section main .table-data .recent-appointments table th {
     padding-bottom: 12px;
     font-size: 15px;
     text-align: left;
     border-bottom: 1px solid darkslategrey;
 }
-#content main .table-data .recent-appointments table td{
-    padding: 16px 0;
-}
-#content main .table-data .recent-appointments table tr td:first-child{
-    display: flex;
-    align-items: center;
-    grid-gap: 12px;
-    padding-left: 6px;
-}
-#content main .table-data .recent-appointments table td img{
+
+.section main .table-data .recent-appointments table td img {
     width: 36px;
     height: 36px;
     border-radius: 50%;
     object-fit: cover;
 }
-#content main .table-data .recent-appointments table tbody tr:hover {
+
+.section main .table-data .recent-appointments table tbody tr:hover {
     background: whitesmoke;
 }
-#content main .table-data .todo {
+
+/* Fix todo list styles */
+.section main .table-data .todo {
     flex-grow: 1;
     flex-basis: 300px;
+    min-width: 30%;
 }
-#content main .table-data .todo .todo-list{
+
+.section main .table-data .todo .todo-list {
     width: 100%;
 }
-#content main .table-data .todo .todo-list li{
-    width: 100%;
+
+.section main .table-data .todo .todo-list li {
+    width: calc(100% - 32px); /* Adjust width to account for padding */
     margin-bottom: 16px;
     background: whitesmoke;
     border-radius: 10px;
-    padding-top: 6px 16px;
+    padding: 14px 16px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    
+    position: relative;
 }
-#content main .table-data .todo .todo-list li:last-child{
+
+.section main .table-data .todo .todo-list li i {
+    font-size: 1.2rem;
+    color: #555;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.section main .table-data .todo .todo-list li i:hover {
+    background: rgba(0, 0, 0, 0.05);
+    cursor: pointer;
+}
+
+.section main .table-data .todo .todo-list li:last-child {
     margin-bottom: 0;
 }
 
+/* Add status styles for appointments */
+.status-completed {
+    padding: 6px 10px;
+    border-radius: 20px;
+    font-weight: 500;
+    background: #b6ffce;
+    color: #097b3f;
+}
 
-/* MAIN */  
+.status-pending {
+    padding: 6px 10px;
+    border-radius: 20px;
+    font-weight: 500;
+    background: #fff2c6;
+    color: #a77b06;
+}
+
+.status-cancelled {
+    padding: 6px 10px;
+    border-radius: 20px;
+    font-weight: 500;
+    background: #ffd0d0;
+    color: #b92c2c;
+}
+
+/* Fix breadcrumb and head-title styles */
+.section main .head-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    grid-gap: 16px;
+    flex-wrap: wrap;
+}
+
+.section main .head-title .left h1 {
+    font-size: 36px;
+    font-weight: 780;
+    margin-bottom: 10px;
+     margin-top: 0px;
+}
+
+.section main .head-title .left .breadcrumb {
+    display: flex;
+    align-items: center;
+    grid-gap: 16px;
+    list-style: none;
+}
+
+.section main .head-title .left .breadcrumb li a {
+    color: darkslategrey;
+    pointer-events: none;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.section main .head-title .left .breadcrumb li a.active {
+    color: skyblue;
+    pointer-events: unset;
+}
+
+/* SERVICES SECTION STYLES */
+.services-list {
+    width: 100%;
+    background: var(--light, white);
+    padding: 24px;
+    border-radius: 20px;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+}
+
+.services-list .head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+
+.services-list .head h3 {
+    font-weight: 600;
+    color: var(--dark, #333);
+}
+
+.services-list .head .actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.services-list .head .actions i {
+    font-size: 20px;
+    color: var(--dark, #333);
+    cursor: pointer;
+}
+
+.btn-add {
+    height: 36px;
+    padding: 0 16px;
+    border-radius: 36px;
+    background: var(--blue, #144578);
+    color: var(--light, white);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    grid-gap: 10px;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+/* Update service cards layout */
+.service-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+    padding: 14px;
+    padding-right: 24px; /* Added extra padding on right */
+    justify-items: center;
+    margin-right: 10px; /* Added margin to prevent sticking to edge */
+}
+
+.service-card {
+    background: #fff;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    width: 100%;
+    max-width: 320px;
+    height: 460px;  /* Increased from 420px to accommodate larger image */
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+}
+
+.service-image {
+    height: 200px;  /* Increased from 180px */
+    width: 100%;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 16px;
+}
+
+.service-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.service-card:hover .service-image img {
+    transform: scale(1.05);
+}
+
+.service-details {
+    padding: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.service-details h4 {
+    font-size: 1.1rem;
+    margin-bottom: 12px;
+}
+
+.service-details .description {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin-bottom: 16px;
+    flex-grow: 1;
+    color: #555;
+}
+
+.service-details .estimated-time {
+    background: #f8f9fa;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    color: #555;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+.service-details .estimated-time i {
+    color: #144578;
+    font-size: 1rem;
+}
+
+.inspection-notice {
+    margin-top: auto;
+    padding: 8px;
+    background: #e6f3ff;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    color: #144578;
+    text-align: center;
+    margin-bottom: 12px;
+}
+
+/* Update service card button styles */
+.service-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 12px;
+    padding: 0 4px;
+}
+
+.service-actions button {
+    flex: 1;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn-edit {
+    background-color: #e6f3ff;
+    color: #144578;
+}
+
+.btn-delete {
+    background-color: #ffebee;
+    color: #e53935;
+}
+
+.btn-edit:hover {
+    background-color: #d1eaff;
+}
+
+.btn-delete:hover {
+    background-color: #ffcdd2;
+}
+
+.service-actions i {
+    font-size: 1.1rem;
+}
+
+/* Responsive adjustments for services */
+@media screen and (max-width: 768px) {
+    .service-cards {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    }
+    .section main {
+        width: calc(100% - 60px);
+        margin-right: 20px;
+    }
+    
+    .section main .box-info {
+        margin-right: 20px;
+        width: calc(100% - 20px);
+    }
+    
+    .section main .table-data {
+        margin-right: 20px;
+        width: calc(100% - 20px);
+    }
+}
+
+@media screen and (max-width: 576px) {
+    .service-cards {
+        grid-template-columns: 1fr;
+    }
+    
+    .price-duration {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+}
+/* END SERVICES SECTION STYLES */
 
 /* CONTENT */
 
 
 @media screen and (max-width: 768px){
-    #content{
+    #content, .section{
         position: relative;
         width: calc(100% - 60px);
         left: 60px;
     }
-    #content nav{
+    #main-navbar {
         width: calc(100% - 60px);
+        left: 60px;
     }
-    #content nav .nav-link{
+    #main-navbar .nav-link{
         display: none;
     }
     #content main .box-info{
@@ -467,10 +800,10 @@ ul{
 }
 
 @media screen and (max-width: 576px){
-    #content nav form .form-input input{
+    #main-navbar form .form-input input{
         display: none;
     }
-    #content nav form .form-input button{
+    #main-navbar form .form-input button{
         width: auto;
         height: auto;
         background: transparent;
@@ -487,4 +820,52 @@ ul{
         color: whitesmoke;
         background: red;
     }
+}
+
+/* SECTION SPECIFIC STYLES */
+
+/* Update brand container and logo styles */
+.brand-container {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    height: 56px;
+}
+
+.flower-logo {
+    width: 45px;
+    height: 45px;
+    object-fit: contain;
+    transition: margin .3s ease;
+}
+
+.brand-text {
+    color: white;
+    font-size: 1.5rem;
+    font-family: 'Shrikhand', cursive;
+    margin-left: 12px;
+    transition: opacity .3s ease, width .3s ease;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+/* Hide text when sidebar is minimized */
+#sidebar.hide .brand-text {
+    opacity: 0;
+    width: 0;
+    margin-left: 0;
+}
+
+#sidebar.hide .flower-logo {
+    margin: 0 auto;
+}
+
+.user-img {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    vertical-align: middle;
+    margin-top: 15px;
+    margin-left: 13px;
 }

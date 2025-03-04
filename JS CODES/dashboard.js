@@ -13,21 +13,19 @@ allSideMenu.forEach(item=> {
 
 
 // TOGGLE SIDEBAR //
-const menuBar = document.querySelector('#content nav .bx.bx-menu');
-const sideBar = document.getElementById('sidebar');
+const allMenus = document.querySelectorAll('.bx-menu');
+const sidebar = document.getElementById('sidebar');
 
-menuBar.addEventListener('click', function(){
-    sideBar.classList.toggle('hide');
-    // Add small delay to ensure smooth transition
-    setTimeout(() => {
-        window.dispatchEvent(new Event('resize'));
-    }, 300);
-})
+allMenus.forEach(menu => {
+    menu.addEventListener('click', function() {
+        sidebar.classList.toggle('hide');
+    });
+});
 // TOGGLE SIDEBAR //
 
 
 if(window.innerWidth <768){
-    sideBar.classList.add('hide');
+    sidebar.classList.add('hide');
 } else if(window.innerWidth < 576){
     
 }
@@ -47,15 +45,22 @@ const searchForm = document.querySelector('#content nav form');
 })
 
 function showSection(sectionId) {
-    // Hide all sections
+    // Hide all sections first
     document.querySelectorAll('.section').forEach(section => {
+        section.style.display = 'none';
         section.classList.remove('active');
     });
     
     // Show the selected section
-    const selectedSection = document.getElementById(sectionId);
-    if (selectedSection) {
-        selectedSection.classList.add('active');
+    if (sectionId === 'dashboard') {
+        document.getElementById('content').style.display = 'block';
+        document.getElementById('content').classList.add('active');
+    } else {
+        const selectedSection = document.getElementById(sectionId);
+        if (selectedSection) {
+            selectedSection.style.display = 'block';
+            selectedSection.classList.add('active');
+        }
     }
     
     // Update active state in sidebar
