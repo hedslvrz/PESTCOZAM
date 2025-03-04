@@ -35,11 +35,23 @@
           <nav>
             <ul>
               <li><a href="../HTML CODES/Home_page.html">Home</a></li>
-              <li><a href="../HTML CODES/About_us.html">About Us</a></li>
-              <li><a href="../HTML CODES/Services.html" class="services">Services</a></li>
-              <li><a href="../HTML CODES/Appointment-service.php" class="btn-appointment">Appointment</a></li>
-              <li><a href="../HTML CODES/Login.php" class="btn-login"><i class='bx bx-log-in' ></i> Login</a></li>
-              <li><a href="../HTML CODES/Signup.php" class="btn-signup"><i class='bx bx-user-plus' ></i> Sign Up</a></li>
+              <li><a href="#offer-section">Services</a></li>
+              <li><a href="#about-us-section">About Us</a></li>
+              <li><a href="../HTML CODES/Appointment-service.php" class="btn-appointment">Book Appointment</a></li>
+              <!-- Replace the login/signup buttons with this new structure -->
+              <li class="auth-buttons">
+                  <a href="../HTML CODES/Login.php" class="btn-login"><i class='bx bx-log-in'></i> Login</a>
+                  <a href="../HTML CODES/Signup.php" class="btn-signup"><i class='bx bx-user-plus'></i> Sign Up</a>
+              </li>
+              <li class="user-profile hidden">
+                  <div class="profile-dropdown">
+                      <img src="../Pictures/default-profile.png" alt="Profile" class="profile-pic">
+                      <div class="dropdown-content">
+                          <a href="../HTML CODES/profile.php"><i class='bx bx-user'></i> Profile</a>
+                          <a href="#" id="logoutBtn"><i class='bx bx-log-out'></i> Logout</a>
+                      </div>
+                  </div>
+              </li>
             </ul>      
           </nav>
       </header>
@@ -82,13 +94,13 @@
         </a>
         
         <a href="../HTML CODES/Appointment-service.php" class="info-box">
-            <div class="info-icon">
-                <img src="../Pictures/Appointment.png" alt="Appointment Icon">
-            </div>
-            <div class="info-text">
-                <h3>Appointment</h3>
-                <p>Set An Appointment</p>
-            </div>
+          <div class="info-icon">
+              <img src="../Pictures/Appointment.png" alt="Appointment Icon">
+          </div>
+          <div class="info-text">
+              <h3>Appointment</h3>
+              <p>Set An Appointment</p>
+          </div>
         </a>
     </section>
     
@@ -156,13 +168,17 @@
                       <p>Les convails felis habitasse libra<br>
                       Lec convails felis habitasse libra<br>
                       torquent augue.Natoque possiere libra</p>
-                      <button class="learn-more-btn" onclick="window.location.href='Pest_Control_Info.html'">Learn more</button>
+                      <div class="button-group">
+                          <button class="learn-btn" onclick="window.location.href='Pest_Control_Info.html'">Learn More</button>
+                      </div>
                   </div>
                   <div class="card blue-card">
                       <h3>Inspections</h3>
                       <p>elementum non sociosqu.Vulputate enim<br>
                       plates non convails aenean laculis.</p>
-                      <button class="learn-more-btn" onclick="window.location.href='Inspection_Info.html'">Learn more</button>
+                      <div class="button-group">
+                          <button class="learn-btn" onclick="window.location.href='Inspection_Info.html'">Learn More</button>
+                      </div>
                   </div>
               </div>
           </div>
@@ -203,25 +219,33 @@
   </div>
 </section>
 
+
+
+
+
+
   <!-- WHAT WE OFFER SECTION -->
-  <section class="offer-section">
+  <section class="offer-section" id="offer-section">
     <div class="offer-container">
 
       <p class="section-subtitle">WHAT WE OFFER</p>
-      <h2 class="section-title">Our Pest Solutions</h2>
+      <h2 class="pest-title">Our Pest Solutions</h2>
 
       <div class="offer-grid">
         
         <!-- Card 1 -->
         <div class="offer-card">
-          <img src="../Pictures/Expert pic.jpg" alt="Soil Poisoning" />
+          <img src="../Pictures/card 1 offer.jpg" alt="Soil Poisoning" />
           <div class="offer-text">
             <h3>Soil Poisoning</h3>
             <p>
               Accumsan iaculis dictumst montes eros nec tristique accumsan. 
               Accumsan iaculis dictumst montes eros.
             </p>
-            <button class="learn-more-btn" onclick="window.location.href='Lrn_more_sp.html'">Learn More</button>
+            <div class="button-group">
+                <button class="book-now-btn" onclick="window.location.href='Appointment-service.php'">Book Now</button>
+                <button class="learn-more-btn" onclick="window.location.href='Lrn_more_sp.html'">Learn More</button>
+            </div>
           </div>
         </div>
 
@@ -234,7 +258,10 @@
               Accumsan iaculis dictumst montes eros nec tristique accumsan. 
               Accumsan iaculis dictumst montes eros.
             </p>
-            <button class="learn-more-btn" onclick="window.location.href='Lrn_more_md.html'">Learn More</button>
+            <div class="button-group">
+                <button class="book-now-btn" onclick="window.location.href='Appointment-service.php'">Book Now</button>
+                <button class="learn-more-btn" onclick="window.location.href='Lrn_more_md.html'">Learn More</button>
+            </div>
           </div>
         </div>
 
@@ -247,7 +274,10 @@
               Accumsan iaculis dictumst montes eros nec tristique accumsan. 
               Accumsan iaculis dictumst montes eros.
             </p>
-            <button class="learn-more-btn"onclick="window.location.href='Lrn_more_tc.html'">Learn More</button>
+            <div class="button-group">
+                <button class="book-now-btn" onclick="window.location.href='Appointment-service.php'">Book Now</button>
+                <button class="learn-more-btn" onclick="window.location.href='Lrn_more_tc.html'">Learn More</button>
+            </div>
           </div>
         </div>
 
@@ -260,7 +290,10 @@
               Accumsan iaculis dictumst montes eros nec tristique accumsan. 
               Accumsan iaculis dictumst montes eros.
             </p>
-            <button class="learn-more-btn" onclick="window.location.href='Lrn_more_gpc.html'">Learn More</button>
+            <div class="button-group">
+                <button class="book-now-btn" onclick="window.location.href='Appointment-service.php'">Book Now</button>
+                <button class="learn-more-btn" onclick="window.location.href='Lrn_more_gpc.html'">Learn More</button>
+            </div>
           </div>
         </div>
 
@@ -273,7 +306,10 @@
               Accumsan iaculis dictumst montes eros nec tristique accumsan. 
               Accumsan iaculis dictumst montes eros.
             </p>
-            <button class="learn-more-btn" onclick="window.location.href='Lrn_more_mc.html'">Learn More</button>
+            <div class="button-group">
+                <button class="book-now-btn" onclick="window.location.href='Appointment-service.php'">Book Now</button>
+                <button class="learn-more-btn" onclick="window.location.href='Lrn_more_mc.html'">Learn More</button>
+            </div>
           </div>
         </div>
 
@@ -286,12 +322,166 @@
               Accumsan iaculis dictumst montes eros nec tristique accumsan. 
               Accumsan iaculis dictumst montes eros.
             </p>
-            <button class="learn-more-btn" onclick="window.location.href='Lrn_more_rat.html'">Learn More</button>
+            <div class="button-group">
+                <button class="book-now-btn" onclick="window.location.href='Appointment-service.php'">Book Now</button>
+                <button class="learn-more-btn" onclick="window.location.href='Lrn_more_rat.html'">Learn More</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 7 -->
+        <div class="offer-card">
+          <img src="../Pictures/Other-flying-insects.jpg" alt="Flying & Crawling Photo" />
+          <div class="offer-text">
+            <h3>Other Flying and Crawling Insects</h3>
+            <p>
+              Accumsan iaculis dictumst montes eros nec tristique accumsan. 
+              Accumsan iaculis dictumst montes eros.
+            </p>
+            <div class="button-group">
+                <button class="book-now-btn" onclick="window.location.href='Appointment-service.php'">Book Now</button>
+                <button class="learn-more-btn" onclick="window.location.href='Lrn_more_rat.html'">Learn More</button>
+            </div>
+          </div>
+        </div>
+
+         <!-- Card 8 -->
+         <div class="offer-card">
+          <img src="../Pictures/Extraction.jpg" alt="Extraction" />
+          <div class="offer-text">
+            <h3>Extraction</h3>
+            <p>
+              Accumsan iaculis dictumst montes eros nec tristique accumsan. 
+              Accumsan iaculis dictumst montes eros.
+            </p>
+            <div class="button-group">
+                <button class="book-now-btn" onclick="window.location.href='Appointment-service.php'">Book Now</button>
+                <button class="learn-more-btn" onclick="window.location.href='Lrn_more_rat.html'">Learn More</button>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </section>
+
+
+
+
+
+
+
+  <!-- ABOUT US SECTION -->
+  <div class="image-container" id="about-us-section">
+    <img src="../Pictures/about us.jpg" alt="Pest Control Worker">
+    <div class="overlay">
+      <h1>ABOUT US</h1>
+    </div>
+  </div>
+
+
+<!-- VISION AND MISSION SECTION -->
+  <div class="vision-mission-container">
+    <div class="vision-mission-content">
+      <div class="title">Guaranteed pest removal with no hassle for you</div>
+      <p>A Pest Control service provider registered with the Department of Trade & Industry that offers a high quality of service to protect your properties from unwanted/disastrous pests.</p>
+    </div>
+    <div class="vision-mission-blocks">
+      <div class="vision-block">
+        <div class="block-title">Vision</div>
+        <p>A Pest Control service provider registered with the Department of Trade & Industry that offers a high quality of service to protect your properties from unwanted/disastrous pests.</p>
+      </div>
+      <div class="mission-block">
+        <div class="block-title">Mission</div>
+        <p>"We promote the safe and responsible use of pesticides to protect human health, preserve the environment, and support sustainable agriculture. Through education and innovation, we minimize risks and advocate for eco-friendly pest control solutions."</p>
+      </div>
+    </div>
+  </div>
+
+
+<!-- WHY-PESTCOZAM SECTION -->
+  <section id="why-pestcozam-section">
+    <div class="why-pestcozam-container">
+      <div class="why-pestcozam-content">
+        <div class="section-title">Why choose PESTCOZAM?</div>
+        <div class="main-title">Committed<br>to Your<br>Comfort</div>
+        <a href="#" class="discover-button">Discover more</a>
+      </div>
+      <div class="why-pestcozam-grid">
+        <div class="grid-item" style="background-image: url('../Pictures/Exp-Prof.jpg');">
+          <div class="item-title">Experienced<br>Professionals</div>
+        </div>
+        <div class="grid-item" style="background-image: url('../Pictures/Cust-Treatment.jpg');">
+          <div class="item-title">Customized<br>Treatments</div>
+        </div>
+        <div class="grid-item" style="background-image: url('../Pictures/eco-friendly.jpg');">
+          <div class="item-title">Eco-Friendly<br>Solutions</div>
+        </div>
+        <div class="grid-item" style="background-image: url('../Pictures/transparent-pricing.jpg');">
+          <div class="item-title">Transparent<br>Pricing</div>
+        </div>
+        <div class="grid-item" style="background-image: url('../Pictures/guaranteed-results.jpg');">
+          <div class="item-title">Guaranteed<br>Results</div>
+        </div>
+        <div class="grid-item" style="background-image: url('../Pictures/fast-and-responsive.jpg');">
+          <div class="item-title">Fast and<br>Responsive</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+<!-- REVIEWS SECTION - HARDCODED MUNA -->
+<section id="reviews-section">
+  <div class="reviews-container">
+    <div class="reviews-header">
+      <div class="customer-title">What Our Customer are saying</div>
+      <p>See what our happy customers are saying about their experiences with us!</p>
+    </div>
+    <div class="reviews-slider">
+      <div class="review-slide">
+        <div class="review-card">
+          <img src="../Pictures/woman.png" alt="Evangeline Tecson Bue" class="review-image">
+          <div class="review-content">
+            <h3 class="review-name">Evangeline Tecson Bue</h3>
+            <div class="review-stars">★★★★★</div>
+            <p>"I can't believe the no of caught rats, cockroaches and all. Thank you PESTCOZAM Highly recommended effective and affordable cost"</p>
+          </div>
+        </div>
+      </div>
+      <div class="review-slide">
+        <div class="review-card">
+          <img src="../Pictures/woman.png" alt="Loriel Keme" class="review-image">
+          <div class="review-content">
+            <h3 class="review-name">Loriel Keme</h3>
+            <div class="review-stars">★★★★★</div>
+            <p>"Outstanding pest control service. Prompt response, friendly staff and through inspection. The technician was knowledgeable, used eco-friendly products. Highly recommended this professional and effective service"</p>
+          </div>
+        </div>
+      </div>
+      <div class="review-slide">
+        <div class="review-card">
+          <img src="../Pictures/boy.png" alt="Martin Go" class="review-image">
+          <div class="review-content">
+            <h3 class="review-name">Martin Go</h3>
+            <div class="review-stars">★★★★★</div>
+            <p>Great service and very detail oriented, would definitely recommend!</p>
+          </div>
+        </div>
+      </div>
+      </div>
+    <div class="slider-controls">
+      <button class="prev-button">←</button>
+      <button class="next-button">→</button>
+    </div>
+    <a href="#" class="book-now-button">BOOK NOW!</a>
+  </div>
+</section>
+
+
+
+
+
+
 
   <!-- FOOTER SECTION -->
   <footer class="footer-section">
@@ -309,9 +499,9 @@
       <div class="footer-right">
         <p class="follow-us-text">Follow us</p>
         <div class="social-icons">
-          <a href="#"><img src="../Pictures/facebook.png" alt="Facebook" /></a>
-          <a href="#"><img src="../Pictures/telegram.png" alt="Telegram" /></a>
-          <a href="#"><img src="../Pictures/instagram.png" alt="Instagram" /></a>
+          <a href="https://www.facebook.com/PESTCOZAM" target="_blank"><img src="../Pictures/facebook.png" alt="Facebook" ></a>
+          <a href=""><img src="../Pictures/telegram.png" alt="Telegram" /></a>
+          <a href="https://www.instagram.com/pestcozam" target="_blank"><img src="../Pictures/instagram.png" alt="Instagram" /></a>
         </div>
       </div>
     </div>
@@ -358,5 +548,11 @@
         });
     });
     </script> 
+    <script src="../JS CODES/sessionHandler.js"></script>
+    <style>
+  html {
+    scroll-behavior: smooth;
+  }
+</style>
 </body>
 </html>
