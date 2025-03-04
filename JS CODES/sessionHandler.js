@@ -1,36 +1,42 @@
 document.addEventListener('DOMContentLoaded', function() {
-    checkLoginStatus();
+    checkSession();
 
-    // Add logout handler
-    document.getElementById('logoutBtn').addEventListener('click', function(e) {
-        e.preventDefault();
-        logout();
-    });
+    // Add logout functionality
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            logout();
+        });
+    }
 });
 
-function checkLoginStatus() {
+function checkSession() {
     fetch('../PHP CODES/check_session.php')
         .then(response => response.json())
         .then(data => {
-            const authButtons = document.querySelector('.auth-buttons');
-            const userProfile = document.querySelector('.user-profile');
-
-            if (data.loggedIn) {
-                // User is logged in
-                authButtons.classList.add('hidden');
-                userProfile.classList.remove('hidden');
-                
-                // Update profile picture if available
-                if (data.profilePic) {
-                    document.querySelector('.profile-pic').src = data.profilePic;
-                }
-            } else {
-                // User is not logged in
-                authButtons.classList.remove('hidden');
-                userProfile.classList.add('hidden');
-            }
+            updateNavigation(data.loggedIn, data.profilePic);
         })
         .catch(error => console.error('Error:', error));
+}
+
+function updateNavigation(isLoggedIn, profilePic) {
+    const authButtons = document.querySelector('.auth-buttons');
+    const userProfile = document.querySelector('.user-profile');
+    
+    if (isLoggedIn) {
+        if (authButtons) authButtons.classList.add('hidden');
+        if (userProfile) {
+            userProfile.classList.remove('hidden');
+            const profileImage = userProfile.querySelector('.profile-pic');
+            if (profileImage) {
+                profileImage.src = profilePic || '../Pictures/default-profile.png';
+            }
+        }
+    } else {
+        if (authButtons) authButtons.classList.remove('hidden');
+        if (userProfile) userProfile.classList.add('hidden');
+    }
 }
 
 function logout() {
@@ -38,9 +44,7 @@ function logout() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                window.location.reload();
-            } else {
-                alert('Logout failed. Please try again.');
+                window.location.href = 'Home_page.html';
             }
         })
         .catch(error => console.error('Error:', error));
