@@ -64,9 +64,9 @@ function showSection(sectionId) {
     });
     
     // Find and activate the clicked sidebar item
-    const sidebarItem = document.querySelector(`a[href="#${sectionId}"]`).parentElement;
+    const sidebarItem = document.querySelector(`a[href="#${sectionId}"]`);
     if (sidebarItem) {
-        sidebarItem.classList.add('active');
+        sidebarItem.parentElement.classList.add('active');
     }
 }
 
