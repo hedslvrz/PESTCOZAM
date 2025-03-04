@@ -1,4 +1,7 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 header("Content-Type: application/json");
 include_once "../database.php";
 include_once "User.php";
@@ -45,7 +48,7 @@ if (empty($user->password)) {
 }
 
 // Hash the password
-$this->password = password_hash($this->password, PASSWORD_DEFAULT);
+$user->password = password_hash($user->password, PASSWORD_DEFAULT);
 
 // Check if email already exists
 if ($user->emailExists()) {
