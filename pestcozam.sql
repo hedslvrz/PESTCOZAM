@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Mar 01, 2025 at 01:58 PM
+-- Generation Time: Mar 04, 2025 at 07:34 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -63,22 +63,23 @@ CREATE TABLE `appointment_technicians` (
 CREATE TABLE `services` (
   `id` int(11) NOT NULL,
   `service_name` varchar(100) NOT NULL,
-  `estimated_time` int(11) NOT NULL
+  `estimated_time` int(11) NOT NULL,
+  `description` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `services`
 --
 
-INSERT INTO `services` (`id`, `service_name`, `estimated_time`) VALUES
-(9, 'Soil Poisoning', 60),
-(10, 'Mound Demolition', 90),
-(11, 'Termite Control', 120),
-(12, 'General Pest Control', 75),
-(13, 'Mosquito Control', 45),
-(14, 'Rat Control', 60),
-(15, 'Rodent Control', 80),
-(16, 'Emergency Pest Control', 30);
+INSERT INTO `services` (`id`, `service_name`, `estimated_time`, `description`) VALUES
+(9, 'Soil Poisoning', 60, NULL),
+(10, 'Mound Demolition', 90, NULL),
+(11, 'Termite Control', 120, NULL),
+(12, 'General Pest Control', 75, NULL),
+(13, 'Mosquito Control', 45, NULL),
+(14, 'Rat Control', 60, NULL),
+(15, 'Rodent Control', 80, NULL),
+(16, 'Emergency Pest Control', 30, NULL);
 
 -- --------------------------------------------------------
 
@@ -129,7 +130,8 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `firstname`, `lastname`, `email`, `mobile_number`, `password`, `created_at`, `role`, `status`) VALUES
-(1, 'Hedrian Dunn', 'Alvarez', 'dunnlvrz13@gmail.com', '09759500123', '$2y$10$jn8m3Y/NnSIVBQmWSZdNtuAjpc2lIjj4oJPwqO2e4crXxoQkraRw2', '2025-03-01 07:13:17', 'admin', 'verified');
+(1, 'Hedrian Dunn', 'Alvarez', 'dunnlvrz13@gmail.com', '09759500123', '$2y$10$jn8m3Y/NnSIVBQmWSZdNtuAjpc2lIjj4oJPwqO2e4crXxoQkraRw2', '2025-03-01 07:13:17', 'admin', 'verified'),
+(2, 'Hedrian', 'Alvarez', 'hedrianlvrz13@gmail.com', '09925028930', '$2y$10$llagzPkGmqSRnmdaqysXA.Wma1Ra3r7E0OkE86NGCmG0yJ.7krvXS', '2025-03-04 14:59:55', 'user', 'verified');
 
 --
 -- Indexes for dumped tables
@@ -215,7 +217,7 @@ ALTER TABLE `time_slots`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- Constraints for dumped tables

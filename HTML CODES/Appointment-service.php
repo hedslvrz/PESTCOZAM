@@ -71,9 +71,23 @@ $services = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <select id="service" name="service">
                   <option>Select Type of Service</option>
                   <?php foreach ($services as $service): ?>
-                      <option><?= htmlspecialchars($service['service_name']) ?></option>
+                      <option required><?= htmlspecialchars($service['service_name']) ?></option>
                   <?php endforeach; ?>
             </select>
+
+            <div class="appointment-for">
+                <p>Who is this appointment for?</p>
+                <div class="radio-group">
+                    <label>
+                        <input type="radio" name="appointmentFor" value="self" checked>
+                        For me
+                    </label>
+                    <label>
+                        <input type="radio" name="appointmentFor" value="other">
+                        For someone else
+                    </label>
+                </div>
+            </div>
             
             <div class="reminder">  
                 <p>Friendly Reminder:</p>
