@@ -96,7 +96,7 @@ $services = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <li>The total cost of the service will be determined after the ocular inspection. Our experts will assess the severity of the pest issue and recommend the best treatment plan. Pricing may vary depending on the size of the area (square meters) and the type of treatment required. A detailed quotation will be provided after the inspection.</li>
                 </ol>
             </div>
-            <button onclick="window.location.href='Appointment-loc.html'">Next</button>
+            <button onclick="window.location.href='Appointment-loc.php'">Next</button>
         </div>
     </main>
 
