@@ -1,0 +1,372 @@
+/* RESET & GLOBAL */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+  }
+  
+  /* HEADER */
+  .top-header {
+    background-color: #0C3B6F;
+    color: white;
+    padding: 20px 0;
+    font-size: 14px;
+    width: 100%;
+  }
+  
+  .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 40px;
+  }
+  
+  .location {
+    font-size: 15px;
+  }
+  
+  .location span strong {
+    margin: 0 7px;
+  }
+  
+  .contact-info {
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+  }
+  
+  .icon {
+    width: 18px;  
+    height: 18px;
+    margin-right: 5px;
+    /* Adjust the filter if you want a different icon color */
+    filter: invert(30%) sepia(91%) saturate(1562%) hue-rotate(205deg) brightness(99%) contrast(92%);
+  }
+  
+  .divider {
+    width: 1px;
+    height: 15px;
+    background-color: white;
+    margin: 0 10px;
+  }
+  
+  /* MAIN CONTAINER */
+  .main-container {
+    max-width: 1400px;
+    margin: 30px auto;
+    padding: 0 40px;
+    min-height: calc(100vh - 120px);
+    display: flex;
+    gap: 40px;
+  }
+  
+  /* LEFT COLUMN & RIGHT COLUMN */
+  .left-column {
+    flex: 3; /* Wider column */
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+  }
+  
+  .right-column {
+    flex: 1; /* Narrower column */
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    min-width: 350px;
+  }
+  
+  /* SHARED CARD STYLES */
+  .profile-section,
+  .history-section,
+  .appointment-card,
+  .quotation-card {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    padding: 30px;
+  }
+  
+  /* PROFILE SECTION */
+  .profile-card {
+    padding: 25px;
+    margin-bottom: 35px;
+    border-bottom: 1px solid #eee;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  
+  .avatar {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+  }
+  
+  .user-info {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .user-info h3 {
+    font-size: 1.6rem;
+    margin-bottom: 8px;
+    color: #2c3e50;
+  }
+  
+  .user-info p {
+    color: #666;
+    font-size: 1.1rem;
+  }
+  
+  .edit-btn {
+    margin-left: auto;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.9rem;
+  }
+  
+  .edit-btn i {
+    margin-right: 5px;
+  }
+  
+  /* PERSONAL DETAILS */
+  .personal-details h3 {
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+  }
+  
+  .details-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 25px;
+    padding: 25px;
+    background: #f8f9fa;
+    border-radius: 8px;
+  }
+  
+  .details-grid p {
+    padding: 10px;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  
+  .details-grid strong {
+    margin-bottom: 8px;
+    color: #444;
+    font-size: 0.95rem;
+  }
+  
+  /* HISTORY SECTION */
+  .history-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    margin-top: 20px;
+  }
+  
+  .history-section h3 {
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+  
+  thead {
+    background-color: #003366;
+    color: #fff;
+  }
+  
+  thead tr {
+    height: 60px;
+  }
+  
+  th, td {
+    padding: 15px 20px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  th {
+    font-size: 1.1rem;
+  }
+  
+  td {
+    font-size: 1rem;
+    vertical-align: middle;
+    height: 60px;
+    padding: 15px 20px;
+  }
+  
+  tbody tr {
+    height: 60px;
+    transition: background-color 0.2s;
+  }
+  
+  tbody tr:hover {
+    background-color: #f8f9fa;
+  }
+  
+  /* APPOINTMENT & QUOTATION CARDS */
+  .appointment-card {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+  
+  .appointment-card h3,
+  .quotation-card h3 {
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+    margin-left: 10vh;
+    margin-right: 10vh;
+  }
+  
+  .appointment-details,
+  .quotation-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Center content vertically */
+    gap: 20px; /* Consistent spacing between items */
+    padding: 25px;
+    background: transparent;
+  }
+  
+  .appointment-details p,
+  .quotation-details p {
+    padding: 15px;
+    margin: 5px 0;
+    border-radius: 6px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    align-items: center; /* Align status with text */
+    transition: background-color 0.2s;
+    min-height: 50px;
+    justify-content: space-between;  /* Space between label and status */
+  }
+  
+  .appointment-details p:hover,
+  .quotation-details p:hover {
+    background-color: #f8f9fa;
+  }
+  
+  .appointment-details p:last-child {
+    border-bottom: none; /* Remove border from last item */
+  }
+  
+  .appointment-details strong,
+  .quotation-details strong {
+    min-width: 140px;
+    display: inline-block;
+    color: #444;
+    margin-right: auto;  /* Push status to the right */
+  }
+  
+  /* Remove all previous .status related styles */
+  
+  /* Unified Status Badge Styles */
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    min-width: 100px;
+    height: 32px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  
+  /* Status Colors */
+  .status-badge.pending {
+    background-color: #FFF4E5;
+    color: #FF9800;
+    border: 1px solid #FFE0B2;
+  }
+  
+  .status-badge.paid {
+    background-color: #E8F5E9;
+    color: #2E7D32;
+    border: 1px solid #C8E6C9;
+  }
+  
+  .status-badge.unpaid {
+    background-color: #FFEBEE;
+    color: #C62828;
+    border: 1px solid #FFCDD2;
+  }
+  
+  .status-badge.completed {
+    background-color: #E3F2FD;
+    color: #1976D2;
+    border: 1px solid #BBDEFB;
+  }
+  
+  /* Status Badge Containers */
+  td:has(.status-badge) {
+    text-align: center;
+    vertical-align: middle;
+  }
+  
+  .appointment-details p:has(.status-badge) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+  }
+
+  /* Appointment Status Layout */
+  .appointment-details p:has(.status-badge) {
+    display: flex;
+    align-items: center;
+  }
+
+  .appointment-details p:has(.status-badge) strong {
+    margin-right: 10px;
+  }
+
+  .appointment-details .status-badge {
+    margin-left: 0;
+    position: relative;
+    left: -50px; /* Move badge closer to "Status:" label */
+  }
+  
+  /* RESPONSIVE BREAKPOINTS */
+  @media (max-width: 992px) {
+    .main-container {
+      flex-direction: column;
+      padding: 0 20px;
+    }
+    
+    .left-column,
+    .right-column {
+      width: 100%;
+    }
+    
+    .right-column {
+      min-width: 100%;
+    }
+  }
