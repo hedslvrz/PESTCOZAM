@@ -14,7 +14,7 @@
   .top-header {
     background-color: #0C3B6F;
     color: white;
-    padding: 20px 0;
+    padding: 10px 0;
     font-size: 14px;
     width: 100%;
   }
@@ -60,11 +60,11 @@
   /* MAIN CONTAINER */
   .main-container {
     max-width: 1400px;
-    margin: 30px auto;
-    padding: 0 40px;
-    min-height: calc(100vh - 120px);
+    margin: 5px auto;
+    padding: 0 15px;
+    height: calc(100vh - 110px);
     display: flex;
-    gap: 40px;
+    gap: 15px;
   }
   
   /* LEFT COLUMN & RIGHT COLUMN */
@@ -72,15 +72,21 @@
     flex: 3; /* Wider column */
     display: flex;
     flex-direction: column;
-    gap: 30px;
+    gap: 15px;
+    overflow: visible;
+    height: auto;
+    padding-right: 10px;
   }
   
   .right-column {
     flex: 1; /* Narrower column */
     display: flex;
     flex-direction: column;
-    gap: 30px;
+    gap: 15px;
     min-width: 350px;
+    overflow: visible;
+    height: auto;
+    padding-right: 10px;
   }
   
   /* SHARED CARD STYLES */
@@ -91,23 +97,24 @@
     background: #fff;
     border-radius: 10px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    padding: 30px;
+    padding: 12px;
+    margin-bottom: 10px;
   }
   
   /* PROFILE SECTION */
   .profile-card {
-    padding: 25px;
-    margin-bottom: 35px;
+    padding: 10px;
+    margin-bottom: 10px;
     border-bottom: 1px solid #eee;
     background: transparent;
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 15px;
   }
   
   .avatar {
-    width: 90px;
-    height: 90px;
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
   }
   
@@ -117,8 +124,8 @@
   }
   
   .user-info h3 {
-    font-size: 1.6rem;
-    margin-bottom: 8px;
+    font-size: 1.3rem;
+    margin-bottom: 4px;
     color: #2c3e50;
   }
   
@@ -152,18 +159,19 @@
   .details-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 25px;
-    padding: 25px;
+    gap: 10px;
+    padding: 10px;
     background: #f8f9fa;
     border-radius: 8px;
   }
   
   .details-grid p {
-    padding: 10px;
+    padding: 3px;
     border-radius: 6px;
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 3px;
+    font-size: 0.9rem;
   }
   
   .details-grid strong {
@@ -177,7 +185,7 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    margin-top: 20px;
+    margin-top: 10px;
   }
   
   .history-section h3 {
@@ -188,7 +196,7 @@
   table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 20px;
+    margin-top: 10px;
   }
   
   thead {
@@ -197,13 +205,14 @@
   }
   
   thead tr {
-    height: 60px;
+    height: 40px;
   }
   
   th, td {
-    padding: 15px 20px;
+    padding: 6px 10px;
     text-align: left;
     border-bottom: 1px solid #ddd;
+    font-size: 0.9rem;
   }
   
   th {
@@ -213,12 +222,12 @@
   td {
     font-size: 1rem;
     vertical-align: middle;
-    height: 60px;
-    padding: 15px 20px;
+    height: 40px;
+    padding: 6px 10px;
   }
   
   tbody tr {
-    height: 60px;
+    height: 40px;
     transition: background-color 0.2s;
   }
   
@@ -237,9 +246,7 @@
   .appointment-card h3,
   .quotation-card h3 {
     font-size: 1.2rem;
-    margin-bottom: 15px;
-    margin-left: 10vh;
-    margin-right: 10vh;
+    margin: 0 5vh 8px 5vh;
   }
   
   .appointment-details,
@@ -248,21 +255,21 @@
     display: flex;
     flex-direction: column;
     justify-content: center; /* Center content vertically */
-    gap: 20px; /* Consistent spacing between items */
-    padding: 25px;
+    gap: 8px; /* Consistent spacing between items */
+    padding: 10px;
     background: transparent;
   }
   
   .appointment-details p,
   .quotation-details p {
-    padding: 15px;
-    margin: 5px 0;
+    padding: 6px;
+    margin: 3px 0;
     border-radius: 6px;
     border-bottom: 1px solid #eee;
     display: flex;
     align-items: center; /* Align status with text */
     transition: background-color 0.2s;
-    min-height: 50px;
+    min-height: 32px;
     justify-content: space-between;  /* Space between label and status */
   }
   
@@ -290,12 +297,12 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 8px 16px;
+    padding: 4px 12px;
     border-radius: 20px;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     font-weight: 600;
-    min-width: 100px;
-    height: 32px;
+    min-width: 80px;
+    height: 24px;
     margin: 0 auto;
     text-align: center;
   }
@@ -352,6 +359,46 @@
     margin-left: 0;
     position: relative;
     left: -50px; /* Move badge closer to "Status:" label */
+  }
+  
+  /* BACK BUTTON */
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 16px;
+    background-color: #0C3B6F;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    margin: 10px 0 0 15px;
+    transition: background-color 0.3s;
+  }
+  
+  .back-btn:hover {
+    background-color: #0a2e56;
+  }
+  
+  .back-btn i {
+    margin-right: 8px;
+  }
+  
+  /* Scrollbar styling */
+  .left-column::-webkit-scrollbar,
+  .right-column::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .left-column::-webkit-scrollbar-thumb,
+  .right-column::-webkit-scrollbar-thumb {
+    background-color: #0C3B6F;
+    border-radius: 4px;
+  }
+  
+  .left-column::-webkit-scrollbar-track,
+  .right-column::-webkit-scrollbar-track {
+    background-color: #f0f0f0;
+    border-radius: 4px;
   }
   
   /* RESPONSIVE BREAKPOINTS */
