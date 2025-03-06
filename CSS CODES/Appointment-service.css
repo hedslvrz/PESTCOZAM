@@ -187,7 +187,7 @@ main {
 
 /* SERVICE CARD */
 .offer-card {
-    background: #ff0101;
+    background: #fff;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     overflow: hidden;
@@ -256,7 +256,7 @@ main {
 
 /* BOOK NOW BUTTON */
 .book-now-btn {
-    background-color: #33ff00;
+    background-color: #144578;
     color: #fff;
     border: none;
     padding: 10px 16px;
@@ -275,7 +275,7 @@ main {
 
 /* Highlighted button when selected */
 .selected-btn {
-    background-color: #28a745 !important; /* A green highlight */
+    background-color: #357efb !important; /* A green highlight */
     color: #fff !important;
 }
 
