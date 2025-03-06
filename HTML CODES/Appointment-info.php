@@ -58,8 +58,8 @@
             </div>
             
             <div class="navigation-buttons">
-                <button onclick="window.location.href='Appointment-loc.html'">Back</button>
-                <button onclick="window.location.href='Appointment-otp.html'">Next</button>
+                <button onclick="window.location.href='Appointment-loc.php'">Back</button>
+                <button onclick="window.location.href='Appointment-otp.html`'">Next</button>
             </div>
         </div>
     </main>

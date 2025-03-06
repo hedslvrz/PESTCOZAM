@@ -67,8 +67,8 @@
             </div>
             
             <div class="navigation-buttons">
-                <button onclick="window.location.href='Appointment-service.html'">Back</button>
-                <button onclick="window.location.href='Appointment-info.html'">Next</button>
+                <button onclick="window.location.href='Appointment-service.php'">Back</button>
+                <button onclick="window.location.href='Appointment-info.php'">Next</button>
             </div>
         </div>
     </main>

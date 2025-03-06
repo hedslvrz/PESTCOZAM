@@ -114,7 +114,7 @@
       <!-- Navigation Buttons -->
       <div class="calendar-nav">
         <button class="back-btn" onclick="window.location.href='Appointment-otp.html'">Back</button>
-        <button class="next-btn" onclick="window.location.href='Appointment-successful.html'">Next</button>
+        <button class="next-btn" onclick="window.location.href='Appointment-successful.php'">Next</button>
       </div>
     </div>
   </main>

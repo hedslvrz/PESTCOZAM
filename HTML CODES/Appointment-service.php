@@ -12,8 +12,8 @@ if (!isset($_SESSION['user_id'])) {
 $database = new Database();
 $db = $database->getConnection();
 
-// Fetch services
-$query = "SELECT service_name FROM services";
+// Modify the query to fetch all service details
+$query = "SELECT service_id, service_name, description, estimated_time, starting_price, image_path FROM services";
 $stmt = $db->prepare($query);
 $stmt->execute();
 $services = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -31,49 +31,67 @@ $services = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <body>
     
     <!-- HEADER -->
-  <header class="top-header">
-    <div class="container">
-        <div class="location">
-            <span>• <strong>Zamboanga</strong> • <strong>Pagadian</strong> • <strong>Pasay</strong> • <strong>Davao</strong></span>
+    <header class="top-header">
+        <div class="container">
+            <div class="location">
+                <span>• <strong>Zamboanga</strong> • <strong>Pagadian</strong> • <strong>Pasay</strong> • <strong>Davao</strong></span>
+            </div>
+            <div class="contact-info">
+                <img src="../Pictures/phone.png" alt="Phone Icon" class="icon">
+                <span>0905 - 177 - 5662</span>
+                <span class="divider"></span>
+                <img src="../Pictures/email.png" alt="Email Icon" class="icon">
+                <span>pestcozam@yahoo.com</span>
+            </div>
         </div>
-        <div class="contact-info">
-            <img src="../Pictures/phone.png" alt="Phone Icon" class="icon">
-            <span>0905 - 177 - 5662</span>
-            <span class="divider"></span>
-            <img src="../Pictures/email.png" alt="Email Icon" class="icon">
-            <span>pestcozam@yahoo.com</span>
-        </div>
-    </div>
-  </header>
+    </header>
 
-  <!-- NAVBAR -->
-  <header class="navbar">
-    <div class="logo-container">
-      <img src="../Pictures/pest_logo.png" alt="Flower Logo" class="flower-logo">
-      <span class="brand-name" style="font-size: 2rem;">PESTCOZAM</span>
-    </div>
-    <nav>
-    <ul>
-          <li><a href="../HTML CODES/Home_page.html">Home</a></li>
-          <li><a href="../HTML CODES/About_us.html">About Us</a></li>
-          <li><a href="../HTML CODES/Services.html" class="services">Services</a></li>
-          <li><a href="../HTML CODES/Appointment-service.php" class="btn-appointment">Appointment</a></li>
-          <li><a href="../HTML CODES/Login.php" class="btn-login"><i class='bx bx-log-in' ></i> Login</a></li>
-          <li><a href="../HTML CODES/Signup.php" class="btn-signup"><i class='bx bx-user-plus' ></i> Sign Up</a></li>
-        </ul>
-    </nav>
-  </header>
+    <!-- NAVBAR -->
+    <header class="navbar">
+        <div class="logo-container">
+            <img src="../Pictures/pest_logo.png" alt="Flower Logo" class="flower-logo">
+            <span class="brand-name" style="font-size: 2rem;">PESTCOZAM</span>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="../HTML CODES/Home_page.html">Home</a></li>
+                <li><a href="../HTML CODES/About_us.html">About Us</a></li>
+                <li><a href="../HTML CODES/Services.html" class="services">Services</a></li>
+                <li><a href="../HTML CODES/Appointment-service.php" class="btn-appointment">Appointment</a></li>
+                <li><a href="../HTML CODES/Login.php" class="btn-login"><i class='bx bx-log-in'></i> Login</a></li>
+                <li><a href="../HTML CODES/Signup.php" class="btn-signup"><i class='bx bx-user-plus'></i> Sign Up</a></li>
+            </ul>
+        </nav>
+    </header>
 
     <!-- Appointment Selection Section -->
     <main>
         <div class="form-container">
-            <h2 class="Appointment-lbl">Book an Appointment</h2>
-            <select id="service" name="service">
-                  <option>Select Type of Service</option>
-                  <?php foreach ($services as $service): ?>
-                      <option required><?= htmlspecialchars($service['service_name']) ?></option>
-                  <?php endforeach; ?>
-            </select>
+            <h2 class="Appointment-lbl">Select a Service</h2>
+            
+            <div class="offer-grid">
+                <?php foreach ($services as $service): ?>
+                <div class="offer-card">
+                    <img src="../Pictures/<?= htmlspecialchars($service['image_path']) ?>" 
+                         alt="<?= htmlspecialchars($service['service_name']) ?>" />
+                    <div class="offer-text">
+                        <h3><?= htmlspecialchars($service['service_name']) ?></h3>
+                        <p><?= htmlspecialchars($service['description']) ?></p>
+                        <div class="service-details">
+                            <p><i class='bx bx-time'></i> Est. Time: <?= htmlspecialchars($service['estimated_time']) ?></p>
+                            <p><i class='bx bx-money'></i> Starting at ₱<?= number_format($service['starting_price']) ?></p>
+                        </div>
+                        <!-- Assign a unique ID to each button so we can highlight the selected one -->
+                        <button 
+                            class="book-now-btn" 
+                            id="book-btn-<?= $service['service_id'] ?>" 
+                            onclick="selectService(<?= $service['service_id'] ?>)">
+                            Book Now
+                        </button>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            </div>
 
             <div class="appointment-for">
                 <p>Who is this appointment for?</p>
@@ -96,32 +114,62 @@ $services = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <li>The total cost of the service will be determined after the ocular inspection. Our experts will assess the severity of the pest issue and recommend the best treatment plan. Pricing may vary depending on the size of the area (square meters) and the type of treatment required. A detailed quotation will be provided after the inspection.</li>
                 </ol>
             </div>
-            <button onclick="window.location.href='Appointment-loc.php'">Next</button>
+            
+            <div class="button-container">
+                <a href="../HTML CODES/Home_page.html" class="back-btn">Back to Home</a>
+                <form id="serviceForm" action="Appointment-loc.php" method="POST">
+                    <input type="hidden" id="selectedService" name="selectedService" value="">
+                    <button type="submit" disabled id="nextButton">Next</button>
+                </form>
+            </div>
         </div>
     </main>
 
-      <!-- FOOTER SECTION -->
-      <footer class="footer-section">
+    <!-- FOOTER SECTION -->
+    <footer class="footer-section">
         <div class="footer-container">
-          <div class="footer-left">
-            <div class="footer-brand">
-              <img src="../Pictures/pest_logo.png" alt="Flower icon" class="flower-icon" />
-              <h3 class="brand-name">PESTCOZAM</h3>
+            <div class="footer-left">
+                <div class="footer-brand">
+                    <img src="../Pictures/pest_logo.png" alt="Flower icon" class="flower-icon" />
+                    <h3 class="brand-name">PESTCOZAM</h3>
+                </div>
+                <p class="footer-copyright">
+                    © 2025 Pestcozam. All rights reserved. 
+                    Designed by FHASK Solutions
+                </p>
             </div>
-            <p class="footer-copyright">
-              © 2025 Pestcozam. All rights reserved. 
-              Designed by FHASK Solutions
-            </p>
-          </div>
-          <div class="footer-right">
-            <p class="follow-us-text">Follow us</p>
-            <div class="social-icons">
-              <a href="#"><img src="../Pictures/facebook.png" alt="Facebook" /></a>
-              <a href="#"><img src="../Pictures/telegram.png" alt="Telegram" /></a>
-              <a href="#"><img src="../Pictures/instagram.png" alt="Instagram" /></a>
+            <div class="footer-right">
+                <p class="follow-us-text">Follow us</p>
+                <div class="social-icons">
+                    <a href="#"><img src="../Pictures/facebook.png" alt="Facebook" /></a>
+                    <a href="#"><img src="../Pictures/telegram.png" alt="Telegram" /></a>
+                    <a href="#"><img src="../Pictures/instagram.png" alt="Instagram" /></a>
+                </div>
             </div>
-          </div>
         </div>
-      </footer>
+    </footer>
+
+    <script>
+    // Track the previously selected button so we can remove the highlight
+    let previousSelectedButton = null;
+
+    function selectService(serviceId) {
+        // Enable "Next" button
+        document.getElementById('selectedService').value = serviceId;
+        document.getElementById('nextButton').disabled = false;
+        
+        // Remove highlight from any previously selected button
+        if (previousSelectedButton) {
+            previousSelectedButton.classList.remove('selected-btn');
+        }
+
+        // Highlight the newly selected button
+        const clickedButton = document.getElementById('book-btn-' + serviceId);
+        clickedButton.classList.add('selected-btn');
+
+        // Update the reference
+        previousSelectedButton = clickedButton;
+    }
+    </script>
 </body>
 </html>

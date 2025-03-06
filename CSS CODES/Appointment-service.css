@@ -3,13 +3,13 @@
     src: url(../Fonts/Shrikhand-Regular.ttf);
 }
 
-
 body {
     margin: 0;
     padding: 0;
     font-family: 'Roboto', sans-serif;
 }
 
+/* TOP HEADER */
 .top-header {
     background-color: #0C3B6F;
     color: white;
@@ -58,7 +58,6 @@ body {
     margin: 0 10px;
 }
 
-
 /* NAVBAR */
 .navbar {
     display: flex;
@@ -82,7 +81,7 @@ body {
     margin-right: 10px;
 }
 
-.brand-name{
+.brand-name {
     font-size: 65px;
     font-weight: bold;
     color: white;
@@ -104,12 +103,6 @@ nav ul {
     margin: 0;
 }
 
-.nav-items {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-}
-
 nav ul li {
     margin: 0 5px;
 }
@@ -129,7 +122,7 @@ nav ul li a:hover {
     background-color: #1E3A8A;
 }
 
-.btn-appointment{
+.btn-appointment {
     margin-right: 3vh;
     color: black;
     padding: 8px 16px;
@@ -158,47 +151,153 @@ nav ul li a:hover {
     background-color: #1E3A8A;
 }
 
-
-
-/* Appointment Selection Section */
+/* MAIN SECTION */
 main {
-    min-height: calc(100vh - 300px);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 50px 0;
+    min-height: 100vh;
+    padding: 40px;
     background-color: #f5f5f5;
 }
 
+/* FORM-CONTAINER: removed background & shadow */
 .form-container {
-    background: white;
-    padding: 40px;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 600px;
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 0 60px 0; 
+    background: transparent;
+    position: relative;
+}
+
+.Appointment-lbl {
+    font-size: 32px;
+    color: #144578;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+/* SERVICE CARDS GRID */
+.offer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    padding: 10px;
+    max-width: 1200px;
     margin: 0 auto;
 }
 
-.Appointment.lbl{
-    align-items: start;
-}
-
-select {
+/* SERVICE CARD */
+.offer-card {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    overflow: hidden;
     width: 100%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    margin-bottom: 20px;
+    max-width: 350px;
+    margin: 0 auto;
+    transition: transform 0.2s;
 }
 
+.offer-card:hover {
+    transform: translateY(-5px);
+}
+
+.offer-card img {
+    width: 100%;
+    height: 200px; /* Fixed height */
+    object-fit: cover;
+    margin-bottom: 15px;
+}
+
+.offer-text {
+    padding: 1rem;
+    text-align: center; /* Ensure everything is centered */
+}
+
+.offer-text h3 {
+    margin: 0;
+    font-size: 20px;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.offer-text p {
+    margin: 10px 0;
+    font-size: 14px;
+    color: #666;
+    min-height: 60px; /* Helps keep consistent height */
+}
+
+/* SERVICE DETAILS: bigger font, more padding for a taller container */
+.service-details {
+    display: inline-block; 
+    width: auto;
+    margin: 5px;      /* extra vertical space */
+    padding: 12px 22px;     /* more padding for a taller container */
+    text-align: left;
+    font-size: 1rem;        /* larger font */
+    line-height: 1.4;       /* comfortable line spacing */
+    background: rgba(20, 69, 120, 0.05);
+    border: 1px solid rgba(20, 69, 120, 0.1);
+    border-radius: 4px;
+}
+
+.service-details p {
+    margin: 0.4rem 0;
+    font-size: 1rem;        /* match container font size */
+    color: #144578;
+    font-weight: 500;
+    line-height: 1.4;       /* ensure consistent line spacing */
+}
+
+.service-details i {
+    margin-right: 5px;
+    color: #144578;
+}
+
+/* BOOK NOW BUTTON */
+.book-now-btn {
+    background-color: #144578;
+    color: #fff;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    font-size: 16px;
+    display: block; 
+    margin: 0 auto; /* Center horizontally */
+    margin-top: 2vh;
+}
+
+.book-now-btn:hover {
+    background-color: #2c75c0;
+}
+
+/* Highlighted button when selected */
+.selected-btn {
+    background-color: #28a745 !important; /* A green highlight */
+    color: #fff !important;
+}
+
+/* APPOINTMENT-FOR SECTION */
+/* Make it match the reminder container (centered, same width) */
 .appointment-for {
-    margin: 20px 0;
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px 25px;
+    margin: 15px auto;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    max-width: 800px;
+    border: 1px solid rgba(20, 69, 120, 0.1);
+    width: auto;
+    font-size: 14px;
+    text-align: justify;
 }
 
 .appointment-for p {
-    margin-bottom: 10px;
-    font-weight: bold;
+    color: #144578;
+    font-size: 1.1em;
+    margin-bottom: 15px;
 }
 
 .radio-group {
@@ -217,37 +316,86 @@ select {
     cursor: pointer;
 }
 
+/* REMINDER SECTION */
 .reminder {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px 25px;
+    margin: 15px auto;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    max-width: 800px;
+    border: 1px solid rgba(20, 69, 120, 0.1);
+    width: auto;
     font-size: 14px;
-    margin-top: 20px;
     text-align: justify;
-    width: 580px;
 }
 
 .reminder p {
-    font-weight: bold;
+    color: #144578;
+    font-size: 1.1em;
+    margin-bottom: 10px;
 }
 
 .reminder ol {
-    padding-left: 20px;
+    padding-left: 1.5rem;
+    margin: 0;
+    line-height: 1.5;
 }
 
-button {
-    margin-top: 20px;
+.reminder li {
+    margin: 0.5rem 0;
+}
+
+/* BUTTON CONTAINER */
+.button-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin: 30px auto;
+    max-width: 400px;
+}
+
+.back-btn {
+    background: #6c757d;
+    color: white;
+    border: none;
     padding: 12px 30px;
-    border: 1px solid #000;
-    background: white;
-    cursor: pointer;
-    border-radius: 5px;
+    border-radius: 6px;
     font-size: 16px;
-    float: right;
+    transition: background-color 0.3s;
+    cursor: pointer;
+    text-decoration: none;
+    min-width: 120px;
+    font-weight: 500;
+    text-align: center;
 }
 
-button:hover {
-    background: #e0e0e0;
+.back-btn:hover {
+    background: #5a6268;
 }
 
+/* NEXT BUTTON */
+#nextButton {
+    background: #144578;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 6px;
+    font-size: 16px;
+    margin-top: 0;
+    transition: background-color 0.3s;
+    cursor: pointer;
+}
 
+#nextButton:disabled {
+    background: #cccccc;
+    cursor: not-allowed;
+}
+
+#nextButton:not(:disabled):hover {
+    background: #0f345d;
+}
 
 /* FOOTER */
 .footer-section {
@@ -261,13 +409,11 @@ button:hover {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 20px;
-  
     display: flex;
     align-items: center;
     justify-content: space-between;
 }
   
-
 .footer-left {
     display: flex;
     flex-direction: column;
@@ -292,29 +438,29 @@ button:hover {
     font-weight: bold;
 }
   
-.footer-copyright {
-    font-size: 14px;
-    margin: 0;
-}
-  
 .footer-right {
     display: flex;
     align-items: center;
     gap: 15px;
 }
-  
+
 .follow-us-text {
     margin: 0;
     font-size: 16px;
 }
-  
+
 .social-icons {
     display: flex;
     gap: 10px;
 }
-  
+
 .social-icons img {
     width: 32px;
     height: 32px;
     object-fit: contain;
+}
+
+.footer-container p {
+    margin: 0;
+    font-size: 14px;
 }

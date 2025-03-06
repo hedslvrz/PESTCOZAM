@@ -39,9 +39,13 @@ CREATE TABLE `appointments` (
   `date` date NOT NULL,
   `time` time NOT NULL,
   `status` enum('Pending','Confirmed','Completed','Canceled') DEFAULT 'Pending',
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `is_for_self` tinyint(1) NOT NULL DEFAULT 1,
+  `firstname` varchar(50) DEFAULT NULL,
+  `lastname` varchar(50) DEFAULT NULL,
+  `email` varchar(255) DEFAULT NULL,
+  `mobile_number` varchar(20) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
 -- --------------------------------------------------------
 
 --
@@ -57,29 +61,29 @@ CREATE TABLE `appointment_technicians` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `services`
---
+-- Drop existing services table if it exists
+DROP TABLE IF EXISTS services;
 
+-- Create new services table
 CREATE TABLE `services` (
-  `id` int(11) NOT NULL,
+  `service_id` int(11) PRIMARY KEY AUTO_INCREMENT,
   `service_name` varchar(100) NOT NULL,
-  `estimated_time` int(11) NOT NULL,
-  `description` text DEFAULT NULL
+  `description` TEXT NOT NULL,
+  `estimated_time` varchar(50) NOT NULL,
+  `starting_price` DECIMAL(10,2) NOT NULL,
+  `image_path` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `services`
---
-
-INSERT INTO `services` (`id`, `service_name`, `estimated_time`, `description`) VALUES
-(9, 'Soil Poisoning', 60, NULL),
-(10, 'Mound Demolition', 90, NULL),
-(11, 'Termite Control', 120, NULL),
-(12, 'General Pest Control', 75, NULL),
-(13, 'Mosquito Control', 45, NULL),
-(14, 'Rat Control', 60, NULL),
-(15, 'Rodent Control', 80, NULL),
-(16, 'Emergency Pest Control', 30, NULL);
+-- Insert the new service data
+INSERT INTO services (service_name, description, estimated_time, starting_price, image_path) VALUES
+('Soil Poisoning', 'Accumsan iaculis dictumst montes eros nec tristique accumsan. Accumsan iaculis dictumst montes eros.', '2-4 hours', 3000.00, 'card 1 offer.jpg'),
+('Mound Demolition', 'Accumsan iaculis dictumst montes eros nec tristique accumsan. Accumsan iaculis dictumst montes eros.', '3-5 hours', 4500.00, 'mound-demolition.jpg'),
+('Termite Control', 'Accumsan iaculis dictumst montes eros nec tristique accumsan. Accumsan iaculis dictumst montes eros.', '2-3 hours', 2500.00, 'termite control.jpg'),
+('General Pest Control', 'Accumsan iaculis dictumst montes eros nec tristique accumsan. Accumsan iaculis dictumst montes eros.', '1-3 hours', 2000.00, 'general pest control.jpg'),
+('Mosquito Control', 'Accumsan iaculis dictumst montes eros nec tristique accumsan. Accumsan iaculis dictumst montes eros.', '1-2 hours', 1500.00, 'Mosquito control.jpg'),
+('Rat Control', 'Accumsan iaculis dictumst montes eros nec tristique accumsan. Accumsan iaculis dictumst montes eros.', '2-3 hours', 2000.00, 'rat control.jpg'),
+('Other Flying and Crawling Insects', 'Accumsan iaculis dictumst montes eros nec tristique accumsan. Accumsan iaculis dictumst montes eros.', '1-3 hours', 1800.00, 'Other-flying-insects.jpg'),
+('Extraction', 'Accumsan iaculis dictumst montes eros nec tristique accumsan. Accumsan iaculis dictumst montes eros.', '2-4 hours', 3500.00, 'Extraction.jpg');
 
 -- --------------------------------------------------------
 
@@ -154,12 +158,6 @@ ALTER TABLE `appointment_technicians`
   ADD KEY `technician_id` (`technician_id`);
 
 --
--- Indexes for table `services`
---
-ALTER TABLE `services`
-  ADD PRIMARY KEY (`id`);
-
---
 -- Indexes for table `technicians`
 --
 ALTER TABLE `technicians`
@@ -199,7 +197,7 @@ ALTER TABLE `appointment_technicians`
 -- AUTO_INCREMENT for table `services`
 --
 ALTER TABLE `services`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `service_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT for table `technicians`
@@ -228,7 +226,7 @@ ALTER TABLE `users`
 --
 ALTER TABLE `appointments`
   ADD CONSTRAINT `appointments_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `appointments_ibfk_2` FOREIGN KEY (`service_id`) REFERENCES `services` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `appointments_ibfk_2` FOREIGN KEY (`service_id`) REFERENCES `services` (`service_id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `appointment_technicians`

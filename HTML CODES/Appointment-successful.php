@@ -53,7 +53,7 @@
         </div>
 
         <div class="thank-you-nav">
-            <button class="back-btn" onclick="window.location.href='Appointment-calendar.html'">Back</button>
+            <button class="back-btn" onclick="window.location.href='Appointment-calendar.php'">Back</button>
             <button class="next-btn" onclick="window.location.href='Home_page.html'">Next</button>
         </div>
     </main>
