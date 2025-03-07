@@ -28,24 +28,27 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `appointments` (
-  `id` int(11) NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) NOT NULL,
   `service_id` int(11) NOT NULL,
+  `is_for_self` tinyint(1) NOT NULL DEFAULT 1,
+  `firstname` varchar(100),
+  `lastname` varchar(100),
+  `email` varchar(255),
+  `mobile_number` varchar(20),
   `region` varchar(100) NOT NULL,
   `province` varchar(100) NOT NULL,
   `city` varchar(100) NOT NULL,
   `barangay` varchar(100) NOT NULL,
-  `street_address` text NOT NULL,
-  `date` date NOT NULL,
-  `time` time NOT NULL,
+  `street_address` text,
+  `appointment_date` date NOT NULL,
+  `appointment_time` time NOT NULL,
   `status` enum('Pending','Confirmed','Completed','Canceled') DEFAULT 'Pending',
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `is_for_self` tinyint(1) NOT NULL DEFAULT 1,
-  `firstname` varchar(50) DEFAULT NULL,
-  `lastname` varchar(50) DEFAULT NULL,
-  `email` varchar(255) DEFAULT NULL,
-  `mobile_number` varchar(20) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`user_id`) REFERENCES `users`(`id`),
+  FOREIGN KEY (`service_id`) REFERENCES `services`(`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 -- --------------------------------------------------------
 
 --
