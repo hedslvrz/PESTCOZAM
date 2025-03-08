@@ -158,8 +158,49 @@ nav ul li a:hover {
   background-color: #1E3A8A;
 }
 
+.user-profile {
+    position: relative;
+}
 
+.profile-dropdown {
+    display: inline-block;
+    position: relative;
+}
 
+.profile-pic {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    background-color: #fff;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+    border-radius: 8px;
+}
+
+.dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    text-align: left;
+}
+
+.dropdown-content a:hover {
+    background-color: #f1f1f1;
+    border-radius: 8px;
+}
+
+.profile-dropdown:hover .dropdown-content {
+    display: block;
+}
 
 /* CALENDAR SECTION */
 .calendar-section {
@@ -294,7 +335,31 @@ nav ul li a:hover {
   border: 1px solid #000;
   background: white;
 }
-  
+
+.next-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.select-time {
+  padding: 5px 10px;
+  background-color: #fff;
+  border: 1px solid #2563EB;
+  border-radius: 4px;
+  color: #2563EB;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.select-time:hover {
+  background-color: #2563EB;
+  color: white;
+}
+
+.select-time.selected {
+  background-color: #2563EB;
+  color: white;
+}
 
 
 
@@ -366,4 +431,3 @@ nav ul li a:hover {
   height: 32px;
   object-fit: contain;
 }
-  

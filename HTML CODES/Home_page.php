@@ -1,3 +1,16 @@
+<?php
+session_start();
+
+// Check if user is logged in
+$is_logged_in = isset($_SESSION['user_id']);
+
+// If logged in, set user variables for use in the page
+if ($is_logged_in) {
+    $user_id = $_SESSION['user_id'];
+    $profile_pic = isset($_SESSION['profile_pic']) ? $_SESSION['profile_pic'] : '../Pictures/boy.png';
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -34,24 +47,27 @@
           </div>
           <nav>
             <ul>
-              <li><a href="../HTML CODES/Home_page.html">Home</a></li>
+              <li><a href="../HTML CODES/Home_page.php">Home</a></li>
               <li><a href="#offer-section">Services</a></li>
               <li><a href="#about-us-section">About Us</a></li>
               <li><a href="../HTML CODES/Appointment-service.php" class="btn-appointment">Book Appointment</a></li>
               <!-- Replace the login/signup buttons with this new structure -->
+              <?php if ($is_logged_in): ?>
+              <li class="user-profile">
+                  <div class="profile-dropdown">
+                      <img src="<?php echo $profile_pic; ?>" alt="Profile" class="profile-pic">
+                      <div class="dropdown-content">
+                          <a href="../HTML CODES/Profile.php"><i class='bx bx-user'></i> Profile</a>
+                          <a href="../HTML CODES/logout.php"><i class='bx bx-log-out'></i> Logout</a>
+                      </div>
+                  </div>
+              </li>
+          <?php else: ?>
               <li class="auth-buttons">
                   <a href="../HTML CODES/Login.php" class="btn-login"><i class='bx bx-log-in'></i> Login</a>
                   <a href="../HTML CODES/Signup.php" class="btn-signup"><i class='bx bx-user-plus'></i> Sign Up</a>
               </li>
-              <li class="user-profile hidden">
-                  <div class="profile-dropdown">
-                      <img src="../Pictures/default-profile.png" alt="Profile" class="profile-pic">
-                      <div class="dropdown-content">
-                          <a href="../HTML CODES/Profile.html"><i class='bx bx-user'></i> Profile</a>
-                          <a href="#" id="logoutBtn"><i class='bx bx-log-out'></i> Logout</a>
-                      </div>
-                  </div>
-              </li>
+          <?php endif; ?>
             </ul>      
           </nav>
       </header>

@@ -1,3 +1,55 @@
+<?php 
+  session_start();
+  require_once "../database.php"; 
+  
+  if (!isset($_SESSION['appointment'])) {
+      header("Location: Appointment-service.php");
+      exit();
+  }
+  
+  $database = new Database();
+  $db = $database->getConnection();
+  $user_id = $_SESSION['appointment']['user_id'];
+  $service_id = $_SESSION['appointment']['service_id'];
+  
+  if ($_SERVER["REQUEST_METHOD"] == "POST") {
+      $data = json_decode(file_get_contents("php://input"), true);
+  
+      if (isset($data['region'], $data['province'], $data['city'], $data['barangay'])) {
+          $query = "UPDATE appointments SET 
+                    region = :region, province = :province, city = :city, 
+                    barangay = :barangay, street_address = :street_address 
+                    WHERE user_id = :user_id AND service_id = :service_id";
+  
+          $stmt = $db->prepare($query);
+          $result = $stmt->execute([
+              ':region' => $data['region'],
+              ':province' => $data['province'],
+              ':city' => $data['city'],
+              ':barangay' => $data['barangay'],
+              ':street_address' => $data['street_address'],
+              ':user_id' => $user_id,
+              ':service_id' => $service_id
+          ]);
+  
+          // Remove the header redirects and just send JSON response
+          echo json_encode([
+              "success" => true,
+              "message" => "Location details saved.",
+              "is_for_self" => $_SESSION['appointment']['is_for_self'],
+              "next_page" => $_SESSION['appointment']['is_for_self'] == 0 ? 
+                            "Appointment-info.php" : "Appointment-calendar.php"
+          ]);
+          exit();
+      } else {
+          echo json_encode(["success" => false, "message" => "Missing location details."]);
+          exit();
+      }
+  }
+  
+?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -28,38 +80,56 @@
     <!-- NAVBAR -->
     <header class="navbar">
         <div class="logo-container">
-        <img src="../Pictures/pest_logo.png" alt="Flower Logo" class="flower-logo">
-        <span class="brand-name" style="font-size: 2rem;">PESTCOZAM</span>
+            <img src="../Pictures/pest_logo.png" alt="Flower Logo" class="flower-logo">
+            <span class="brand-name" style="font-size: 2rem;">PESTCOZAM</span>
         </div>
         <nav>
-        <ul>
-            <li><a href="../HTML CODES/Home_page.html">Home</a></li>
-            <li><a href="../HTML CODES/About_us.html">About Us</a></li>
-            <li><a href="../HTML CODES/Services.html" class="services">Services</a></li>
-            <li><a href="../HTML CODES/Appointment-service.php" class="btn-appointment">Appointment</a></li>
-            <li><a href="../HTML CODES/Login.php" class="btn-login"><i class='bx bx-log-in' ></i> Login</a></li>
-            <li><a href="../HTML CODES/Signup.php" class="btn-signup"><i class='bx bx-user-plus' ></i> Sign Up</a></li>
-        </ul>
-    </nav>
+            <ul>
+                <li><a href="../HTML CODES/Home_page.php">Home</a></li>
+                <li><a href="../HTML CODES/About_us.html">About Us</a></li>
+                <li><a href="../HTML CODES/Services.html" class="services">Services</a></li>
+                <li><a href="../HTML CODES/Appointment-service.php" class="btn-appointment">Appointment</a></li>
+                
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <?php 
+                        $profile_pic = isset($_SESSION['profile_pic']) ? $_SESSION['profile_pic'] : '../Pictures/boy.png';
+                    ?>
+                    <li class="user-profile">
+                        <div class="profile-dropdown">
+                            <img src="<?php echo $profile_pic; ?>" alt="Profile" class="profile-pic">
+                            <div class="dropdown-content">
+                                <a href="../HTML CODES/Profile.php"><i class='bx bx-user'></i> Profile</a>
+                                <a href="../HTML CODES/logout.php"><i class='bx bx-log-out'></i> Logout</a>
+                            </div>
+                        </div>
+                    </li>
+                <?php else: ?>
+                    <li class="auth-buttons">
+                        <a href="../HTML CODES/Login.php" class="btn-login"><i class='bx bx-log-in'></i> Login</a>
+                        <a href="../HTML CODES/Signup.php" class="btn-signup"><i class='bx bx-user-plus'></i> Sign Up</a>
+                    </li>
+                <?php endif; ?>
+            </ul>
+        </nav>
     </header>
 
     <main>
         <div class="appointment-map">
             <label>Location Details:</label>
-            <select>
-                <option>Select Region</option>
+            <select id="region" name="region">
+                <option value="">Select Region</option>
             </select>
-            <select>
-                <option>Select Province</option>
+            <select id="province" name="province">
+                <option value="">Select Province</option>
             </select>
-            <select>
-                <option>Select City</option>
+            <select id="city" name="city">
+                <option value="">Select City</option>
             </select>
-            <select>
-                <option>Select Barangay</option>
+            <select id="barangay" name="barangay">
+                <option value="">Select Barangay</option>
             </select>
             
-            <input type="text" class="specify-addr" placeholder="Please specify Street Name & House/Building No. (Optional if not applicable)">
+            <input type="text" id="street_address" class="specify-addr" placeholder="Please specify Street Name & House/Building No. (Optional if not applicable)">
             
             <div class="map-container">
                 <p>Please drag or tap on the map to mark the exact location for your pest treatment.</p>
@@ -68,7 +138,7 @@
             
             <div class="navigation-buttons">
                 <button onclick="window.location.href='Appointment-service.php'">Back</button>
-                <button onclick="window.location.href='Appointment-info.php'">Next</button>
+                <button id="nextButton">Next</button>
             </div>
         </div>
     </main>
@@ -99,4 +169,35 @@
         </div>
       </footer>
 </body>
+<script>
+document.getElementById("nextButton").addEventListener("click", function() {
+    let formData = {
+        region: document.getElementById("region").value,
+        province: document.getElementById("province").value,
+        city: document.getElementById("city").value,
+        barangay: document.getElementById("barangay").value,
+        street_address: document.getElementById("street_address").value
+    };
+
+    fetch("Appointment-loc.php", {  
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Check session to decide where to go next
+            <?php if ($_SESSION['appointment']['is_for_self'] == 0): ?>
+                window.location.href = "Appointment-info.php"; // Go to info page if for someone else
+            <?php else: ?>
+                window.location.href = "Appointment-calendar.php"; // Skip info page if for self
+            <?php endif; ?>
+        } else {
+            alert("Error: " + data.message);
+        }
+    })
+    .catch(error => console.error("Error:", error));
+});
+</script>
 </html>

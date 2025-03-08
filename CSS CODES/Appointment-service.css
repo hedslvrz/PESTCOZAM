@@ -151,6 +151,7 @@ nav ul li a:hover {
     background-color: #1E3A8A;
 }
 
+
 /* MAIN SECTION */
 main {
     min-height: 100vh;
@@ -463,4 +464,49 @@ main {
 .footer-container p {
     margin: 0;
     font-size: 14px;
+}
+
+/* USER PROFILE */
+.user-profile {
+    position: relative;
+}
+
+.profile-dropdown {
+    display: inline-block;
+    position: relative;
+}
+
+.profile-pic {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    background-color: #fff;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+    border-radius: 8px;
+}
+
+.dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    text-align: left;
+}
+
+.dropdown-content a:hover {
+    background-color: #f1f1f1;
+    border-radius: 8px;
+}
+
+.profile-dropdown:hover .dropdown-content {
+    display: block;
 }

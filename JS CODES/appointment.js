@@ -9,8 +9,8 @@ document.getElementById('bookAppointment').addEventListener('click', function() 
         city: document.getElementById('city').value,
         barangay: document.getElementById('barangay').value,
         street_address: document.getElementById('street_address').value,
-        date: document.getElementById('date').value,
-        time: document.getElementById('time').value,
+        appointment_date: document.getElementById('appointment_date').value,
+        appointment_time: document.getElementById('appointment_time').value,
         is_for_self: isForSelf
     };
 
