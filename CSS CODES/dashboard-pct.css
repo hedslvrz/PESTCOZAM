@@ -1,0 +1,259 @@
+/* Import existing styles from dashboard-admin.css */
+@import url('dashboard-admin.css');
+
+/* Calendar Styles */
+.calendar-section {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.calendar-header button {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #144578;
+}
+
+.calendar-header h2 {
+    font-size: 1.2rem;
+    color: #144578;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+}
+
+.calendar-day {
+    aspect-ratio: 1;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.calendar-day:hover {
+    background-color: #f0f7ff;
+}
+
+.calendar-day.has-appointment {
+    background-color: #e3f2fd;
+    border-color: #144578;
+}
+
+.calendar-day.today {
+    background-color: #144578;
+    color: white;
+}
+
+/* Appointment Cards */
+.today-appointments {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 24px;
+}
+
+.today-appointments h3 {
+    color: #144578;
+    margin-bottom: 16px;
+}
+
+.appointment-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+    background: #f8f9fa;
+}
+
+.time-location {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.time-location i {
+    color: #144578;
+    margin-right: 4px;
+}
+
+.customer-info h4 {
+    color: #144578;
+    margin-bottom: 8px;
+}
+
+.customer-info p {
+    color: #666;
+    margin: 4px 0;
+}
+
+.actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.btn-start, .btn-report {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-start {
+    background-color: #144578;
+    color: white;
+}
+
+.btn-report {
+    background-color: #e3f2fd;
+    color: #144578;
+}
+
+.btn-start:hover {
+    background-color: #0d2f4f;
+}
+
+.btn-report:hover {
+    background-color: #c1e2fc;
+}
+
+/* Report Form Styles */
+.report-form-container {
+    background: white;
+    border-radius: 10px;
+    padding: 24px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.service-report-form {
+    display: grid;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    font-weight: 500;
+    color: #144578;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 24px;
+}
+
+.btn-submit,
+.btn-reset {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-submit {
+    background-color: #144578;
+    color: white;
+}
+
+.btn-reset {
+    background-color: #e0e0e0;
+    color: #333;
+}
+
+.btn-submit:hover {
+    background-color: #0d2f4f;
+}
+
+.btn-reset:hover {
+    background-color: #c0c0c0;
+}
+
+.status {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+    margin-top: 8px;
+}
+
+.status.pending {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.status.approved {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.status.completed {
+    background-color: #cce5ff;
+    color: #004085;
+}
+
+.btn-approve, .btn-complete {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-approve {
+    background-color: #28a745;
+    color: white;
+}
+
+.btn-complete {
+    background-color: #007bff;
+    color: white;
+}
+
+.btn-approve:hover {
+    background-color: #218838;
+}
+
+.btn-complete:hover {
+    background-color: #0056b3;
+}

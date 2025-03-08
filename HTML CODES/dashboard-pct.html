@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../CSS CODES/dashboard-pct.css">
+    <title>PCT Dashboard</title>
+</head>
+<body>
+    <!-- SIDEBAR SECTION -->
+    <section id="sidebar">
+        <div class="logo-container">
+            <img src="../Pictures/pest_logo.png" alt="Flower Logo" class="flower-logo">
+            <span class="brand-name">PESTCOZAM</span>
+        </div>
+        <ul class="side-menu top">
+            <li class="active">
+                <a href="#work-orders" onclick="showSection('work-orders')">
+                    <i class='bx bxs-briefcase'></i>
+                    <span class="text">Manage Assign Jobs</span>
+                </a>
+            </li>
+            <li>
+                <a href="#reports" onclick="showSection('reports')">
+                    <i class='bx bxs-report'></i>
+                    <span class="text">Manage Service Reports</span>
+                </a>
+            </li>
+            <li>
+                <a href="#profile" onclick="showSection('profile')">
+                    <i class='bx bx-user'></i>
+                    <span class="text">Profile</span>
+                </a>
+            </li>
+            <li>
+                <a href="#logout" class="logout">
+                    <i class='bx bx-log-out'></i>
+                    <span class="text">Log out</span>
+                </a>
+            </li>
+        </ul>
+    </section>
+
+    <!-- MAIN NAVBAR -->
+    <nav id="main-navbar">
+        <i class='bx bx-menu'></i>
+        <form action="#">
+            <div class="form-input">
+                <input type="search" placeholder="Search">
+                <button type="submit" class="search"><i class='bx bx-search'></i></button>
+            </div>
+        </form>
+        <a href="#" class="notification">
+            <i class='bx bxs-bell'></i>
+            <span class="num">3</span>
+        </a>
+        <a href="#" class="profile">
+            <img src="../Pictures/tech-profile.jpg" alt="Technician Profile">
+        </a>
+    </nav>
+
+    <!-- Job Orders Section -->
+    <section id="work-orders" class="section active">
+        <main>
+            <form id="work-orders-form" method="POST" action="process_work_orders.php">
+                <div class="head-title">
+                    <div class="left">
+                        <h1>My Assigned Jobs</h1>
+                        <ul class="breadcrumb">
+                            <li><a href="#">Job Orders</a></li>
+                            <li><i class='bx bx-right-arrow-alt'></i></li>
+                            <li><a class="active" href="#">Schedule</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Calendar View -->
+                <input type="hidden" name="selected_date" id="selected_date">
+                <div class="calendar-section">
+                    <div class="calendar-header">
+                        <button id="prevMonth"><i class='bx bx-chevron-left'></i></button>
+                        <h2 id="currentMonth">February 2024</h2>
+                        <button id="nextMonth"><i class='bx bx-chevron-right'></i></button>
+                    </div>
+                    <div class="calendar-grid">
+                        <!-- Calendar will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Today's Appointments -->
+                <div class="today-appointments">
+                    <h3>Today's Schedule</h3>
+                    <div class="appointment-cards">
+                        <!-- Sample appointment card -->
+                        <div class="appointment-card">
+                            <input type="hidden" name="appointment_id" value="">
+                            <div class="time-location">
+                                <div class="time"><i class='bx bx-time'></i> 09:00 AM</div>
+                                <div class="location"><i class='bx bx-map'></i> Tetuan, Zamboanga City</div>
+                            </div>
+                            <div class="customer-info">
+                                <h4>John Smith</h4>
+                                <p>Service: General Pest Control</p>
+                                <p>Contact: 09123456789</p>
+                                <p class="status pending">Status: Pending</p>
+                            </div>
+                            <div class="actions">
+                                <button type="submit" name="action" value="approve" class="btn-approve">Approve Service</button>
+                                <button type="submit" name="action" value="complete" class="btn-complete">Mark Complete</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </main>
+    </section>
+
+    <!-- Report Section -->
+    <section id="reports" class="section">
+        <main>
+            <form id="service-report-form" method="POST" action="process_reports.php" enctype="multipart/form-data">
+                <div class="head-title">
+                    <div class="left">
+                        <h1>Service Reports</h1>
+                        <ul class="breadcrumb">
+                            <li><a href="#">Reports</a></li>
+                            <li><i class='bx bx-right-arrow-alt'></i></li>
+                            <li><a class="active" href="#">Submit</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Report Form -->
+                <div class="report-form-container">
+                    <form class="service-report-form">
+                        <div class="form-group">
+                            <label>Job Order ID</label>
+                            <input type="text" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Service Date</label>
+                            <input type="date" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Service Type</label>
+                            <select required>
+                                <option value="">Select Service</option>
+                                <option value="general">General Pest Control</option>
+                                <option value="termite">Termite Control</option>
+                                <option value="mosquito">Mosquito Control</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Service Details</label>
+                            <textarea rows="4" required placeholder="Describe the service performed..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Upload Photos</label>
+                            <input type="file" multiple accept="image/*">
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn-submit">Submit Report</button>
+                            <button type="reset" class="btn-reset">Clear Form</button>
+                        </div>
+                    </form>
+                </div>
+            </form>
+        </main>
+    </section>
+
+    <!-- Profile Section -->
+    <section id="profile" class="section">
+        <main>
+            <form id="profile-form" method="POST" action="process_profile.php" enctype="multipart/form-data">
+                <!-- ...existing code from dashboard-admin.html profile section... -->
+            </form>
+        </main>
+    </section>
+
+    <script src="../JS CODES/dashboard-pct.js"></script>
+</body>
+</html>
