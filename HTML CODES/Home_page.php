@@ -298,22 +298,6 @@ if ($is_logged_in) {
               Accumsan iaculis dictumst montes eros nec tristique accumsan. 
               Accumsan iaculis dictumst montes eros.
             </p>
-            <div class="service-details">
-              <p><i class='bx bx-time'></i> Est. Time: 2-3 hours</p>
-              <p><i class='bx bx-money'></i> Starting at ₱2,500</p>
-            </div>
-            <div class="button-group">
-                <button class="book-now-btn" onclick="window.location.href='Appointment-service.php'">Book Now</button>
-                <button class="learn-more-btn" onclick="window.location.href='Lrn_more_tc.html'">Learn More</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Card 4 -->
-        <div class="offer-card">
-          <img src="../Pictures/general pest control.jpg" alt="General Pest Control" />
-          <div class="offer-text">
-            <h3>General Pest Control</h3>
             <p>
               Accumsan iaculis dictumst montes eros nec tristique accumsan. 
               Accumsan iaculis dictumst montes eros.

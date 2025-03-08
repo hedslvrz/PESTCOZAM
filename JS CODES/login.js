@@ -40,7 +40,7 @@ function loginUser(event) {
             if (data.role === "admin") {
                 alert("Login Successful!")
                 window.location.href = "../HTML CODES/dashboard-admin.php";
-            } else if (data.role === "employee"){
+            } else if (data.role === "technician"){
                 window.location.href = "../HTML CODES/dashboard-pct.php"
             } else if (data.role === "supervisor") {
                 window.location.href = "../HTML CODES/dashboard-aos.php"

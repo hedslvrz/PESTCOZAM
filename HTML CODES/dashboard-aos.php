@@ -7,7 +7,7 @@ $database = new Database();
 $db = $database->getConnection();
 
 // Check if user is logged in and has AOS role
-if(!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'aos') {
+if(!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'supervisor') {
     header("Location: login.php");
     exit();
 }
@@ -69,7 +69,7 @@ try {
             <li>
                 <a href="#logout" class="logout">
                     <i class='bx bx-log-out'></i>
-                    <span class="text">Log out</span>
+                    <span class="text" href="../HTML CODES/logout.php">Log out</span>
                 </a>
             </li>
         </ul>

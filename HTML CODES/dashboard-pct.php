@@ -7,7 +7,7 @@ $database = new Database();
 $db = $database->getConnection();
 
 // Check if user is logged in and has PCT role
-if(!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'pct') {
+if(!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'technician') {
     header("Location: login.php");
     exit();
 }

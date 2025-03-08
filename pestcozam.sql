@@ -128,7 +128,7 @@ CREATE TABLE `users` (
   `mobile_number` varchar(15) NOT NULL,
   `password` varchar(100) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `role` enum('user','admin','employee') NOT NULL DEFAULT 'user',
+  `role` enum('user','admin','technician','supervisor') NOT NULL DEFAULT 'user',
   `status` enum('verified','unverified') NOT NULL DEFAULT 'unverified'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
