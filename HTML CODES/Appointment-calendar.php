@@ -172,7 +172,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
       <!-- Navigation Buttons -->
       <div class="calendar-nav">
-        <button class="back-btn" onclick="window.location.href='Appointment-otp.html'">Back</button>
+        <button class="back-btn" onclick="window.location.href='Appointment-info.php'">Back</button>
         <button class="next-btn" disabled id="nextButton" onclick="saveDateTime()">Next</button>
       </div>
     </div>
