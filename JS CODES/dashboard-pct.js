@@ -14,6 +14,36 @@ function showSection(sectionId) {
     document.getElementById(sectionId).classList.add('active');
 }
 
+// Function to handle menu item activation and section display
+function activateMenuItem(clickedLink, sectionId) {
+    // Remove active class from all menu items
+    document.querySelectorAll('.side-menu li').forEach(item => {
+        item.classList.remove('active');
+    });
+    
+    // Add active class to clicked menu item's parent li
+    clickedLink.parentElement.classList.add('active');
+    
+    // Hide all sections
+    document.querySelectorAll('.section').forEach(section => {
+        section.classList.remove('active');
+    });
+    
+    // Show selected section
+    document.getElementById(sectionId).classList.add('active');
+}
+
+// Set initial active state when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Get the hash from URL or default to work-orders
+    const currentSection = window.location.hash.slice(1) || 'work-orders';
+    const defaultLink = document.querySelector(`a[href="#${currentSection}"]`);
+    
+    if (defaultLink) {
+        activateMenuItem(defaultLink, currentSection);
+    }
+});
+
 // Calendar functionality
 document.addEventListener('DOMContentLoaded', function() {
     const calendar = document.querySelector('.calendar-grid');

@@ -31,6 +31,12 @@
                 </a>
             </li>
             <li>
+                <a href="#service-reports" onclick="showSection('service-reports')">
+                    <i class='bx bxs-file'></i>
+                    <span class="text">Manage Service Reports</span>
+                </a>
+            </li>
+            <li>
                 <a href="#profile" onclick="showSection('profile')">
                     <i class='bx bx-user'></i>
                     <span class="text">Profile</span>
@@ -177,6 +183,73 @@
                                 <td>Cockroach Treatment</td>
                                 <td>Peter Parker</td>
                                 <td><span class="status approved">Approved</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </form>
+        </main>
+    </section>
+
+    <!-- Add this new section before the Profile Section -->
+    <section id="service-reports" class="section">
+        <main>
+            <form id="reports-form" method="POST" action="process_reports.php">
+                <div class="head-title">
+                    <div class="left">
+                        <h1>Service Reports</h1>
+                        <ul class="breadcrumb">
+                            <li><a href="#">Reports</a></li>
+                            <li><i class='bx bx-right-arrow-alt'></i></li>
+                            <li><a class="active" href="#">Manage</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <div class="filters">
+                        <div class="tabs">
+                            <button type="button" class="active">All Reports</button>
+                            <button type="button">Pending Review</button>
+                            <button type="button">Approved</button>
+                            <button type="button">Rejected</button>
+                        </div>
+                        <input type="date" id="reportFilterDate" name="report_filter_date">
+                    </div>
+                    
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Report ID</th>
+                                <th>Job ID</th>
+                                <th>Technician</th>
+                                <th>Service Date</th>
+                                <th>Customer</th>
+                                <th>Service Type</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>SR-2024-001</td>
+                                <td>JO-2024-002</td>
+                                <td>Michael Brown</td>
+                                <td>2024-01-15</td>
+                                <td>Mary Johnson</td>
+                                <td>Termite Treatment</td>
+                                <td><span class="status pending">Pending Review</span></td>
+                                <td><button class="view-btn">View Details</button></td>
+                            </tr>
+                            <tr>
+                                <td>SR-2024-002</td>
+                                <td>JO-2024-003</td>
+                                <td>David Miller</td>
+                                <td>2024-01-14</td>
+                                <td>Robert Wilson</td>
+                                <td>Rodent Control</td>
+                                <td><span class="status approved">Approved</span></td>
+                                <td><button class="view-btn">View Details</button></td>
                             </tr>
                         </tbody>
                     </table>
