@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (
         isset($data['user_id'], $data['service_id'], $data['region'], $data['province'],
-              $data['city'], $data['barangay'], $data['street_address'], $data['date'], $data['time'], $data['is_for_self'])
+              $data['city'], $data['barangay'], $data['street_address'], $data['appointment_date'], $data['appointment_time'], $data['is_for_self'])
     ) {
         try {
             $pdo->beginTransaction();
@@ -51,9 +51,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             // Insert appointment
             $stmt = $pdo->prepare("INSERT INTO appointments 
-                (user_id, service_id, region, province, city, barangay, street_address, date, time, is_for_self, firstname, lastname, email, mobile_number) 
+                (user_id, service_id, region, province, city, barangay, street_address, appointment_date, appointment_time, is_for_self, firstname, lastname, email, mobile_number) 
                 VALUES 
-                (:user_id, :service_id, :region, :province, :city, :barangay, :street_address, :date, :time, :is_for_self, :firstname, :lastname, :email, :mobile_number)");
+                (:user_id, :service_id, :region, :province, :city, :barangay, :street_address, :appointment_date, :appointment_time, :is_for_self, :firstname, :lastname, :email, :mobile_number)");
 
             $stmt->execute([
                 ':user_id' => $data['user_id'],
@@ -63,8 +63,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ':city' => $data['city'],
                 ':barangay' => $data['barangay'],
                 ':street_address' => $data['street_address'],
-                ':date' => $data['date'],
-                ':time' => $data['time'],
+                ':appointment_date' => $data['appointment_date'],
+                ':appointment_time' => $data['appointment_time'],
                 ':is_for_self' => $data['is_for_self'],
                 ':firstname' => $firstname,
                 ':lastname' => $lastname,

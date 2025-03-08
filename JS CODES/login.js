@@ -44,7 +44,7 @@ function loginUser(event) {
                 window.location.href = "../HTML CODES/dashboard.html"
             } else {
                 alert("Login Successful!")
-                window.location.href = "../HTML CODES/Home_page.html";
+                window.location.href = "../HTML CODES/Home_page.php";
             }
         } else {
             alert(data.message);

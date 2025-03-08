@@ -1,10 +1,54 @@
 <?php
-// Include the database connection
-require_once '../database.php'; 
 session_start();
+require_once '../database.php'; 
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    echo "<pre>POST data: ";
+    print_r($_POST);
+    echo "</pre>";
+    
+    // Check the value being stored in session
+    if (isset($_POST['is_for_self'])) {
+        echo "<pre>is_for_self value: " . $_POST['is_for_self'] . "</pre>";
+    }
+}
 
 if (!isset($_SESSION['user_id'])) {
-    header("Location: Login.php"); // Redirect to login if not logged in
+    header("Location: Login.php"); // Redirect if not logged in
+    exit();
+}
+
+$database = new Database();
+$db = $database->getConnection();
+
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['next'])) {
+    $user_id = $_SESSION['user_id'];
+    $service_id = $_POST['service_id'];
+    $isForSelf = isset($_POST['is_for_self']) ? (int)$_POST['is_for_self'] : 1;
+    
+    // Debug
+    error_log("Value of is_for_self: " . $isForSelf);
+
+    // Store progress in session
+    $_SESSION['appointment'] = [
+        'user_id' => $user_id,
+        'service_id' => $service_id,
+        'is_for_self' => $isForSelf
+    ];
+
+    // Insert a new appointment
+    $insertQuery = "INSERT INTO appointments (user_id, service_id, is_for_self, status) 
+                    VALUES (:user_id, :service_id, :is_for_self, :status)";
+    $stmt = $db->prepare($insertQuery);
+    $stmt->execute([
+        ':user_id' => $user_id,
+        ':service_id' => $service_id,
+        ':is_for_self' => $isForSelf,
+        ':status' => 'pending'
+    ]);
+
+    
+        header("Location: Appointment-loc.php");
     exit();
 }
 
@@ -27,6 +71,7 @@ $services = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <title>Book an Appointment</title>
     <link rel="stylesheet" href="../CSS CODES/Appointment-service.css">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <script src="../JS CODES/appointment.js"></script>
 </head>
 <body>
     
@@ -54,12 +99,30 @@ $services = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
         <nav>
             <ul>
-                <li><a href="../HTML CODES/Home_page.html">Home</a></li>
+                <li><a href="../HTML CODES/Home_page.php">Home</a></li>
                 <li><a href="../HTML CODES/About_us.html">About Us</a></li>
                 <li><a href="../HTML CODES/Services.html" class="services">Services</a></li>
                 <li><a href="../HTML CODES/Appointment-service.php" class="btn-appointment">Appointment</a></li>
-                <li><a href="../HTML CODES/Login.php" class="btn-login"><i class='bx bx-log-in'></i> Login</a></li>
-                <li><a href="../HTML CODES/Signup.php" class="btn-signup"><i class='bx bx-user-plus'></i> Sign Up</a></li>
+                
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <?php 
+                        $profile_pic = isset($_SESSION['profile_pic']) ? $_SESSION['profile_pic'] : '../Pictures/boy.png';
+                    ?>
+                    <li class="user-profile">
+                        <div class="profile-dropdown">
+                            <img src="<?php echo $profile_pic; ?>" alt="Profile" class="profile-pic">
+                            <div class="dropdown-content">
+                                <a href="../HTML CODES/Profile.php"><i class='bx bx-user'></i> Profile</a>
+                                <a href="../HTML CODES/logout.php"><i class='bx bx-log-out'></i> Logout</a>
+                            </div>
+                        </div>
+                    </li>
+                <?php else: ?>
+                    <li class="auth-buttons">
+                        <a href="../HTML CODES/Login.php" class="btn-login"><i class='bx bx-log-in'></i> Login</a>
+                        <a href="../HTML CODES/Signup.php" class="btn-signup"><i class='bx bx-user-plus'></i> Sign Up</a>
+                    </li>
+                <?php endif; ?>
             </ul>
         </nav>
     </header>
@@ -97,15 +160,16 @@ $services = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <p>Who is this appointment for?</p>
                 <div class="radio-group">
                     <label>
-                        <input type="radio" name="appointmentFor" value="self" checked>
-                        For me
+                        <input type="radio" name="appointment_for" value="1" checked id="for-myself">For Myself
                     </label>
                     <label>
-                        <input type="radio" name="appointmentFor" value="other">
-                        For someone else
+                        <input type="radio" name="appointment_for" value="0" id="for-someone-else">For Someone Else
                     </label>
                 </div>
             </div>
+
+            <!-- Add a hidden field to store the selection -->
+            <input type="hidden" id="isForSelf" name="is_for_self" value="1">
             
             <div class="reminder">  
                 <p>Friendly Reminder:</p>
@@ -116,12 +180,15 @@ $services = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </div>
             
             <div class="button-container">
-                <a href="../HTML CODES/Home_page.html" class="back-btn">Back to Home</a>
-                <form id="serviceForm" action="Appointment-loc.php" method="POST">
-                    <input type="hidden" id="selectedService" name="selectedService" value="">
-                    <button type="submit" disabled id="nextButton">Next</button>
-                </form>
-            </div>
+            <a href="../HTML CODES/Home_page.php" class="back-btn">Back to Home</a>
+            <form id="serviceForm" action="Appointment-service.php" method="POST">
+                <input type="hidden" id="selectedService" name="service_id" value="">
+                <!-- Changed ID to avoid duplicate IDs -->
+                <input type="hidden" id="isForSelfHidden" name="is_for_self" value="1">
+                <input type="hidden" name="next" value="1">
+                <button type="submit" disabled id="nextButton">Next</button>
+            </form>
+        </div>
         </div>
     </main>
 
@@ -170,6 +237,53 @@ $services = $stmt->fetchAll(PDO::FETCH_ASSOC);
         // Update the reference
         previousSelectedButton = clickedButton;
     }
+    // Add event listeners for radio buttons
+document.addEventListener('DOMContentLoaded', function() {
+    // Set initial value based on the checked radio button
+    const checkedRadio = document.querySelector('input[name="appointment_for"]:checked');
+    if (checkedRadio) {
+        document.getElementById('isForSelf').value = checkedRadio.value;
+    }
+
+    // Add event listeners for radio buttons
+    const radioButtons = document.querySelectorAll('input[name="appointment_for"]');
+    radioButtons.forEach(radio => {
+        radio.addEventListener('change', function() {
+            document.getElementById('isForSelf').value = this.value;
+            console.log("Updated isForSelf value to: " + this.value); // Debug line
+        });
+    });
+});
+document.addEventListener('DOMContentLoaded', function() {
+    // Set up radio button event listeners
+    const radioButtons = document.querySelectorAll('input[name="appointment_for"]');
+    radioButtons.forEach(radio => {
+        radio.addEventListener('change', function() {
+            // Update the hidden form field with numeric values
+            document.getElementById('isForSelf').value = this.value; // Will be "1" or "0" as strings
+            console.log('isForSelf value updated to: ' + this.value);
+        });
+    });
+    
+    // Rest of your code...
+});
+// Update the event listener code
+document.addEventListener('DOMContentLoaded', function() {
+    // Set initial value based on the checked radio button
+    const checkedRadio = document.querySelector('input[name="appointment_for"]:checked');
+    if (checkedRadio) {
+        document.getElementById('isForSelfHidden').value = checkedRadio.value;
+    }
+
+    // Add event listeners for radio buttons
+    const radioButtons = document.querySelectorAll('input[name="appointment_for"]');
+    radioButtons.forEach(radio => {
+        radio.addEventListener('change', function() {
+            document.getElementById('isForSelfHidden').value = this.value;
+            console.log("Updated isForSelf value to: " + this.value);
+        });
+    });
+});
     </script>
 </body>
 </html>
