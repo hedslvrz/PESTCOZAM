@@ -39,9 +39,11 @@ function loginUser(event) {
         if (data.success) {
             if (data.role === "admin") {
                 alert("Login Successful!")
-                window.location.href = "../HTML CODES/dashboard.html";
+                window.location.href = "../HTML CODES/dashboard-admin.php";
             } else if (data.role === "employee"){
-                window.location.href = "../HTML CODES/dashboard.html"
+                window.location.href = "../HTML CODES/dashboard-pct.php"
+            } else if (data.role === "supervisor") {
+                window.location.href = "../HTML CODES/dashboard-aos.php"
             } else {
                 alert("Login Successful!")
                 window.location.href = "../HTML CODES/Home_page.php";
