@@ -75,6 +75,71 @@ function showSection(sectionId) {
     }
 }
 
+// Technician Assignment Functions
+function openAssignModal(appointmentId) {
+    document.getElementById('appointmentId').value = appointmentId;
+    document.getElementById('assignTechModal').style.display = 'block';
+}
+
+function closeAssignModal() {
+    document.getElementById('assignTechModal').style.display = 'none';
+}
+
+// Handle technician assignment form submission
+document.getElementById('assignTechForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = {
+        appointment_id: document.getElementById('appointmentId').value,
+        technician_id: document.getElementById('technicianId').value
+    };
+
+    fetch('../PHP CODES/assign_technician.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Technician assigned successfully!');
+            closeAssignModal();
+            location.reload(); // Refresh to show updated data
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while assigning technician');
+    });
+});
+
+// Add filtering functionality
+document.querySelectorAll('.filter-btn').forEach(button => {
+    button.addEventListener('click', function() {
+        // Remove active class from all buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+        // Add active class to clicked button
+        this.classList.add('active');
+        
+        // Filter table rows based on status
+        const filter = this.dataset.filter;
+        const rows = document.querySelectorAll('tbody tr');
+        
+        rows.forEach(row => {
+            const status = row.querySelector('.status').textContent.toLowerCase();
+            if (filter === 'all' || status === filter) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+});
+
 
 
 

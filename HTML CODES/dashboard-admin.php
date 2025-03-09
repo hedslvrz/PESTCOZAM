@@ -34,32 +34,35 @@ try {
     $stats = null;
 }
 
-// Add this after your existing database connection code
-try {
-    // Query to get all appointments with related information
-    $appointmentsQuery = "SELECT 
-        a.appointment_id,
-        a.appointment_date,
-        a.appointment_time,
-        a.status,
-        a.is_for_self,
-        s.service_name,
-        CASE 
-            WHEN a.is_for_self = 1 THEN u.firstname
-            ELSE a.firstname
-        END as client_firstname,
-        CASE 
-            WHEN a.is_for_self = 1 THEN u.lastname
-            ELSE a.lastname
-        END as client_lastname,
-        t.firstname as tech_firstname,
-        t.lastname as tech_lastname
-    FROM appointments a
-    JOIN services s ON a.service_id = s.service_id
-    JOIN users u ON a.user_id = u.id
-    LEFT JOIN users t ON a.technician_id = t.id
-    ORDER BY a.appointment_date DESC, a.appointment_time DESC";
+// First, update the query to get all necessary appointment information
+$appointmentsQuery = "SELECT 
+    a.*,
+    s.service_name,
+    s.estimated_time,
+    CASE 
+        WHEN a.is_for_self = 1 THEN u.firstname
+        ELSE a.firstname
+    END as client_firstname,
+    CASE 
+        WHEN a.is_for_self = 1 THEN u.lastname
+        ELSE a.lastname
+    END as client_lastname,
+    t.id as tech_id,
+    t.firstname as tech_firstname,
+    t.lastname as tech_lastname
+FROM appointments a
+JOIN services s ON a.service_id = s.service_id
+JOIN users u ON a.user_id = u.id
+LEFT JOIN users t ON a.technician_id = t.id
+ORDER BY a.created_at DESC";
 
+// Get available technicians
+$techniciansQuery = "SELECT id, firstname, lastname 
+                    FROM users 
+                    WHERE role = 'technician' 
+                    AND status = 'verified'";
+
+try {
     $stmt = $db->prepare($appointmentsQuery);
     $stmt->execute();
     $appointments = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -312,90 +315,126 @@ try {
 <!-- Job Orders Section -->
 <section id="work-orders" class="section">
     <main>
-        <form id="work-orders-form" method="POST" action="process_work_orders.php">
-            <div class="head-title">
-                <div class="left">
-                    <h1>Work Orders Management</h1>
-                    <ul class="breadcrumb">
-                        <li><a href="#">Work Orders</a></li>
-                        <li><i class='bx bx-right-arrow-alt'></i></li>
-                        <li><a class="active" href="#">List</a></li>
-                    </ul>
-                </div>
+        <div class="head-title">
+            <div class="left">
+                <h1>Work Orders Management</h1>
+                <ul class="breadcrumb">
+                    <li><a href="#">Work Orders</a></li>
+                    <li><i class='bx bx-right-arrow-alt'></i></li>
+                    <li><a class="active" href="#">List</a></li>
+                </ul>
             </div>
-            <div class="table-data">
-                <div class="order-list">
-                    <div class="content">
-                        <h1>Job Orders</h1>
-                        <ul class="box-info">
-                            <li><i class='bx bxs-calendar-check'></i><span class="text"><h3>5</h3><p>Total Appointments</p></span></li>
-                            <li><i class='bx bxs-group'></i><span class="text"><h3>3</h3><p>Appointments without Technician</p></span></li>
-                            <li><i class='bx bxs-calendar'></i><span class="text"><h3>3</h3><p>Ongoing</p></span></li>
-                            <li><i class='bx bxs-check-circle'></i><span class="text"><h3>2</h3><p>Completed Appointments</p></span></li>
-                        </ul>
-                        <div class="filters">
-                            <div class="tabs">
-                                <button type="submit" name="filter" value="all" class="active">All</button>
-                                <button type="submit" name="filter" value="no_tech">Without Technician</button>
-                                <button type="submit" name="filter" value="inspection">For Inspection</button>
-                                <button type="submit" name="filter" value="treatment">For Treatment</button>
-                                <button type="submit" name="filter" value="completed">Completed</button>
-                                <button type="submit" name="action" value="assign_tech" class="assign-tech-btn">Assign Technician</button>
-                            </div>
-                            <input type="date" name="order_date">
+        </div>
+
+        <div class="table-data">
+            <div class="order-list">
+                <div class="content">
+                    <h1>Job Orders</h1>
+                    <div class="filters">
+                        <div class="tabs">
+                            <button type="button" class="filter-btn active" data-filter="all">All</button>
+                            <button type="button" class="filter-btn" data-filter="pending">Pending</button>
+                            <button type="button" class="filter-btn" data-filter="confirmed">Confirmed</button>
+                            <button type="button" class="filter-btn" data-filter="completed">Completed</button>
                         </div>
-                        <div class="table-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Appointment No.</th>
-                                        <th>Date & Time</th>
-                                        <th>Customer</th>
-                                        <th>Service</th>
-                                        <th>Technician</th>
-                                        <th>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php foreach ($appointments as $appointment): ?>
-                                        <tr>
-                                            <td><?php echo htmlspecialchars($appointment['appointment_id']); ?></td>
-                                            <td>
-                                                <?php 
-                                                echo htmlspecialchars(date('M d Y', strtotime($appointment['appointment_date']))) . ' - ' . 
-                                                     htmlspecialchars(date('h:i A', strtotime($appointment['appointment_time']))); 
-                                                ?>
-                                            </td>
-                                            <td>
-                                                <?php 
-                                                echo htmlspecialchars($appointment['client_firstname'] . ' ' . 
-                                                     $appointment['client_lastname']); 
-                                                ?>
-                                            </td>
-                                            <td><?php echo htmlspecialchars($appointment['service_name']); ?></td>
-                                            <td>
-                                                <?php if (isset($appointment['tech_firstname'])): ?>
-                                                    <?php echo htmlspecialchars($appointment['tech_firstname'] . ' ' . 
-                                                          $appointment['tech_lastname']); ?>
-                                                <?php else: ?>
-                                                    <span class="assign-tech">Assign Technician</span>
-                                                <?php endif; ?>
-                                            </td>
-                                            <td>
-                                                <span class="status <?php echo strtolower($appointment['status']); ?>">
-                                                    <?php echo htmlspecialchars($appointment['status']); ?>
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
+                        <input type="date" id="filterDate">
+                    </div>
+
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Date & Time</th>
+                                    <th>Customer</th>
+                                    <th>Service</th>
+                                    <th>Location</th>
+                                    <th>Technician</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($appointments as $appointment): ?>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($appointment['appointment_id']); ?></td>
+                                    <td>
+                                        <?php 
+                                        echo date('M d, Y', strtotime($appointment['appointment_date'])) . '<br>' . 
+                                             date('h:i A', strtotime($appointment['appointment_time'])); 
+                                        ?>
+                                    </td>
+                                    <td>
+                                        <?php 
+                                        echo htmlspecialchars($appointment['client_firstname'] . ' ' . 
+                                             $appointment['client_lastname']); 
+                                        ?>
+                                    </td>
+                                    <td><?php echo htmlspecialchars($appointment['service_name']); ?></td>
+                                    <td>
+                                        <?php 
+                                        echo htmlspecialchars($appointment['street_address'] . ', ' . 
+                                             $appointment['barangay'] . ', ' . 
+                                             $appointment['city']); 
+                                        ?>
+                                    </td>
+                                    <td>
+                                        <?php if ($appointment['tech_id']): ?>
+                                            <?php echo htmlspecialchars($appointment['tech_firstname'] . ' ' . 
+                                                  $appointment['tech_lastname']); ?>
+                                        <?php else: ?>
+                                            <button type="button" class="assign-tech-btn"
+                                                    onclick="openAssignModal(<?php echo $appointment['appointment_id']; ?>)">
+                                                Assign Technician
+                                            </button>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <span class="status <?php echo strtolower($appointment['status']); ?>">
+                                            <?php echo htmlspecialchars($appointment['status']); ?>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button type="button" class="view-details-btn"
+                                                onclick="viewDetails(<?php echo $appointment['appointment_id']; ?>)">
+                                            View Details
+                                        </button>
+                                    </td>
+                                </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
-        </form>
+        </div>
     </main>
+
+    <!-- Assign Technician Modal -->
+    <div id="assignTechModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Assign Technician</h2>
+            <form id="assignTechForm">
+                <input type="hidden" id="appointmentId" name="appointment_id">
+                <div class="form-group">
+                    <label for="technician">Select Technician:</label>
+                    <select id="technicianId" name="technician_id" required>
+                        <option value="">-- Select Technician --</option>
+                        <?php foreach ($technicians as $tech): ?>
+                            <option value="<?php echo $tech['id']; ?>">
+                                <?php echo htmlspecialchars($tech['firstname'] . ' ' . $tech['lastname']); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn-submit">Assign</button>
+                    <button type="button" class="btn-cancel" onclick="closeAssignModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </section>
 
 
