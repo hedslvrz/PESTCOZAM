@@ -33,6 +33,40 @@ try {
     error_log("Error: " . $e->getMessage());
     $stats = null;
 }
+
+// Add this after your existing database connection code
+try {
+    // Query to get all appointments with related information
+    $appointmentsQuery = "SELECT 
+        a.appointment_id,
+        a.appointment_date,
+        a.appointment_time,
+        a.status,
+        a.is_for_self,
+        s.service_name,
+        CASE 
+            WHEN a.is_for_self = 1 THEN u.firstname
+            ELSE a.firstname
+        END as client_firstname,
+        CASE 
+            WHEN a.is_for_self = 1 THEN u.lastname
+            ELSE a.lastname
+        END as client_lastname,
+        t.firstname as tech_firstname,
+        t.lastname as tech_lastname
+    FROM appointments a
+    JOIN services s ON a.service_id = s.service_id
+    JOIN users u ON a.user_id = u.id
+    LEFT JOIN users t ON a.technician_id = t.id
+    ORDER BY a.appointment_date DESC, a.appointment_time DESC";
+
+    $stmt = $db->prepare($appointmentsQuery);
+    $stmt->execute();
+    $appointments = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch(PDOException $e) {
+    error_log("Error fetching appointments: " . $e->getMessage());
+    $appointments = [];
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -42,7 +76,7 @@ try {
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../CSS CODES/dashboard-admin.css">
     <title>Pestcozam Dashboard</title>
 </head>
@@ -190,52 +224,52 @@ try {
                     <table>
                         <thead>
                             <tr>
-                                <th>User</th>
-                                <th>Date Order</th>
+                                <th>Appointment ID</th>
+                                <th>Date & Time</th>
+                                <th>Customer</th>
+                                <th>Service</th>
+                                <th>Technician</th>
                                 <th>Status</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
+                            <?php foreach ($appointments as $appointment): ?>
                             <tr>
+                                <td><?php echo htmlspecialchars($appointment['appointment_id']); ?></td>
                                 <td>
-                                    <img src="../Pictures/boy.png" class="user-img">
-                                    <p>John Doe</p>
+                                    <?php 
+                                    echo date('M d Y', strtotime($appointment['appointment_date'])) . '<br>' .
+                                         date('h:i A', strtotime($appointment['appointment_time']));
+                                    ?>
                                 </td>
-                                <td>01-10-2025</td>
-                                <td><span class="status-completed">Completed</span></td>
-                            </tr>
-                            <tr>
                                 <td>
-                                    <img src="../Pictures/boy.png" class="user-img">
-                                    <p>John Doe</p>
+                                    <?php echo htmlspecialchars($appointment['client_firstname'] . ' ' . 
+                                        $appointment['client_lastname']); ?>
                                 </td>
-                                <td>01-10-2025</td>
-                                <td><span class="status-completed">Completed</span></td>
-                            </tr>
-                            <tr>
+                                <td><?php echo htmlspecialchars($appointment['service_name']); ?></td>
                                 <td>
-                                    <img src="../Pictures/boy.png" class="user-img">
-                                    <p>John Doe</p>
+                                    <?php if ($appointment['tech_firstname']): ?>
+                                        <?php echo htmlspecialchars($appointment['tech_firstname'] . ' ' . 
+                                            $appointment['tech_lastname']); ?>
+                                    <?php else: ?>
+                                        <button class="assign-tech-btn" 
+                                                data-appointment-id="<?php echo $appointment['appointment_id']; ?>">
+                                            Assign Technician
+                                        </button>
+                                    <?php endif; ?>
                                 </td>
-                                <td>01-10-2025</td>
-                                <td><span class="status-completed">Completed</span></td>
-                            </tr>
-                            <tr>
+                                <td><span class="status <?php echo strtolower($appointment['status']); ?>">
+                                    <?php echo htmlspecialchars($appointment['status']); ?>
+                                </span></td>
                                 <td>
-                                    <img src="../Pictures/boy.png" class="user-img">
-                                    <p>John Doe</p>
+                                    <button class="view-details-btn" 
+                                            data-appointment-id="<?php echo $appointment['appointment_id']; ?>">
+                                        View Details
+                                    </button>
                                 </td>
-                                <td>01-10-2025</td>
-                                <td><span class="status-completed">Completed</span></td>
                             </tr>
-                            <tr>
-                                <td>
-                                    <img src="../Pictures/boy.png" class="user-img">
-                                    <p>John Doe</p>
-                                </td>
-                                <td>01-10-2025</td>
-                                <td><span class="status-completed">Completed</span></td>
-                            </tr>
+                            <?php endforeach; ?>
                         </tbody>
                     </table>
                 </div>
