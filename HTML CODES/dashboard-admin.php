@@ -224,52 +224,52 @@ try {
                     <table>
                         <thead>
                             <tr>
-                                <th>Appointment ID</th>
-                                <th>Date & Time</th>
-                                <th>Customer</th>
-                                <th>Service</th>
-                                <th>Technician</th>
+                                <th>User</th>
+                                <th>Date Order</th>
                                 <th>Status</th>
-                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($appointments as $appointment): ?>
                             <tr>
-                                <td><?php echo htmlspecialchars($appointment['appointment_id']); ?></td>
                                 <td>
-                                    <?php 
-                                    echo date('M d Y', strtotime($appointment['appointment_date'])) . '<br>' .
-                                         date('h:i A', strtotime($appointment['appointment_time']));
-                                    ?>
+                                    <img src="../Pictures/boy.png" class="user-img">
+                                    <p>John Doe</p>
                                 </td>
-                                <td>
-                                    <?php echo htmlspecialchars($appointment['client_firstname'] . ' ' . 
-                                        $appointment['client_lastname']); ?>
-                                </td>
-                                <td><?php echo htmlspecialchars($appointment['service_name']); ?></td>
-                                <td>
-                                    <?php if ($appointment['tech_firstname']): ?>
-                                        <?php echo htmlspecialchars($appointment['tech_firstname'] . ' ' . 
-                                            $appointment['tech_lastname']); ?>
-                                    <?php else: ?>
-                                        <button class="assign-tech-btn" 
-                                                data-appointment-id="<?php echo $appointment['appointment_id']; ?>">
-                                            Assign Technician
-                                        </button>
-                                    <?php endif; ?>
-                                </td>
-                                <td><span class="status <?php echo strtolower($appointment['status']); ?>">
-                                    <?php echo htmlspecialchars($appointment['status']); ?>
-                                </span></td>
-                                <td>
-                                    <button class="view-details-btn" 
-                                            data-appointment-id="<?php echo $appointment['appointment_id']; ?>">
-                                        View Details
-                                    </button>
-                                </td>
+                                <td>01-10-2025</td>
+                                <td><span class="status-completed">Completed</span></td>
                             </tr>
-                            <?php endforeach; ?>
+                            <tr>
+                                <td>
+                                    <img src="../Pictures/boy.png" class="user-img">
+                                    <p>John Doe</p>
+                                </td>
+                                <td>01-10-2025</td>
+                                <td><span class="status-completed">Completed</span></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <img src="../Pictures/boy.png" class="user-img">
+                                    <p>John Doe</p>
+                                </td>
+                                <td>01-10-2025</td>
+                                <td><span class="status-completed">Completed</span></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <img src="../Pictures/boy.png" class="user-img">
+                                    <p>John Doe</p>
+                                </td>
+                                <td>01-10-2025</td>
+                                <td><span class="status-completed">Completed</span></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <img src="../Pictures/boy.png" class="user-img">
+                                    <p>John Doe</p>
+                                </td>
+                                <td>01-10-2025</td>
+                                <td><span class="status-completed">Completed</span></td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -345,56 +345,51 @@ try {
                             <input type="date" name="order_date">
                         </div>
                         <div class="table-container">
-                            <form action="#" method="POST">
-                                <table>
-                                    <thead>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Appointment No.</th>
+                                        <th>Date & Time</th>
+                                        <th>Customer</th>
+                                        <th>Service</th>
+                                        <th>Technician</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($appointments as $appointment): ?>
                                         <tr>
-                                            <th>Appointment No.</th>
-                                            <th>Date & Time</th>
-                                            <th>Customer</th>
-                                            <th>Technician</th>
-                                            <th>Status</th>
+                                            <td><?php echo htmlspecialchars($appointment['appointment_id']); ?></td>
+                                            <td>
+                                                <?php 
+                                                echo htmlspecialchars(date('M d Y', strtotime($appointment['appointment_date']))) . ' - ' . 
+                                                     htmlspecialchars(date('h:i A', strtotime($appointment['appointment_time']))); 
+                                                ?>
+                                            </td>
+                                            <td>
+                                                <?php 
+                                                echo htmlspecialchars($appointment['client_firstname'] . ' ' . 
+                                                     $appointment['client_lastname']); 
+                                                ?>
+                                            </td>
+                                            <td><?php echo htmlspecialchars($appointment['service_name']); ?></td>
+                                            <td>
+                                                <?php if (isset($appointment['tech_firstname'])): ?>
+                                                    <?php echo htmlspecialchars($appointment['tech_firstname'] . ' ' . 
+                                                          $appointment['tech_lastname']); ?>
+                                                <?php else: ?>
+                                                    <span class="assign-tech">Assign Technician</span>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td>
+                                                <span class="status <?php echo strtolower($appointment['status']); ?>">
+                                                    <?php echo htmlspecialchars($appointment['status']); ?>
+                                                </span>
+                                            </td>
                                         </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>2025-00001</td>
-                                            <td>Mon 03 Feb - 07:00 AM</td>
-                                            <td>Balmond Marasigan</td>
-                                            <td class="completed">Jelimar Binay</td>
-                                            <td class="status completed">Completed</td>
-                                        </tr>
-                                        <tr>
-                                            <td>2025-00002</td>
-                                            <td>Mon 03 Feb - 09:00 AM</td>
-                                            <td>Juan Ponce Enrile</td>
-                                            <td class="completed">Super Inggo</td>
-                                            <td class="status completed">Completed</td>
-                                        </tr>
-                                        <tr>
-                                            <td>2025-00003</td>
-                                            <td>Mon 03 Feb - 11:00 AM</td>
-                                            <td>Portgas D. Ace</td>
-                                            <td><span class="assign-tech">Assign Technician</span></td>
-                                            <td class="status for-treatment">For Treatment</td>
-                                        </tr>
-                                        <tr>
-                                            <td>2025-00004</td>
-                                            <td>Mon 03 Feb - 01:00 PM</td>
-                                            <td>Naruto Ako</td>
-                                            <td><span class="assign-tech">Assign Technician</span></td>
-                                            <td class="status for-inspection">For Inspection</td>
-                                        </tr>
-                                        <tr>
-                                            <td>2025-00005</td>
-                                            <td>Mon 03 Feb - 01:00 PM</td>
-                                            <td>Sponge Bob</td>
-                                            <td><span class="assign-tech">Assign Technician</span></td>
-                                            <td class="status for-inspection">For Inspection</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </form>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
