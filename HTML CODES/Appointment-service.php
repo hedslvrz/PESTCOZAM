@@ -76,22 +76,22 @@ $services = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <body>
     
     <!-- HEADER -->
- <div class="header-wrapper">
-  <header class="top-header">
-    <div class="container">
-      <div class="location">
-        <i class='bx bx-map'></i>
-        <span> <strong>Estrada St, Zamboanga City, Zamboanga Del Sur, 7000<strong></span>
-      </div>
-      <div class="contact-info">
-        <img src="../Pictures/phone.png" alt="Phone Icon" class="icon">
-        <span>0905 - 177 - 5662</span>
-        <span class="divider"></span>
-        <img src="../Pictures/email.png" alt="Email Icon" class="icon">
-        <span>pestcozam@yahoo.com</span>
-      </div>
-    </div>
-  </header>
+    <div class="header-wrapper">
+    <header class="top-header">
+        <div class="container">
+            <div class="location">
+            <i class='bx bx-map'></i>
+            <span> <strong>Estrada St, Zamboanga City, Zamboanga Del Sur, 7000<strong></span>
+        </div>
+        <div class="contact-info">
+            <img src="../Pictures/phone.png" alt="Phone Icon" class="icon">
+            <span>0905 - 177 - 5662</span>
+            <span class="divider"></span>
+            <img src="../Pictures/email.png" alt="Email Icon" class="icon">
+            <span>pestcozam@yahoo.com</span>
+        </div>
+        </div>
+    </header>
 
     <!-- NAVBAR -->
     <header class="navbar">
@@ -240,52 +240,52 @@ $services = $stmt->fetchAll(PDO::FETCH_ASSOC);
         previousSelectedButton = clickedButton;
     }
     // Add event listeners for radio buttons
-document.addEventListener('DOMContentLoaded', function() {
-    // Set initial value based on the checked radio button
-    const checkedRadio = document.querySelector('input[name="appointment_for"]:checked');
-    if (checkedRadio) {
-        document.getElementById('isForSelf').value = checkedRadio.value;
-    }
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set initial value based on the checked radio button
+            const checkedRadio = document.querySelector('input[name="appointment_for"]:checked');
+            if (checkedRadio) {
+                document.getElementById('isForSelf').value = checkedRadio.value;
+            }
 
-    // Add event listeners for radio buttons
-    const radioButtons = document.querySelectorAll('input[name="appointment_for"]');
-    radioButtons.forEach(radio => {
-        radio.addEventListener('change', function() {
-            document.getElementById('isForSelf').value = this.value;
-            console.log("Updated isForSelf value to: " + this.value); // Debug line
+            // Add event listeners for radio buttons
+            const radioButtons = document.querySelectorAll('input[name="appointment_for"]');
+            radioButtons.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    document.getElementById('isForSelf').value = this.value;
+                    console.log("Updated isForSelf value to: " + this.value); // Debug line
+                });
+            });
         });
-    });
-});
-document.addEventListener('DOMContentLoaded', function() {
-    // Set up radio button event listeners
-    const radioButtons = document.querySelectorAll('input[name="appointment_for"]');
-    radioButtons.forEach(radio => {
-        radio.addEventListener('change', function() {
-            // Update the hidden form field with numeric values
-            document.getElementById('isForSelf').value = this.value; // Will be "1" or "0" as strings
-            console.log('isForSelf value updated to: ' + this.value);
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set up radio button event listeners
+            const radioButtons = document.querySelectorAll('input[name="appointment_for"]');
+            radioButtons.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    // Update the hidden form field with numeric values
+                    document.getElementById('isForSelf').value = this.value; // Will be "1" or "0" as strings
+                    console.log('isForSelf value updated to: ' + this.value);
+                });
+            });
+            
+            // Rest of your code...
         });
-    });
-    
-    // Rest of your code...
-});
-// Update the event listener code
-document.addEventListener('DOMContentLoaded', function() {
-    // Set initial value based on the checked radio button
-    const checkedRadio = document.querySelector('input[name="appointment_for"]:checked');
-    if (checkedRadio) {
-        document.getElementById('isForSelfHidden').value = checkedRadio.value;
-    }
+        // Update the event listener code
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set initial value based on the checked radio button
+            const checkedRadio = document.querySelector('input[name="appointment_for"]:checked');
+            if (checkedRadio) {
+                document.getElementById('isForSelfHidden').value = checkedRadio.value;
+            }
 
-    // Add event listeners for radio buttons
-    const radioButtons = document.querySelectorAll('input[name="appointment_for"]');
-    radioButtons.forEach(radio => {
-        radio.addEventListener('change', function() {
-            document.getElementById('isForSelfHidden').value = this.value;
-            console.log("Updated isForSelf value to: " + this.value);
+            // Add event listeners for radio buttons
+            const radioButtons = document.querySelectorAll('input[name="appointment_for"]');
+            radioButtons.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    document.getElementById('isForSelfHidden').value = this.value;
+                    console.log("Updated isForSelf value to: " + this.value);
+                });
+            });
         });
-    });
-});
     </script>
 </body>
 </html>
