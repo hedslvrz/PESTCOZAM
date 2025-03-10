@@ -187,7 +187,7 @@ try {
                 </a>
             </li>
             <li>
-                <a href="#logout" class="logout">
+                <a href="Login.php" class="logout">
                     <i class='bx bx-log-out' ></i>
                     <span class="text">Log out</span>
                 </a>
@@ -573,7 +573,8 @@ try {
                                             <td><?php echo htmlspecialchars($res['status'] ?? 'unverified'); ?></td>
                                             <td class="action-buttons">
                                                 <a href="../employee/forms/editform.php?id=<?php echo urlencode($res['id'] ?? ''); ?>">Edit</a>
-                                                <a href="../employee/functions/delete.php?id=<?php echo urlencode($res['id'] ?? ''); ?>" onclick="return confirm('Are you sure?');">Delete</a>
+                                                <a href="../employee/functions/delete.php?id=<?php echo urlencode($res['id'] ?? ''); ?>" 
+                                                   onclick="return confirmDelete(event);">Delete</a>
                                             </td>
                                         </tr>
                                         <?php endif; ?>
@@ -634,6 +635,15 @@ try {
                                 filterTable();
                             });
                         });
+
+                        async function confirmDelete(event) {
+                            event.preventDefault();
+                            const confirmed = await confirm('Are you sure you want to delete this employee?');
+                            if (confirmed) {
+                                window.location.href = event.target.href;
+                            }
+                            return false;
+                        }
                     </script>
 
                 </div>
@@ -1238,5 +1248,16 @@ try {
 
 <!-- CONTENT -->
     <script src="../JS CODES/dashboard-admin.js"></script>
+    <!-- Logout Confirmation Modal -->
+    <div id="logoutModal" class="modal">
+        <div class="modal-content">
+            <h2>Confirm Logout</h2>
+            <p>Are you sure you want to logout?</p>
+            <div class="modal-buttons">
+                <button id="confirmLogout" class="btn-confirm">Yes, Logout</button>
+                <button id="cancelLogout" class="btn-cancel">Cancel</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

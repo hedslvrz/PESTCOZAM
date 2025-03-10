@@ -124,4 +124,15 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     });
+
+    // Logout confirmation
+    const logoutLink = document.querySelector('a[href*="logout"]');
+    if (logoutLink) {
+        logoutLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (confirm('Are you sure you want to logout?')) {
+                window.location.href = this.href;
+            }
+        });
+    }
 });

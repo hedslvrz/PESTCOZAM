@@ -10,15 +10,22 @@ function validateForm(event) {
     let password = document.getElementById('password').value.trim();
 
     if (email === "") {
-        alert("Email is required.");
+        showModal("Error", "Email is required.");
         return false;
     }
     if (password === "") {
-        alert("Password is required.");
+        showModal("Error", "Password is required.");
         return false;
     }
 
     return loginUser(event); // Pass the event object
+}
+
+function showModal(title, message) {
+    const modal = document.getElementById('customModal');
+    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('modalMessage').textContent = message;
+    modal.style.display = "block";
 }
 
 function loginUser(event) {
@@ -38,23 +45,24 @@ function loginUser(event) {
     .then(data => {
         if (data.success) {
             if (data.role === "admin") {
-                alert("Login Successful!")
-                window.location.href = "../HTML CODES/dashboard-admin.php";
-            } else if (data.role === "technician"){
-                window.location.href = "../HTML CODES/dashboard-pct.php"
+                customModal.showSuccess("Login Successful!", () => {
+                    window.location.href = "../HTML CODES/dashboard-admin.php";
+                });
+            } else if (data.role === "technician") {
+                window.location.href = "../HTML CODES/dashboard-pct.php";
             } else if (data.role === "supervisor") {
-                window.location.href = "../HTML CODES/dashboard-aos.php"
+                window.location.href = "../HTML CODES/dashboard-aos.php";
             } else {
-                alert("Login Successful!")
-                window.location.href = "../HTML CODES/Home_page.php";
+                customModal.showSuccess("Login Successful!", () => {
+                    window.location.href = "../HTML CODES/Home_page.php";
+                });
             }
         } else {
-            alert(data.message);
-            
+            customModal.showError(data.message);
         }
     })
     .catch(error => {
+        customModal.showError("An error occurred. Please try again.");
         console.error("Error:", error);
-        alert("An error occurred. Please try again.");
     });
 }

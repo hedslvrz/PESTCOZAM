@@ -194,6 +194,78 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     });
+
+    // Enhanced logout confirmation
+    const logoutLink = document.querySelector('a[href*="logout"]'); // Ensure the correct logout link is selected
+    const logoutModal = document.getElementById('logoutModal');
+    const confirmLogout = document.getElementById('confirmLogout');
+    const cancelLogout = document.getElementById('cancelLogout');
+
+    if (logoutLink) {
+        logoutLink.addEventListener('click', function (e) {
+            e.preventDefault(); // Prevent default logout behavior
+            logoutModal.style.display = 'block';
+        });
+
+        confirmLogout.addEventListener('click', function () {
+            window.location.href = logoutLink.href; // Redirect to the logout link
+        });
+
+        cancelLogout.addEventListener('click', function () {
+            logoutModal.style.display = 'none'; // Hide the modal
+        });
+
+        // Close modal when clicking outside the modal content
+        window.addEventListener('click', function (e) {
+            if (e.target === logoutModal) {
+                logoutModal.style.display = 'none';
+            }
+        });
+    }
+});
+
+// Logout Modal Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const logoutLink = document.querySelector('.logout');
+    const logoutModal = document.getElementById('logoutModal');
+    const confirmLogout = document.getElementById('confirmLogout');
+    const cancelLogout = document.getElementById('cancelLogout');
+
+    // Show modal when logout link is clicked
+    if (logoutLink) {
+        logoutLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            logoutModal.style.display = 'block';
+        });
+    }
+
+    // Handle confirm logout
+    if (confirmLogout) {
+        confirmLogout.addEventListener('click', function() {
+            window.location.href = 'Login.php';
+        });
+    }
+
+    // Handle cancel logout
+    if (cancelLogout) {
+        cancelLogout.addEventListener('click', function() {
+            logoutModal.style.display = 'none';
+        });
+    }
+
+    // Close modal when clicking outside
+    window.addEventListener('click', function(e) {
+        if (e.target === logoutModal) {
+            logoutModal.style.display = 'none';
+        }
+    });
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && logoutModal.style.display === 'block') {
+            logoutModal.style.display = 'none';
+        }
+    });
 });
 
 
