@@ -24,7 +24,7 @@ $user->email = filter_var(trim($data['email']), FILTER_SANITIZE_EMAIL);
 $user->mobile_number = preg_replace('/\D/', '', trim($data['mobile_number']));
 $user->password = trim($data['password']);
 $user->role = "user";
-$user->status = "Unverified";
+$user->status = "Verified";
 
 // Validate email format
 if (!filter_var($user->email, FILTER_VALIDATE_EMAIL)) {
@@ -60,7 +60,7 @@ if ($user->emailExists()) {
 // Create the user
 if ($user->create()) {
     http_response_code(201);
-    echo json_encode(["message" => "User registered successfully. Please verify your account.", "success" => true]);
+    echo json_encode(["message" => "User registered successfully. Please Login.", "success" => true]);
 } else {
     http_response_code(500);
     echo json_encode(["message" => "Error registering user.", "success" => false]);
