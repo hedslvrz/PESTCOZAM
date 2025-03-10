@@ -85,7 +85,8 @@ try {
         a.street_address,
         a.barangay,
         a.city,
-        a.region,
+        a.technician_id,
+        a.is_for_self,
         s.service_name,
         CASE 
             WHEN a.is_for_self = 1 THEN u.firstname
@@ -415,63 +416,63 @@ try {
                             </tr>
                         </thead>
                         <tbody>
-                            <?php if (!empty($appointments)): ?>
-                                <?php foreach ($appointments as $appointment): ?>
-                                    <tr>
-                                        <td>#<?php echo htmlspecialchars($appointment['appointment_id']); ?></td>
-                                        <td>
-                                            <div class="schedule-info">
-                                                <i class='bx bx-calendar'></i>
-                                                <div>
-                                                    <span class="date"><?php echo date('M d, Y', strtotime($appointment['appointment_date'])); ?></span>
-                                                    <span class="time"><?php echo date('h:i A', strtotime($appointment['appointment_time'])); ?></span>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="customer-info">
-                                                <i class='bx bx-user'></i>
-                                                <span><?php echo htmlspecialchars($appointment['client_firstname'] . ' ' . 
-                                                    $appointment['client_lastname']); ?></span>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="service-info">
-                                                <i class='bx bx-package'></i>
-                                                <span><?php echo htmlspecialchars($appointment['service_name']); ?></span>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="tech-info">
-                                                <?php if (!empty($appointment['tech_firstname'])): ?>
-                                                    <i class='bx bx-user-check'></i>
-                                                    <span><?php echo htmlspecialchars($appointment['tech_firstname'] . ' ' . 
-                                                        $appointment['tech_lastname']); ?></span>
-                                                <?php else: ?>
-                                                    <span class="no-tech">Not Assigned</span>
-                                                <?php endif; ?>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <span class="status <?php echo strtolower($appointment['status']); ?>">
-                                                <?php echo htmlspecialchars($appointment['status']); ?>
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <button type="button" class="view-btn" 
-                                                    onclick="viewDetails(<?php echo $appointment['appointment_id']; ?>)">
-                                                <i class='bx bx-show'></i>
-                                                View
-                                            </button>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            <?php else: ?>
-                                <tr>
-                                    <td colspan="7" class="no-records">No appointments found</td>
-                                </tr>
-                            <?php endif; ?>
-                        </tbody>
+    <?php if (!empty($appointments)): ?>
+        <?php foreach ($appointments as $appointment): ?>
+            <tr>
+                <td>#<?php echo htmlspecialchars($appointment['appointment_id']); ?></td>
+                <td>
+                    <div class="schedule-info">
+                        <i class='bx bx-calendar'></i>
+                        <div>
+                            <span class="date"><?php echo date('M d, Y', strtotime($appointment['appointment_date'])); ?></span>
+                            <span class="time"><?php echo date('h:i A', strtotime($appointment['appointment_time'])); ?></span>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div class="customer-info">
+                        <i class='bx bx-user'></i>
+                        <span><?php echo htmlspecialchars($appointment['client_firstname'] . ' ' . 
+                            $appointment['client_lastname']); ?></span>
+                    </div>
+                </td>
+                <td>
+                    <div class="service-info">
+                        <i class='bx bx-package'></i>
+                        <span><?php echo htmlspecialchars($appointment['service_name']); ?></span>
+                    </div>
+                </td>
+                <td>
+                    <div class="tech-info">
+                        <?php if (!empty($appointment['tech_firstname'])): ?>
+                            <i class='bx bx-user-check'></i>
+                            <span><?php echo htmlspecialchars($appointment['tech_firstname'] . ' ' . 
+                                $appointment['tech_lastname']); ?></span>
+                        <?php else: ?>
+                            <span class="no-tech">Not Assigned</span>
+                        <?php endif; ?>
+                    </div>
+                </td>
+                <td>
+                    <span class="status <?php echo strtolower($appointment['status']); ?>">
+                        <?php echo htmlspecialchars($appointment['status']); ?>
+                    </span>
+                </td>
+                <td>
+                    <button type="button" class="view-btn" 
+                            onclick="viewDetails(<?php echo $appointment['appointment_id']; ?>)">
+                        <i class='bx bx-show'></i>
+                        View
+                    </button>
+                </td>
+            </tr>
+        <?php endforeach; ?>
+    <?php else: ?>
+        <tr>
+            <td colspan="7" class="no-records">No appointments found</td>
+        </tr>
+    <?php endif; ?>
+</tbody>
                     </table>
                 </div>
             </div>
