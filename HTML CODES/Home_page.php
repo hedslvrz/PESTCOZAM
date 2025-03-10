@@ -10,7 +10,6 @@ if ($is_logged_in) {
     $profile_pic = isset($_SESSION['profile_pic']) ? $_SESSION['profile_pic'] : '../Pictures/boy.png';
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -185,7 +184,7 @@ if ($is_logged_in) {
                       Lec convails felis habitasse libra<br>
                       torquent augue.Natoque possiere libra</p>
                       <div class="button-group">
-                          <button class="learn-btn" onclick="window.location.href='Pest_Control_Info.html'">Learn More</button>
+                          <button class="learn-btn" onclick="window.location.href='Pest_Control_Info.php'">Learn More</button>
                       </div>
                   </div>
                   <div class="card blue-card">
@@ -193,7 +192,7 @@ if ($is_logged_in) {
                       <p>elementum non sociosqu.Vulputate enim<br>
                       plates non convails aenean laculis.</p>
                       <div class="button-group">
-                          <button class="learn-btn" onclick="window.location.href='Inspection_Info.html'">Learn More</button>
+                          <button class="learn-btn" onclick="window.location.href='Inspection_Info.php'">Learn More</button>
                       </div>
                   </div>
               </div>
@@ -264,7 +263,7 @@ if ($is_logged_in) {
             </div>
             <div class="button-group">
                 <button class="book-now-btn" onclick="window.location.href='Appointment-service.php'">Book Now</button>
-                <button class="learn-more-btn" onclick="window.location.href='Lrn_more_sp.html'">Learn More</button>
+                <button class="learn-more-btn" onclick="window.location.href='Lrn_more_sp.php'">Learn More</button>
             </div>
           </div>
         </div>
@@ -284,20 +283,36 @@ if ($is_logged_in) {
             </div>
             <div class="button-group">
                 <button class="book-now-btn" onclick="window.location.href='Appointment-service.php'">Book Now</button>
-                <button class="learn-more-btn" onclick="window.location.href='Lrn_more_md.html'">Learn More</button>
+                <button class="learn-more-btn" onclick="window.location.href='Lrn_more_md.php'">Learn More</button>
             </div>
           </div>
         </div>
 
         <!-- Card 3 -->
         <div class="offer-card">
-          <img src="../Pictures/termite control.jpg" alt="Termite Control" />
+          <img src="../Pictures/gpc pic.jpg" alt="General Pest Control" />
           <div class="offer-text">
-            <h3>Termite Control</h3>
+            <h3>General Pest Control</h3>
             <p>
               Accumsan iaculis dictumst montes eros nec tristique accumsan. 
               Accumsan iaculis dictumst montes eros.
             </p>
+            <div class="service-details">
+              <p><i class='bx bx-time'></i> Est. Time: 2-3 hours</p>
+              <p><i class='bx bx-money'></i> Starting at ₱3,000</p>
+            </div>
+            <div class="button-group">
+                <button class="book-now-btn" onclick="window.location.href='Appointment-service.php'">Book Now</button>
+                <button class="learn-more-btn" onclick="window.location.href='Lrn_more_gpc.php'">Learn More</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 4 -->
+        <div class="offer-card">
+          <img src="../Pictures/termite control.jpg" alt="Termite Control" />
+          <div class="offer-text">
+            <h3>Termite Control</h3>
             <p>
               Accumsan iaculis dictumst montes eros nec tristique accumsan. 
               Accumsan iaculis dictumst montes eros.
@@ -308,7 +323,7 @@ if ($is_logged_in) {
             </div>
             <div class="button-group">
                 <button class="book-now-btn" onclick="window.location.href='Appointment-service.php'">Book Now</button>
-                <button class="learn-more-btn" onclick="window.location.href='Lrn_more_gpc.html'">Learn More</button>
+                <button class="learn-more-btn" onclick="window.location.href='Lrn_more_tc.php'">Learn More</button>
             </div>
           </div>
         </div>
@@ -328,7 +343,7 @@ if ($is_logged_in) {
             </div>
             <div class="button-group">
                 <button class="book-now-btn" onclick="window.location.href='Appointment-service.php'">Book Now</button>
-                <button class="learn-more-btn" onclick="window.location.href='Lrn_more_mc.html'">Learn More</button>
+                <button class="learn-more-btn" onclick="window.location.href='Lrn_more_mc.php'">Learn More</button>
             </div>
           </div>
         </div>
@@ -348,7 +363,7 @@ if ($is_logged_in) {
             </div>
             <div class="button-group">
                 <button class="book-now-btn" onclick="window.location.href='Appointment-service.php'">Book Now</button>
-                <button class="learn-more-btn" onclick="window.location.href='Lrn_more_rat.html'">Learn More</button>
+                <button class="learn-more-btn" onclick="window.location.href='Lrn_more_rat.php'">Learn More</button>
             </div>
           </div>
         </div>
@@ -368,7 +383,7 @@ if ($is_logged_in) {
             </div>
             <div class="button-group">
                 <button class="book-now-btn" onclick="window.location.href='Appointment-service.php'">Book Now</button>
-                <button class="learn-more-btn" onclick="window.location.href='Lrn_more_rat.html'">Learn More</button>
+                <button class="learn-more-btn" onclick="window.location.href='Lrn_more_other.php'">Learn More</button>
             </div>
           </div>
         </div>
@@ -388,7 +403,7 @@ if ($is_logged_in) {
             </div>
             <div class="button-group">
                 <button class="book-now-btn" onclick="window.location.href='Appointment-service.php'">Book Now</button>
-                <button class="learn-more-btn" onclick="window.location.href='Lrn_more_rat.html'">Learn More</button>
+                <button class="learn-more-btn" onclick="window.location.href='Lrn_more_extraction.php'">Learn More</button>
             </div>
           </div>
         </div>
