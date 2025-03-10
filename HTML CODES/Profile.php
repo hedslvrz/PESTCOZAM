@@ -159,7 +159,7 @@ $recent_appointment = $stmt->get_result()->fetch_assoc();
           </thead>
           <tbody>
             <?php while($appointment = $appointments->fetch_assoc()): ?>
-            <tr>
+            <tr class="history-row" data-appointment-id="<?php echo $appointment['id']; ?>">
               <td><?php echo $appointment['id']; ?></td>
               <td><?php echo htmlspecialchars($appointment['service_name']); ?></td>
               <td><?php echo date('m/d/y', strtotime($appointment['appointment_date'])); ?></td>
@@ -230,6 +230,15 @@ $recent_appointment = $stmt->get_result()->fetch_assoc();
     </div>
   </div>
 
+  <!-- Appointment Details Modal -->
+  <div id="appointmentDetailsModal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2>Appointment Details</h2>
+      <div id="appointmentDetails"></div>
+    </div>
+  </div>
+
   <script>
     let lastScrollTop = 0;
     const headerWrapper = document.querySelector('.header-wrapper');
@@ -295,6 +304,49 @@ $recent_appointment = $stmt->get_result()->fetch_assoc();
         alert('Error updating profile');
         console.error(error);
       });
+    }
+
+    document.querySelectorAll('.history-row').forEach(row => {
+      row.addEventListener('click', function() {
+        const appointmentId = this.dataset.appointmentId;
+        fetch(`get_appointment_details.php?id=${appointmentId}`)
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              const details = data.details;
+              const detailsHtml = `
+                <p><strong>Appointment #:</strong> ${details.id}</p>
+                <p><strong>Type of Service:</strong> ${details.service_name}</p>
+                <p><strong>Date:</strong> ${details.appointment_date}</p>
+                <p><strong>Time:</strong> ${details.appointment_time}</p>
+                <p><strong>Location:</strong> ${details.street_address}</p>
+                <p><strong>Technician:</strong> ${details.technician_name || 'Not yet assigned'}</p>
+                <p><strong>Status:</strong> ${details.status}</p>
+              `;
+              document.getElementById('appointmentDetails').innerHTML = detailsHtml;
+              document.getElementById('appointmentDetailsModal').style.display = 'block';
+            } else {
+              alert('Error fetching appointment details');
+            }
+          })
+          .catch(error => {
+            alert('Error fetching appointment details');
+            console.error(error);
+          });
+      });
+    });
+
+    const appointmentModal = document.getElementById('appointmentDetailsModal');
+    const closeAppointmentModal = document.querySelector('#appointmentDetailsModal .close');
+
+    closeAppointmentModal.onclick = function() {
+      appointmentModal.style.display = 'none';
+    }
+
+    window.onclick = function(event) {
+      if (event.target == appointmentModal) {
+        appointmentModal.style.display = 'none';
+      }
     }
   </script>
 </body>
