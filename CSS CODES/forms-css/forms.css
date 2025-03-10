@@ -1,0 +1,190 @@
+body {
+    background: whitesmoke;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    height: 100vh; /* Force 100% viewport height */
+    overflow: hidden; /* Prevent body scrolling */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: 'Poppins', sans-serif;
+}
+
+.container {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    width: 80%;
+    max-width: 800px;
+    margin: auto;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+}
+
+h1 {
+    color: #144578;
+    text-align: center;
+    margin-bottom: 0.75rem;
+    font-size: 1.5rem;
+}
+
+.home-link {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: #144578;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    margin: 0.5rem 0; /* Reduced from 1rem */
+    transition: background-color 0.3s ease;
+}
+
+.home-link:hover {
+    background: #0d2f52;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+    margin-top: 1rem;
+    padding: 0 0.5rem;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #144578;
+    font-weight: 500;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 0.4rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    transition: border-color 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #144578;
+}
+
+.action-buttons {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    text-align: center;
+}
+
+.status-section {
+    margin: 1rem auto;
+    text-align: center;
+}
+
+.status-wrapper {
+    display: flex;
+    justify-content: center;
+    margin: 1.5rem 0;
+    width: 100%;
+}
+
+.status-center {
+    width: 250px;
+    margin: 0;
+    text-align: center;
+}
+
+.status-center select {
+    text-align: center;
+    text-align-last: center;
+}
+
+.action-section {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-container {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 120px;
+    text-align: center;
+}
+
+/* Swap the visual order by changing the background colors */
+.btn-update {
+    background: #144578;
+    color: white;
+}
+
+.btn-update:hover {
+    background: #0d2f52;
+}
+
+.btn-cancel {
+    background: #dc3545;
+    color: white;
+}
+
+.btn-cancel:hover {
+    background: #bb2d3b;
+}
+
+/* Add responsive adjustments for smaller screens */
+@media screen and (max-height: 700px) {
+    .container {
+        padding: 1rem;
+        max-height: 85vh;
+    }
+    
+    .form-grid {
+        gap: 1.5rem; /* Increased from 0.75rem */
+    }
+    
+    .form-group {
+        margin-bottom: 1rem; /* Increased from 0.5rem */
+    }
+    
+    h1 {
+        margin-bottom: 0.75rem;
+    }
+}
+
+@media screen and (max-height: 600px) {
+    .container {
+        padding: 1rem;
+    }
+    
+    .form-grid {
+        gap: 1rem; /* Increased from 0.5rem */
+    }
+}

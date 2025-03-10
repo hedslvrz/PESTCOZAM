@@ -199,5 +199,50 @@ document.getElementById("nextButton").addEventListener("click", function() {
     })
     .catch(error => console.error("Error:", error));
 });
+
+// Populate dropdowns with hardcoded values
+window.addEventListener('DOMContentLoaded', function() {
+    // Region - locked with Region IX
+    const region = document.getElementById('region');
+    region.innerHTML = `<option value="Region IX">Region IX</option>`;
+    region.disabled = true;
+
+    // Province - locked with Zamboanga Del Sur
+    const province = document.getElementById('province');
+    province.innerHTML = `<option value="Zamboanga Del Sur">Zamboanga Del Sur</option>`;
+    province.disabled = true;
+
+    // City - locked with Zamboanga City
+    const city = document.getElementById('city');
+    city.innerHTML = `<option value="Zamboanga City">Zamboanga City</option>`;
+    city.disabled = true;
+
+    // Barangay - remains selectable
+    const barangay = document.getElementById('barangay');
+    barangay.innerHTML = `
+        <option value="">Select Barangay</option>
+        <option value="Ayala">Ayala</option>
+        <option value="Baliwasan">Baliwasan</option>
+        <option value="Boalan">Boalan</option>
+        <option value="Upper Calarian">Upper Calarian</option>
+        <option value="Lower Calarian">Lower Calarian</option>
+        <option value="Campo Islam">Campo Islam</option>
+        <option value="Canelar">Canelar</option>
+        <option value="Divisoria">Divisoria</option>
+        <option value="Guiwan">Guiwan</option>
+        <option value="Lunzuran">Lunzuran</option>
+        <option value="Mampang">Mampang</option>
+        <option value="Pasonanca">Pasonanca</option>
+        <option value="Putik">Putik</option>
+        <option value="Recodo">Recodo</option>
+        <option value="San Jose Gusu">San Jose Gusu</option>
+        <option value="San Roque">San Roque</option>
+        <option value="Santa Barbara">Santa Barbara</option>
+        <option value="Santa Maria">Santa Maria</option>
+        <option value="Tetuan">Tetuan</option>
+        <option value="Tugbungan">Tugbungan</option>
+        <option value="Zamboanga Port">Zamboanga Port</option>
+    `;
+});
 </script>
 </html>

@@ -1839,12 +1839,24 @@ th {
     color: white;
 }
 
-/* Updated Employee Section Styles */
+/* MANAGE EMPLOYEE SECTION*/
+#employees {
+    position: relative;
+    display: flex;
+}
 #employees .table-data {
     background: white;
     padding: 24px;
     border-radius: 12px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    height: 80%;
+}
+#employees .employee-list {
+    background: white;
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    width: 100%;
 }
 
 #employees .order-stats {
@@ -1935,6 +1947,7 @@ th {
 #employees .table-container {
     overflow-x: auto;
     margin-bottom: 20px;
+
 }
 
 #employees table {
@@ -1991,4 +2004,70 @@ th {
 
 #employees .pagination button:hover:not(.active) {
     background: #f8f9fa;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+.action-buttons a {
+    padding: 6px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.action-buttons a:first-child {
+    background: #e6f3ff;
+    color: #144578;
+}
+
+.action-buttons a:last-child {
+    background: #ffebee;
+    color: #dc3545;
+}
+
+.action-buttons a:first-child:hover {
+    background: #144578;
+    color: white;
+}
+
+.action-buttons a:last-child:hover {
+    background: #dc3545;
+    color: white;
+}
+
+.btn-add-employees {
+    height: 36px;
+    padding: 0 16px;
+    border-radius: 36px;
+    background: #144578;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    font-weight: 500;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-add-employees:hover {
+    background: #1a5a9e;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.btn-add-employees i {
+    font-size: 20px;
+}
+
+.btn-add-employees .text {
+    font-size: 14px;
 }

@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once '../database.php';
+include_once("../employee/functions/fetch.php");
 
 // Initialize database connection
 $database = new Database();
@@ -32,6 +33,46 @@ try {
 } catch(PDOException $e) {
     error_log("Error: " . $e->getMessage());
     $stats = null;
+}
+
+// Get employee statistics
+try {
+    $stmt = $db->query("SELECT 
+        COUNT(*) AS total, 
+        SUM(role = 'technician') AS technicians,
+        SUM(role = 'supervisor') AS supervisors,
+        SUM(role = 'technician' AND status = 'verified') AS verified_technicians,
+        SUM(role = 'supervisor' AND status = 'verified') AS verified_supervisors,
+        SUM(role = 'technician' AND status = 'unverified') AS unverified_technicians,
+        SUM(role = 'supervisor' AND status = 'unverified') AS unverified_supervisors
+    FROM users
+    WHERE role IN ('technician', 'supervisor')");
+
+    $data = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    // Ensure $data is not null
+    if (!$data) {
+        $data = [
+            'total' => 0, 
+            'technicians' => 0, 
+            'supervisors' => 0, 
+            'verified_technicians' => 0, 
+            'verified_supervisors' => 0, 
+            'unverified_technicians' => 0, 
+            'unverified_supervisors' => 0
+        ];
+    }
+} catch (PDOException $e) {
+    error_log("Database Error: " . $e->getMessage());
+    $data = [
+        'total' => 0, 
+        'technicians' => 0, 
+        'supervisors' => 0, 
+        'verified_technicians' => 0, 
+        'verified_supervisors' => 0, 
+        'unverified_technicians' => 0, 
+        'unverified_supervisors' => 0
+    ];
 }
 
 // Replace the existing appointments query with this
@@ -72,16 +113,13 @@ try {
 
     // Get technicians
     $techQuery = "SELECT id, firstname, lastname 
-                 FROM users 
-                 WHERE role = 'technician' 
-                 AND status = 'verified'";
+            FROM users 
+            WHERE role = 'technician' 
+            AND status = 'verified'";
     $techStmt = $db->prepare($techQuery);
     $techStmt->execute();
     $technicians = $techStmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Add debug output
-    echo "<!-- Debug: Found " . count($appointments) . " appointments -->";
-    
 } catch(PDOException $e) {
     error_log("Error fetching data: " . $e->getMessage());
     $appointments = [];
@@ -465,44 +503,39 @@ try {
 <!-- Employee Section -->
 <section id="employees" class="section">
     <main>
-        <form id="employees-form" method="POST" action="process_employees.php">
+        <form id="employees-form" method="POST" action="../employee/forms/addform.php">
             <div class="head-title">
                 <div class="left">
                     <h1>Employee Management</h1>
-                    <ul class="breadcrumb">
-                        <li><a href="#">Employees</a></li>
-                        <li><i class='bx bx-right-arrow-alt'></i></li>
-                        <li><a class="active" href="#">List</a></li>
-                    </ul>
                 </div>
-                <button class="btn-add">
+                <a href="../employee/forms/addform.php" class="btn-add-employees">
                     <i class='bx bx-plus'></i>
                     <span class="text">Add New Employee</span>
-                </button>
+                </a>
             </div>
-
             <div class="table-data">
+
                 <div class="employee-list">
                     <div class="order-stats">
                         <div class="stat-card">
                             <i class='bx bxs-group'></i>
                             <div class="stat-details">
                                 <h3>Total Employees</h3>
-                                <p>25</p>
+                                <p><?php echo $data['technicians'] + $data['supervisors']; ?></p>
                             </div>
                         </div>
                         <div class="stat-card">
                             <i class='bx bxs-user-check'></i>
                             <div class="stat-details">
-                                <h3>Active</h3>
-                                <p>20</p>
+                                <h3>Verified</h3>
+                                <p><?php echo $data['verified_technicians'] + $data['verified_supervisors']; ?></p>
                             </div>
                         </div>
                         <div class="stat-card">
                             <i class='bx bxs-user-x'></i>
                             <div class="stat-details">
-                                <h3>Inactive</h3>
-                                <p>5</p>
+                                <h3>Unverified</h3>
+                                <p><?php echo $data['unverified_technicians'] + $data['unverified_supervisors']; ?></p>
                             </div>
                         </div>
                     </div>
@@ -510,25 +543,29 @@ try {
                     <div class="table-header">
                         <div class="search-bar">
                             <i class='bx bx-search'></i>
-                            <input type="text" placeholder="Search employee...">
+                            <input type="text" id="searchInput" placeholder="Search employee...">
                         </div>
                         <div class="filter-options">
-                            <select>
-                                <option value="">All Teams</option>
-                                <option value="treatment">Treatment Team</option>
-                                <option value="accounting">Accounting</option>
-                                <option value="hr">HR Department</option>
+                            <select id="sortBy">
+                                <option value="">Sort by</option>
+                                <option value="asc">A - Z</option>
+                                <option value="desc">Z - A</option>
                             </select>
-                            <select>
+                            <select id="filterRole">
+                                <option value="">Roles</option>
+                                <option value="supervisor">Supervisor</option>
+                                <option value="technician">Technician</option>            
+                            </select>
+                            <select id="filterStatus">
                                 <option value="">Status</option>
-                                <option value="active">Active</option>
-                                <option value="inactive">Inactive</option>
+                                <option value="verified">Verified</option>
+                                <option value="unverified">Unverified</option>
                             </select>
                         </div>
                     </div>
 
                     <div class="table-container">
-                        <table>
+                        <table id="employeeTable">
                             <thead>
                                 <tr>
                                     <td><input type="checkbox"></td>
@@ -536,75 +573,88 @@ try {
                                     <th>Date of Birth</th>
                                     <th>Email</th>
                                     <th>Mobile Number</th>
-                                    <th>Team</th>
+                                    <th>Role</th>
                                     <th>Status</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td><input type="checkbox"></td>
-                                    <td>Juan Delacruz</td>
-                                    <td>January 01, 1990</td>
-                                    <td>Juan@gmail.com</td>
-                                    <td>09111111111</td>
-                                    <td><span class="team-label green">Treatment Team</span></td>
-                                    <td>Active</td>
-                                    <td>
-                                        <button class="btn edit-btn">Edit</button>
-                                        <button class="btn delete-btn">Delete</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><input type="checkbox"></td>
-                                    <td>Toe Big</td>
-                                    <td>January 02, 1990</td>
-                                    <td>toe@gmail.com</td>
-                                    <td>09111111112</td>
-                                    <td><span class="team-label green">Treatment Team</span></td>
-                                    <td>Active</td>
-                                    <td>
-                                        <button class="btn edit-btn">Edit</button>
-                                        <button class="btn delete-btn">Delete</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><input type="checkbox"></td>
-                                    <td>Trinity Marasigan</td>
-                                    <td>January 03, 1990</td>
-                                    <td>trinity@gmail.com</td>
-                                    <td>09111111113</td>
-                                    <td><span class="team-label yellow">Accounting</span></td>
-                                    <td>Active</td>
-                                    <td>
-                                        <button class="btn edit-btn">Edit</button>
-                                        <button class="btn delete-btn">Delete</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><input type="checkbox"></td>
-                                    <td>For Yu</td>
-                                    <td>January 04, 1990</td>
-                                    <td>for@gmail.com</td>
-                                    <td>09111111114</td>
-                                    <td><span class="team-label orange">HR Department</span></td>
-                                    <td>Inactive</td>
-                                    <td>
-                                        <button class="btn edit-btn">Edit</button>
-                                        <button class="btn delete-btn">Delete</button>
-                                    </td>
-                                </tr>
+                                <?php if (!empty($employees)): ?>
+                                    <?php foreach ($employees as $res): ?>
+                                        <?php if ($res['role'] === 'technician' || $res['role'] === 'supervisor'): ?>
+                                        <tr data-role="<?php echo htmlspecialchars($res['role']); ?>" data-status="<?php echo htmlspecialchars($res['status']); ?>">
+                                            <td><input type="checkbox"></td>
+                                            <td><?php echo htmlspecialchars(($res['firstname'] ?? '') . ' ' . ($res['lastname'] ?? '')); ?></td>
+                                            <td><?php echo htmlspecialchars($res['dob'] ?? 'N/A'); ?></td>
+                                            <td><?php echo htmlspecialchars($res['email'] ?? 'N/A'); ?></td>
+                                            <td><?php echo htmlspecialchars($res['mobile_number'] ?? 'N/A'); ?></td>
+                                            <td><?php echo htmlspecialchars($res['role'] ?? 'N/A'); ?></td>
+                                            <td><?php echo htmlspecialchars($res['status'] ?? 'unverified'); ?></td>
+                                            <td class="action-buttons">
+                                                <a href="../employee/forms/editform.php?id=<?php echo urlencode($res['id'] ?? ''); ?>">Edit</a>
+                                                <a href="../employee/functions/delete.php?id=<?php echo urlencode($res['id'] ?? ''); ?>" onclick="return confirm('Are you sure?');">Delete</a>
+                                            </td>
+                                        </tr>
+                                        <?php endif; ?>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <tr>
+                                        <td colspan="8">No Technicians or Supervisors available</td>
+                                    </tr>
+                                <?php endif; ?>
                             </tbody>
                         </table>
                     </div>
 
-                    <div class="pagination">
-                        <button>&laquo;</button>
-                        <button class="active">1</button>
-                        <button>2</button>
-                        <button>3</button>
-                        <button>&raquo;</button>
-                    </div>
+                    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+                    <script>
+                        $(document).ready(function () {
+                            function filterTable() {
+                                let searchValue = $("#searchInput").val().toLowerCase().trim();
+                                let selectedRole = $("#filterRole").val();
+                                let selectedStatus = $("#filterStatus").val();
+
+                                $("#employeeTable tbody tr").each(function () {
+                                    let name = $(this).find("td:nth-child(2)").text().toLowerCase();
+                                    let email = $(this).find("td:nth-child(4)").text().toLowerCase();
+                                    let mobile = $(this).find("td:nth-child(5)").text().toLowerCase();
+                                    let role = $(this).attr("data-role");
+                                    let status = $(this).attr("data-status");
+
+                                    let searchMatch = searchValue === "" || name.includes(searchValue) || email.includes(searchValue) || mobile.includes(searchValue);
+                                    let roleMatch = selectedRole === "" || role === selectedRole;
+                                    let statusMatch = selectedStatus === "" || status === selectedStatus;
+
+                                    $(this).toggle(searchMatch && roleMatch && statusMatch);
+                                });
+                            }
+
+                            function sortTable() {
+                                let rows = $("#employeeTable tbody tr").get();
+                                let sortOrder = $("#sortBy").val();
+
+                                if (!sortOrder) return; // No sorting if default option is selected
+
+                                rows.sort(function (a, b) {
+                                    let nameA = $(a).find("td:nth-child(2)").text().trim().toLowerCase();
+                                    let nameB = $(b).find("td:nth-child(2)").text().trim().toLowerCase();
+
+                                    return sortOrder === "asc" ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+                                });
+
+                                $.each(rows, function (index, row) {
+                                    $("#employeeTable tbody").append(row);
+                                });
+                            }
+
+                            $("#searchInput, #filterRole, #filterStatus").on("input change", filterTable);
+                            $("#sortBy").on("change", function () {
+                                sortTable();
+                                filterTable();
+                            });
+                        });
+                    </script>
+
                 </div>
             </div>
         </form>
