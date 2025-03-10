@@ -108,3 +108,61 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+// Simplify the modal handling code
+function openAssignModal(appointmentId) {
+    const modal = document.getElementById('assignTechModal');
+    document.getElementById('appointmentId').value = appointmentId;
+    modal.style.display = 'block';
+}
+
+function closeAssignModal() {
+    const modal = document.getElementById('assignTechModal');
+    modal.style.display = 'none';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Close modal handlers
+    document.querySelector('.close').onclick = closeAssignModal;
+    document.querySelector('.btn-cancel').onclick = closeAssignModal;
+    
+    // Close on outside click
+    window.onclick = function(event) {
+        const modal = document.getElementById('assignTechModal');
+        if (event.target === modal) {
+            closeAssignModal();
+        }
+    }
+
+    // Handle form submission
+    document.getElementById('assignTechForm').onsubmit = function(e) {
+        e.preventDefault();
+        
+        const formData = {
+            appointment_id: document.getElementById('appointmentId').value,
+            technician_id: document.getElementById('technicianId').value
+        };
+
+        fetch('../PHP CODES/assign_technician.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Technician assigned successfully!');
+                closeAssignModal();
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while assigning technician');
+        });
+    };
+});

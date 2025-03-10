@@ -5,7 +5,7 @@ require_once '../database.php';
 header('Content-Type: application/json');
 
 // Check if user is authorized
-if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'], ['admin', 'supervisor'])) {
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'supervisor') {
     echo json_encode(['success' => false, 'message' => 'Unauthorized']);
     exit();
 }
@@ -20,13 +20,14 @@ if (!isset($data['appointment_id']) || !isset($data['technician_id'])) {
 
 try {
     $db = (new Database())->getConnection();
-    $db->beginTransaction();
-
+    
     // Update appointment with technician_id and status
-    $stmt = $db->prepare("UPDATE appointments 
-                         SET technician_id = :technician_id, 
-                             status = 'Confirmed' 
-                         WHERE id = :appointment_id");
+    $stmt = $db->prepare(
+        "UPDATE appointments 
+        SET technician_id = :technician_id, 
+            status = 'Confirmed' 
+        WHERE id = :appointment_id"
+    );
 
     $success = $stmt->execute([
         ':technician_id' => $data['technician_id'],
@@ -34,22 +35,20 @@ try {
     ]);
 
     if ($success) {
-        $db->commit();
         echo json_encode([
-            'success' => true,
+            'success' => true, 
             'message' => 'Technician assigned successfully'
         ]);
     } else {
-        throw new PDOException("Failed to update appointment");
+        echo json_encode([
+            'success' => false,
+            'message' => 'Failed to assign technician'
+        ]);
     }
 
 } catch (PDOException $e) {
-    if ($db->inTransaction()) {
-        $db->rollBack();
-    }
-    error_log("Error assigning technician: " . $e->getMessage());
     echo json_encode([
         'success' => false,
-        'message' => 'Database error occurred'
+        'message' => 'Database error: ' . $e->getMessage()
     ]);
 }

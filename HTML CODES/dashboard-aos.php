@@ -217,21 +217,18 @@ try {
                         <table>
                             <thead>
                                 <tr>
-                                    <th>Job ID</th>
                                     <th>Date & Time</th>
                                     <th>Customer</th>
                                     <th>Service</th>
                                     <th>Location</th>
-                                    <th>Technician</th>
                                     <th>Status</th>
-                                    <th>Actions</th>
+                                    <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php if (!empty($appointments)): ?>
                                     <?php foreach ($appointments as $appointment): ?>
                                         <tr>
-                                            <td><?php echo htmlspecialchars($appointment['appointment_id']); ?></td>
                                             <td>
                                                 <?php 
                                                 echo date('M d, Y', strtotime($appointment['appointment_date'])) . '<br>' . 
@@ -257,32 +254,26 @@ try {
                                                 ?>
                                             </td>
                                             <td>
-                                                <?php if (!empty($appointment['tech_id'])): ?>
-                                                    <?php echo htmlspecialchars($appointment['tech_firstname'] . ' ' . 
-                                                          $appointment['tech_lastname']); ?>
-                                                <?php else: ?>
-                                                    <button type="button" class="assign-tech-btn" 
-                                                            data-id="<?php echo $appointment['appointment_id']; ?>">
-                                                        Assign Technician
-                                                    </button>
-                                                <?php endif; ?>
-                                            </td>
-                                            <td>
                                                 <span class="status <?php echo strtolower($appointment['status']); ?>">
                                                     <?php echo htmlspecialchars($appointment['status']); ?>
                                                 </span>
                                             </td>
                                             <td>
-                                                <button type="button" class="view-details-btn" 
-                                                        data-id="<?php echo $appointment['appointment_id']; ?>">
-                                                    View
-                                                </button>
+                                                <?php if (empty($appointment['tech_id']) && $appointment['status'] === 'Pending'): ?>
+                                                    <button type="button" class="assign-tech-btn" 
+                                                            onclick="openAssignModal('<?php echo $appointment['appointment_id']; ?>')">
+                                                        Assign Technician
+                                                    </button>
+                                                <?php else: ?>
+                                                    <?php echo htmlspecialchars($appointment['tech_firstname'] . ' ' . 
+                                                          $appointment['tech_lastname'] ?? 'Not Assigned'); ?>
+                                                <?php endif; ?>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
                                 <?php else: ?>
                                     <tr>
-                                        <td colspan="8" class="no-records">No appointments found</td>
+                                        <td colspan="6" class="no-records">No appointments found</td>
                                     </tr>
                                 <?php endif; ?>
                             </tbody>

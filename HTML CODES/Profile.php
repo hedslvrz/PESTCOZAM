@@ -31,7 +31,7 @@
   </header>
 
   <!-- BACK BUTTON -->
-  <a href="../HTML CODES/Home_page.html" class="back-btn">
+  <a href="../HTML CODES/Home_page.php" class="back-btn">
     <i class="fas fa-arrow-left"></i>
     <span>Back to Home</span>
   </a>
