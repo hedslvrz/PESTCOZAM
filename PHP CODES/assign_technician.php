@@ -1,54 +1,88 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 0);
+
 session_start();
 require_once '../database.php';
 
 header('Content-Type: application/json');
 
 // Check if user is authorized
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'supervisor') {
-    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'], ['admin', 'supervisor'])) {
+    echo json_encode(['success' => false, 'message' => 'Unauthorized access']);
     exit();
 }
 
-// Get POST data
+// Read JSON input
 $data = json_decode(file_get_contents("php://input"), true);
 
+// Debug log
+error_log('Received data: ' . print_r($data, true));
+
+// Validate input data
 if (!isset($data['appointment_id']) || !isset($data['technician_id'])) {
-    echo json_encode(['success' => false, 'message' => 'Missing required fields']);
+    echo json_encode(["success" => false, "message" => "Missing required fields"]);
     exit();
 }
 
 try {
-    $db = (new Database())->getConnection();
+    $database = new Database();
+    $db = $database->getConnection();
     
-    // Update appointment with technician_id and status
-    $stmt = $db->prepare(
-        "UPDATE appointments 
-        SET technician_id = :technician_id, 
-            status = 'Confirmed' 
-        WHERE id = :appointment_id"
-    );
+    // Begin transaction
+    $db->beginTransaction();
 
-    $success = $stmt->execute([
-        ':technician_id' => $data['technician_id'],
-        ':appointment_id' => $data['appointment_id']
-    ]);
+    // Check if technician exists and is verified
+    $checkStmt = $db->prepare("SELECT id FROM users 
+                              WHERE id = ? 
+                              AND role = 'technician' 
+                              AND status = 'verified'");
+                              
+    $checkStmt->execute([$data['technician_id']]);
 
-    if ($success) {
-        echo json_encode([
-            'success' => true, 
-            'message' => 'Technician assigned successfully'
-        ]);
-    } else {
-        echo json_encode([
-            'success' => false,
-            'message' => 'Failed to assign technician'
-        ]);
+    if ($checkStmt->rowCount() === 0) {
+        throw new Exception("Invalid or unverified technician");
     }
 
-} catch (PDOException $e) {
+    // Update appointment
+    $updateStmt = $db->prepare("UPDATE appointments 
+                               SET technician_id = ?, 
+                                   status = 'Confirmed' 
+                               WHERE id = ?");
+
+    $success = $updateStmt->execute([
+        $data['technician_id'],
+        $data['appointment_id']
+    ]);
+
+    if (!$success) {
+        throw new Exception("Failed to update appointment");
+    }
+
+    $db->commit();
+    
+    echo json_encode([
+        'success' => true,
+        'message' => 'Technician assigned successfully'
+    ]);
+
+} catch (Exception $e) {
+    if ($db->inTransaction()) {
+        $db->rollBack();
+    }
+    error_log("Error assigning technician: " . $e->getMessage());
     echo json_encode([
         'success' => false,
-        'message' => 'Database error: ' . $e->getMessage()
+        'message' => $e->getMessage()
+    ]);
+} catch (PDOException $e) {
+    if ($db->inTransaction()) {
+        $db->rollBack();
+    }
+    error_log("Database error: " . $e->getMessage());
+    echo json_encode([
+        'success' => false,
+        'message' => 'Database error occurred'
     ]);
 }
+?>

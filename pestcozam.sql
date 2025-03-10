@@ -2,8 +2,8 @@
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- Host: 127.0.0.1
--- Generation Time: Mar 10, 2025 at 04:01 PM
+-- Host: localhost
+-- Generation Time: Mar 10, 2025 at 06:31 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -47,19 +47,20 @@ CREATE TABLE `appointments` (
   `mobile_number` varchar(20) DEFAULT NULL,
   `technician_id` int(11) DEFAULT NULL,
   `latitude` decimal(10,6) DEFAULT NULL,
-  `longitude` decimal(10,6) DEFAULT NULL
+  `longitude` decimal(10,6) DEFAULT NULL,
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `appointments`
 --
 
-INSERT INTO `appointments` (`id`, `user_id`, `service_id`, `region`, `province`, `city`, `barangay`, `street_address`, `appointment_date`, `appointment_time`, `status`, `created_at`, `is_for_self`, `firstname`, `lastname`, `email`, `mobile_number`, `technician_id`, `latitude`, `longitude`) VALUES
-(15, 2, 8, '', '', '', '', 'Tumaga', '2025-03-15', '11:00:00', 'Pending', '2025-03-08 08:23:14', 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(16, 2, 6, '', '', '', '', '', '2025-03-20', '03:00:00', 'Pending', '2025-03-08 08:32:49', 0, 'Hannah', 'Alvarez', 'hannah1@gmail.com', '09759500345', NULL, NULL, NULL),
-(22, 5, 6, 'Region IX', 'Zamboanga Del Sur', 'Zamboanga City', 'Calarian', 'Ruby Drive', '2025-03-21', '01:00:00', 'Pending', '2025-03-10 14:51:10', 1, NULL, NULL, NULL, NULL, NULL, 6.928694, 122.025373),
-(23, 5, 3, 'Region IX', 'Zamboanga Del Sur', 'Zamboanga City', 'San Roque', 'Carmen Drive', '2025-03-29', '11:00:00', 'Pending', '2025-03-10 14:51:59', 1, NULL, NULL, NULL, NULL, NULL, 6.927831, 122.044193),
-(24, 5, 8, '', '', '', '', NULL, '0000-00-00', '00:00:00', 'Pending', '2025-03-10 15:00:01', 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `appointments` (`id`, `user_id`, `service_id`, `region`, `province`, `city`, `barangay`, `street_address`, `appointment_date`, `appointment_time`, `status`, `created_at`, `is_for_self`, `firstname`, `lastname`, `email`, `mobile_number`, `technician_id`, `latitude`, `longitude`, `updated_at`) VALUES
+(15, 2, 8, '', '', '', '', 'Tumaga', '2025-03-15', '11:00:00', 'Pending', '2025-03-08 08:23:14', 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-03-10 16:10:31'),
+(16, 2, 6, '', '', '', '', '', '2025-03-20', '03:00:00', 'Pending', '2025-03-08 08:32:49', 0, 'Hannah', 'Alvarez', 'hannah1@gmail.com', '09759500345', NULL, NULL, NULL, '2025-03-10 16:10:31'),
+(22, 5, 6, 'Region IX', 'Zamboanga Del Sur', 'Zamboanga City', 'Calarian', 'Ruby Drive', '2025-03-21', '01:00:00', 'Pending', '2025-03-10 14:51:10', 1, NULL, NULL, NULL, NULL, NULL, 6.928694, 122.025373, '2025-03-10 16:10:31'),
+(23, 5, 3, 'Region IX', 'Zamboanga Del Sur', 'Zamboanga City', 'San Roque', 'Carmen Drive', '2025-03-29', '11:00:00', 'Pending', '2025-03-10 14:51:59', 1, NULL, NULL, NULL, NULL, NULL, 6.927831, 122.044193, '2025-03-10 16:10:31'),
+(24, 5, 8, '', '', '', '', NULL, '0000-00-00', '00:00:00', 'Pending', '2025-03-10 15:00:01', 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-03-10 16:10:31');
 
 -- --------------------------------------------------------
 
@@ -180,6 +181,7 @@ ALTER TABLE `appointments`
   ADD CONSTRAINT `appointments_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `appointments_ibfk_2` FOREIGN KEY (`service_id`) REFERENCES `services` (`service_id`) ON DELETE CASCADE,
   ADD CONSTRAINT `fk_appointments_service` FOREIGN KEY (`service_id`) REFERENCES `services` (`service_id`),
+  ADD CONSTRAINT `fk_appointments_technician` FOREIGN KEY (`technician_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_appointments_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 COMMIT;
 

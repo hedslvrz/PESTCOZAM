@@ -26,34 +26,34 @@ function showSection(sectionId) {
     menuItem.classList.add('active');
 }
 
+// Remove the duplicate DOMContentLoaded event listeners
+// and replace with the new one
 document.addEventListener('DOMContentLoaded', function() {
     const modal = document.getElementById('assignTechModal');
-    const assignButtons = document.querySelectorAll('.assign-tech-btn');
+    const form = document.getElementById('assignTechForm');
     const closeBtn = modal.querySelector('.close');
     const cancelBtn = modal.querySelector('.btn-cancel');
-    const form = document.getElementById('assignTechForm');
 
-    // Open modal when clicking assign buttons
-    assignButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const appointmentId = this.getAttribute('data-id');
-            document.getElementById('appointmentId').value = appointmentId;
-            modal.style.display = 'block';
-        });
-    });
+    // Open modal function
+    window.openAssignModal = function(appointmentId) {
+        document.getElementById('appointmentId').value = appointmentId;
+        modal.style.display = 'block';
+    };
 
-    // Close modal functions
+    // Close modal function
     function closeModal() {
         modal.style.display = 'none';
+        form.reset();
     }
 
+    // Close modal event listeners
     closeBtn.addEventListener('click', closeModal);
     cancelBtn.addEventListener('click', closeModal);
-    window.addEventListener('click', function(event) {
+    window.onclick = function(event) {
         if (event.target === modal) {
             closeModal();
         }
-    });
+    };
 
     // Handle form submission
     form.addEventListener('submit', function(e) {
@@ -64,6 +64,13 @@ document.addEventListener('DOMContentLoaded', function() {
             technician_id: document.getElementById('technicianId').value
         };
 
+        console.log('Sending data:', formData); // Debug log
+
+        if (!formData.technician_id) {
+            alert('Please select a technician');
+            return;
+        }
+
         fetch('../PHP CODES/assign_technician.php', {
             method: 'POST',
             headers: {
@@ -71,19 +78,30 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             body: JSON.stringify(formData)
         })
-        .then(response => response.json())
+        .then(response => {
+            console.log('Response status:', response.status); // Debug log
+            return response.text().then(text => {
+                try {
+                    return JSON.parse(text);
+                } catch (e) {
+                    console.error('Failed to parse JSON:', text);
+                    throw new Error('Invalid JSON response from server');
+                }
+            });
+        })
         .then(data => {
+            console.log('Parsed response:', data); // Debug log
             if (data.success) {
                 alert('Technician assigned successfully!');
                 closeModal();
-                location.reload(); // Refresh to show updated data
+                location.reload();
             } else {
-                alert('Error: ' + data.message);
+                throw new Error(data.message || 'Failed to assign technician');
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('An error occurred while assigning technician');
+            alert('Error assigning technician: ' + error.message);
         });
     });
 
@@ -91,15 +109,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const filterButtons = document.querySelectorAll('.filter-btn');
     filterButtons.forEach(button => {
         button.addEventListener('click', function() {
+            const filter = this.getAttribute('data-filter');
+            
             filterButtons.forEach(btn => btn.classList.remove('active'));
             this.classList.add('active');
             
-            const filter = this.getAttribute('data-filter');
             const rows = document.querySelectorAll('tbody tr');
-            
             rows.forEach(row => {
-                const status = row.querySelector('.status').textContent.toLowerCase();
-                if (filter === 'all' || status === filter) {
+                if (filter === 'all' || row.getAttribute('data-status') === filter) {
                     row.style.display = '';
                 } else {
                     row.style.display = 'none';
@@ -107,62 +124,4 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     });
-});
-
-// Simplify the modal handling code
-function openAssignModal(appointmentId) {
-    const modal = document.getElementById('assignTechModal');
-    document.getElementById('appointmentId').value = appointmentId;
-    modal.style.display = 'block';
-}
-
-function closeAssignModal() {
-    const modal = document.getElementById('assignTechModal');
-    modal.style.display = 'none';
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    // Close modal handlers
-    document.querySelector('.close').onclick = closeAssignModal;
-    document.querySelector('.btn-cancel').onclick = closeAssignModal;
-    
-    // Close on outside click
-    window.onclick = function(event) {
-        const modal = document.getElementById('assignTechModal');
-        if (event.target === modal) {
-            closeAssignModal();
-        }
-    }
-
-    // Handle form submission
-    document.getElementById('assignTechForm').onsubmit = function(e) {
-        e.preventDefault();
-        
-        const formData = {
-            appointment_id: document.getElementById('appointmentId').value,
-            technician_id: document.getElementById('technicianId').value
-        };
-
-        fetch('../PHP CODES/assign_technician.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(formData)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Technician assigned successfully!');
-                closeAssignModal();
-                location.reload();
-            } else {
-                alert('Error: ' + data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred while assigning technician');
-        });
-    };
 });

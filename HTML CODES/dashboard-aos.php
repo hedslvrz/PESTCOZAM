@@ -6,21 +6,20 @@ require_once '../database.php';
 $database = new Database();
 $db = $database->getConnection();
 
-// Add after database connection
+// Update the appointments query at the top of the file
 try {
-    // Get appointments query
+    // Get appointments with technician info and conditional customer name
     $appointmentsQuery = "SELECT 
         a.id as appointment_id,
         a.appointment_date,
         a.appointment_time,
         a.status,
-        a.is_for_self,
-        a.region,
-        a.province,
-        a.city,
-        a.barangay,
         a.street_address,
-        s.service_name,
+        a.barangay,
+        a.city,
+        a.region,
+        a.technician_id,
+        a.is_for_self,
         CASE 
             WHEN a.is_for_self = 1 THEN u.firstname
             ELSE a.firstname
@@ -29,14 +28,14 @@ try {
             WHEN a.is_for_self = 1 THEN u.lastname
             ELSE a.lastname
         END as client_lastname,
-        t.id as tech_id,
+        s.service_name,
         t.firstname as tech_firstname,
         t.lastname as tech_lastname
     FROM appointments a
-    JOIN services s ON a.service_id = s.service_id
-    JOIN users u ON a.user_id = u.id
+    INNER JOIN services s ON a.service_id = s.service_id
+    INNER JOIN users u ON a.user_id = u.id
     LEFT JOIN users t ON a.technician_id = t.id
-    ORDER BY a.created_at DESC";
+    ORDER BY a.appointment_date ASC, a.appointment_time ASC";
 
     $stmt = $db->prepare($appointmentsQuery);
     $stmt->execute();
@@ -190,34 +189,32 @@ try {
     <!-- Job Orders Section -->
     <section id="work-orders" class="section">
         <main>
-            <div class="form-container">
-                <form id="work-orders-form" method="POST" action="process_work_orders.php">
-                    <div class="head-title">
-                        <div class="left">
-                            <h1>Manage Technicians</h1>
-                            <ul class="breadcrumb">
-                                <li><a href="#">Technicians</a></li>
-                                <li><i class='bx bx-right-arrow-alt'></i></li>
-                                <li><a class="active" href="#">Manage</a></li>
-                            </ul>
+            <div class="head-title">
+                <div class="left">
+                    <h1>Manage Job Orders</h1>
+                    <ul class="breadcrumb">
+                        <li><a href="#">Dashboard</a></li>
+                        <li><i class='bx bx-chevron-right'></i></li>
+                        <li><a class="active" href="#">Assign Technician</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="table-data">
+                <div class="order-list">
+                    <div class="filters">
+                        <div class="tabs">
+                            <button type="button" class="filter-btn active" data-filter="all">All</button>
+                            <button type="button" class="filter-btn" data-filter="pending">Pending</button>
+                            <button type="button" class="filter-btn" data-filter="confirmed">Confirmed</button>
                         </div>
                     </div>
 
-                    <div class="table-container">
-                        <div class="filters">
-                            <div class="tabs">
-                                <button type="button" class="filter-btn active" data-filter="all">All</button>
-                                <button type="button" class="filter-btn" data-filter="pending">Pending</button>
-                                <button type="button" class="filter-btn" data-filter="confirmed">Confirmed</button>
-                                <button type="button" class="filter-btn" data-filter="completed">Completed</button>
-                            </div>
-                            <input type="date" id="filterDate" name="filter_date">
-                        </div>
-                        
+                    <div class="table-responsive">
                         <table>
                             <thead>
                                 <tr>
-                                    <th>Date & Time</th>
+                                    <th>Schedule</th>
                                     <th>Customer</th>
                                     <th>Service</th>
                                     <th>Location</th>
@@ -228,18 +225,28 @@ try {
                             <tbody>
                                 <?php if (!empty($appointments)): ?>
                                     <?php foreach ($appointments as $appointment): ?>
-                                        <tr>
+                                        <tr data-status="<?php echo strtolower($appointment['status']); ?>">
                                             <td>
-                                                <?php 
-                                                echo date('M d, Y', strtotime($appointment['appointment_date'])) . '<br>' . 
-                                                     date('h:i A', strtotime($appointment['appointment_time'])); 
-                                                ?>
+                                                <div class="schedule-info">
+                                                    <i class='bx bx-calendar'></i>
+                                                    <div>
+                                                        <span class="date">
+                                                            <?php echo date('M d, Y', strtotime($appointment['appointment_date'])); ?>
+                                                        </span>
+                                                        <span class="time">
+                                                            <?php echo date('h:i A', strtotime($appointment['appointment_time'])); ?>
+                                                        </span>
+                                                    </div>
+                                                </div>
                                             </td>
                                             <td>
-                                                <?php 
-                                                echo htmlspecialchars($appointment['client_firstname'] . ' ' . 
-                                                     $appointment['client_lastname']); 
-                                                ?>
+                                                <div class="customer-info">
+                                                    <i class='bx bx-user'></i>
+                                                    <span>
+                                                        <?php echo htmlspecialchars($appointment['client_firstname'] . ' ' . 
+                                                            $appointment['client_lastname']); ?>
+                                                    </span>
+                                                </div>
                                             </td>
                                             <td><?php echo htmlspecialchars($appointment['service_name']); ?></td>
                                             <td>
@@ -247,8 +254,7 @@ try {
                                                 $location = array_filter([
                                                     $appointment['street_address'],
                                                     $appointment['barangay'],
-                                                    $appointment['city'],
-                                                    $appointment['region']
+                                                    $appointment['city']
                                                 ]);
                                                 echo htmlspecialchars(implode(', ', $location));
                                                 ?>
@@ -259,14 +265,19 @@ try {
                                                 </span>
                                             </td>
                                             <td>
-                                                <?php if (empty($appointment['tech_id']) && $appointment['status'] === 'Pending'): ?>
+                                                <?php if (empty($appointment['technician_id']) && $appointment['status'] === 'Pending'): ?>
                                                     <button type="button" class="assign-tech-btn" 
-                                                            onclick="openAssignModal('<?php echo $appointment['appointment_id']; ?>')">
-                                                        Assign Technician
+                                                            data-id="<?php echo $appointment['appointment_id']; ?>"
+                                                            onclick="openAssignModal(<?php echo $appointment['appointment_id']; ?>)">
+                                                        <i class='bx bx-user-plus'></i>
+                                                        Assign
                                                     </button>
                                                 <?php else: ?>
-                                                    <?php echo htmlspecialchars($appointment['tech_firstname'] . ' ' . 
-                                                          $appointment['tech_lastname'] ?? 'Not Assigned'); ?>
+                                                    <div class="tech-info">
+                                                        <i class='bx bx-user-check'></i>
+                                                        <span><?php echo htmlspecialchars($appointment['tech_firstname'] . ' ' . 
+                                                            $appointment['tech_lastname']); ?></span>
+                                                    </div>
                                                 <?php endif; ?>
                                             </td>
                                         </tr>
@@ -279,36 +290,40 @@ try {
                             </tbody>
                         </table>
                     </div>
-                </form>
+                </div>
+            </div>
+
+            <!-- Assign Technician Modal -->
+            <div id="assignTechModal" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <h2>Assign Technician</h2>
+                    <form id="assignTechForm">
+                        <input type="hidden" id="appointmentId" name="appointment_id">
+                        <div class="form-group">
+                            <label for="technicianId">Select Technician:</label>
+                            <select id="technicianId" name="technician_id" required>
+                                <option value="">-- Select a Technician --</option>
+                                <?php foreach ($technicians as $tech): ?>
+                                    <option value="<?php echo $tech['id']; ?>">
+                                        <?php echo htmlspecialchars($tech['firstname'] . ' ' . $tech['lastname']); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn-submit">
+                                <i class='bx bx-check'></i> Assign
+                            </button>
+                            <button type="button" class="btn-cancel">
+                                <i class='bx bx-x'></i> Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </main>
     </section>
-
-    <!-- Add the Assign Technician Modal -->
-    <div id="assignTechModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Assign Technician</h2>
-            <form id="assignTechForm">
-                <input type="hidden" id="appointmentId" name="appointment_id">
-                <div class="form-group">
-                    <label for="technicianId">Select Technician:</label>
-                    <select id="technicianId" name="technician_id" required>
-                        <option value="">-- Select a Technician --</option>
-                        <?php foreach ($technicians as $tech): ?>
-                            <option value="<?php echo $tech['id']; ?>">
-                                <?php echo htmlspecialchars($tech['firstname'] . ' ' . $tech['lastname']); ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                <div class="form-actions">
-                    <button type="submit" class="btn-submit">Assign</button>
-                    <button type="button" class="btn-cancel">Cancel</button>
-                </div>
-            </form>
-        </div>
-    </div>
 
     <!-- Service Reports Section -->
     <section id="service-reports" class="section">
