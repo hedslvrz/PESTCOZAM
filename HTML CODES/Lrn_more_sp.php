@@ -1,3 +1,15 @@
+<?php
+session_start();
+
+// Check if user is logged in
+$is_logged_in = isset($_SESSION['user_id']);
+
+// If logged in, set user variables for use in the page
+if ($is_logged_in) {
+    $user_id = $_SESSION['user_id'];
+    $profile_pic = isset($_SESSION['profile_pic']) ? $_SESSION['profile_pic'] : '../Pictures/boy.png';
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,11 +21,13 @@
 </head>
 <body>
 
+  <div class="header-wrapper">
     <!-- HEADER -->
     <header class="top-header">
         <div class="container">
             <div class="location">
-                <span>• <strong>Zamboanga</strong> • <strong>Pagadian</strong> • <strong>Pasay</strong> • <strong>Davao</strong></span>
+                <i class='bx bx-map'></i>
+                <span> <strong>Estrada St, Zamboanga City, Zamboanga Del Sur, 7000<strong></span>
             </div>
             <div class="contact-info">
                 <img src="../Pictures/phone.png" alt="Phone Icon" class="icon">
@@ -27,21 +41,37 @@
 
     <!-- NAVBAR -->
     <header class="navbar">
-      <div class="logo-container">
-        <img src="../Pictures/pest_logo.png" alt="Flower Logo" class="flower-logo">
-        <span class="brand-name" style="font-size: 2rem;">PESTCOZAM</span>
-      </div>
-      <nav>
-        <ul>
-          <li><a href="../HTML CODES/Home_page.html">Home</a></li>
-          <li><a href="../HTML CODES/About_us.html">About Us</a></li>
-          <li><a href="../HTML CODES/Services.html" class="services">Services</a></li>
-          <li><a href="../HTML CODES/Appointment-service.php" class="btn-appointment">Appointment</a></li>
-          <li><a href="../HTML CODES/Login.php" class="btn-login"><i class='bx bx-log-in' ></i> Login</a></li>
-          <li><a href="../HTML CODES/Signup.php" class="btn-signup"><i class='bx bx-user-plus' ></i> Sign Up</a></li>
-        </ul>
-      </nav>
+        <div class="logo-container">
+            <img src="../Pictures/pest_logo.png" alt="Flower Logo" class="flower-logo">
+            <span class="brand-name" style="font-size: 2rem;">PESTCOZAM</span>
+        </div>
+        <nav>
+          <ul>
+            <li><a href="../HTML CODES/Home_page.php">Home</a></li>
+            <li><a href="#offer-section">Services</a></li>
+            <li><a href="#about-us-section">About Us</a></li>
+            <li><a href="../HTML CODES/Appointment-service.php" class="btn-appointment">Book Appointment</a></li>
+            <?php if ($is_logged_in): ?>
+            <li class="user-profile">
+                <div class="profile-dropdown">
+                    <img src="<?php echo $profile_pic; ?>" alt="Profile" class="profile-pic">
+                    <div class="dropdown-content">
+                        <a href="../HTML CODES/Profile.php"><i class='bx bx-user'></i> Profile</a>
+                        <a href="../HTML CODES/logout.php"><i class='bx bx-log-out'></i> Logout</a>
+                    </div>
+                </div>
+            </li>
+        <?php else: ?>
+            <li class="auth-buttons">
+                <a href="../HTML CODES/Login.php" class="btn-login"><i class='bx bx-log-in'></i> Login</a>
+                <a href="../HTML CODES/Signup.php" class="btn-signup"><i class='bx bx-user-plus'></i> Sign Up</a>
+            </li>
+        <?php endif; ?>
+          </ul>      
+        </nav>
     </header>
+  </div>
+
 
     <!-- SERVICE CONTENT -->
     <main class="service-content">
@@ -51,7 +81,7 @@
                 Soil poisoning is a preventive pest control method designed to protect buildings and structures from subterranean termite infestations. This treatment involves applying a specialized termiticide to the soil before or after construction, creating a chemical barrier that repels and eliminates termites. It is an essential step in termite-proofing properties, ensuring long-term protection against structural damage.
             </p>
             <div class="service-image">
-                <img src="../Pictures/soil-poisoning.jpg" alt="Soil Poisoning Treatment Process" class="treatment-image">
+                <img src="../Pictures/card 1 offer.jpg" alt="Soil Poisoning Treatment Process" class="treatment-image">
             </div>
         </div>
 
