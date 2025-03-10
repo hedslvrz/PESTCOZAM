@@ -219,6 +219,7 @@ try {
                                     <th>Service</th>
                                     <th>Location</th>
                                     <th>Status</th>
+                                    <th>Assigned To</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -226,6 +227,7 @@ try {
                                 <?php if (!empty($appointments)): ?>
                                     <?php foreach ($appointments as $appointment): ?>
                                         <tr data-status="<?php echo strtolower($appointment['status']); ?>">
+                                            <!-- Schedule -->
                                             <td>
                                                 <div class="schedule-info">
                                                     <i class='bx bx-calendar'></i>
@@ -239,52 +241,84 @@ try {
                                                     </div>
                                                 </div>
                                             </td>
+                                            
+                                            <!-- Customer -->
                                             <td>
                                                 <div class="customer-info">
                                                     <i class='bx bx-user'></i>
-                                                    <span>
-                                                        <?php echo htmlspecialchars($appointment['client_firstname'] . ' ' . 
-                                                            $appointment['client_lastname']); ?>
-                                                    </span>
+                                                    <span><?php echo htmlspecialchars($appointment['client_firstname'] . ' ' . 
+                                                        $appointment['client_lastname']); ?></span>
                                                 </div>
                                             </td>
-                                            <td><?php echo htmlspecialchars($appointment['service_name']); ?></td>
+                                            
+                                            <!-- Service -->
                                             <td>
-                                                <?php 
-                                                $location = array_filter([
-                                                    $appointment['street_address'],
-                                                    $appointment['barangay'],
-                                                    $appointment['city']
-                                                ]);
-                                                echo htmlspecialchars(implode(', ', $location));
-                                                ?>
+                                                <div class="service-info">
+                                                    <i class='bx bx-package'></i>
+                                                    <span><?php echo htmlspecialchars($appointment['service_name']); ?></span>
+                                                </div>
                                             </td>
+                                            
+                                            <!-- Location -->
+                                            <td>
+                                                <div class="location-info">
+                                                    <i class='bx bx-map'></i>
+                                                    <span><?php 
+                                                        $location = array_filter([
+                                                            $appointment['street_address'],
+                                                            $appointment['barangay'],
+                                                            $appointment['city']
+                                                        ]);
+                                                        echo htmlspecialchars(implode(', ', $location));
+                                                    ?></span>
+                                                </div>
+                                            </td>
+                                            
+                                            <!-- Status -->
                                             <td>
                                                 <span class="status <?php echo strtolower($appointment['status']); ?>">
                                                     <?php echo htmlspecialchars($appointment['status']); ?>
                                                 </span>
                                             </td>
+                                            
+                                            <!-- Assigned Technician -->
                                             <td>
-                                                <?php if (empty($appointment['technician_id']) && $appointment['status'] === 'Pending'): ?>
-                                                    <button type="button" class="assign-tech-btn" 
-                                                            data-id="<?php echo $appointment['appointment_id']; ?>"
-                                                            onclick="openAssignModal(<?php echo $appointment['appointment_id']; ?>)">
-                                                        <i class='bx bx-user-plus'></i>
-                                                        Assign
-                                                    </button>
-                                                <?php else: ?>
+                                                <?php if (!empty($appointment['tech_firstname'])): ?>
                                                     <div class="tech-info">
                                                         <i class='bx bx-user-check'></i>
                                                         <span><?php echo htmlspecialchars($appointment['tech_firstname'] . ' ' . 
                                                             $appointment['tech_lastname']); ?></span>
                                                     </div>
+                                                <?php else: ?>
+                                                    <span class="no-tech">Not Assigned</span>
                                                 <?php endif; ?>
+                                            </td>
+                                            
+                                            <!-- Action -->
+                                            <td>
+                                                <div class="action-buttons">
+                                                    <?php if ($appointment['status'] === 'Pending' || $appointment['status'] === 'Confirmed'): ?>
+                                                        <?php if (empty($appointment['technician_id'])): ?>
+                                                            <button type="button" class="assign-tech-btn" 
+                                                                    onclick="openAssignModal('<?php echo $appointment['appointment_id']; ?>')">
+                                                                <i class='bx bx-user-plus'></i>
+                                                                Assign
+                                                            </button>
+                                                        <?php else: ?>
+                                                            <button type="button" class="reassign-tech-btn"
+                                                                    onclick="openAssignModal('<?php echo $appointment['appointment_id']; ?>')">
+                                                                <i class='bx bx-refresh'></i>
+                                                                Reassign
+                                                            </button>
+                                                        <?php endif; ?>
+                                                    <?php endif; ?>
+                                                </div>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
                                 <?php else: ?>
                                     <tr>
-                                        <td colspan="6" class="no-records">No appointments found</td>
+                                        <td colspan="7" class="no-records">No appointments found</td>
                                     </tr>
                                 <?php endif; ?>
                             </tbody>

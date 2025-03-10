@@ -14,12 +14,37 @@ if(!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'technician') {
 
 // Get technician data from database
 try {
-    $stmt = $db->prepare("SELECT * FROM users WHERE id = ?");
+    // Get technician data
+    $stmt = $db->prepare("SELECT * FROM users WHERE id = ? AND role = 'technician'");
     $stmt->execute([$_SESSION['user_id']]);
     $technician = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // Get technician's assigned jobs
-    $stmt = $db->prepare("SELECT * FROM appointments WHERE technician_id = ? ORDER BY date DESC");
+    // Get technician's assigned appointments with full details
+    $appointmentsQuery = "SELECT 
+        a.id as appointment_id,
+        a.appointment_date,
+        a.appointment_time,
+        a.status,
+        a.street_address,
+        a.barangay,
+        a.city,
+        CASE 
+            WHEN a.is_for_self = 1 THEN u.firstname
+            ELSE a.firstname
+        END as client_firstname,
+        CASE 
+            WHEN a.is_for_self = 1 THEN u.lastname
+            ELSE a.lastname
+        END as client_lastname,
+        s.service_name,
+        s.service_id
+    FROM appointments a
+    INNER JOIN services s ON a.service_id = s.service_id
+    INNER JOIN users u ON a.user_id = u.id
+    WHERE a.technician_id = ?
+    ORDER BY a.appointment_date ASC, a.appointment_time ASC";
+
+    $stmt = $db->prepare($appointmentsQuery);
     $stmt->execute([$_SESSION['user_id']]);
     $assignments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch(PDOException $e) {
@@ -141,43 +166,95 @@ try {
     <section id="assignments" class="section">
         <main>
             <div class="form-container">
-                <form id="assignments-form" method="POST" action="process_assignments.php">
-                    <div class="head-title">
-                        <div class="left">
-                            <h1>My Assignments</h1>
-                            <ul class="breadcrumb">
-                                <li><a href="#">Assignments</a></li>
-                                <li><i class='bx bx-right-arrow-alt'></i></li>
-                                <li><a class="active" href="#">List</a></li>
-                            </ul>
+                <div class="head-title">
+                    <div class="left">
+                        <h1>My Assignments</h1>
+                        <ul class="breadcrumb">
+                            <li><a href="#">Assignments</a></li>
+                            <li><i class='bx bx-chevron-right'></i></li>
+                            <li><a class="active" href="#">List</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <div class="filters">
+                        <div class="tabs">
+                            <button type="button" class="filter-btn active" data-filter="all">All</button>
+                            <button type="button" class="filter-btn" data-filter="pending">Pending</button>
+                            <button type="button" class="filter-btn" data-filter="confirmed">Confirmed</button>
+                            <button type="button" class="filter-btn" data-filter="completed">Completed</button>
                         </div>
                     </div>
 
-                    <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Job ID</th>
-                                    <th>Customer</th>
-                                    <th>Service</th>
-                                    <th>Date</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Schedule</th>
+                                <th>Customer</th>
+                                <th>Service</th>
+                                <th>Location</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (!empty($assignments)): ?>
                                 <?php foreach ($assignments as $assignment): ?>
-                                    <tr>
-                                        <td><?php echo htmlspecialchars($assignment['id']); ?></td>
-                                        <td><?php echo htmlspecialchars($assignment['customer_name']); ?></td>
-                                        <td><?php echo htmlspecialchars($assignment['service']); ?></td>
-                                        <td><?php echo htmlspecialchars($assignment['date']); ?></td>
-                                        <td><span class="status <?php echo strtolower($assignment['status']); ?>"><?php echo htmlspecialchars($assignment['status']); ?></span></td>
+                                    <tr data-status="<?php echo strtolower($assignment['status']); ?>">
+                                        <td>
+                                            <div class="schedule-info">
+                                                <i class='bx bx-calendar'></i>
+                                                <div>
+                                                    <span class="date">
+                                                        <?php echo date('M d, Y', strtotime($assignment['appointment_date'])); ?>
+                                                    </span>
+                                                    <span class="time">
+                                                        <?php echo date('h:i A', strtotime($assignment['appointment_time'])); ?>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="customer-info">
+                                                <i class='bx bx-user'></i>
+                                                <span><?php echo htmlspecialchars($assignment['client_firstname'] . ' ' . 
+                                                    $assignment['client_lastname']); ?></span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="service-info">
+                                                <i class='bx bx-package'></i>
+                                                <span><?php echo htmlspecialchars($assignment['service_name']); ?></span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="location-info">
+                                                <i class='bx bx-map'></i>
+                                                <span><?php 
+                                                    $location = array_filter([
+                                                        $assignment['street_address'],
+                                                        $assignment['barangay'],
+                                                        $assignment['city']
+                                                    ]);
+                                                    echo htmlspecialchars(implode(', ', $location));
+                                                ?></span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="status <?php echo strtolower($assignment['status']); ?>">
+                                                <?php echo htmlspecialchars($assignment['status']); ?>
+                                            </span>
+                                        </td>
                                     </tr>
                                 <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </form>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="5" class="no-records">No assignments found</td>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </main>
     </section>

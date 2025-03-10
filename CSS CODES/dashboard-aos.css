@@ -294,3 +294,266 @@
 .assign-tech-btn:hover {
     background: #0d2f52;
 }
+
+/* Action Buttons */
+.assign-tech-btn,
+.reassign-tech-btn,
+.view-btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.9rem;
+}
+
+.assign-tech-btn {
+    background-color: #2196f3;
+    color: white;
+}
+
+.reassign-tech-btn {
+    background-color: #ff9800;
+    color: white;
+}
+
+.view-btn {
+    background-color: #757575;
+    color: white;
+}
+
+.assign-tech-btn:hover,
+.reassign-tech-btn:hover,
+.view-btn:hover {
+    opacity: 0.9;
+}
+
+/* Status Styles */
+.status {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.status.pending {
+    background-color: #fff3e0;
+    color: #e65100;
+}
+
+.status.confirmed {
+    background-color: #e3f2fd;
+    color: #1565c0;
+}
+
+.status.completed {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+}
+
+/* Tech Info */
+.tech-info {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: #666;
+}
+
+.tech-info i {
+    color: #4caf50;
+}
+
+.no-tech {
+    color: #999;
+    font-style: italic;
+}
+
+/* Table Grid Layout */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+table th,
+table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+/* Define column widths */
+table th:nth-child(1) { width: 15%; } /* Schedule */
+table th:nth-child(2) { width: 15%; } /* Customer */
+table th:nth-child(3) { width: 15%; } /* Service */
+table th:nth-child(4) { width: 20%; } /* Location */
+table th:nth-child(5) { width: 10%; } /* Status */
+table th:nth-child(6) { width: 130px; max-width: 130px; } /* Assigned To */
+table th:nth-child(7) { width: 100px; max-width: 100px; } /* Action column - reduced width */
+
+/* Cell content alignment */
+.tech-info,
+.action-buttons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+/* Update action buttons styling */
+.action-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-start;
+    align-items: center;
+    min-width: 100px;
+}
+
+.assign-tech-btn,
+.reassign-tech-btn,
+.view-btn {
+    min-width: 100px;
+    justify-content: center;
+    white-space: nowrap;
+}
+
+/* Ensure consistent tech info display */
+.tech-info {
+    padding: 4px 8px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    min-width: 150px;
+}
+
+.no-tech {
+    padding: 4px 8px;
+    background-color: #fff3e0;
+    border-radius: 4px;
+    color: #e65100;
+    display: inline-block;
+    min-width: 150px;
+    text-align: center;
+}
+
+/* Action Buttons Container */
+.action-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-start;
+    align-items: center;
+    min-width: 100px;
+}
+
+/* Action Buttons */
+.assign-tech-btn,
+.reassign-tech-btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    width: fit-content;
+}
+
+.assign-tech-btn {
+    background-color: #2196f3;
+    color: white;
+}
+
+.reassign-tech-btn {
+    background-color: #ff9800;
+    color: white;
+}
+
+.assign-tech-btn:hover,
+.reassign-tech-btn:hover {
+    opacity: 0.9;
+}
+
+/* Tech info and Not Assigned styles */
+.tech-info,
+.no-tech {
+    padding: 4px 8px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    width: fit-content;
+    max-width: 120px; /* Limit width */
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.tech-info {
+    background-color: #f8f9fa;
+    color: #2e7d32;
+}
+
+.tech-info i {
+    color: #2e7d32;
+    font-size: 1rem;
+}
+
+.no-tech {
+    background-color: #fff3e0;
+    color: #e65100;
+    font-weight: 500;
+}
+
+/* Table column widths */
+table td:nth-child(6) { /* Assigned To column cells */
+    padding: 8px 12px;
+}
+
+/* Column width adjustments */
+table th:nth-child(6), 
+table td:nth-child(6) { 
+    width: 130px; 
+    max-width: 130px;
+} /* Assigned To */
+
+table th:nth-child(7), 
+table td:nth-child(7) { 
+    width: 100px; 
+    max-width: 100px;
+} /* Action */
+
+/* Table cell padding adjustment */
+table td {
+    padding: 8px;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 1200px) {
+    .table-responsive {
+        overflow-x: auto;
+        margin: 0 -20px;
+        padding: 0 20px;
+    }
+
+    table {
+        min-width: 1000px;
+    }
+
+    .action-buttons {
+        min-width: auto;
+    }
+
+    .assign-tech-btn,
+    .reassign-tech-btn {
+        padding: 6px 8px;
+    }
+
+    .assign-tech-btn i,
+    .reassign-tech-btn i {
+        font-size: 14px;
+    }
+}
