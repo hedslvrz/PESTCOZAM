@@ -166,6 +166,34 @@ document.addEventListener('DOMContentLoaded', function() {
     if (assignForm) {
         assignForm.addEventListener('submit', handleAssignSubmit);
     }
+
+    // Auto refresh work orders table every 30 seconds
+    if (document.querySelector('.work-orders-table')) {
+        setInterval(function() {
+            if (document.getElementById('work-orders').classList.contains('active')) {
+                location.reload();
+            }
+        }, 30000); // 30 seconds
+    }
+    
+    // Filter functionality
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const filter = this.getAttribute('data-filter');
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            
+            const rows = document.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                if (filter === 'all' || row.querySelector('.status').textContent.toLowerCase() === filter) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    });
 });
 
 
