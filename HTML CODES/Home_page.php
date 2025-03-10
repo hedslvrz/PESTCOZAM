@@ -27,7 +27,8 @@ if ($is_logged_in) {
       <header class="top-header">
           <div class="container">
               <div class="location">
-                  <span>• <strong>Zamboanga</strong> • <strong>Pagadian</strong> • <strong>Pasay</strong> • <strong>Davao</strong></span>
+                  <i class='bx bx-map'></i>
+                  <span> <strong>Estrada St, Zamboanga City, Zamboanga Del Sur, 7000<strong></span>
               </div>
               <div class="contact-info">
                   <img src="../Pictures/phone.png" alt="Phone Icon" class="icon">
@@ -51,7 +52,6 @@ if ($is_logged_in) {
               <li><a href="#offer-section">Services</a></li>
               <li><a href="#about-us-section">About Us</a></li>
               <li><a href="../HTML CODES/Appointment-service.php" class="btn-appointment">Book Appointment</a></li>
-              <!-- Replace the login/signup buttons with this new structure -->
               <?php if ($is_logged_in): ?>
               <li class="user-profile">
                   <div class="profile-dropdown">
@@ -159,7 +159,7 @@ if ($is_logged_in) {
             <div class="pest-content">
                 <h2>Say Goodbye<br>To Pests for Good!</h2>
                 <p>We specialize in keeping your spaces safe, clean, and pest-free! With our expert pest control solutions, you can enjoy peace of mind knowing your home and business is protected.</p>
-                <button class="find-services-btn" onclick="window.location.href='Services.html'">Find Services</button>
+                <button class="find-services-btn" onclick="document.getElementById('offer-section').scrollIntoView({behavior: 'smooth'})">Find Services</button>
             </div>
             
             <div class="pest-image">
@@ -506,11 +506,9 @@ if ($is_logged_in) {
       <button class="prev-button">←</button>
       <button class="next-button">→</button>
     </div>
-    <a href="#" class="book-now-button">BOOK NOW!</a>
+    <a href="Appointment-service.php" class="book-now-button">BOOK NOW!</a>
   </div>
 </section>
-
-
 
 
 

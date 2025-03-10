@@ -44,6 +44,14 @@ body {
     font-weight: normal;
     white-space: nowrap;
     margin-left: 0;
+    display: flex;
+    align-items: center;
+}
+
+.location .icon {
+    margin-right: 5px;
+    font-size: 20px;
+    color: white;
 }
 
 .location span strong {
@@ -104,9 +112,9 @@ body {
     -webkit-text-stroke: 0.7px black;
     text-shadow: 
         -1px -1px 0 black,  
-         1px -1px 0 black,
+            1px -1px 0 black,
         -1px  1px 0 black,
-         1px  1px 0 black;
+            1px  1px 0 black;
 }
 
 nav ul {
@@ -175,7 +183,6 @@ nav ul li a:hover {
     transform: translateY(-100%);
 }
 
-/* Add these new styles */
 .hidden {
     display: none !important;
 }
@@ -226,6 +233,7 @@ nav ul li a:hover {
 .profile-dropdown:hover .dropdown-content {
     display: block;
 }
+
 
 /* Hero Section */
 .hero {

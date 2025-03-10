@@ -62,18 +62,20 @@
 <body>
 
   <!-- HEADER -->
+ <div class="header-wrapper">
   <header class="top-header">
     <div class="container">
-        <div class="location">
-            <span>• <strong>Zamboanga</strong> • <strong>Pagadian</strong> • <strong>Pasay</strong> • <strong>Davao</strong></span>
-        </div>
-        <div class="contact-info">
-            <img src="../Pictures/phone.png" alt="Phone Icon" class="icon">
-            <span>0905 - 177 - 5662</span>
-            <span class="divider"></span>
-            <img src="../Pictures/email.png" alt="Email Icon" class="icon">
-            <span>pestcozam@yahoo.com</span>
-        </div>
+      <div class="location">
+        <i class='bx bx-map'></i>
+        <span> <strong>Estrada St, Zamboanga City, Zamboanga Del Sur, 7000<strong></span>
+      </div>
+      <div class="contact-info">
+        <img src="../Pictures/phone.png" alt="Phone Icon" class="icon">
+        <span>0905 - 177 - 5662</span>
+        <span class="divider"></span>
+        <img src="../Pictures/email.png" alt="Email Icon" class="icon">
+        <span>pestcozam@yahoo.com</span>
+      </div>
     </div>
   </header>
 
@@ -134,29 +136,29 @@
         </div>
     </main>
 
-     <!-- FOOTER SECTION -->
-    <footer class="footer-section">
-        <div class="footer-container">
-          <div class="footer-left">
-            <div class="footer-brand">
-              <img src="../Pictures/pest_logo.png" alt="Flower icon" class="flower-icon" />
-              <h3 class="brand-name">PESTCOZAM</h3>
-            </div>
-            <p class="footer-copyright">
-              © 2025 Pestcozam. All rights reserved. 
-              Designed by FHASK Solutions
-            </p>
-          </div>
-          <div class="footer-right">
-            <p class="follow-us-text">Follow us</p>
-            <div class="social-icons">
-              <a href="#"><img src="../Pictures/facebook.png" alt="Facebook" /></a>
-              <a href="#"><img src="../Pictures/telegram.png" alt="Telegram" /></a>
-              <a href="#"><img src="../Pictures/instagram.png" alt="Instagram" /></a>
-            </div>
-          </div>
+<!-- FOOTER SECTION -->
+  <footer class="footer-section">
+    <div class="footer-container">
+      <div class="footer-left">
+        <div class="footer-brand">
+          <img src="../Pictures/pest_logo.png" alt="Flower icon" class="flower-icon" />
+          <h3 class="brand-name">PESTCOZAM</h3>
         </div>
-      </footer>
+        <p class="footer-copyright">
+          © 2025 Pestcozam. All rights reserved. 
+          Designed by FHASK Solutions
+        </p>
+      </div>
+      <div class="footer-right">
+        <p class="follow-us-text">Follow us</p>
+        <div class="social-icons">
+          <a href="#"><img src="../Pictures/facebook.png" alt="Facebook" /></a>
+          <a href="#"><img src="../Pictures/telegram.png" alt="Telegram" /></a>
+          <a href="#"><img src="../Pictures/instagram.png" alt="Instagram" /></a>
+        </div>
+      </div>
+    </div>
+  </footer>
 </body>
 <script>
 document.getElementById("nextButton").addEventListener("click", function(event) {

@@ -10,52 +10,69 @@ body {
     font-family: 'Roboto', sans-serif;
 }
 
+.header-wrapper {
+  position: fixed;
+  width: 100%;
+  top: 0;
+  z-index: 1000;
+  transition: transform 0.3s ease;
+}
+
 .top-header {
-    background-color: #0C3B6F;
-    color: white;
-    padding: 20px 0;
-    font-size: 14px;
+  background-color: #0C3B6F;
+  color: white;
+  padding: 20px 0;
+  font-size: 14px;
+  width: 100%;
 }
 
 .container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    max-width: 100%;
-    margin: 0;
-    padding: 0 50px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 100%;
+  margin: 0;
+  padding: 0 50px;
 }
 
 .location {
-    font-size: 15px;
-    font-weight: normal;
-    white-space: nowrap;
-    margin-left: 0;
+  font-size: 15px;
+  font-weight: normal;
+  white-space: nowrap;
+  margin-left: 0;
+  display: flex;
+  align-items: center;
+}
+
+.location .icon {
+  margin-right: 5px;
+  font-size: 20px;
+  color: white;
 }
 
 .location span strong {
-    margin: 0 7px;
+  margin: 0 7px;
 }
 
 .contact-info {
-    font-size: 15px;
-    display: flex;
-    align-items: center;
-    margin-right: 0;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  margin-right: 0;
 }
 
 .icon {
-    width: 18px;  
-    height: 18px;
-    filter: invert(30%) sepia(91%) saturate(1562%) hue-rotate(205deg) brightness(99%) contrast(92%);
-    margin-right: 5px;
+  width: 18px;  
+  height: 18px;
+  filter: invert(30%) sepia(91%) saturate(1562%) hue-rotate(205deg) brightness(99%) contrast(92%);
+  margin-right: 5px;
 }
 
 .divider {
-    width: 1px;
-    height: 15px;
-    background-color: white;
-    margin: 0 10px;
+  width: 1px;
+  height: 15px;
+  background-color: white;
+  margin: 0 10px;
 }
 
 

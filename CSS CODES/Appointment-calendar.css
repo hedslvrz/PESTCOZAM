@@ -3,11 +3,18 @@
   src: url(../Fonts/Shrikhand-Regular.ttf);
 }
 
-
 body {
   margin: 0;
   padding: 0;
   font-family: 'Roboto', sans-serif;
+}
+
+.header-wrapper {
+  position: fixed;
+  width: 100%;
+  top: 0;
+  z-index: 1000;
+  transition: transform 0.3s ease;
 }
 
 .top-header {
@@ -15,6 +22,7 @@ body {
   color: white;
   padding: 20px 0;
   font-size: 14px;
+  width: 100%;
 }
 
 .container {
@@ -31,6 +39,14 @@ body {
   font-weight: normal;
   white-space: nowrap;
   margin-left: 0;
+  display: flex;
+  align-items: center;
+}
+
+.location .icon {
+  margin-right: 5px;
+  font-size: 20px;
+  color: white;
 }
 
 .location span strong {

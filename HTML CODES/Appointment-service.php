@@ -76,20 +76,22 @@ $services = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <body>
     
     <!-- HEADER -->
-    <header class="top-header">
-        <div class="container">
-            <div class="location">
-                <span>• <strong>Zamboanga</strong> • <strong>Pagadian</strong> • <strong>Pasay</strong> • <strong>Davao</strong></span>
-            </div>
-            <div class="contact-info">
-                <img src="../Pictures/phone.png" alt="Phone Icon" class="icon">
-                <span>0905 - 177 - 5662</span>
-                <span class="divider"></span>
-                <img src="../Pictures/email.png" alt="Email Icon" class="icon">
-                <span>pestcozam@yahoo.com</span>
-            </div>
-        </div>
-    </header>
+ <div class="header-wrapper">
+  <header class="top-header">
+    <div class="container">
+      <div class="location">
+        <i class='bx bx-map'></i>
+        <span> <strong>Estrada St, Zamboanga City, Zamboanga Del Sur, 7000<strong></span>
+      </div>
+      <div class="contact-info">
+        <img src="../Pictures/phone.png" alt="Phone Icon" class="icon">
+        <span>0905 - 177 - 5662</span>
+        <span class="divider"></span>
+        <img src="../Pictures/email.png" alt="Email Icon" class="icon">
+        <span>pestcozam@yahoo.com</span>
+      </div>
+    </div>
+  </header>
 
     <!-- NAVBAR -->
     <header class="navbar">
