@@ -2,8 +2,10 @@
 session_start();
 require_once '../database.php';
 
+header('Content-Type: application/json');
+
 // Check if user is authorized
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'], ['admin', 'supervisor'])) {
     echo json_encode(['success' => false, 'message' => 'Unauthorized']);
     exit();
 }
@@ -11,52 +13,43 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 // Get POST data
 $data = json_decode(file_get_contents("php://input"), true);
 
-if (!$data) {
-    echo json_encode(["success" => false, "message" => "No JSON data received"]);
-    exit;
+if (!isset($data['appointment_id']) || !isset($data['technician_id'])) {
+    echo json_encode(['success' => false, 'message' => 'Missing required fields']);
+    exit();
 }
 
-// Debugging: Output received data
-echo json_encode(["success" => true, "received_data" => $data]);
-exit;
-
-if (isset($data['appointment_id'], $data['technician_id'])) {
+try {
     $db = (new Database())->getConnection();
-    
-    try {
-        // Begin transaction
-        $db->beginTransaction();
-        
-        // Update appointment with technician and change status
-        $stmt = $db->prepare("UPDATE appointments 
-                             SET technician_id = :tech_id,
-                                 status = 'Confirmed',
-                                 updated_at = NOW()
-                             WHERE appointment_id = :app_id");
-        
-        $stmt->execute([
-            ':tech_id' => $data['technician_id'],
-            ':app_id' => $data['appointment_id']
-        ]);
-        
-        // Commit transaction
+    $db->beginTransaction();
+
+    // Update appointment with technician_id and status
+    $stmt = $db->prepare("UPDATE appointments 
+                         SET technician_id = :technician_id, 
+                             status = 'Confirmed' 
+                         WHERE id = :appointment_id");
+
+    $success = $stmt->execute([
+        ':technician_id' => $data['technician_id'],
+        ':appointment_id' => $data['appointment_id']
+    ]);
+
+    if ($success) {
         $db->commit();
-        
         echo json_encode([
             'success' => true,
             'message' => 'Technician assigned successfully'
         ]);
-    } catch (PDOException $e) {
-        // Rollback on error
-        $db->rollBack();
-        echo json_encode([
-            'success' => false,
-            'message' => 'Database error occurred'
-        ]);
+    } else {
+        throw new PDOException("Failed to update appointment");
     }
-} else {
+
+} catch (PDOException $e) {
+    if ($db->inTransaction()) {
+        $db->rollBack();
+    }
+    error_log("Error assigning technician: " . $e->getMessage());
     echo json_encode([
         'success' => false,
-        'message' => 'Missing required fields'
+        'message' => 'Database error occurred'
     ]);
 }

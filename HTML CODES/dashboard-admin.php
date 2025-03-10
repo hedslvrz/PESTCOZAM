@@ -34,41 +34,58 @@ try {
     $stats = null;
 }
 
-// First, update the query to get all necessary appointment information
-$appointmentsQuery = "SELECT 
-    a.*,
-    s.service_name,
-    s.estimated_time,
-    CASE 
-        WHEN a.is_for_self = 1 THEN u.firstname
-        ELSE a.firstname
-    END as client_firstname,
-    CASE 
-        WHEN a.is_for_self = 1 THEN u.lastname
-        ELSE a.lastname
-    END as client_lastname,
-    t.id as tech_id,
-    t.firstname as tech_firstname,
-    t.lastname as tech_lastname
-FROM appointments a
-JOIN services s ON a.service_id = s.service_id
-JOIN users u ON a.user_id = u.id
-LEFT JOIN users t ON a.technician_id = t.id
-ORDER BY a.created_at DESC";
-
-// Get available technicians
-$techniciansQuery = "SELECT id, firstname, lastname 
-                    FROM users 
-                    WHERE role = 'technician' 
-                    AND status = 'verified'";
-
+// Replace the existing appointments query with this
 try {
+    $appointmentsQuery = "SELECT 
+        a.id as appointment_id,
+        a.appointment_date,
+        a.appointment_time,
+        a.status,
+        a.is_for_self,
+        a.region,
+        a.province,
+        a.city,
+        a.barangay,
+        a.street_address,
+        s.service_name,
+        CASE 
+            WHEN a.is_for_self = 1 THEN u.firstname
+            ELSE a.firstname
+        END as client_firstname,
+        CASE 
+            WHEN a.is_for_self = 1 THEN u.lastname
+            ELSE a.lastname
+        END as client_lastname,
+        t.id as tech_id,
+        t.firstname as tech_firstname,
+        t.lastname as tech_lastname
+    FROM appointments a
+    JOIN services s ON a.service_id = s.service_id
+    JOIN users u ON a.user_id = u.id
+    LEFT JOIN users t ON a.technician_id = t.id
+    ORDER BY a.created_at DESC";
+
+    // Get appointments
     $stmt = $db->prepare($appointmentsQuery);
     $stmt->execute();
     $appointments = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Get technicians
+    $techQuery = "SELECT id, firstname, lastname 
+                 FROM users 
+                 WHERE role = 'technician' 
+                 AND status = 'verified'";
+    $techStmt = $db->prepare($techQuery);
+    $techStmt->execute();
+    $technicians = $techStmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Add debug output
+    echo "<!-- Debug: Found " . count($appointments) . " appointments -->";
+    
 } catch(PDOException $e) {
-    error_log("Error fetching appointments: " . $e->getMessage());
+    error_log("Error fetching data: " . $e->getMessage());
     $appointments = [];
+    $technicians = [];
 }
 ?>
 <!DOCTYPE html>
@@ -355,54 +372,62 @@ try {
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php foreach ($appointments as $appointment): ?>
-                                <tr>
-                                    <td><?php echo htmlspecialchars($appointment['appointment_id']); ?></td>
-                                    <td>
-                                        <?php 
-                                        echo date('M d, Y', strtotime($appointment['appointment_date'])) . '<br>' . 
-                                             date('h:i A', strtotime($appointment['appointment_time'])); 
-                                        ?>
-                                    </td>
-                                    <td>
-                                        <?php 
-                                        echo htmlspecialchars($appointment['client_firstname'] . ' ' . 
-                                             $appointment['client_lastname']); 
-                                        ?>
-                                    </td>
-                                    <td><?php echo htmlspecialchars($appointment['service_name']); ?></td>
-                                    <td>
-                                        <?php 
-                                        echo htmlspecialchars($appointment['street_address'] . ', ' . 
-                                             $appointment['barangay'] . ', ' . 
-                                             $appointment['city']); 
-                                        ?>
-                                    </td>
-                                    <td>
-                                        <?php if ($appointment['tech_id']): ?>
-                                            <?php echo htmlspecialchars($appointment['tech_firstname'] . ' ' . 
-                                                  $appointment['tech_lastname']); ?>
-                                        <?php else: ?>
-                                            <button type="button" class="assign-tech-btn"
-                                                    onclick="openAssignModal(<?php echo $appointment['appointment_id']; ?>)">
-                                                Assign Technician
-                                            </button>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td>
-                                        <span class="status <?php echo strtolower($appointment['status']); ?>">
-                                            <?php echo htmlspecialchars($appointment['status']); ?>
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <button type="button" class="view-details-btn"
-                                                onclick="viewDetails(<?php echo $appointment['appointment_id']; ?>)">
-                                            View Details
-                                        </button>
-                                    </td>
-                                </tr>
-                                <?php endforeach; ?>
-                            </tbody>
+    <?php if (!empty($appointments)): ?>
+        <?php foreach ($appointments as $appointment): ?>
+            <tr>
+                <td><?php echo htmlspecialchars($appointment['appointment_id']); ?></td>
+                <td>
+                    <?php 
+                    echo date('M d, Y', strtotime($appointment['appointment_date'])) . '<br>' . 
+                         date('h:i A', strtotime($appointment['appointment_time'])); 
+                    ?>
+                </td>
+                <td>
+                    <?php echo htmlspecialchars($appointment['client_firstname'] . ' ' . 
+                         $appointment['client_lastname']); ?>
+                </td>
+                <td><?php echo htmlspecialchars($appointment['service_name']); ?></td>
+                <td>
+                    <?php 
+                    $location = array_filter([
+                        $appointment['street_address'],
+                        $appointment['barangay'],
+                        $appointment['city'],
+                        $appointment['region']
+                    ]);
+                    echo htmlspecialchars(implode(', ', $location));
+                    ?>
+                </td>
+                <td>
+                    <?php if (!empty($appointment['tech_id'])): ?>
+                        <?php echo htmlspecialchars($appointment['tech_firstname'] . ' ' . 
+                              $appointment['tech_lastname']); ?>
+                    <?php else: ?>
+                        <button type="button" class="assign-tech-btn" 
+                                onclick="openAssignModal('<?php echo $appointment['appointment_id']; ?>')">
+                            Assign Technician
+                        </button>
+                    <?php endif; ?>
+                </td>
+                <td>
+                    <span class="status <?php echo strtolower($appointment['status']); ?>">
+                        <?php echo htmlspecialchars($appointment['status']); ?>
+                    </span>
+                </td>
+                <td>
+                    <button type="button" class="view-details-btn" 
+                            onclick="viewDetails('<?php echo $appointment['appointment_id']; ?>')">
+                        View
+                    </button>
+                </td>
+            </tr>
+        <?php endforeach; ?>
+    <?php else: ?>
+        <tr>
+            <td colspan="8" class="no-records">No appointments found</td>
+        </tr>
+    <?php endif; ?>
+</tbody>
                         </table>
                     </div>
                 </div>
@@ -410,17 +435,16 @@ try {
         </div>
     </main>
 
-    <!-- Assign Technician Modal -->
     <div id="assignTechModal" class="modal">
         <div class="modal-content">
-            <span class="close">&times;</span>
+            <span class="close" onclick="closeAssignModal()">&times;</span>
             <h2>Assign Technician</h2>
             <form id="assignTechForm">
                 <input type="hidden" id="appointmentId" name="appointment_id">
                 <div class="form-group">
-                    <label for="technician">Select Technician:</label>
+                    <label for="technicianId">Select Technician:</label>
                     <select id="technicianId" name="technician_id" required>
-                        <option value="">-- Select Technician --</option>
+                        <option value="">-- Select a Technician --</option>
                         <?php foreach ($technicians as $tech): ?>
                             <option value="<?php echo $tech['id']; ?>">
                                 <?php echo htmlspecialchars($tech['firstname'] . ' ' . $tech['lastname']); ?>

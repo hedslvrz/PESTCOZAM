@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Mar 08, 2025 at 09:13 AM
+-- Generation Time: Mar 10, 2025 at 04:01 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -44,20 +44,17 @@ CREATE TABLE `appointments` (
   `firstname` varchar(100) DEFAULT NULL,
   `lastname` varchar(100) DEFAULT NULL,
   `email` varchar(255) DEFAULT NULL,
-  `mobile_number` varchar(20) DEFAULT NULL
+  `mobile_number` varchar(20) DEFAULT NULL,
+  `technician_id` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- --------------------------------------------------------
-
 --
--- Table structure for table `appointment_technicians`
+-- Dumping data for table `appointments`
 --
 
-CREATE TABLE `appointment_technicians` (
-  `id` int(11) NOT NULL,
-  `appointment_id` int(11) NOT NULL,
-  `technician_id` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+INSERT INTO `appointments` (`id`, `user_id`, `service_id`, `region`, `province`, `city`, `barangay`, `street_address`, `appointment_date`, `appointment_time`, `status`, `created_at`, `is_for_self`, `firstname`, `lastname`, `email`, `mobile_number`, `technician_id`) VALUES
+(15, 2, 8, '', '', '', '', 'Tumaga', '2025-03-15', '11:00:00', 'Pending', '2025-03-08 08:23:14', 1, NULL, NULL, NULL, NULL, NULL),
+(16, 2, 6, '', '', '', '', '', '2025-03-20', '03:00:00', 'Pending', '2025-03-08 08:32:49', 0, 'Hannah', 'Alvarez', 'hannah1@gmail.com', '09759500345', NULL);
 
 -- --------------------------------------------------------
 
@@ -91,32 +88,6 @@ INSERT INTO `services` (`service_id`, `service_name`, `description`, `estimated_
 -- --------------------------------------------------------
 
 --
--- Table structure for table `technicians`
---
-
-CREATE TABLE `technicians` (
-  `id` int(11) NOT NULL,
-  `name` varchar(100) NOT NULL,
-  `status` enum('Available','Busy','On Leave') DEFAULT 'Available'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `time_slots`
---
-
-CREATE TABLE `time_slots` (
-  `id` int(11) NOT NULL,
-  `appointment_id` int(11) NOT NULL,
-  `date` date NOT NULL,
-  `time` time NOT NULL,
-  `is_booked` tinyint(1) DEFAULT 0
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `users`
 --
 
@@ -128,7 +99,7 @@ CREATE TABLE `users` (
   `mobile_number` varchar(15) NOT NULL,
   `password` varchar(100) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `role` enum('user','admin','technician','supervisor') NOT NULL DEFAULT 'user',
+  `role` enum('user','admin','supervisor','technician') NOT NULL DEFAULT 'user',
   `status` enum('verified','unverified') NOT NULL DEFAULT 'unverified'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -138,7 +109,9 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`id`, `firstname`, `lastname`, `email`, `mobile_number`, `password`, `created_at`, `role`, `status`) VALUES
 (1, 'Hedrian Dunn', 'Alvarez', 'dunnlvrz13@gmail.com', '09759500123', '$2y$10$jn8m3Y/NnSIVBQmWSZdNtuAjpc2lIjj4oJPwqO2e4crXxoQkraRw2', '2025-03-01 07:13:17', 'admin', 'verified'),
-(2, 'Hedrian', 'Alvarez', 'hedrianlvrz13@gmail.com', '09925028930', '$2y$10$llagzPkGmqSRnmdaqysXA.Wma1Ra3r7E0OkE86NGCmG0yJ.7krvXS', '2025-03-04 14:59:55', 'user', 'verified');
+(2, 'Hedrian', 'Alvarez', 'hedrianlvrz13@gmail.com', '09925028930', '$2y$10$llagzPkGmqSRnmdaqysXA.Wma1Ra3r7E0OkE86NGCmG0yJ.7krvXS', '2025-03-04 14:59:55', 'user', 'verified'),
+(3, 'hannzce', 'Alvarez', 'hannzce13@gmail.com', '09755486972', '$2y$10$sYPyZ55toK.9iy6CHED8nOnwI6qFZ2cLErvYZxoywaHcj6DM8GcPC', '2025-03-08 17:43:06', 'supervisor', 'verified'),
+(4, 'Aldwin', 'Suarez', 'aldwinsuarez@gmail.com', '09755832781', '$2y$10$UW9BahNEZdNKxczDh3BfQOdBeOCAuSPnDylEvzdSCOiIbbI3xv3AS', '2025-03-08 18:10:50', 'technician', 'verified');
 
 --
 -- Indexes for dumped tables
@@ -150,34 +123,14 @@ INSERT INTO `users` (`id`, `firstname`, `lastname`, `email`, `mobile_number`, `p
 ALTER TABLE `appointments`
   ADD PRIMARY KEY (`id`),
   ADD KEY `user_id` (`user_id`),
-  ADD KEY `service_id` (`service_id`);
-
---
--- Indexes for table `appointment_technicians`
---
-ALTER TABLE `appointment_technicians`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `appointment_id` (`appointment_id`),
-  ADD KEY `technician_id` (`technician_id`);
+  ADD KEY `service_id` (`service_id`),
+  ADD KEY `fk_appointments_technicians` (`technician_id`);
 
 --
 -- Indexes for table `services`
 --
 ALTER TABLE `services`
   ADD PRIMARY KEY (`service_id`);
-
---
--- Indexes for table `technicians`
---
-ALTER TABLE `technicians`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `time_slots`
---
-ALTER TABLE `time_slots`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `appointment_id` (`appointment_id`);
 
 --
 -- Indexes for table `users`
@@ -194,13 +147,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `appointments`
 --
 ALTER TABLE `appointments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
-
---
--- AUTO_INCREMENT for table `appointment_technicians`
---
-ALTER TABLE `appointment_technicians`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT for table `services`
@@ -209,22 +156,10 @@ ALTER TABLE `services`
   MODIFY `service_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
--- AUTO_INCREMENT for table `technicians`
---
-ALTER TABLE `technicians`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `time_slots`
---
-ALTER TABLE `time_slots`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- Constraints for dumped tables
@@ -238,19 +173,6 @@ ALTER TABLE `appointments`
   ADD CONSTRAINT `appointments_ibfk_2` FOREIGN KEY (`service_id`) REFERENCES `services` (`service_id`) ON DELETE CASCADE,
   ADD CONSTRAINT `fk_appointments_service` FOREIGN KEY (`service_id`) REFERENCES `services` (`service_id`),
   ADD CONSTRAINT `fk_appointments_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
-
---
--- Constraints for table `appointment_technicians`
---
-ALTER TABLE `appointment_technicians`
-  ADD CONSTRAINT `appointment_technicians_ibfk_1` FOREIGN KEY (`appointment_id`) REFERENCES `appointments` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `appointment_technicians_ibfk_2` FOREIGN KEY (`technician_id`) REFERENCES `technicians` (`id`) ON DELETE CASCADE;
-
---
--- Constraints for table `time_slots`
---
-ALTER TABLE `time_slots`
-  ADD CONSTRAINT `time_slots_ibfk_1` FOREIGN KEY (`appointment_id`) REFERENCES `appointments` (`id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

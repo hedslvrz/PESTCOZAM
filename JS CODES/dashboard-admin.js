@@ -77,21 +77,33 @@ function showSection(sectionId) {
 
 // Technician Assignment Functions
 function openAssignModal(appointmentId) {
+    const modal = document.getElementById('assignTechModal');
     document.getElementById('appointmentId').value = appointmentId;
-    document.getElementById('assignTechModal').style.display = 'block';
+    modal.style.display = 'block';
 }
 
 function closeAssignModal() {
-    document.getElementById('assignTechModal').style.display = 'none';
+    const modal = document.getElementById('assignTechModal');
+    modal.style.display = 'none';
 }
 
 // Handle technician assignment form submission
-document.getElementById('assignTechForm').addEventListener('submit', function(e) {
+document.getElementById('assignTechForm').addEventListener('submit', handleAssignSubmit);
+
+function handleAssignSubmit(e) {
     e.preventDefault();
     
+    const appointmentId = document.getElementById('appointmentId').value;
+    const technicianId = document.getElementById('technicianId').value;
+
+    if (!technicianId) {
+        alert('Please select a technician');
+        return;
+    }
+
     const formData = {
-        appointment_id: document.getElementById('appointmentId').value,
-        technician_id: document.getElementById('technicianId').value
+        appointment_id: appointmentId,
+        technician_id: technicianId
     };
 
     fetch('../PHP CODES/assign_technician.php', {
@@ -115,7 +127,7 @@ document.getElementById('assignTechForm').addEventListener('submit', function(e)
         console.error('Error:', error);
         alert('An error occurred while assigning technician');
     });
-});
+}
 
 // Add filtering functionality
 document.querySelectorAll('.filter-btn').forEach(button => {
@@ -138,6 +150,22 @@ document.querySelectorAll('.filter-btn').forEach(button => {
             }
         });
     });
+});
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('assignTechModal');
+    if (event.target === modal) {
+        closeAssignModal();
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize form handler if it exists
+    const assignForm = document.getElementById('assignTechForm');
+    if (assignForm) {
+        assignForm.addEventListener('submit', handleAssignSubmit);
+    }
 });
 
 
