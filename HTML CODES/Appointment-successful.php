@@ -100,7 +100,7 @@ try {
     </div>
     <nav>
         <ul>
-            <li><a href="../HTML CODES/Home_page.php">Home</a></li>
+            <li><a href="../Index.php">Home</a></li>
             <li><a href="../HTML CODES/About_us.html">About Us</a></li>
             <li><a href="../HTML CODES/Services.html" class="services">Services</a></li>
             <li><a href="../HTML CODES/Appointment-service.php" class="btn-appointment">Appointment</a></li>
@@ -188,7 +188,7 @@ try {
 
         <div class="thank-you-nav">
             <button class="back-btn" onclick="window.location.href='Appointment-calendar.php'">Back</button>
-            <button class="next-btn" onclick="window.location.href='Home_page.php'">Done</button>
+            <button class="next-btn" onclick="window.location.href='../Index.php'">Done</button>
         </div>
     </main>
 

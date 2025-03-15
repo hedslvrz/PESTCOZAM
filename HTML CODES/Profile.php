@@ -92,7 +92,7 @@ $recent_appointment = $stmt->get_result()->fetch_assoc();
       </div>
       <nav>
         <ul>
-          <li><a href="Home_page.php">Home</a></li>
+          <li><a href="../Index.php">Home</a></li>
           <li><a href="Home_page.php#offer-section">Services</a></li>
           <li><a href="Home_page.php#about-us-section">About Us</a></li>
           <li><a href="Appointment-service.php" class="btn-appointment">Book Appointment</a></li>

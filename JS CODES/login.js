@@ -54,7 +54,7 @@ function loginUser(event) {
                 window.location.href = "../HTML CODES/dashboard-aos.php";
             } else {
                 customModal.showSuccess("Login Successful!", () => {
-                    window.location.href = "../HTML CODES/Home_page.php";
+                    window.location.href = "../Index.php";
                 });
             }
         } else {

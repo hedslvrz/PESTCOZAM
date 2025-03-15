@@ -101,7 +101,7 @@ $services = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
         <nav>
             <ul>
-                <li><a href="../HTML CODES/Home_page.php">Home</a></li>
+                <li><a href="../Index.php">Home</a></li>
                 <li><a href="../HTML CODES/About_us.html">About Us</a></li>
                 <li><a href="../HTML CODES/Services.html" class="services">Services</a></li>
                 <li><a href="../HTML CODES/Appointment-service.php" class="btn-appointment">Appointment</a></li>
@@ -182,7 +182,7 @@ $services = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </div>
             
             <div class="button-container">
-            <a href="../HTML CODES/Home_page.php" class="back-btn">Back to Home</a>
+            <a href="../Index.php" class="back-btn">Back to Home</a>
             <form id="serviceForm" action="Appointment-service.php" method="POST">
                 <input type="hidden" id="selectedService" name="service_id" value="">
                 <!-- Changed ID to avoid duplicate IDs -->

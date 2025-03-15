@@ -18,6 +18,6 @@ if (ini_get("session.use_cookies")) {
 }
 
 // Redirect to the home page
-header("Location: Home_page.php");
+header("Location: ../Index.php");
 exit();
 ?>

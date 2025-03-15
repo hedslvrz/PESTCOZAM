@@ -7,7 +7,7 @@ $is_logged_in = isset($_SESSION['user_id']);
 // If logged in, set user variables for use in the page
 if ($is_logged_in) {
     $user_id = $_SESSION['user_id'];
-    $profile_pic = isset($_SESSION['profile_pic']) ? $_SESSION['profile_pic'] : '../Pictures/boy.png';
+    $profile_pic = isset($_SESSION['profile_pic']) ? $_SESSION['profile_pic'] : './Pictures/boy.png';
 }
 ?>
 <!DOCTYPE html>
@@ -16,7 +16,7 @@ if ($is_logged_in) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home Page</title>
-    <link rel="stylesheet" href="../CSS CODES/Home_page.css">
+    <link rel="stylesheet" href="./CSS CODES/Home_page.css">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 </head>
 <body>
@@ -30,10 +30,10 @@ if ($is_logged_in) {
                   <span> <strong>Estrada St, Zamboanga City, Zamboanga Del Sur, 7000<strong></span>
               </div>
               <div class="contact-info">
-                  <img src="../Pictures/phone.png" alt="Phone Icon" class="icon">
+                  <img src="./Pictures/phone.png" alt="Phone Icon" class="icon">
                   <span>0905 - 177 - 5662</span>
                   <span class="divider"></span>
-                  <img src="../Pictures/email.png" alt="Email Icon" class="icon">
+                  <img src="./Pictures/email.png" alt="Email Icon" class="icon">
                   <span>pestcozam@yahoo.com</span>
               </div>
           </div>
@@ -42,29 +42,29 @@ if ($is_logged_in) {
       <!-- NAVBAR -->
       <header class="navbar">
           <div class="logo-container">
-              <img src="../Pictures/pest_logo.png" alt="Flower Logo" class="flower-logo">
+              <img src="./Pictures/pest_logo.png" alt="Flower Logo" class="flower-logo">
               <span class="brand-name" style="font-size: 2rem;">PESTCOZAM</span>
           </div>
           <nav>
             <ul>
-              <li><a href="../HTML CODES/Home_page.php">Home</a></li>
+              <li><a href="Index.php">Home</a></li>
               <li><a href="#offer-section">Services</a></li>
               <li><a href="#about-us-section">About Us</a></li>
-              <li><a href="../HTML CODES/Appointment-service.php" class="btn-appointment">Book Appointment</a></li>
+              <li><a href="./HTML CODES/Appointment-service.php" class="btn-appointment">Book Appointment</a></li>
               <?php if ($is_logged_in): ?>
               <li class="user-profile">
                   <div class="profile-dropdown">
-                      <img src="<?php echo $profile_pic; ?>" alt="Profile" class="profile-pic">
+                      <img src="./Pictures/boy.png" alt="Profile" class="profile-pic">
                       <div class="dropdown-content">
-                          <a href="../HTML CODES/Profile.php"><i class='bx bx-user'></i> Profile</a>
-                          <a href="../HTML CODES/logout.php"><i class='bx bx-log-out'></i> Logout</a>
+                          <a href="./HTML CODES/Profile.php"><i class='bx bx-user'></i> Profile</a>
+                          <a href="./HTML CODES/logout.php"><i class='bx bx-log-out'></i> Logout</a>
                       </div>
                   </div>
               </li>
           <?php else: ?>
               <li class="auth-buttons">
-                  <a href="../HTML CODES/Login.php" class="btn-login"><i class='bx bx-log-in'></i> Login</a>
-                  <a href="../HTML CODES/Signup.php" class="btn-signup"><i class='bx bx-user-plus'></i> Sign Up</a>
+                  <a href="./HTML CODES/Login.php" class="btn-login"><i class='bx bx-log-in'></i> Login</a>
+                  <a href="./HTML CODES/Signup.php" class="btn-signup"><i class='bx bx-user-plus'></i> Sign Up</a>
               </li>
           <?php endif; ?>
             </ul>      
@@ -82,7 +82,7 @@ if ($is_logged_in) {
         </p>
       </div>
       <div class="hero-image">
-        <img src="../Pictures/hero image.jpg" alt="Hero Image">
+        <img src="./Pictures/hero image.jpg" alt="Hero Image">
       </div>
     </section>        
 
@@ -90,7 +90,7 @@ if ($is_logged_in) {
     <section class="info-section">
         <div class="info-box">
             <div class="info-icon">
-                <img src="../Pictures/phone_2.png" alt="Phone Icon">
+                <img src="./Pictures/phone_2.png" alt="Phone Icon">
             </div>
             <div class="info-text">
                 <h3>Call Us Now</h3>
@@ -98,9 +98,9 @@ if ($is_logged_in) {
             </div>
         </div>
         
-        <a href="../HTML CODES/Location_page.html" class="info-box">
+        <a href="./HTML CODES/Location_page.html" class="info-box">
             <div class="info-icon">
-                <img src="../Pictures/location.png" alt="Location Icon">
+                <img src="./Pictures/location.png" alt="Location Icon">
             </div>
             <div class="info-text">
                 <h3>Coverage Area</h3>
@@ -108,9 +108,9 @@ if ($is_logged_in) {
             </div>
         </a>
         
-        <a href="../HTML CODES/Appointment-service.php" class="info-box">
+        <a href="./HTML CODES/Appointment-service.php" class="info-box">
           <div class="info-icon">
-              <img src="../Pictures/Appointment.png" alt="Appointment Icon">
+              <img src="./Pictures/Appointment.png" alt="Appointment Icon">
           </div>
           <div class="info-text">
               <h3>Appointment</h3>
@@ -138,7 +138,7 @@ if ($is_logged_in) {
         </div>
         <div class="who-video">
           <video class="analytics-video" autoplay muted loop onclick="this.paused ? this.play() : this.pause()">
-            <source src="../Videos/who-we-are.mp4" type="video/mp4" />
+            <source src="./Videos/who-we-are.mp4" type="video/mp4" />
             Your browser does not support the video tag.
           </video>
           <div class="testimonial-box">
@@ -163,7 +163,7 @@ if ($is_logged_in) {
             
             <div class="pest-image">
                 <div class="pestcozam-mascot">
-                    <img src="../Pictures/Pestcozam-Mascot.png" class="image-front">
+                    <img src="./Pictures/Pestcozam-Mascot.png" class="image-front">
                 </div>
             </div>
         </div>
@@ -173,7 +173,7 @@ if ($is_logged_in) {
     <section class="expert-section">
       <div class="expert-container">
           <div class="expert-image">
-              <img src="../Pictures/Expert pic.jpg" alt="Pest Control Expert">
+              <img src="./Pictures/Expert pic.jpg" alt="Pest Control Expert">
           </div>
           <div class="expert-content">
               <h2>The pest control expert<br>you can trust.</h2>
@@ -184,7 +184,7 @@ if ($is_logged_in) {
                       Lec convails felis habitasse libra<br>
                       torquent augue.Natoque possiere libra</p>
                       <div class="button-group">
-                          <button class="learn-btn" onclick="window.location.href='Pest_Control_Info.php'">Learn More</button>
+                          <button class="learn-btn" onclick="window.location.href='./HTML CODES/Pest_Control_Info.php'">Learn More</button>
                       </div>
                   </div>
                   <div class="card blue-card">
@@ -192,7 +192,7 @@ if ($is_logged_in) {
                       <p>elementum non sociosqu.Vulputate enim<br>
                       plates non convails aenean laculis.</p>
                       <div class="button-group">
-                          <button class="learn-btn" onclick="window.location.href='Inspection_Info.php'">Learn More</button>
+                          <button class="learn-btn" onclick="window.location.href='./HTML CODES/Inspection_Info.php'">Learn More</button>
                       </div>
                   </div>
               </div>
@@ -205,7 +205,7 @@ if ($is_logged_in) {
   <div class="analytics-container">
     <div class="analytics-video-container">
       <video class="analytics-video" autoplay muted loop onclick="this.paused ? this.play() : this.pause()">
-        <source src="../Videos/analytics-vid.mp4" type="video/mp4">
+        <source src="./Videos/analytics-vid.mp4" type="video/mp4">
       </video>
     </div>
 
@@ -250,7 +250,7 @@ if ($is_logged_in) {
         
         <!-- Card 1 -->
         <div class="offer-card">
-          <img src="../Pictures/card 1 offer.jpg" alt="Soil Poisoning" />
+          <img src="./Pictures/card 1 offer.jpg" alt="Soil Poisoning" />
           <div class="offer-text">
             <h3>Soil Poisoning</h3>
             <p>
@@ -262,15 +262,15 @@ if ($is_logged_in) {
               <p><i class='bx bx-money'></i> Starting at ₱3,000</p>
             </div>
             <div class="button-group">
-                <button class="book-now-btn" onclick="window.location.href='Appointment-service.php'">Book Now</button>
-                <button class="learn-more-btn" onclick="window.location.href='Lrn_more_sp.php'">Learn More</button>
+                <button class="book-now-btn" onclick="window.location.href='./HTML CODES/Appointment-service.php'">Book Now</button>
+                <button class="learn-more-btn" onclick="window.location.href='./HTML CODES/Lrn_more_sp.php'">Learn More</button>
             </div>
           </div>
         </div>
 
         <!-- Card 2 -->
         <div class="offer-card">
-          <img src="../Pictures/mound-demolition.jpg" alt="Mound Demolition" />
+          <img src="./Pictures/mound-demolition.jpg" alt="Mound Demolition" />
           <div class="offer-text">
             <h3>Mound Demolition</h3>
             <p>
@@ -282,15 +282,15 @@ if ($is_logged_in) {
               <p><i class='bx bx-money'></i> Starting at ₱4,500</p>
             </div>
             <div class="button-group">
-                <button class="book-now-btn" onclick="window.location.href='Appointment-service.php'">Book Now</button>
-                <button class="learn-more-btn" onclick="window.location.href='Lrn_more_md.php'">Learn More</button>
+                <button class="book-now-btn" onclick="window.location.href='./HTML CODES/Appointment-service.php'">Book Now</button>
+                <button class="learn-more-btn" onclick="window.location.href='./HTML CODES/Lrn_more_sp.php'">Learn More</button>
             </div>
           </div>
         </div>
 
         <!-- Card 3 -->
         <div class="offer-card">
-          <img src="../Pictures/gpc pic.jpg" alt="General Pest Control" />
+          <img src="./Pictures/gpc pic.jpg" alt="General Pest Control" />
           <div class="offer-text">
             <h3>General Pest Control</h3>
             <p>
@@ -302,15 +302,15 @@ if ($is_logged_in) {
               <p><i class='bx bx-money'></i> Starting at ₱3,000</p>
             </div>
             <div class="button-group">
-                <button class="book-now-btn" onclick="window.location.href='Appointment-service.php'">Book Now</button>
-                <button class="learn-more-btn" onclick="window.location.href='Lrn_more_gpc.php'">Learn More</button>
+                <button class="book-now-btn" onclick="window.location.href='./HTML CODES/Appointment-service.php'">Book Now</button>
+                <button class="learn-more-btn" onclick="window.location.href='./HTML CODES/Lrn_more_sp.php'">Learn More</button>
             </div>
           </div>
         </div>
 
         <!-- Card 4 -->
         <div class="offer-card">
-          <img src="../Pictures/termite control.jpg" alt="Termite Control" />
+          <img src="./Pictures/termite control.jpg" alt="Termite Control" />
           <div class="offer-text">
             <h3>Termite Control</h3>
             <p>
@@ -322,15 +322,15 @@ if ($is_logged_in) {
               <p><i class='bx bx-money'></i> Starting at ₱2,000</p>
             </div>
             <div class="button-group">
-                <button class="book-now-btn" onclick="window.location.href='Appointment-service.php'">Book Now</button>
-                <button class="learn-more-btn" onclick="window.location.href='Lrn_more_tc.php'">Learn More</button>
+                <button class="book-now-btn" onclick="window.location.href='./HTML CODES/Appointment-service.php'">Book Now</button>
+                <button class="learn-more-btn" onclick="window.location.href='./HTML CODES/Lrn_more_sp.php'">Learn More</button>
             </div>
           </div>
         </div>
 
         <!-- Card 5 -->
         <div class="offer-card">
-          <img src="../Pictures/Mosquito control.jpg" alt="Mosquito Control" />
+          <img src="./Pictures/Mosquito control.jpg" alt="Mosquito Control" />
           <div class="offer-text">
             <h3>Mosquito Control</h3>
             <p>
@@ -342,15 +342,15 @@ if ($is_logged_in) {
               <p><i class='bx bx-money'></i> Starting at ₱1,500</p>
             </div>
             <div class="button-group">
-                <button class="book-now-btn" onclick="window.location.href='Appointment-service.php'">Book Now</button>
-                <button class="learn-more-btn" onclick="window.location.href='Lrn_more_mc.php'">Learn More</button>
+                <button class="book-now-btn" onclick="window.location.href='./HTML CODES/Appointment-service.php'">Book Now</button>
+                <button class="learn-more-btn" onclick="window.location.href='./HTML CODES/Lrn_more_sp.php'">Learn More</button>
             </div>
           </div>
         </div>
 
         <!-- Card 6 -->
         <div class="offer-card">
-          <img src="../Pictures/rat control.jpg" alt="Rat Control" />
+          <img src="./Pictures/rat control.jpg" alt="Rat Control" />
           <div class="offer-text">
             <h3>Rat Control</h3>
             <p>
@@ -362,15 +362,15 @@ if ($is_logged_in) {
               <p><i class='bx bx-money'></i> Starting at ₱2,000</p>
             </div>
             <div class="button-group">
-                <button class="book-now-btn" onclick="window.location.href='Appointment-service.php'">Book Now</button>
-                <button class="learn-more-btn" onclick="window.location.href='Lrn_more_rat.php'">Learn More</button>
+                <button class="book-now-btn" onclick="window.location.href='./HTML CODES/Appointment-service.php'">Book Now</button>
+                <button class="learn-more-btn" onclick="window.location.href='./HTML CODES/Lrn_more_sp.php'">Learn More</button>
             </div>
           </div>
         </div>
 
         <!-- Card 7 -->
         <div class="offer-card">
-          <img src="../Pictures/Other-flying-insects.jpg" alt="Flying & Crawling Photo" />
+          <img src="./Pictures/Other-flying-insects.jpg" alt="Flying & Crawling Photo" />
           <div class="offer-text">
             <h3>Other Flying and Crawling Insects</h3>
             <p>
@@ -382,15 +382,15 @@ if ($is_logged_in) {
               <p><i class='bx bx-money'></i> Starting at ₱1,800</p>
             </div>
             <div class="button-group">
-                <button class="book-now-btn" onclick="window.location.href='Appointment-service.php'">Book Now</button>
-                <button class="learn-more-btn" onclick="window.location.href='Lrn_more_other.php'">Learn More</button>
+                <button class="book-now-btn" onclick="window.location.href='./HTML CODES/Appointment-service.php'">Book Now</button>
+                <button class="learn-more-btn" onclick="window.location.href='./HTML CODES/Lrn_more_sp.php'">Learn More</button>
             </div>
           </div>
         </div>
 
          <!-- Card 8 -->
          <div class="offer-card">
-          <img src="../Pictures/Extraction.jpg" alt="Extraction" />
+          <img src="./Pictures/Extraction.jpg" alt="Extraction" />
           <div class="offer-text">
             <h3>Extraction</h3>
             <p>
@@ -402,8 +402,8 @@ if ($is_logged_in) {
               <p><i class='bx bx-money'></i> Starting at ₱3,500</p>
             </div>
             <div class="button-group">
-                <button class="book-now-btn" onclick="window.location.href='Appointment-service.php'">Book Now</button>
-                <button class="learn-more-btn" onclick="window.location.href='Lrn_more_extraction.php'">Learn More</button>
+                <button class="book-now-btn" onclick="window.location.href='./HTML CODES/Appointment-service.php'">Book Now</button>
+                <button class="learn-more-btn" onclick="window.location.href='./HTML CODES/Lrn_more_sp.php'">Learn More</button>
             </div>
           </div>
         </div>
@@ -420,7 +420,7 @@ if ($is_logged_in) {
 
 <!-- ABOUT US SECTION -->
   <div class="image-container" id="about-us-section">
-    <img src="../Pictures/about us.jpg" alt="Pest Control Worker">
+    <img src="./Pictures/about us.jpg" alt="Pest Control Worker">
     <div class="overlay">
       <h1>ABOUT US</h1>
     </div>
@@ -455,22 +455,22 @@ if ($is_logged_in) {
         <a href="#" class="discover-button">Discover more</a>
       </div>
       <div class="why-pestcozam-grid">
-        <div class="grid-item" style="background-image: url('../Pictures/Exp-Prof.jpg');">
+        <div class="grid-item" style="background-image: url('./Pictures/Exp-Prof.jpg');">
           <div class="item-title">Experienced<br>Professionals</div>
         </div>
-        <div class="grid-item" style="background-image: url('../Pictures/Cust-Treatment.jpg');">
+        <div class="grid-item" style="background-image: url('./Pictures/Cust-Treatment.jpg');">
           <div class="item-title">Customized<br>Treatments</div>
         </div>
-        <div class="grid-item" style="background-image: url('../Pictures/eco-friendly.jpg');">
+        <div class="grid-item" style="background-image: url('./Pictures/eco-friendly.jpg');">
           <div class="item-title">Eco-Friendly<br>Solutions</div>
         </div>
-        <div class="grid-item" style="background-image: url('../Pictures/transparent-pricing.jpg');">
+        <div class="grid-item" style="background-image: url('./Pictures/transparent-pricing.jpg');">
           <div class="item-title">Transparent<br>Pricing</div>
         </div>
-        <div class="grid-item" style="background-image: url('../Pictures/guaranteed-results.jpg');">
+        <div class="grid-item" style="background-image: url('./Pictures/guaranteed-results.jpg');">
           <div class="item-title">Guaranteed<br>Results</div>
         </div>
-        <div class="grid-item" style="background-image: url('../Pictures/fast-and-responsive.jpg');">
+        <div class="grid-item" style="background-image: url('./Pictures/fast-and-responsive.jpg');">
           <div class="item-title">Fast and<br>Responsive</div>
         </div>
       </div>
@@ -488,7 +488,7 @@ if ($is_logged_in) {
     <div class="reviews-slider">
       <div class="review-slide">
         <div class="review-card">
-          <img src="../Pictures/woman.png" alt="Evangeline Tecson Bue" class="review-image">
+          <img src="./Pictures/woman.png" alt="Evangeline Tecson Bue" class="review-image">
           <div class="review-content">
             <h3 class="review-name">Evangeline Tecson Bue</h3>
             <div class="review-stars">★★★★★</div>
@@ -498,7 +498,7 @@ if ($is_logged_in) {
       </div>
       <div class="review-slide">
         <div class="review-card">
-          <img src="../Pictures/woman.png" alt="Loriel Keme" class="review-image">
+          <img src="./Pictures/woman.png" alt="Loriel Keme" class="review-image">
           <div class="review-content">
             <h3 class="review-name">Loriel Keme</h3>
             <div class="review-stars">★★★★★</div>
@@ -508,7 +508,7 @@ if ($is_logged_in) {
       </div>
       <div class="review-slide">
         <div class="review-card">
-          <img src="../Pictures/boy.png" alt="Martin Go" class="review-image">
+          <img src="./Pictures/boy.png" alt="Martin Go" class="review-image">
           <div class="review-content">
             <h3 class="review-name">Martin Go</h3>
             <div class="review-stars">★★★★★</div>
@@ -521,7 +521,7 @@ if ($is_logged_in) {
       <button class="prev-button">←</button>
       <button class="next-button">→</button>
     </div>
-    <a href="Appointment-service.php" class="book-now-button">BOOK NOW!</a>
+    <a href="./HTML CDOES/Appointment-service.php" class="book-now-button">BOOK NOW!</a>
   </div>
 </section>
 
@@ -534,7 +534,7 @@ if ($is_logged_in) {
     <div class="footer-container">
       <div class="footer-left">
         <div class="footer-brand">
-          <img src="../Pictures/pest_logo.png" alt="Flower icon" class="flower-icon" />
+          <img src="./Pictures/pest_logo.png" alt="Flower icon" class="flower-icon" />
           <h3 class="brand-name">PESTCOZAM</h3>
         </div>
         <p class="footer-copyright">
@@ -545,9 +545,9 @@ if ($is_logged_in) {
       <div class="footer-right">
         <p class="follow-us-text">Follow us</p>
         <div class="social-icons">
-          <a href="https://www.facebook.com/PESTCOZAM" target="_blank"><img src="../Pictures/facebook.png" alt="Facebook" ></a>
+          <a href="https://www.facebook.com/PESTCOZAM" target="_blank"><img src="./Pictures/facebook.png" alt="Facebook" ></a>
           <a href=""><img src="../Pictures/telegram.png" alt="Telegram" /></a>
-          <a href="https://www.instagram.com/pestcozam" target="_blank"><img src="../Pictures/instagram.png" alt="Instagram" /></a>
+          <a href="https://www.instagram.com/pestcozam" target="_blank"><img src="./Pictures/instagram.png" alt="Instagram" /></a>
         </div>
       </div>
     </div>
@@ -594,7 +594,7 @@ if ($is_logged_in) {
         });
     });
     </script> 
-    <script src="../JS CODES/sessionHandler.js"></script>
+    <script src="./JS CODES/sessionHandler.js"></script>
     <style>
   html {
     scroll-behavior: smooth;

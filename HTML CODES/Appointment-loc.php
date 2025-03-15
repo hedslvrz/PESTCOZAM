@@ -98,7 +98,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </div>
     <nav>
       <ul>
-        <li><a href="../HTML CODES/Home_page.php">Home</a></li>
+        <li><a href="../Index.php">Home</a></li>
         <li><a href="../HTML CODES/About_us.html">About Us</a></li>
         <li><a href="../HTML CODES/Services.html" class="services">Services</a></li>
         <li><a href="../HTML CODES/Appointment-service.php" class="btn-appointment">Appointment</a></li>
@@ -326,11 +326,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       city.disabled = true;
     });
 
-    // 3) Initialize Leaflet Map (Coordinates from your iFrame example)
-    var mymap = L.map('leafletMap').setView([7.1622468, 121.8212624], 10);
+    // 3) Initialize Leaflet Map (Coordinates for Zamboanga City)
+    var mymap = L.map('leafletMap').setView([6.9214, 122.0790], 13);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap'
+      attribution: '© OpenStreetMap',
+      maxZoom: 19
     }).addTo(mymap);
 
     var userMarker = null;
