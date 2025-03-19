@@ -129,11 +129,22 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-});
+    // Restore active section after page refresh
+    const activeSection = localStorage.getItem('activeSection');
+    if (activeSection) {
+        showSection(activeSection);
+        localStorage.removeItem('activeSection'); // Clear stored section
+    }
 
-// Add this for handling inline technician assignment
-document.addEventListener('DOMContentLoaded', function() {
-    // Get all inline assignment forms
+    // Handle logout click
+    document.querySelector('.logout').addEventListener('click', function(e) {
+        e.preventDefault();
+        customModal.showConfirm("Are you sure you want to logout?", () => {
+            window.location.href = "../HTML CODES/login.php";
+        });
+    });
+
+    // Inline technician assignment handling
     const assignForms = document.querySelectorAll('.inline-assign-form');
     
     assignForms.forEach(form => {
@@ -141,7 +152,9 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             
             const appointmentId = this.dataset.appointmentId;
-            const technicianId = this.querySelector('.tech-select').value;
+            const techSelect = this.querySelector('.tech-select');
+            const technicianId = techSelect.value;
+            const technicianName = techSelect.options[techSelect.selectedIndex].text;
             
             if (!technicianId) {
                 customModal.showWarning('Please select a technician');
@@ -163,16 +176,31 @@ document.addEventListener('DOMContentLoaded', function() {
                 const result = await response.json();
                 
                 if (result.success) {
-                    customModal.showSuccess('Technician assigned successfully!', () => {
-                        window.location.reload();
-                    });
+                    const action = this.querySelector('.assign-btn').textContent.trim().toLowerCase().includes('assign') ? 'assigned' : 'updated';
+                    customModal.showSuccess(
+                        `Technician successfully ${action} to ${technicianName}!`,
+                        () => window.location.reload()
+                    );
                 } else {
                     customModal.showError(result.message || 'Failed to assign technician');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                customModal.showError('An error occurred while assigning the technician');
+                customModal.showError('An error occurred while processing your request');
             }
+        });
+    });
+
+    // Handle technician update form submission
+    const updateTechForms = document.querySelectorAll('.update-technician-form');
+    updateTechForms.forEach(form => {
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Your existing update technician code here...
+            
+            // After successful update:
+            customModal.showUpdateSuccess();
         });
     });
 });

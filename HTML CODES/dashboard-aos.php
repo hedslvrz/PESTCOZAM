@@ -81,6 +81,7 @@ try {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../CSS CODES/dashboard-aos.css">
+    <link rel="stylesheet" href="../CSS CODES/modal.css">
     <title>AOS Dashboard</title>
 </head>
 <body>
@@ -116,9 +117,9 @@ try {
                 </a>
             </li>
             <li>
-                <a href="#logout" class="logout">
+                <a href="logout.php" class="logout">
                     <i class='bx bx-log-out'></i>
-                    <span class="text" href="../HTML CODES/logout.php">Log out</span>
+                    <span>Log out</span>
                 </a>
             </li>
         </ul>
@@ -451,6 +452,49 @@ try {
         </main>
     </section>
 
+    <div id="customModal" class="custom-modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div class="modal-header">
+                <h3 id="modalTitle"></h3>
+            </div>
+            <div class="modal-body" id="modalMessage"></div>
+            <div class="modal-buttons">
+                <button type="button" class="modal-button primary" id="modalOkBtn">OK</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="assignTechModal" class="custom-modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div class="modal-header">
+                <h3 id="modalTitle">Assign Technician</h3>
+            </div>
+            <div class="modal-body">
+                <form id="assignTechForm">
+                    <input type="hidden" id="appointmentId">
+                    <div class="form-group">
+                        <label for="technicianId">Select Technician:</label>
+                        <select id="technicianId" name="technician_id" required>
+                            <option value="">-- Select Technician --</option>
+                            <?php foreach ($technicians as $tech): ?>
+                                <option value="<?php echo $tech['id']; ?>">
+                                    <?php echo htmlspecialchars($tech['firstname'] . ' ' . $tech['lastname']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="modal-buttons">
+                        <button type="submit" class="modal-button primary">Confirm</button>
+                        <button type="button" class="modal-button secondary btn-cancel">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <script src="../JS CODES/modal.js"></script>
     <script src="../JS CODES/dashboard-aos.js"></script>
 </body>
 </html>

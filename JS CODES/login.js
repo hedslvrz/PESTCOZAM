@@ -49,9 +49,13 @@ function loginUser(event) {
                     window.location.href = "../HTML CODES/dashboard-admin.php";
                 });
             } else if (data.role === "technician") {
-                window.location.href = "../HTML CODES/dashboard-pct.php";
+                customModal.showSuccess("Login Successful!", () => {
+                    window.location.href = "../HTML CODES/dashboard-pct.php";
+                });
             } else if (data.role === "supervisor") {
-                window.location.href = "../HTML CODES/dashboard-aos.php";
+                customModal.showSuccess("Login Successful!", () => {
+                    window.location.href = "../HTML CODES/dashboard-aos.php";
+                });
             } else {
                 customModal.showSuccess("Login Successful!", () => {
                     window.location.href = "../Index.php";

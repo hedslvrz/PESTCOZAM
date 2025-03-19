@@ -1,11 +1,13 @@
 <?php
-// filepath: d:\xampp\htdocs\PESTCOZAM\PESTCOZAM\PESTCOZAM\HTML CODES\logout.php
 session_start();
+
+// Store user role before destroying session
+$userRole = isset($_SESSION['role']) ? $_SESSION['role'] : '';
 
 // Destroy the session
 session_destroy();
 
-// Optionally, unset all session variables
+// Unset all session variables
 $_SESSION = array();
 
 // If using session cookies, delete the session cookie
@@ -17,7 +19,11 @@ if (ini_get("session.use_cookies")) {
     );
 }
 
-// Redirect to the home page
-header("Location: ../Index.php");
+// Redirect based on role
+if ($userRole == 'admin' || $userRole == 'technician' || $userRole == 'supervisor') {
+    header("Location: login.php");
+} else {
+    header("Location: ../Index.php");
+}
 exit();
 ?>

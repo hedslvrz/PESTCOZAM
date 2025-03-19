@@ -93,6 +93,42 @@ const customModal = {
         };
         
         modal.style.display = 'flex';
+        const modalContent = document.querySelector('.modal-content');
+        modalContent.style.borderTop = '4px solid #ffc107';
+    },
+
+    showAssignmentSuccess(technicianName) {
+        // Save current section before refresh
+        const currentSection = document.querySelector('.section.active').id;
+        localStorage.setItem('activeSection', currentSection);
+        
+        this.show(
+            `Successfully assigned to ${technicianName}!`,
+            'Assignment Complete',
+            () => window.location.reload()
+        );
+        const modalContent = document.querySelector('.modal-content');
+        modalContent.style.borderTop = '4px solid #28a745';
+    },
+
+    showUpdateSuccess(message = "Technician information updated successfully!") {
+        this.show(
+            message,
+            'Update Successful',
+            () => window.location.reload()
+        );
+        const modalContent = document.querySelector('.modal-content');
+        modalContent.style.borderTop = '4px solid #28a745';
+    },
+
+    handleLogout() {
+        this.show(
+            "Are you sure you want to logout?",
+            'Logout Confirmation',
+            () => {
+                window.location.href = "../HTML CODES/login.php";
+            }
+        );
     }
 };
 
