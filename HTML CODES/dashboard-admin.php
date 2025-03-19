@@ -111,6 +111,20 @@ try {
     error_log("Error fetching appointments: " . $e->getMessage());
     $appointments = [];
 }
+
+// Get available technicians
+try {
+    $techQuery = "SELECT id, firstname, lastname 
+                 FROM users 
+                 WHERE role = 'technician' 
+                 AND status = 'verified'";
+    $techStmt = $db->prepare($techQuery);
+    $techStmt->execute();
+    $technicians = $techStmt->fetchAll(PDO::FETCH_ASSOC);
+} catch(PDOException $e) {
+    error_log("Error fetching technicians: " . $e->getMessage());
+    $technicians = [];
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -459,11 +473,33 @@ try {
                     </span>
                 </td>
                 <td>
-                    <button type="button" class="view-btn" 
-                            onclick="viewDetails(<?php echo $appointment['appointment_id']; ?>)">
-                        <i class='bx bx-show'></i>
-                        View
-                    </button>
+                    <div class="action-buttons">
+                        <?php if ($appointment['status'] === 'Pending' || $appointment['status'] === 'Confirmed'): ?>
+                            <form class="inline-assign-form" data-appointment-id="<?php echo $appointment['appointment_id']; ?>">
+                                <select class="tech-select" name="technician_id" required>
+                                    <option value="">-- Select Technician --</option>
+                                    <?php foreach ($technicians as $tech): ?>
+                                        <option value="<?php echo $tech['id']; ?>" 
+                                            <?php echo ($appointment['technician_id'] == $tech['id']) ? 'selected' : ''; ?>>
+                                            <?php echo htmlspecialchars($tech['firstname'] . ' ' . $tech['lastname']); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                                <button type="submit" class="assign-btn">
+                                    <?php if (empty($appointment['technician_id'])): ?>
+                                        <i class='bx bx-check'></i> Assign
+                                    <?php else: ?>
+                                        <i class='bx bx-refresh'></i> Update
+                                    <?php endif; ?>
+                                </button>
+                            </form>
+                        <?php else: ?>
+                            <span class="status-message">Job completed</span>
+                        <?php endif; ?>
+                        <button type="button" class="view-btn" onclick="viewDetails(<?php echo $appointment['appointment_id']; ?>)">
+                            <i class='bx bx-show'></i> View
+                        </button>
+                    </div>
                 </td>
             </tr>
         <?php endforeach; ?>
@@ -479,7 +515,6 @@ try {
         </div>
     </main>
 </section>
-
 
 <!-- Employee Section -->
 <section id="employees" class="section">
@@ -535,7 +570,7 @@ try {
                             <select id="filterRole">
                                 <option value="">Roles</option>
                                 <option value="supervisor">Supervisor</option>
-                                <option value="technician">Technician</option>            
+                                <option value="technician">Technician</option>
                             </select>
                             <select id="filterStatus">
                                 <option value="">Status</option>
@@ -645,7 +680,6 @@ try {
                             return false;
                         }
                     </script>
-
                 </div>
             </div>
         </form>
@@ -856,7 +890,6 @@ try {
                     </ul>
                 </div>
             </div>
-
             <div class="customer-container">
                 <div class="customer-header">
                     <h2>List of Customer</h2>
@@ -953,7 +986,14 @@ try {
                             <td>0922334455</td>
                             <td>567890</td>
                         </tr>
-                        
+                        <tr>
+                            <td>James</td>
+                            <td>Williams</td>
+                            <td>101 Pine St, Zamboanga City</td>
+                            <td>James.Williams@example.com</td>
+                            <td>0922334455</td>
+                            <td>567890</td>
+                        </tr>
                         <!-- Add more rows as needed -->
                     </tbody>
                 </table>
@@ -1008,11 +1048,9 @@ try {
                     </ul>
                 </div>
             </div>
-
-            <div class="main-wrapper"> 
+            <div class="main-wrapper">
                 <section class="billing-section">
                     <h2>Billing History</h2>
-                    
                     <div class="filters">
                         <button type="submit" name="filter" value="all" class="filter-btn active">All</button>
                         <button type="submit" name="filter" value="paid" class="filter-btn">Paid</button>
@@ -1023,7 +1061,6 @@ try {
                             <option value="12">Last Year</option>
                         </select>
                     </div>
-                    
                     <table class="billing-table">
                         <thead>
                             <tr>
@@ -1101,7 +1138,6 @@ try {
                         </div>
                     </form>
                 </section>
-                
                 <aside class="payment-section">
                     <div class="payment-info">
                         <h3>Payment Info</h3>
@@ -1131,7 +1167,6 @@ try {
     </main>
 </section>
 
-
 <!-- Profile Section -->
 <section id="profile" class="section">
     <main>
@@ -1150,7 +1185,6 @@ try {
                     </ul>
                 </div>
             </div>
-
             <div class="profile-container">
                 <!-- Profile Card -->
                 <div class="profile-card">

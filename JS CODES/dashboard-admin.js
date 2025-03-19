@@ -30,50 +30,153 @@ if(window.innerWidth <768){
     
 }
 
-const searchButton = document.querySelector('#content nav form .form-input button');
-const searchButtonIcon = document.querySelector('#content nav form .form-input button .bx');
-const searchForm = document.querySelector('#content nav form');
+document.addEventListener('DOMContentLoaded', function() {
+    // Search functionality with null checks
+    const searchButton = document.querySelector('#content nav form .form-input button');
+    const searchForm = document.querySelector('#content nav form');
+    
+    if (searchButton && searchForm) {
+        const searchButtonIcon = searchButton.querySelector('.bx');
+        
+        searchButton.addEventListener('click', function(e) {
+            if (window.innerWidth < 576) {
+                e.preventDefault();
+                searchForm.classList.toggle('show');
+                if (searchForm.classList.contains('show') && searchButtonIcon) {
+                    searchButtonIcon.classList.replace('bx-search', 'bx-x');
+                }
+            }
+        });
+    }
 
-    searchButton.addEventListener('click', function(e){
-        if(window.innerWidth < 576){
-        e.preventDefault();
-        searchForm.classList.toggle('show');
-        if(searchForm.classList.contains('show')){
-            searchButtonIcon.classList.replace('bx-search', 'bx-x');
-        }
+    // Initialize technician assignment forms
+    const assignForms = document.querySelectorAll('.inline-assign-form');
+    
+    if (assignForms.length > 0) {
+        assignForms.forEach(form => {
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const appointmentId = this.dataset.appointmentId;
+                const techSelect = this.querySelector('.tech-select');
+                
+                if (!techSelect) {
+                    console.error('Technician select element not found');
+                    return;
+                }
+                
+                const technicianId = techSelect.value;
+                
+                if (!technicianId) {
+                    alert('Please select a technician');
+                    return;
+                }
+                
+                try {
+                    const response = await fetch('../PHP CODES/assign_technician.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            appointment_id: appointmentId,
+                            technician_id: technicianId
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const result = await response.json();
+                    console.log('Server response:', result);
+                    
+                    if (result.success) {
+                        // Update the UI with assigned technician
+                        const row = form.closest('tr');
+                        const techCell = row.querySelector('.tech-info');
+                        const statusCell = row.querySelector('.status');
+                        
+                        if (techCell) {
+                            techCell.innerHTML = `
+                                <i class='bx bx-user-check'></i>
+                                <span>${result.technician.firstname} ${result.technician.lastname}</span>
+                            `;
+                        }
+                        
+                        if (statusCell) {
+                            statusCell.textContent = 'Confirmed';
+                            statusCell.className = 'status confirmed';
+                        }
+                        
+                        alert('Technician assigned successfully!');
+                    } else {
+                        alert(result.message || 'Failed to assign technician');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('An error occurred while processing your request');
+                }
+            });
+        });
     }
-})
 
-function showSection(sectionId) {
-    // Hide all sections first
-    document.querySelectorAll('.section').forEach(section => {
-        section.style.display = 'none';
-        section.classList.remove('active');
-    });
-    
-    // Show the selected section
-    if (sectionId === 'dashboard') {
-        document.getElementById('content').style.display = 'block';
-        document.getElementById('content').classList.add('active');
-    } else {
-        const selectedSection = document.getElementById(sectionId);
-        if (selectedSection) {
-            selectedSection.style.display = 'block';
-            selectedSection.classList.add('active');
-        }
+    // Auto refresh work orders table every 30 seconds
+    if (document.querySelector('.work-orders-table')) {
+        setInterval(function() {
+            if (document.getElementById('work-orders').classList.contains('active')) {
+                location.reload();
+            }
+        }, 30000); // 30 seconds
     }
     
-    // Update active state in sidebar
-    document.querySelectorAll('.side-menu li').forEach(item => {
-        item.classList.remove('active');
+    // Filter functionality
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const filter = this.getAttribute('data-filter');
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            
+            const rows = document.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                if (filter === 'all' || row.querySelector('.status').textContent.toLowerCase() === filter) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
     });
-    
-    // Find and activate the clicked sidebar item
-    const sidebarItem = document.querySelector(`a[href="#${sectionId}"]`);
-    if (sidebarItem) {
-        sidebarItem.parentElement.classList.add('active');
+
+    // Enhanced logout confirmation
+    const logoutLink = document.querySelector('a[href*="logout"]'); // Ensure the correct logout link is selected
+    const logoutModal = document.getElementById('logoutModal');
+    const confirmLogout = document.getElementById('confirmLogout');
+    const cancelLogout = document.getElementById('cancelLogout');
+
+    if (logoutLink) {
+        logoutLink.addEventListener('click', function (e) {
+            e.preventDefault(); // Prevent default logout behavior
+            logoutModal.style.display = 'block';
+        });
+
+        confirmLogout.addEventListener('click', function () {
+            window.location.href = logoutLink.href; // Redirect to the logout link
+        });
+
+        cancelLogout.addEventListener('click', function () {
+            logoutModal.style.display = 'none'; // Hide the modal
+        });
+
+        // Close modal when clicking outside the modal content
+        window.addEventListener('click', function (e) {
+            if (e.target === logoutModal) {
+                logoutModal.style.display = 'none';
+            }
+        });
     }
-}
+});
 
 // Technician Assignment Functions
 function openAssignModal(appointmentId) {
@@ -128,6 +231,52 @@ function handleAssignSubmit(e) {
         alert('An error occurred while assigning technician');
     });
 }
+
+// Handle technician assignment
+document.addEventListener('DOMContentLoaded', function() {
+    const assignForms = document.querySelectorAll('.inline-assign-form');
+    
+    assignForms.forEach(form => {
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const appointmentId = this.dataset.appointmentId;
+            const techSelect = this.querySelector('.tech-select');
+            const technicianId = techSelect.value;
+            const technicianName = techSelect.options[techSelect.selectedIndex].text;
+            
+            if (!technicianId) {
+                alert('Please select a technician');
+                return;
+            }
+            
+            try {
+                const response = await fetch('../PHP CODES/assign_technician.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        appointment_id: appointmentId,
+                        technician_id: technicianId
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert(`Technician successfully ${technicianId ? 'updated' : 'assigned'}!`);
+                    window.location.reload();
+                } else {
+                    alert(result.message || 'Failed to assign technician');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while processing your request');
+            }
+        });
+    });
+});
 
 // Add filtering functionality
 document.querySelectorAll('.filter-btn').forEach(button => {
