@@ -282,12 +282,11 @@ try {
 
                 <div class="report-form-container">
                     <form class="service-report-form" method="POST" action="submit_report.php" enctype="multipart/form-data">
-                        <!-- Top Section -->
-                        <div class="form-section top-section">
+                        <!-- Appointment Selection Section -->
+                        <div class="form-section">
                             <div class="form-step form-step-active">
                                 <div class="step-header">
                                     <h3 class="step-title">
-                                        <span class="step-number">1</span>
                                         <i class='bx bx-calendar'></i>
                                         Select Appointment
                                     </h3>
@@ -297,11 +296,9 @@ try {
                                         <option value="">Choose an appointment to report</option>
                                         <?php foreach ($assignments as $assignment): ?>
                                             <option value="<?php echo $assignment['appointment_id']; ?>">
-                                                <?php 
-                                                echo date('M d, Y', strtotime($assignment['appointment_date'])) . ' - ' . 
+                                                <?php echo date('M d, Y', strtotime($assignment['appointment_date'])) . ' - ' . 
                                                      $assignment['client_firstname'] . ' ' . $assignment['client_lastname'] . ' - ' . 
-                                                     $assignment['service_name']; 
-                                                ?>
+                                                     $assignment['service_name']; ?>
                                             </option>
                                         <?php endforeach; ?>
                                     </select>
@@ -309,88 +306,85 @@ try {
                             </div>
                         </div>
 
-                        <div class="form-section content-section">
-                            <div class="form-row">
-                                <!-- Service Report Container -->
-                                <div class="report-container">
-                                    <!-- Report Details -->
-                                    <div class="form-step report-details">
-
-                                        <div class="step-header">
-                                            <h3 class="step-title">
-                                                <span class="step-number">2</span>
-                                                <i class='bx bx-file'></i>
-                                                Service Report Details
-                                            </h3>
-                                        </div>
-                                        <div class="report-content">
-                                            <div class="report-text">
-                                                <div class="form-group">
-                                                    <textarea name="report" style="width: 350px; height: 250px; overflow: hidden;" id="report" required 
-                                                        placeholder="Provide detailed information about the service performed..."></textarea>
-                                                </div>
-                                            </div>
-                                            <div class="report-photos">
-            
-                                                <div id="preview-container" class="preview-container"></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="file-upload-container" id="dropZone" style="height: auto;">
-                                                    <i class='bx bx-cloud-upload'></i>
-                                                    <p>Drag & Drop Photos Here</p>
-                                                    <span>or</span>
-                                                    <label for="photos" class="upload-btn">Choose Files</label>
-                                                    <input type="file" name="photos[]" id="photos" multiple 
-                                                        accept="image/*" class="file-input">
-                                                    <small>Upload up to 5 photos (Max 2MB each)</small>
-                                                </div>
+                        <!-- Service Report Details Section -->
+                        <div class="form-section">
+                            <div class="step-header">
+                                <h3 class="step-title">
+                                    <i class='bx bx-file'></i>
+                                    Service Report Details
+                                </h3>
+                            </div>
+                            <div class="report-grid">
+                                <div class="field-group">
+                                    <label for="account">Account:</label>
+                                    <input type="text" name="account" id="account" required>
                                 </div>
-
-                                <!-- Appointment Details - Full Width -->
-                                <div class="form-step appointment-info" style="width: 900px;">
-                                    <div class="step-header">
-                                        <h3 class="step-title">
-                                            <span class="step-number">3</span>
-                                            <i class='bx bx-info-circle'></i>
-                                            Appointment Details
-                                        </h3>
-                                    </div>
-                                    <div class="appointment-details">
-                                        <div class="detail-item">
-                                            <div class="form-group">
-                                                <label>Client Name</label>
-                                                <div class="input-with-icon">
-                                                    <i class='bx bx-user'></i>
-                                                    <input type="text" id="client_name" readonly>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="detail-item">
-                                            <div class="form-group">
-                                                <label>Service Type</label>
-                                                <div class="input-with-icon">
-                                                    <i class='bx bx-package'></i>
-                                                    <input type="text" id="service_type" readonly>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="detail-item">
-                                            <div class="form-group">
-                                                <label>Service Location</label>
-                                                <div class="input-with-icon">
-                                                    <i class='bx bx-map'></i>
-                                                    <input type="text" id="location" readonly>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                                <div class="field-group">
+                                    <label for="location">Location:</label>
+                                    <input type="text" name="location" id="location" required>
+                                </div>
+                                <div class="field-group">
+                                    <label for="contact">Contact no:</label>
+                                    <input type="text" name="contact" id="contact" required>
+                                </div>
+                                <div class="field-group">
+                                    <label for="treatment_date">Date of treatment:</label>
+                                    <input type="date" name="treatment_date" id="treatment_date" required>
+                                </div>
+                                <div class="field-group">
+                                    <label for="treatment_time">Time of treatment:</label>
+                                    <input type="time" name="treatment_time" id="treatment_time" required>
+                                </div>
+                                <div class="field-group">
+                                    <label for="treatment_type">Treatment type:</label>
+                                    <input type="text" name="treatment_type" id="treatment_type" required>
+                                </div>
+                                <div class="field-group">
+                                    <label for="treatment_method">Treatment method:</label>
+                                    <input type="text" name="treatment_method" id="treatment_method" required>
+                                </div>
+                                <div class="field-group">
+                                    <label for="pct">PCT:</label>
+                                    <input type="text" name="pct" id="pct" required>
+                                </div>
+                                <div class="field-group">
+                                    <label for="device_installation">Device installation:</label>
+                                    <input type="text" name="device_installation" id="device_installation" required>
+                                </div>
+                                <div class="field-group">
+                                    <label for="chemical_consumables">Chemical consumables:</label>
+                                    <input type="text" name="chemical_consumables" id="chemical_consumables" required>
+                                </div>
+                                <div class="field-group">
+                                    <label for="visit_frequency">Frequency of visit:</label>
+                                    <input type="text" name="visit_frequency" id="visit_frequency" required>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Bottom Section -->
-                        <div class="form-section bottom-section">
+                        <!-- Photo Upload Section -->
+                        <div class="form-section">
+                            <div class="step-header">
+                                <h3 class="step-title">
+                                    <i class='bx bx-image'></i>
+                                    Upload Photos
+                                </h3>
+                            </div>
+                            <div class="file-upload-container" id="dropZone">
+                                <div id="preview-container" class="preview-container"></div>
+                                <div class="upload-area">
+                                    <i class='bx bx-cloud-upload'></i>
+                                    <p>Drag & Drop Photos Here</p>
+                                    <span>or</span>
+                                    <label for="photos" class="upload-btn">Choose Files</label>
+                                    <input type="file" name="photos[]" id="photos" multiple accept="image/*" class="file-input">
+                                    <small>Upload up to 5 photos (Max 2MB each)</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="form-section">
                             <div class="form-actions">
                                 <button type="reset" class="btn-reset">
                                     <i class='bx bx-reset'></i>

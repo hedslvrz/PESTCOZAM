@@ -1575,3 +1575,148 @@ body {
         flex-direction: column;
     }
 }
+
+/* Service Report Form Styles */
+.service-report-form {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    padding: 30px;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.report-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 30px; /* Increased gap between columns */
+    margin-bottom: 30px;
+    padding: 20px; /* Added padding around the grid */
+}
+
+.field-group {
+    position: relative;
+    margin-bottom: 35px; /* Increased margin between fields */
+}
+
+.field-group label {
+    display: block;
+    font-weight: 500;
+    color: #144578;
+    margin-bottom: 12px; /* Increased margin below labels */
+    font-size: 0.9rem;
+}
+
+.field-group input,
+.field-group select {
+    width: 100%;
+    padding: 15px; /* Increased padding inside inputs */
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    background-color: #fff;
+    margin-top: 5px; /* Added space after label */
+}
+
+/* File Upload Styles */
+.file-upload-container {
+    border: 2px dashed #144578;
+    border-radius: 12px;
+    padding: 30px;
+    text-align: center;
+    background-color: #f8fafc;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    height: auto; /* Remove fixed height */
+}
+
+.file-upload-container:hover {
+    background-color: #e3f2fd;
+}
+
+.preview-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-top: 20px;
+    padding: 15px;
+    background: transparent; /* Remove white background */
+    border-radius: 8px;
+    border: none; /* Remove border */
+}
+
+.upload-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.upload-area i {
+    font-size: 40px;
+    color: #144578;
+}
+
+.upload-btn {
+    background: #144578;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.file-input {
+    display: none;
+}
+
+/* Form Actions */
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 2px solid #f0f0f0;
+}
+
+.btn-reset, .btn-submit {
+    padding: 12px 25px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-reset {
+    background: #f5f5f5;
+    color: #666;
+}
+
+.btn-submit {
+    background: #144578;
+    color: white;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .report-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .btn-reset, .btn-submit {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Remove all duplicate styles after this point */
