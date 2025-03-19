@@ -34,12 +34,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const closeBtn = modal.querySelector('.close');
     const cancelBtn = modal.querySelector('.btn-cancel');
 
-    // Open modal function
-    window.openAssignModal = function(appointmentId) {
-        document.getElementById('appointmentId').value = appointmentId;
-        modal.style.display = 'block';
-    };
-
     // Close modal function
     function closeModal() {
         modal.style.display = 'none';
@@ -135,4 +129,50 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+});
+
+// Add this for handling inline technician assignment
+document.addEventListener('DOMContentLoaded', function() {
+    // Get all inline assignment forms
+    const assignForms = document.querySelectorAll('.inline-assign-form');
+    
+    assignForms.forEach(form => {
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const appointmentId = this.dataset.appointmentId;
+            const technicianId = this.querySelector('.tech-select').value;
+            
+            if (!technicianId) {
+                customModal.showWarning('Please select a technician');
+                return;
+            }
+            
+            try {
+                const response = await fetch('../PHP CODES/assign_technician.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        appointment_id: appointmentId,
+                        technician_id: technicianId
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    customModal.showSuccess('Technician assigned successfully!', () => {
+                        window.location.reload();
+                    });
+                } else {
+                    customModal.showError(result.message || 'Failed to assign technician');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                customModal.showError('An error occurred while assigning the technician');
+            }
+        });
+    });
 });

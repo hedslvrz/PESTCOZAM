@@ -298,19 +298,26 @@ try {
                                             <td>
                                                 <div class="action-buttons">
                                                     <?php if ($appointment['status'] === 'Pending' || $appointment['status'] === 'Confirmed'): ?>
-                                                        <?php if (empty($appointment['technician_id'])): ?>
-                                                            <button type="button" class="assign-tech-btn" 
-                                                                    onclick="openAssignModal('<?php echo $appointment['appointment_id']; ?>')">
-                                                                <i class='bx bx-user-plus'></i>
-                                                                Assign
+                                                        <form class="inline-assign-form" data-appointment-id="<?php echo $appointment['appointment_id']; ?>">
+                                                            <select class="tech-select" name="technician_id" required>
+                                                                <option value="">-- Select Technician --</option>
+                                                                <?php foreach ($technicians as $tech): ?>
+                                                                    <option value="<?php echo $tech['id']; ?>" 
+                                                                        <?php echo ($appointment['technician_id'] == $tech['id']) ? 'selected' : ''; ?>>
+                                                                        <?php echo htmlspecialchars($tech['firstname'] . ' ' . $tech['lastname']); ?>
+                                                                    </option>
+                                                                <?php endforeach; ?>
+                                                            </select>
+                                                            <button type="submit" class="assign-btn">
+                                                                <?php if (empty($appointment['technician_id'])): ?>
+                                                                    <i class='bx bx-check'></i> Assign
+                                                                <?php else: ?>
+                                                                    <i class='bx bx-refresh'></i> Update
+                                                                <?php endif; ?>
                                                             </button>
-                                                        <?php else: ?>
-                                                            <button type="button" class="reassign-tech-btn"
-                                                                    onclick="openAssignModal('<?php echo $appointment['appointment_id']; ?>')">
-                                                                <i class='bx bx-refresh'></i>
-                                                                Reassign
-                                                            </button>
-                                                        <?php endif; ?>
+                                                        </form>
+                                                    <?php else: ?>
+                                                        <span class="status-message">Job completed</span>
                                                     <?php endif; ?>
                                                 </div>
                                             </td>
@@ -324,36 +331,6 @@ try {
                             </tbody>
                         </table>
                     </div>
-                </div>
-            </div>
-
-            <!-- Assign Technician Modal -->
-            <div id="assignTechModal" class="modal">
-                <div class="modal-content">
-                    <span class="close">&times;</span>
-                    <h2>Assign Technician</h2>
-                    <form id="assignTechForm">
-                        <input type="hidden" id="appointmentId" name="appointment_id">
-                        <div class="form-group">
-                            <label for="technicianId">Select Technician:</label>
-                            <select id="technicianId" name="technician_id" required>
-                                <option value="">-- Select a Technician --</option>
-                                <?php foreach ($technicians as $tech): ?>
-                                    <option value="<?php echo $tech['id']; ?>">
-                                        <?php echo htmlspecialchars($tech['firstname'] . ' ' . $tech['lastname']); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                        <div class="form-actions">
-                            <button type="submit" class="btn-submit">
-                                <i class='bx bx-check'></i> Assign
-                            </button>
-                            <button type="button" class="btn-cancel">
-                                <i class='bx bx-x'></i> Cancel
-                            </button>
-                        </div>
-                    </form>
                 </div>
             </div>
         </main>
