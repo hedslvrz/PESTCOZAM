@@ -24,9 +24,14 @@ $result = $stmt->get_result();
 $user = $result->fetch_assoc();
 
 // Get user appointments
-$sql_appointments = "SELECT a.*, s.service_name 
+$sql_appointments = "SELECT a.*, s.service_name,
+            CASE 
+                WHEN a.is_for_self = 1 THEN CONCAT(u.firstname, ' ', u.lastname)
+                ELSE CONCAT(a.firstname, ' ', a.lastname)
+            END as client_name
             FROM appointments a 
             JOIN services s ON a.service_id = s.service_id 
+            JOIN users u ON a.user_id = u.id
             WHERE a.user_id = ? 
             ORDER BY a.appointment_date DESC 
             LIMIT 3";
@@ -36,14 +41,20 @@ $stmt->execute();
 $appointments = $stmt->get_result();
 
 // Get user's most recent appointment
-$sql_recent_appointment = "SELECT a.*, s.service_name, 
-          CONCAT(t.firstname, ' ', t.lastname) as technician_name
-          FROM appointments a 
-          JOIN services s ON a.service_id = s.service_id 
-          LEFT JOIN users t ON a.technician_id = t.id
-          WHERE a.user_id = ? 
-          ORDER BY a.appointment_date DESC, a.appointment_time DESC 
-          LIMIT 1";
+$sql_recent_appointment = "SELECT a.*, s.service_name,
+            CASE 
+                WHEN a.is_for_self = 1 THEN CONCAT(u.firstname, ' ', u.lastname)
+                ELSE CONCAT(a.firstname, ' ', a.lastname)
+            END as client_name,
+            CONCAT(t.firstname, ' ', t.lastname) as technician_name,
+            a.is_for_self
+            FROM appointments a 
+            JOIN services s ON a.service_id = s.service_id 
+            JOIN users u ON a.user_id = u.id
+            LEFT JOIN users t ON a.technician_id = t.id
+            WHERE a.user_id = ? 
+            ORDER BY a.appointment_date DESC, a.appointment_time DESC 
+            LIMIT 1";
 $stmt = $conn->prepare($sql_recent_appointment);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
@@ -175,10 +186,12 @@ $recent_appointment = $stmt->get_result()->fetch_assoc();
     <div class="right-column">
       <!-- APPOINTMENT CARD -->
       <div class="appointment-card">
-        <h3>Latest Appointment</h3>
-        <div class="appointment-details">
+        <h3>Appointment Details</h3>
+        <div id="appointmentDetails" class="appointment-details">
           <?php if ($recent_appointment): ?>
             <p><strong>Appointment #:</strong> <?php echo $recent_appointment['id']; ?></p>
+            <p><strong>Client:</strong> <?php echo htmlspecialchars($recent_appointment['client_name']); ?> 
+                <?php echo $recent_appointment['is_for_self'] ? '(Self)' : '(Other)'; ?></p>
             <p><strong>Type of Service:</strong> <?php echo htmlspecialchars($recent_appointment['service_name']); ?></p>
             <p><strong>Date:</strong> <?php echo date('F d, Y', strtotime($recent_appointment['appointment_date'])); ?></p>
             <p><strong>Time:</strong> <?php echo date('h:i A', strtotime($recent_appointment['appointment_time'])); ?></p>
@@ -189,7 +202,7 @@ $recent_appointment = $stmt->get_result()->fetch_assoc();
               <span class="appointment-status <?php echo strtolower($recent_appointment['status']); ?>"><?php echo $recent_appointment['status']; ?></span>
             </p>
           <?php else: ?>
-            <p>No appointments found.</p>
+            <p>Select an appointment from the history to view details.</p>
           <?php endif; ?>
         </div>
       </div>
@@ -227,15 +240,6 @@ $recent_appointment = $stmt->get_result()->fetch_assoc();
           <button type="button" class="cancel-btn" onclick="closeModal()">Cancel</button>
         </div>
       </form>
-    </div>
-  </div>
-
-  <!-- Appointment Details Modal -->
-  <div id="appointmentDetailsModal" class="modal">
-    <div class="modal-content">
-      <span class="close">&times;</span>
-      <h2>Appointment Details</h2>
-      <div id="appointmentDetails"></div>
     </div>
   </div>
 
@@ -308,6 +312,11 @@ $recent_appointment = $stmt->get_result()->fetch_assoc();
 
     document.querySelectorAll('.history-row').forEach(row => {
       row.addEventListener('click', function() {
+        // Remove active class from all rows
+        document.querySelectorAll('.history-row').forEach(r => r.classList.remove('active'));
+        // Add active class to clicked row
+        this.classList.add('active');
+        
         const appointmentId = this.dataset.appointmentId;
         fetch(`get_appointment_details.php?id=${appointmentId}`)
           .then(response => response.json())
@@ -316,38 +325,25 @@ $recent_appointment = $stmt->get_result()->fetch_assoc();
               const details = data.details;
               const detailsHtml = `
                 <p><strong>Appointment #:</strong> ${details.id}</p>
+                <p><strong>Client:</strong> ${details.client_name} ${details.is_for_self ? '(Self)' : '(Other)'}</p>
                 <p><strong>Type of Service:</strong> ${details.service_name}</p>
                 <p><strong>Date:</strong> ${details.appointment_date}</p>
                 <p><strong>Time:</strong> ${details.appointment_time}</p>
                 <p><strong>Location:</strong> ${details.street_address}</p>
                 <p><strong>Technician:</strong> ${details.technician_name || 'Not yet assigned'}</p>
-                <p><strong>Status:</strong> ${details.status}</p>
+                <p><strong>Status:</strong> <span class="appointment-status ${details.status.toLowerCase()}">${details.status}</span></p>
               `;
               document.getElementById('appointmentDetails').innerHTML = detailsHtml;
-              document.getElementById('appointmentDetailsModal').style.display = 'block';
             } else {
               alert('Error fetching appointment details');
             }
           })
           .catch(error => {
+            console.error('Error:', error);
             alert('Error fetching appointment details');
-            console.error(error);
           });
       });
     });
-
-    const appointmentModal = document.getElementById('appointmentDetailsModal');
-    const closeAppointmentModal = document.querySelector('#appointmentDetailsModal .close');
-
-    closeAppointmentModal.onclick = function() {
-      appointmentModal.style.display = 'none';
-    }
-
-    window.onclick = function(event) {
-      if (event.target == appointmentModal) {
-        appointmentModal.style.display = 'none';
-      }
-    }
   </script>
 </body>
 </html>
