@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Sign Up | PESTCOZAM</title>
   <link rel="stylesheet" href="../CSS CODES/Signup.css" />
+  <link rel="stylesheet" href="../CSS CODES/modal.css" />
+  <script src="../JS CODES/modal.js"></script>
   <script src="../JS CODES/register.js"></script>
 </head>
 <body>

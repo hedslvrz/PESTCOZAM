@@ -33,10 +33,15 @@ async function registerUser(event) {
         }
 
         let result = await response.json();
-        alert(result.message);
-        if (result.success) window.location.href = "../HTML CODES/Login.php";
+        if (result.success) {
+            customModal.showSuccess(result.message, () => {
+                window.location.href = "../HTML CODES/Login.php";
+            });
+        } else {
+            customModal.showError(result.message);
+        }
     } catch (error) {
-        alert("An error occurred during registration. Please try again.");
+        customModal.showError("An error occurred during registration. Please try again.");
         console.error("Error:", error);
     }
 }
@@ -50,27 +55,27 @@ function validateForm() {
     var confirm_password = document.getElementById('confirm_password').value.trim();
 
     if (firstName === "") {
-        alert("First Name is required.");
+        showModal("Error", "First Name is required.");
         return false;
     }
     if (lastName === "") {
-        alert("Last Name is required.");
+        showModal("Error", "Last Name is required.");
         return false;
     }
     if (mobile_number === "") {
-        alert("Contact number is required.");
+        customModal.showError("Contact number is required.");
         return false;
     }
     if (email === "") {
-        alert("Email is required.");
+        customModal.showError("Email is required.");
         return false;
     }
     if (password === "") {
-        alert("Password is required.");
+        customModal.showError("Password is required.");
         return false;
     }
     if (confirm_password === "") {
-        alert("Confirm Password is required.");
+        customModal.showError("Confirm Password is required.");
         return false;
     }
 
@@ -97,4 +102,11 @@ function validatePassword() {
         return false;
     }
     return true;
+}
+
+function showModal(title, message) {
+    const modal = document.getElementById('customModal');
+    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('modalMessage').textContent = message;
+    modal.style.display = "block";
 }

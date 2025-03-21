@@ -1,3 +1,39 @@
+<?php
+session_start();
+require_once "../database.php";
+
+if (!isset($_SESSION['appointment'])) {
+    header("Location: Appointment-service.php");
+    exit();
+}
+
+$database = new Database();
+$db = $database->getConnection();
+$user_id = $_SESSION['appointment']['user_id'];
+$service_id = $_SESSION['appointment']['service_id'];
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $data = json_decode(file_get_contents("php://input"), true);
+    
+    if (isset($data['appointment_date'], $data['appointment_time'])) {
+        $query = "UPDATE appointments SET 
+                appointment_date = :appointment_date,
+                appointment_time = :appointment_time 
+                WHERE user_id = :user_id AND service_id = :service_id";
+
+        $stmt = $db->prepare($query);
+        $stmt->execute([
+            ':appointment_date' => $data['appointment_date'],
+            ':appointment_time' => $data['appointment_time'],
+            ':user_id' => $user_id,
+            ':service_id' => $service_id
+        ]);
+
+        echo json_encode(["success" => true]);
+        exit();
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,39 +46,59 @@
 </head>
 <body>
 
-  <!-- HEADER -->
+<!-- HEADER -->
+ <div class="header-wrapper">
   <header class="top-header">
     <div class="container">
-        <div class="location">
-            <span>• <strong>Zamboanga</strong> • <strong>Pagadian</strong> • <strong>Pasay</strong> • <strong>Davao</strong></span>
-        </div>
-        <div class="contact-info">
-            <img src="../Pictures/phone.png" alt="Phone Icon" class="icon">
-            <span>0905 - 177 - 5662</span>
-            <span class="divider"></span>
-            <img src="../Pictures/email.png" alt="Email Icon" class="icon">
-            <span>pestcozam@yahoo.com</span>
-        </div>
+      <div class="location">
+        <i class='bx bx-map'></i>
+        <span> <strong>Estrada St, Zamboanga City, Zamboanga Del Sur, 7000<strong></span>
+      </div>
+      <div class="contact-info">
+        <img src="../Pictures/phone.png" alt="Phone Icon" class="icon">
+        <span>0905 - 177 - 5662</span>
+        <span class="divider"></span>
+        <img src="../Pictures/email.png" alt="Email Icon" class="icon">
+        <span>pestcozam@yahoo.com</span>
+      </div>
     </div>
   </header>
 
   <!-- NAVBAR -->
   <header class="navbar">
     <div class="logo-container">
-      <img src="../Pictures/pest_logo.png" alt="Flower Logo" class="flower-logo">
-      <span class="brand-name" style="font-size: 2rem;">PESTCOZAM</span>
+        <img src="../Pictures/pest_logo.png" alt="Flower Logo" class="flower-logo">
+        <span class="brand-name" style="font-size: 2rem;">PESTCOZAM</span>
     </div>
     <nav>
-      <ul>
-        <li><a href="../HTML CODES/Home_page.html">Home</a></li>
-        <li><a href="../HTML CODES/About_us.html">About Us</a></li>
-        <li><a href="../HTML CODES/Services.html" class="services">Services</a></li>
-        <li><a href="../HTML CODES/Appointment-service.php" class="btn-appointment">Appointment</a></li>
-        <li><a href="../HTML CODES/Login.php" class="btn-login"><i class='bx bx-log-in' ></i> Login</a></li>
-        <li><a href="../HTML CODES/Signup.php" class="btn-signup"><i class='bx bx-user-plus' ></i> Sign Up</a></li>
-      </ul>
+        <ul>
+            <li><a href="../Index.php">Home</a></li>
+            <li><a href="../HTML CODES/About_us.html">About Us</a></li>
+            <li><a href="../HTML CODES/Services.html" class="services">Services</a></li>
+            <li><a href="../HTML CODES/Appointment-service.php" class="btn-appointment">Appointment</a></li>
+            
+            <?php if (isset($_SESSION['user_id'])): ?>
+                <?php 
+                    $profile_pic = isset($_SESSION['profile_pic']) ? $_SESSION['profile_pic'] : '../Pictures/boy.png';
+                ?>
+                <li class="user-profile">
+                    <div class="profile-dropdown">
+                        <img src="<?php echo $profile_pic; ?>" alt="Profile" class="profile-pic">
+                        <div class="dropdown-content">
+                            <a href="../HTML CODES/Profile.php"><i class='bx bx-user'></i> Profile</a>
+                            <a href="../HTML CODES/logout.php"><i class='bx bx-log-out'></i> Logout</a>
+                        </div>
+                    </div>
+                </li>
+            <?php else: ?>
+                <li class="auth-buttons">
+                    <a href="../HTML CODES/Login.php" class="btn-login"><i class='bx bx-log-in'></i> Login</a>
+                    <a href="../HTML CODES/Signup.php" class="btn-signup"><i class='bx bx-user-plus'></i> Sign Up</a>
+                </li>
+            <?php endif; ?>
+        </ul>
     </nav>
-  </header>
+</header>
 
 
   <!-- CALENDAR SECTION -->
@@ -77,35 +133,40 @@
 
       <!-- Schedule Table -->
       <div class="schedule-table">
-        <!-- This heading updates automatically in JS when a user clicks a day -->
-        <h3 id="selected-date-heading">February 20, 2025</h3>
+        <h3 id="selected-date-heading">Select a date first</h3>
         <table>
           <thead>
             <tr>
               <th>Time</th>
               <th>Availability</th>
+              <th>Action</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody id="timeSlots">
             <tr>
               <td>07:00 AM - 09:00 AM</td>
-              <td>Reserved</td>
+              <td class="slot-status">Open</td>
+              <td><button class="select-time" data-time="07:00 AM - 09:00 AM">Select</button></td>
             </tr>
             <tr>
               <td>09:00 AM - 11:00 AM</td>
-              <td>Reserved</td>
+              <td class="slot-status">Open</td>
+              <td><button class="select-time" data-time="09:00 AM - 11:00 AM">Select</button></td>
             </tr>
             <tr>
               <td>11:00 AM - 01:00 PM</td>
-              <td>Open</td>
+              <td class="slot-status">Open</td>
+              <td><button class="select-time" data-time="11:00 AM - 01:00 PM">Select</button></td>
             </tr>
             <tr>
               <td>01:00 PM - 03:00 PM</td>
-              <td>Open</td>
+              <td class="slot-status">Open</td>
+              <td><button class="select-time" data-time="01:00 PM - 03:00 PM">Select</button></td>
             </tr>
             <tr>
               <td>03:00 PM - 05:00 PM</td>
-              <td>Reserved</td>
+              <td class="slot-status">Open</td>
+              <td><button class="select-time" data-time="03:00 PM - 05:00 PM">Select</button></td>
             </tr>
           </tbody>
         </table>
@@ -113,8 +174,8 @@
 
       <!-- Navigation Buttons -->
       <div class="calendar-nav">
-        <button class="back-btn" onclick="window.location.href='Appointment-otp.html'">Back</button>
-        <button class="next-btn" onclick="window.location.href='Appointment-successful.html'">Next</button>
+        <button class="back-btn" onclick="window.location.href='Appointment-info.php'">Back</button>
+        <button class="next-btn" disabled id="nextButton" onclick="saveDateTime()">Next</button>
       </div>
     </div>
   </main>
@@ -205,8 +266,15 @@
           });
           dayDiv.classList.add('selected');
 
-          selectedDateHeading.textContent = 
-            `${monthNames[selectedMonth]} ${dayNum}, ${selectedYear}`;
+          selectedDate = `${selectedYear}-${(selectedMonth + 1).toString().padStart(2, '0')}-${dayNum.toString().padStart(2, '0')}`;
+          selectedDateHeading.textContent = `${monthNames[selectedMonth]} ${dayNum}, ${selectedYear}`;
+          
+          // Reset time selection when date changes
+          document.querySelectorAll('.select-time').forEach(btn => {
+            btn.classList.remove('selected');
+          });
+          selectedTime = '';
+          document.getElementById('nextButton').disabled = true;
         });
 
         calendarDays.appendChild(dayDiv);
@@ -214,6 +282,49 @@
     }
     
     renderCalendar();
+
+    let selectedDate = '';
+    let selectedTime = '';
+
+    // Add time slot selection handlers
+    document.querySelectorAll('.select-time').forEach(button => {
+      button.addEventListener('click', (e) => {
+        if (!selectedDate) {
+          alert('Please select a date first');
+          return;
+        }
+
+        document.querySelectorAll('.select-time').forEach(btn => {
+          btn.classList.remove('selected');
+        });
+        e.target.classList.add('selected');
+        selectedTime = e.target.dataset.time;
+        document.getElementById('nextButton').disabled = false;
+      });
+    });
+
+    function saveDateTime() {
+      if (!selectedDate || !selectedTime) {
+        alert('Please select both date and time');
+        return;
+      }
+
+      fetch('Appointment-calendar.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          appointment_date: selectedDate,
+          appointment_time: selectedTime
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          window.location.href = 'Appointment-successful.php';
+        }
+      })
+      .catch(error => console.error('Error:', error));
+    }
   </script>
 </body>
 </html>

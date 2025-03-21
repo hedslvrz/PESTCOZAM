@@ -44,7 +44,7 @@ function logout() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                window.location.href = 'Home_page.html';
+                window.location.href = 'Home_page.php';
             }
         })
         .catch(error => console.error('Error:', error));

@@ -44,6 +44,14 @@ body {
     font-weight: normal;
     white-space: nowrap;
     margin-left: 0;
+    display: flex;
+    align-items: center;
+}
+
+.location .icon {
+    margin-right: 5px;
+    font-size: 20px;
+    color: white;
 }
 
 .location span strong {
@@ -104,9 +112,9 @@ body {
     -webkit-text-stroke: 0.7px black;
     text-shadow: 
         -1px -1px 0 black,  
-         1px -1px 0 black,
+            1px -1px 0 black,
         -1px  1px 0 black,
-         1px  1px 0 black;
+            1px  1px 0 black;
 }
 
 nav ul {
@@ -175,7 +183,6 @@ nav ul li a:hover {
     transform: translateY(-100%);
 }
 
-/* Add these new styles */
 .hidden {
     display: none !important;
 }
@@ -226,6 +233,7 @@ nav ul li a:hover {
 .profile-dropdown:hover .dropdown-content {
     display: block;
 }
+
 
 /* Hero Section */
 .hero {
@@ -850,11 +858,49 @@ nav ul li a:hover {
 .learn-more-btn:hover {
     background-color: #2c75c0;
 }
-  
 
+.service-details {
+    background: rgba(20, 69, 120, 0.1);
+    padding: 10px;
+    border-radius: 5px;
+    margin: 10px 0;
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid rgba(20, 69, 120, 0.2);
+}
 
+.service-details p {
+    margin: 5px 0;
+    font-size: 0.9em;
+    color: #144578;
+    text-align: center;
+    font-weight: 500;
+}
 
+.service-details i {
+    margin-right: 5px;
+    color: #144578;
+}
 
+.pricing-notice {
+    text-align: center;
+    margin-top: 20px;
+    padding: 10px;
+    background: rgba(20, 69, 120, 0.1);
+    border-radius: 5px;
+    border: 1px solid rgba(20, 69, 120, 0.2);
+}
+
+.pricing-notice p {
+    color: #144578;
+    font-style: italic;
+    font-weight: 500;
+}
+
+.pricing-notice i {
+    color: #144578;
+    margin-right: 5px;
+}
 
 
 
