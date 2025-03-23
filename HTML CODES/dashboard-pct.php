@@ -281,7 +281,7 @@ try {
                 </div>
 
                 <div class="report-form-container">
-                    <form class="service-report-form" method="POST" action="submit_report.php" enctype="multipart/form-data">
+                    <form class="service-report-form" method="POST" action="../PHP CODES/submit_report.php" enctype="multipart/form-data">
                         <!-- Appointment Selection Section -->
                         <div class="form-section">
                             <div class="form-step form-step-active">
@@ -316,48 +316,52 @@ try {
                             </div>
                             <div class="report-grid">
                                 <div class="field-group">
-                                    <label for="account">Account:</label>
-                                    <input type="text" name="account" id="account" required>
+                                    <label for="account_name">Account Name:</label>
+                                    <input type="text" name="account_name" id="account_name" required>
                                 </div>
                                 <div class="field-group">
                                     <label for="location">Location:</label>
                                     <input type="text" name="location" id="location" required>
                                 </div>
                                 <div class="field-group">
-                                    <label for="contact">Contact no:</label>
-                                    <input type="text" name="contact" id="contact" required>
+                                    <label for="contact_no">Contact No:</label>
+                                    <input type="text" name="contact_no" id="contact_no" required>
                                 </div>
                                 <div class="field-group">
-                                    <label for="treatment_date">Date of treatment:</label>
-                                    <input type="date" name="treatment_date" id="treatment_date" required>
+                                    <label for="date_of_treatment">Date of Treatment:</label>
+                                    <input type="date" name="date_of_treatment" id="date_of_treatment" required>
                                 </div>
                                 <div class="field-group">
-                                    <label for="treatment_time">Time of treatment:</label>
-                                    <input type="time" name="treatment_time" id="treatment_time" required>
+                                    <label for="time_in">Time In:</label>
+                                    <input type="time" name="time_in" id="time_in" required>
                                 </div>
                                 <div class="field-group">
-                                    <label for="treatment_type">Treatment type:</label>
+                                    <label for="time_out">Time Out:</label>
+                                    <input type="time" name="time_out" id="time_out" required>
+                                </div>
+                                <div class="field-group">
+                                    <label for="treatment_type">Treatment Type:</label>
                                     <input type="text" name="treatment_type" id="treatment_type" required>
                                 </div>
                                 <div class="field-group">
-                                    <label for="treatment_method">Treatment method:</label>
+                                    <label for="treatment_method">Treatment Method:</label>
                                     <input type="text" name="treatment_method" id="treatment_method" required>
                                 </div>
                                 <div class="field-group">
-                                    <label for="pct">PCT:</label>
-                                    <input type="text" name="pct" id="pct" required>
+                                    <label for="pest_count">PCT (Pest Count):</label>
+                                    <input type="number" name="pest_count" id="pest_count" required>
                                 </div>
                                 <div class="field-group">
-                                    <label for="device_installation">Device installation:</label>
-                                    <input type="text" name="device_installation" id="device_installation" required>
+                                    <label for="device_installation">Device Installation:</label>
+                                    <textarea name="device_installation" id="device_installation"></textarea>
                                 </div>
                                 <div class="field-group">
-                                    <label for="chemical_consumables">Chemical consumables:</label>
-                                    <input type="text" name="chemical_consumables" id="chemical_consumables" required>
+                                    <label for="consumed_chemicals">Consumed Chemicals:</label>
+                                    <textarea name="consumed_chemicals" id="consumed_chemicals"></textarea>
                                 </div>
                                 <div class="field-group">
-                                    <label for="visit_frequency">Frequency of visit:</label>
-                                    <input type="text" name="visit_frequency" id="visit_frequency" required>
+                                    <label for="frequency_of_visits">Frequency of Visits:</label>
+                                    <input type="text" name="frequency_of_visits" id="frequency_of_visits">
                                 </div>
                             </div>
                         </div>
@@ -370,14 +374,13 @@ try {
                                     Upload Photos
                                 </h3>
                             </div>
-                            <div class="file-upload-container" id="dropZone">
-                                <div id="preview-container" class="preview-container"></div>
+                            <div class="file-upload-container">
                                 <div class="upload-area">
                                     <i class='bx bx-cloud-upload'></i>
                                     <p>Drag & Drop Photos Here</p>
                                     <span>or</span>
                                     <label for="photos" class="upload-btn">Choose Files</label>
-                                    <input type="file" name="photos[]" id="photos" multiple accept="image/*" class="file-input">
+                                    <input type="file" name="photos[]" id="photos" multiple accept="image/*">
                                     <small>Upload up to 5 photos (Max 2MB each)</small>
                                 </div>
                             </div>
