@@ -417,6 +417,30 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+function showSection(sectionId) {
+    // Hide all sections
+    document.querySelectorAll('.section').forEach(section => {
+        section.classList.remove('active');
+    });
+
+    // Show the selected section
+    const targetSection = document.getElementById(sectionId);
+    if (targetSection) {
+        targetSection.classList.add('active');
+    } else {
+        console.error(`Section with ID "${sectionId}" not found.`);
+    }
+
+    // Update the active menu item in the sidebar
+    document.querySelectorAll('#sidebar .side-menu li').forEach(item => {
+        item.classList.remove('active');
+    });
+    const activeMenuItem = document.querySelector(`#sidebar .side-menu a[href="#${sectionId}"]`);
+    if (activeMenuItem) {
+        activeMenuItem.parentElement.classList.add('active');
+    }
+}
+
 
 
 

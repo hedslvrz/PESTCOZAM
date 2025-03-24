@@ -1281,7 +1281,6 @@ try {
 </section>
 
 <!-- CONTENT -->
-    <script src="../JS CODES/dashboard-admin.js"></script>
     <!-- Logout Confirmation Modal -->
     <div id="logoutModal" class="modal">
         <div class="modal-content">
@@ -1293,5 +1292,6 @@ try {
             </div>
         </div>
     </div>
+    <script src="../JS CODES/dashboard-admin.js"></script>
 </body>
 </html>
