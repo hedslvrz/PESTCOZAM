@@ -14,6 +14,7 @@ async function registerUser(event) {
     let form = document.forms["registerForm"];
     let userData = {
         firstname: form["firstname"].value.trim(),
+        middlename: form["middlename"].value.trim(), // Optional field
         lastname: form["lastname"].value.trim(),
         email: form["email"].value.trim(),
         mobile_number: form["mobile_number"].value.trim(),

@@ -19,6 +19,7 @@ $user = new User($db);
 $data = json_decode(file_get_contents("php://input"), true);
 
 $user->firstname = htmlspecialchars(strip_tags(trim($data['firstname'])));
+$user->middlename = htmlspecialchars(strip_tags(trim($data['middlename'] ?? null))); // Optional field
 $user->lastname = htmlspecialchars(strip_tags(trim($data['lastname'])));
 $user->email = filter_var(trim($data['email']), FILTER_SANITIZE_EMAIL);
 $user->mobile_number = preg_replace('/\D/', '', trim($data['mobile_number']));

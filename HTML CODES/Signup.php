@@ -31,7 +31,11 @@
         <div class="row">
           <div class="input-group">
             <label class="details" for="firstname">Your First Name</label>
-            <input type="text" id="firstname" name="firstname" placeholder="Enter your first name"  />
+            <input type="text" id="firstname" name="firstname" placeholder="Enter your first name" />
+          </div>
+          <div class="input-group">
+            <label class="details" for="middlename">Your Middle Name (Optional)</label>
+            <input type="text" id="middlename" name="middlename" placeholder="Enter your middle name" />
           </div>
           <div class="input-group">
             <label class="details" for="lastname">Your Last Name</label>
