@@ -15,16 +15,18 @@ $service_id = $_SESSION['appointment']['service_id'];
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $data = json_decode(file_get_contents("php://input"), true);
     
-    if (isset($data['appointment_date'], $data['appointment_time'])) {
+    if (isset($data['appointment_date'], $data['appointment_time'], $data['service_type'])) {
         $query = "UPDATE appointments SET 
                 appointment_date = :appointment_date,
-                appointment_time = :appointment_time 
+                appointment_time = :appointment_time,
+                service_type = :service_type
                 WHERE user_id = :user_id AND service_id = :service_id";
 
         $stmt = $db->prepare($query);
         $stmt->execute([
             ':appointment_date' => $data['appointment_date'],
             ':appointment_time' => $data['appointment_time'],
+            ':service_type' => $data['service_type'],
             ':user_id' => $user_id,
             ':service_id' => $service_id
         ]);
@@ -134,42 +136,65 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       <!-- Schedule Table -->
       <div class="schedule-table">
         <h3 id="selected-date-heading">Select a date first</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Time</th>
-              <th>Availability</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody id="timeSlots">
-            <tr>
-              <td>07:00 AM - 09:00 AM</td>
-              <td class="slot-status">Open</td>
-              <td><button class="select-time" data-time="07:00 AM - 09:00 AM">Select</button></td>
-            </tr>
-            <tr>
-              <td>09:00 AM - 11:00 AM</td>
-              <td class="slot-status">Open</td>
-              <td><button class="select-time" data-time="09:00 AM - 11:00 AM">Select</button></td>
-            </tr>
-            <tr>
-              <td>11:00 AM - 01:00 PM</td>
-              <td class="slot-status">Open</td>
-              <td><button class="select-time" data-time="11:00 AM - 01:00 PM">Select</button></td>
-            </tr>
-            <tr>
-              <td>01:00 PM - 03:00 PM</td>
-              <td class="slot-status">Open</td>
-              <td><button class="select-time" data-time="01:00 PM - 03:00 PM">Select</button></td>
-            </tr>
-            <tr>
-              <td>03:00 PM - 05:00 PM</td>
-              <td class="slot-status">Open</td>
-              <td><button class="select-time" data-time="03:00 PM - 05:00 PM">Select</button></td>
-            </tr>
-          </tbody>
-        </table>
+        <form id="appointmentForm">
+          <table>
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Availability</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="timeSlots">
+              <tr>
+                <td>07:00 AM - 09:00 AM</td>
+                <td class="slot-status">Open (5 more slots)</td>
+                <td><button type="button" class="select-time" data-time="07:00 AM - 09:00 AM">Select</button></td>
+              </tr>
+              <tr class="closed-slot">
+                <td>09:00 AM - 11:00 AM</td>
+                <td class="slot-status">Closed (0 slots)</td>
+                <td><button type="button" class="select-time" data-time="09:00 AM - 11:00 AM" disabled>Select</button></td>
+              </tr>
+              <tr>
+                <td>11:00 AM - 01:00 PM</td>
+                <td class="slot-status">Open (3 more slots)</td>
+                <td><button type="button" class="select-time" data-time="11:00 AM - 01:00 PM">Select</button></td>
+              </tr>
+              <tr>
+                <td>01:00 PM - 03:00 PM</td>
+                <td class="slot-status">Open (4 more slots)</td>
+                <td><button type="button" class="select-time" data-time="01:00 PM - 03:00 PM">Select</button></td>
+              </tr>
+              <tr>
+                <td>03:00 PM - 05:00 PM</td>
+                <td class="slot-status">Open (2 more slots)</td>
+                <td><button type="button" class="select-time" data-time="03:00 PM - 05:00 PM">Select</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </form>
+      </div>
+
+      <!-- Service Type Selection -->
+      <div class="service-type-form">
+        <h3>Select Service Type</h3>
+        <div class="service-options">
+          <label class="service-option" for="ocular">
+            <input type="radio" id="ocular" name="service_type" value="ocular" required>
+            <div class="service-details">
+              <span class="service-title">Ocular Inspection</span>
+              <p>Initial assessment of pest problems</p>
+            </div>
+          </label>
+          <label class="service-option" for="treatment">
+            <input type="radio" id="treatment" name="service_type" value="treatment" required>
+            <div class="service-details">
+              <span class="service-title">Treatment Service</span>
+              <p>Full pest control implementation</p>
+            </div>
+          </label>
+        </div>
       </div>
 
       <!-- Navigation Buttons -->
@@ -309,12 +334,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         return;
       }
 
+      const serviceType = document.querySelector('input[name="service_type"]:checked');
+      if (!serviceType) {
+        alert('Please select a service type');
+        return;
+      }
+
       fetch('Appointment-calendar.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           appointment_date: selectedDate,
-          appointment_time: selectedTime
+          appointment_time: selectedTime,
+          service_type: serviceType.value
         })
       })
       .then(response => response.json())
