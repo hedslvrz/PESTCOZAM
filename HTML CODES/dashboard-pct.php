@@ -92,6 +92,12 @@ try {
                 </a>
             </li>
             <li>
+                <a href="#schedule-followup" onclick="showSection('schedule-followup')">
+                    <i class='bx bx-calendar-plus'></i>
+                    <span class="text">Schedule Follow-up</span>
+                </a>
+            </li>
+            <li>
                 <a href="#profile" onclick="showSection('profile')">
                     <i class='bx bx-user'></i>
                     <span class="text">Profile</span>
@@ -400,6 +406,140 @@ try {
                             </div>
                         </div>
                     </form>
+                </div>
+            </div>
+        </main>
+    </section>
+
+    <!-- Schedule Follow-up Section -->
+    <section id="schedule-followup" class="section">
+        <main>
+            <div class="form-container">
+                <div class="head-title">
+                    <div class="left">
+                        <h1>Schedule Follow-up</h1>
+                        <ul class="breadcrumb">
+                            <li><a href="#">Appointments</a></li>
+                            <li><i class='bx bx-chevron-right'></i></li>
+                            <li><a class="active" href="#">Schedule Follow-up</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="followup-form-container">
+                    <div class="followup-grid">
+                        <!-- Calendar Section -->
+                        <div class="calendar-container">
+                            <div class="frequency-settings">
+                                <h4>Visit Schedule Settings</h4>
+                                <div class="plan-frequency">
+                                    <div class="form-group">
+                                        <label>Plan Type:</label>
+                                        <select id="plan-type" required>
+                                            <option value="">Select Plan Type</option>
+                                            <option value="weekly">Weekly</option>
+                                            <option value="monthly">Monthly</option>
+                                            <option value="yearly">Yearly</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Start Date:</label>
+                                        <input type="date" id="start-date" class="calendar-input" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Duration (months):</label>
+                                        <input type="number" id="plan-duration" min="1" max="12" value="3" required>
+                                    </div>
+                                </div>
+                                
+                                <!-- Add Time Slot Selection -->
+                                <div class="time-slot-section">
+                                    <h4>Select Preferred Time Slot</h4>
+                                    <div class="predefined-slots">
+                                        <button type="button" class="time-option" data-time="07:00 AM - 09:00 AM">7:00 AM - 9:00 AM</button>
+                                        <button type="button" class="time-option" data-time="09:00 AM - 11:00 AM">9:00 AM - 11:00 AM</button>
+                                        <button type="button" class="time-option" data-time="11:00 AM - 01:00 PM">11:00 AM - 1:00 PM</button>
+                                        <button type="button" class="time-option" data-time="01:00 PM - 03:00 PM">1:00 PM - 3:00 PM</button>
+                                        <button type="button" class="time-option" data-time="03:00 PM - 05:00 PM">3:00 PM - 5:00 PM</button>
+                                    </div>
+                                    
+                                    <div class="custom-time">
+                                        <label>Custom Time:</label>
+                                        <div class="custom-time-inputs">
+                                            <input type="time" id="custom-time-start" min="07:00" max="17:00" step="1800">
+                                            <span>to</span>
+                                            <input type="time" id="custom-time-end" min="07:00" max="17:00" step="1800">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <button type="button" class="btn-generate" onclick="generateVisitDates()">
+                                    <i class='bx bx-calendar-plus'></i> Generate Visit Schedule
+                                </button>
+                            </div>
+
+                            <!-- Example Generated Schedule -->
+                            <div class="generated-dates">
+                                <h4>Generated Visit Schedule</h4>
+                                <div class="visit-schedule-list">
+                                    <!-- Weekly Plan Example -->
+                                    <div class="visit-date-item">
+                                        <div class="visit-info">
+                                            <span class="date">Monday, March 18, 2024</span>
+                                            <span class="time">8:00 AM - 10:00 AM</span>
+                                        </div>
+                                        <span class="visit-number">Visit #1</span>
+                                    </div>
+                                    <div class="visit-date-item">
+                                        <div class="visit-info">
+                                            <span class="date">Monday, March 25, 2024</span>
+                                            <span class="time">8:00 AM - 10:00 AM</span>
+                                        </div>
+                                        <span class="visit-number">Visit #2</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- My Current Appointments -->
+                            <div class="my-appointments">
+                                <h4>My Current Appointments</h4>
+                                <table class="appointments-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Date & Time</th>
+                                            <th>Client</th>
+                                            <th>Location</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Mar 18, 2024 8:00 AM</td>
+                                            <td>John Smith</td>
+                                            <td>123 Main St, Zamboanga</td>
+                                            <td><span class="status pending">Pending</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Mar 20, 2024 1:00 PM</td>
+                                            <td>Maria Garcia</td>
+                                            <td>456 Park Ave, Zamboanga</td>
+                                            <td><span class="status confirmed">Confirmed</span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Form Actions -->
+                            <div class="form-actions">
+                                <button type="button" class="btn-clear" onclick="clearSchedule()">
+                                    <i class='bx bx-trash'></i> Clear Schedule
+                                </button>
+                                <button type="submit" class="btn-submit">
+                                    <i class='bx bx-calendar-check'></i> Schedule Appointments
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </main>
