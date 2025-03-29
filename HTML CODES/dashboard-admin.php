@@ -1293,5 +1293,20 @@ try {
         </div>
     </div>
     <script src="../JS CODES/dashboard-admin.js"></script>
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initially show only the content section (dashboard)
+    showSection('content');
+    
+    // Fix for the logout functionality
+    const logoutLink = document.querySelector('a.logout');
+    if (logoutLink) {
+        logoutLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('logoutModal').style.display = 'block';
+        });
+    }
+});
+</script>
 </body>
 </html>

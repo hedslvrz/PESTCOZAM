@@ -418,14 +418,16 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function showSection(sectionId) {
-    // Hide all sections
+    // Hide all sections completely
     document.querySelectorAll('.section').forEach(section => {
+        section.style.display = 'none';
         section.classList.remove('active');
     });
 
     // Show the selected section
     const targetSection = document.getElementById(sectionId);
     if (targetSection) {
+        targetSection.style.display = 'block';
         targetSection.classList.add('active');
     } else {
         console.error(`Section with ID "${sectionId}" not found.`);
