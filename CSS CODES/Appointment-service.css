@@ -297,6 +297,144 @@ main {
     color: #fff !important;
 }
 
+/* Featured Card (Ocular Inspection) */
+.offer-card.featured {
+    border: 2px solid #144578;
+    position: relative;
+    grid-column: 1 / -1;
+    max-width: none;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    margin-bottom: 2rem;
+}
+
+.offer-card.featured img {
+    width: 300px;
+    height: 100%;
+    margin-bottom: 0;
+}
+
+.offer-card.featured .offer-text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.offer-card.featured h3 {
+    font-size: 24px;
+    color: #144578;
+}
+
+.offer-card.featured .service-details {
+    margin: 15px auto;
+}
+
+@media (max-width: 768px) {
+    .offer-card.featured {
+        flex-direction: column;
+    }
+    
+    .offer-card.featured img {
+        width: 100%;
+        height: 200px;
+    }
+}
+
+/* OCULAR CARD */
+.ocular-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    max-width: 1000px;
+    margin: 0 auto 40px;
+    border: 2px solid #144578;
+}
+
+.ocular-content {
+    display: flex;
+    flex-direction: row;
+}
+
+.ocular-image {
+    flex: 0 0 45%;
+}
+
+.ocular-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.ocular-info {
+    flex: 1;
+    padding: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.ocular-info h3 {
+    color: #144578;
+    font-size: 28px;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.ocular-info p {
+    color: #555;
+    font-size: 16px;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.ocular-info .service-details {
+    background: rgba(20, 69, 120, 0.05);
+    border: 1px solid rgba(20, 69, 120, 0.1);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin: 0 auto 1.5rem;
+    width: 80%;
+}
+
+.ocular-info .book-now-btn {
+    width: 200px;
+    padding: 12px 24px;
+    font-size: 18px;
+}
+
+/* Separator styles */
+.section-divider {
+    height: 2px;
+    background: #144578;
+    max-width: 400px;
+    margin: 50px auto;
+    opacity: 0.3;
+}
+
+@media (max-width: 768px) {
+    .ocular-content {
+        flex-direction: column;
+    }
+    
+    .ocular-image {
+        height: 250px;
+    }
+    
+    .ocular-info {
+        padding: 1.5rem;
+    }
+    
+    .ocular-info .service-details {
+        width: 100%;
+    }
+}
+
 /* APPOINTMENT-FOR SECTION */
 /* Make it match the reminder container (centered, same width) */
 .appointment-for {

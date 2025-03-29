@@ -132,6 +132,29 @@ $services = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <!-- Appointment Selection Section -->
     <main>
         <div class="form-container">
+            <h2 class="Appointment-lbl">Ocular Inspection</h2>
+            <div class="ocular-card">
+                <div class="ocular-content">
+                    <div class="ocular-image">
+                        <img src="../Pictures/ocular-inspection.jpg" alt="Ocular Inspection" />
+                    </div>
+                    <div class="ocular-info">
+                        <h3>Ocular Inspection</h3>
+                        <p>Our professional pest control experts will conduct a thorough assessment of your property to identify pest problems and recommend the most effective treatment plan.</p>
+                        <div class="service-details">
+                            <p><i class='bx bx-time'></i> Est. Time: 30-60 minutes</p>
+                            <p><i class='bx bx-check-circle'></i> Free of Charge</p>
+                            <p><i class='bx bx-info-circle'></i> Required before any treatment service</p>
+                        </div>
+                        <button class="book-now-btn" id="book-btn-0" onclick="selectService(0)">
+                            Book Now
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-divider"></div>
+
             <h2 class="Appointment-lbl">Select a Service</h2>
             
             <div class="offer-grid">

@@ -887,6 +887,8 @@ tr.closed-slot .slot-status {
     font-size: 0.95rem;
     background: white;
     height: 42px;
+    appearance: textfield;
+    -webkit-appearance: textfield;
     -moz-appearance: textfield;
     box-sizing: border-box; /* Added to include padding in width calculation */
 }
