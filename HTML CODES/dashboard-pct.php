@@ -286,101 +286,97 @@ try {
                     </div>
                 </div>
 
-                <div class="report-form-container">
+                <div class="report-form-container wide">
                     <form class="service-report-form" method="POST" action="../PHP CODES/submit_report.php" enctype="multipart/form-data">
-                        <!-- Appointment Selection Section -->
+                        <!-- Appointment Selection -->
                         <div class="form-section">
-                            <div class="form-step form-step-active">
-                                <div class="step-header">
-                                    <h3 class="step-title">
-                                        <i class='bx bx-calendar'></i>
-                                        Select Appointment
-                                    </h3>
-                                </div>
-                                <div class="form-group">
-                                    <select name="appointment_id" id="appointment" required>
-                                        <option value="">Choose an appointment to report</option>
-                                        <?php foreach ($assignments as $assignment): ?>
-                                            <option value="<?php echo $assignment['appointment_id']; ?>">
-                                                <?php echo date('M d, Y', strtotime($assignment['appointment_date'])) . ' - ' . 
-                                                     $assignment['client_firstname'] . ' ' . $assignment['client_lastname'] . ' - ' . 
-                                                     $assignment['service_name']; ?>
-                                            </option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
+                            <div class="section-header">
+                                <i class='bx bx-calendar'></i>
+                                <h3>Select Appointment</h3>
+                            </div>
+                            <div class="field-group">
+                                <label for="appointment">Choose an appointment to report</label>
+                                <select name="appointment_id" id="appointment" required>
+                                    <option value="">Select an appointment</option>
+                                    <?php foreach ($assignments as $assignment): ?>
+                                        <option value="<?php echo $assignment['appointment_id']; ?>">
+                                            <?php echo date('M d, Y', strtotime($assignment['appointment_date'])) . ' - ' . 
+                                                 $assignment['client_firstname'] . ' ' . $assignment['client_lastname'] . ' - ' . 
+                                                 $assignment['service_name']; ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
                             </div>
                         </div>
 
-                        <!-- Service Report Details Section -->
+                        <!-- Report Details -->
                         <div class="form-section">
-                            <div class="step-header">
-                                <h3 class="step-title">
-                                    <i class='bx bx-file'></i>
-                                    Service Report Details
-                                </h3>
+                            <div class="section-header">
+                                <i class='bx bx-file'></i>
+                                <h3>Service Report Details</h3>
                             </div>
-                            <div class="report-grid">
+                            <div class="report-grid-3col">
                                 <div class="field-group">
-                                    <label for="account_name">Account Name:</label>
+                                    <label for="account_name">Account Name</label>
                                     <input type="text" name="account_name" id="account_name" required>
                                 </div>
                                 <div class="field-group">
-                                    <label for="location">Location:</label>
+                                    <label for="location">Location</label>
                                     <input type="text" name="location" id="location" required>
                                 </div>
                                 <div class="field-group">
-                                    <label for="contact_no">Contact No:</label>
+                                    <label for="contact_no">Contact No</label>
                                     <input type="text" name="contact_no" id="contact_no" required>
                                 </div>
                                 <div class="field-group">
-                                    <label for="date_of_treatment">Date of Treatment:</label>
+                                    <label for="date_of_treatment">Date of Treatment</label>
                                     <input type="date" name="date_of_treatment" id="date_of_treatment" required>
                                 </div>
                                 <div class="field-group">
-                                    <label for="time_in">Time In:</label>
+                                    <label for="time_in">Time In</label>
                                     <input type="time" name="time_in" id="time_in" required>
                                 </div>
                                 <div class="field-group">
-                                    <label for="time_out">Time Out:</label>
+                                    <label for="time_out">Time Out</label>
                                     <input type="time" name="time_out" id="time_out" required>
                                 </div>
                                 <div class="field-group">
-                                    <label for="treatment_type">Treatment Type:</label>
+                                    <label for="treatment_type">Treatment Type</label>
                                     <input type="text" name="treatment_type" id="treatment_type" required>
                                 </div>
                                 <div class="field-group">
-                                    <label for="treatment_method">Treatment Method:</label>
+                                    <label for="treatment_method">Treatment Method</label>
                                     <input type="text" name="treatment_method" id="treatment_method" required>
                                 </div>
                                 <div class="field-group">
-                                    <label for="pest_count">PCT (Pest Count):</label>
+                                    <label for="pest_count">PCT (Pest Count)</label>
                                     <input type="number" name="pest_count" id="pest_count" required>
                                 </div>
+                            </div>
+                            
+                            <div class="report-grid-2col">
                                 <div class="field-group">
-                                    <label for="device_installation">Device Installation:</label>
-                                    <textarea name="device_installation" id="device_installation"></textarea>
+                                    <label for="device_installation">Device Installation</label>
+                                    <textarea name="device_installation" id="device_installation" rows="2"></textarea>
                                 </div>
                                 <div class="field-group">
-                                    <label for="consumed_chemicals">Consumed Chemicals:</label>
-                                    <textarea name="consumed_chemicals" id="consumed_chemicals"></textarea>
+                                    <label for="consumed_chemicals">Consumed Chemicals</label>
+                                    <textarea name="consumed_chemicals" id="consumed_chemicals" rows="2"></textarea>
                                 </div>
                                 <div class="field-group">
-                                    <label for="frequency_of_visits">Frequency of Visits:</label>
+                                    <label for="frequency_of_visits">Frequency of Visits</label>
                                     <input type="text" name="frequency_of_visits" id="frequency_of_visits">
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Photo Upload Section -->
+                        <!-- Photo Upload -->
                         <div class="form-section">
-                            <div class="step-header">
-                                <h3 class="step-title">
-                                    <i class='bx bx-image'></i>
-                                    Upload Photos
-                                </h3>
+                            <div class="section-header">
+                                <i class='bx bx-image'></i>
+                                <h3>Upload Photos</h3>
                             </div>
-                            <div class="file-upload-container">
+                            <div class="upload-container">
                                 <div class="upload-area">
                                     <i class='bx bx-cloud-upload'></i>
                                     <p>Drag & Drop Photos Here</p>
@@ -389,21 +385,20 @@ try {
                                     <input type="file" name="photos[]" id="photos" multiple accept="image/*">
                                     <small>Upload up to 5 photos (Max 2MB each)</small>
                                 </div>
+                                <div class="photo-preview" id="photo-preview-container">
+                                    <!-- Preview images will appear here -->
+                                </div>
                             </div>
                         </div>
 
                         <!-- Form Actions -->
-                        <div class="form-section">
-                            <div class="form-actions">
-                                <button type="reset" class="btn-reset">
-                                    <i class='bx bx-reset'></i>
-                                    Clear Form
-                                </button>
-                                <button type="submit" class="btn-submit">
-                                    <i class='bx bx-send'></i>
-                                    Submit Report
-                                </button>
-                            </div>
+                        <div class="form-actions">
+                            <button type="reset" class="btn-reset">
+                                <i class='bx bx-reset'></i> Clear
+                            </button>
+                            <button type="submit" class="btn-submit">
+                                <i class='bx bx-send'></i> Submit Report
+                            </button>
                         </div>
                     </form>
                 </div>

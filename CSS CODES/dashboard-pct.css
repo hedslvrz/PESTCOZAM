@@ -999,3 +999,226 @@ tr.closed-slot .slot-status {
     color: #64748b;
     font-size: 0.9rem;
 }
+
+/* Submit Report Form Redesign */
+.report-form-container.wide {
+    max-width: 98%; /* Increased from 95% to take almost all space */
+    padding: 16px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.form-section {
+    margin-bottom: 10px;
+    padding: 10px 12px;
+    background-color: #f8f9fc;
+    border-radius: 6px;
+    border: 1px solid #e5e9f2;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #e5e9f2;
+}
+
+.section-header i {
+    font-size: 1.2rem;
+    color: #144578;
+    margin-right: 8px;
+}
+
+.section-header h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+    color: #344767;
+}
+
+.report-grid-3col {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.report-grid-2col {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.field-group {
+    margin-bottom: 6px;
+    width: 100%; /* Ensures the field group takes full width */
+}
+
+.field-group label {
+    display: block;
+    margin-bottom: 3px;
+    font-weight: 500;
+    font-size: 0.85rem;
+    color: #144578;
+}
+
+.field-group input,
+.field-group select,
+.field-group textarea {
+    width: 100%; /* Ensures inputs take full width */
+    padding: 8px 10px;
+    border: 1px solid #d2d6da;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    box-sizing: border-box; /* Critical: includes padding and border in the width calculation */
+}
+
+.field-group input:focus,
+.field-group select:focus,
+.field-group textarea:focus {
+    border-color: #144578;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(20, 69, 120, 0.1);
+}
+
+.field-group textarea {
+    resize: vertical;
+    min-height: 60px;
+}
+
+.upload-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.upload-area {
+    border: 2px dashed #d2d6da;
+    border-radius: 6px;
+    padding: 15px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.3s;
+}
+
+.upload-area:hover {
+    border-color: #144578;
+}
+
+.upload-area i {
+    font-size: 2rem;
+    color: #144578;
+    margin-bottom: 5px;
+}
+
+.upload-area p {
+    font-size: 0.95rem;
+    margin: 3px 0;
+}
+
+.upload-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    background-color: #144578;
+    color: white;
+    border-radius: 4px;
+    margin: 5px 0;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.upload-area input[type="file"] {
+    display: none;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid #e5e9f2;
+}
+
+.btn-reset, 
+.btn-submit {
+    padding: 8px 15px;
+    border-radius: 4px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    border: none;
+}
+
+.btn-reset {
+    background-color: #f8f9fa;
+    color: #344767;
+    border: 1px solid #d2d6da;
+}
+
+.btn-submit {
+    background-color: #144578;
+    color: white;
+}
+
+.photo-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.photo-item {
+    width: 80px;
+    height: 80px;
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+
+.photo-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Improved overflow handling for form container */
+.form-container {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0 10px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+    .report-grid-3col {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 992px) {
+    .report-grid-3col {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .report-grid-3col,
+    .report-grid-2col {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .btn-reset, .btn-submit {
+        width: 100%;
+        justify-content: center;
+    }
+}
