@@ -3596,6 +3596,7 @@ th {
 
 #work-orders .inline-assign-form {
     display: flex;
+    flex-direction: column;
     gap: 8px;
     width: 100%;
 }
@@ -3618,6 +3619,7 @@ th {
     background-position: right 10px top 50%;
     background-size: 12px auto;
     padding-right: 30px;
+    width: 100%;
 }
 
 #work-orders .tech-select:focus {
@@ -3638,12 +3640,12 @@ th {
     justify-content: center;
     gap: 6px;
     transition: all 0.2s ease;
+    width: 100%;
 }
 
 #work-orders .assign-btn {
     background-color: #1e88e5;
     color: white;
-    min-width: 80px;
 }
 
 #work-orders .assign-btn:hover {
@@ -3654,7 +3656,6 @@ th {
 #work-orders .view-btn {
     background-color: #f0f2f5;
     color: #555;
-    width: 100%;
 }
 
 #work-orders .view-btn:hover {
