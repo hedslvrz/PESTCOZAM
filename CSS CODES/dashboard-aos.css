@@ -700,3 +700,135 @@ table td {
         grid-template-columns: 1fr;
     }
 }
+
+/* Update Inline assignment form to match admin dashboard style */
+.inline-assign-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+}
+
+.tech-select {
+    width: 100%;
+    padding: 7px 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 13px;
+    background-color: #f8f9fa;
+    cursor: pointer;
+    transition: all 0.2s;
+    outline: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007CB2%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px top 50%;
+    background-size: 12px auto;
+    padding-right: 30px;
+}
+
+.tech-select:focus {
+    border-color: #144578;
+    box-shadow: 0 0 0 2px rgba(20, 69, 120, 0.1);
+}
+
+.assign-btn, 
+.view-btn,
+.assign-tech-btn,
+.reassign-tech-btn {
+    padding: 7px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+    width: 100%;
+}
+
+.assign-btn,
+.assign-tech-btn {
+    background-color: #1e88e5;
+    color: white;
+}
+
+.assign-btn:hover,
+.assign-tech-btn:hover {
+    background-color: #1565c0;
+    transform: translateY(-1px);
+}
+
+.reassign-tech-btn {
+    background-color: #ff9800;
+    color: white;
+}
+
+.reassign-tech-btn:hover {
+    background-color: #f57c00;
+    transform: translateY(-1px);
+}
+
+.view-btn {
+    background-color: #f0f2f5;
+    color: #555;
+}
+
+.view-btn:hover {
+    background-color: #e0e4e9;
+}
+
+/* Update Action Buttons Container */
+.action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+}
+
+/* Status message style */
+.status-message {
+    font-style: italic;
+    color: #666;
+    font-size: 13px;
+    text-align: center;
+    padding: 5px;
+    display: block;
+    width: 100%;
+}
+
+/* Update tech info and No tech styles to match admin dashboard */
+.tech-info,
+.no-tech {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    color: #555;
+    background: #f8f9fa;
+    width: fit-content;
+    min-width: 150px;
+}
+
+.no-tech {
+    color: #999;
+    font-style: italic;
+    background-color: #fff8e1;
+    color: #ffa000;
+}
+
+.tech-info i {
+    color: #4caf50;
+    font-size: 1.1rem;
+}
+
+.no-tech i {
+    color: #ffa000;
+}

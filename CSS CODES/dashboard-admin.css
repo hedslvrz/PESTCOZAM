@@ -3592,6 +3592,105 @@ th {
     flex-direction: column;
     gap: 8px;
     width: 100%;
+    max-width: 180px; /* Limit width to prevent overflow */
+}
+
+#work-orders .inline-assign-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    position: relative; /* Added to contain the dropdown */
+}
+
+#work-orders .tech-select {
+    width: 100%;
+    max-width: 100%; /* Ensure it doesn't exceed container width */
+    padding: 7px 10px;
+    padding-right: 30px; /* Space for the dropdown arrow */
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 13px;
+    background-color: #f8f9fa;
+    cursor: pointer;
+    transition: all 0.2s;
+    outline: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007CB2%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px top 50%;
+    background-size: 12px auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+#work-orders .tech-select:focus {
+    border-color: #144578;
+    box-shadow: 0 0 0 2px rgba(20, 69, 120, 0.1);
+}
+
+/* Add styles to ensure dropdown options fit better */
+#work-orders .tech-select option {
+    padding: 8px;
+    font-size: 13px;
+}
+
+/* Ensure table cells containing the dropdown have proper sizing */
+#work-orders .work-orders-table td:nth-child(7) {
+    width: 180px; /* Fixed width for actions column */
+    max-width: 180px;
+    min-width: 180px;
+    padding: 10px;
+}
+
+/* Responsive adjustments for the technician assignment */
+@media screen and (max-width: 768px) {
+    #work-orders .work-orders-table td:nth-child(7) {
+        width: 160px;
+        max-width: 160px;
+        min-width: 160px;
+    }
+    
+    #work-orders .action-buttons {
+        max-width: 160px;
+    }
+    
+    #work-orders .tech-select {
+        font-size: 12px;
+        padding: 6px 8px;
+        padding-right: 25px;
+    }
+}
+
+/* Ensure assign button fits and looks good */
+#work-orders .assign-btn {
+    padding: 7px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Improved actions area */
+#work-orders .action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
 }
 
 #work-orders .inline-assign-form {
