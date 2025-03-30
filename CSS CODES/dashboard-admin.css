@@ -3329,3 +3329,600 @@ th {
     opacity: 0.9;
     transform: translateY(-1px);
 }
+
+/* Work Orders Section Styles - Enhanced Version */
+#work-orders .content {
+    flex: 1;
+    padding: 20px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+#work-orders .table-data {
+    padding: 0;
+    box-shadow: none;
+    background: transparent;
+}
+
+#work-orders .order-list {
+    width: 100%;
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Search and filter styles */
+#work-orders .table-header {
+    margin-bottom: 24px;
+}
+
+#work-orders .search-filters {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 10px;
+}
+
+#work-orders .search-box {
+    display: flex;
+    align-items: center;
+    background: #f5f5f5;
+    border-radius: 8px;
+    padding: 10px 16px;
+    flex: 1;
+    max-width: 400px;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+}
+
+#work-orders .search-box:focus-within {
+    border-color: #144578;
+    box-shadow: 0 0 0 2px rgba(20, 69, 120, 0.1);
+}
+
+#work-orders .search-box i {
+    color: #666;
+    font-size: 18px;
+    margin-right: 10px;
+}
+
+#work-orders .search-box input {
+    border: none;
+    background: none;
+    outline: none;
+    width: 100%;
+    font-size: 14px;
+    color: #333;
+}
+
+#work-orders .filter-buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+#work-orders .filter-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    background: #f0f2f5;
+    color: #555;
+    font-weight: 500;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#work-orders .filter-btn:hover {
+    background: #e0e4e9;
+}
+
+#work-orders .filter-btn.active {
+    background: #144578;
+    color: white;
+}
+
+#work-orders .date-filter {
+    position: relative;
+}
+
+#work-orders .date-filter input[type="date"] {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    outline: none;
+    font-family: inherit;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#work-orders .date-filter input[type="date"]:focus {
+    border-color: #144578;
+    box-shadow: 0 0 0 2px rgba(20, 69, 120, 0.1);
+}
+
+/* Enhanced table styles */
+#work-orders .table-responsive {
+    overflow-x: auto;
+    border-radius: 8px;
+}
+
+#work-orders .work-orders-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: white;
+}
+
+#work-orders .work-orders-table th {
+    background: #f8f9fa;
+    color: #344767;
+    font-weight: 600;
+    padding: 16px;
+    text-align: left;
+    font-size: 14px;
+    border-bottom: 1px solid #edf0f7;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+#work-orders .work-orders-table th:first-child {
+    border-top-left-radius: 8px;
+}
+
+#work-orders .work-orders-table th:last-child {
+    border-top-right-radius: 8px;
+}
+
+#work-orders .work-orders-table td {
+    padding: 14px 16px;
+    vertical-align: middle;
+    border-bottom: 1px solid #edf0f7;
+    font-size: 14px;
+    color: #555;
+    transition: background 0.2s ease;
+}
+
+#work-orders .work-orders-table tbody tr:last-child td:first-child {
+    border-bottom-left-radius: 8px;
+}
+
+#work-orders .work-orders-table tbody tr:last-child td:last-child {
+    border-bottom-right-radius: 8px;
+}
+
+#work-orders .work-orders-table tbody tr:hover td {
+    background: #f8fafe;
+}
+
+/* Info groups with icons */
+#work-orders .schedule-info,
+#work-orders .customer-info,
+#work-orders .service-info,
+#work-orders .tech-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#work-orders .schedule-info i,
+#work-orders .customer-info i,
+#work-orders .service-info i,
+#work-orders .tech-info i {
+    font-size: 18px;
+    color: #144578;
+    width: 20px;
+    text-align: center;
+}
+
+#work-orders .schedule-info div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+#work-orders .schedule-info .date {
+    font-weight: 500;
+    color: #344767;
+}
+
+#work-orders .schedule-info .time {
+    font-size: 13px;
+    color: #666;
+}
+
+/* Enhanced status badge styles */
+#work-orders .status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    width: fit-content;
+    min-width: 100px;
+    justify-content: center;
+}
+
+#work-orders .status.pending {
+    background-color: #fff8e1;
+    color: #ffa000;
+}
+
+#work-orders .status.confirmed {
+    background-color: #e3f2fd;
+    color: #1976d2;
+}
+
+#work-orders .status.completed {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+}
+
+#work-orders .status i {
+    font-size: 14px;
+}
+
+/* Enhance technician assignment styles */
+#work-orders .tech-info {
+    min-width: 150px;
+}
+
+#work-orders .no-tech {
+    color: #999;
+    font-style: italic;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+#work-orders .no-tech i {
+    color: #999;
+}
+
+/* Improved actions area */
+#work-orders .action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+}
+
+#work-orders .inline-assign-form {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+}
+
+#work-orders .tech-select {
+    flex-grow: 1;
+    padding: 7px 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 13px;
+    background-color: #f8f9fa;
+    cursor: pointer;
+    transition: all 0.2s;
+    outline: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007CB2%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px top 50%;
+    background-size: 12px auto;
+    padding-right: 30px;
+}
+
+#work-orders .tech-select:focus {
+    border-color: #144578;
+    box-shadow: 0 0 0 2px rgba(20, 69, 120, 0.1);
+}
+
+#work-orders .assign-btn,
+#work-orders .view-btn {
+    padding: 7px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+#work-orders .assign-btn {
+    background-color: #1e88e5;
+    color: white;
+    min-width: 80px;
+}
+
+#work-orders .assign-btn:hover {
+    background-color: #1565c0;
+    transform: translateY(-1px);
+}
+
+#work-orders .view-btn {
+    background-color: #f0f2f5;
+    color: #555;
+    width: 100%;
+}
+
+#work-orders .view-btn:hover {
+    background-color: #e0e4e9;
+}
+
+#work-orders .status-message {
+    font-style: italic;
+    color: #666;
+    font-size: 13px;
+    text-align: center;
+    padding: 5px;
+    display: block;
+    width: 100%;
+}
+
+/* Column widths */
+#work-orders .work-orders-table th:nth-child(1) {
+    width: 60px;
+}
+
+#work-orders .work-orders-table th:nth-child(2) {
+    width: 15%;
+}
+
+#work-orders .work-orders-table th:nth-child(3) {
+    width: 15%;
+}
+
+#work-orders .work-orders-table th:nth-child(4) {
+    width: 15%;
+}
+
+#work-orders .work-orders-table th:nth-child(5) {
+    width: 15%;
+}
+
+#work-orders .work-orders-table th:nth-child(6) {
+    width: 120px;
+}
+
+#work-orders .work-orders-table th:nth-child(7) {
+    width: 200px;
+}
+
+/* No records message */
+#work-orders .no-records {
+    text-align: center;
+    padding: 30px;
+    color: #666;
+    font-style: italic;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 992px) {
+    #work-orders .search-filters {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    #work-orders .search-box {
+        max-width: 100%;
+        width: 100%;
+    }
+    
+    #work-orders .filter-buttons {
+        width: 100%;
+        overflow-x: auto;
+        padding-bottom: 5px;
+        justify-content: flex-start;
+    }
+    
+    #work-orders .filter-buttons::-webkit-scrollbar {
+        height: 4px;
+    }
+    
+    #work-orders .filter-buttons::-webkit-scrollbar-thumb {
+        background: #ccc;
+        border-radius: 4px;
+    }
+}
+
+/* Add loading indicator for technician assignment */
+#work-orders .loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Details Modal Styles */
+#workOrderModal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    overflow-y: auto;
+    padding: 40px 20px;
+    box-sizing: border-box;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
+}
+
+#workOrderModal.show {
+    opacity: 1;
+    visibility: visible;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-container {
+    background: white;
+    border-radius: 12px;
+    max-width: 800px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    transform: translateY(-20px);
+    transition: transform 0.3s;
+}
+
+#workOrderModal.show .modal-container {
+    transform: translateY(0);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid #eee;
+}
+
+.modal-header h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #144578;
+    margin: 0;
+}
+
+.close-modal {
+    border: none;
+    background: none;
+    font-size: 24px;
+    color: #666;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+}
+
+.close-modal:hover {
+    color: #333;
+}
+
+.modal-body {
+    padding: 24px;
+}
+
+.detail-section {
+    margin-bottom: 24px;
+}
+
+.detail-section h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #eee;
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.detail-item label {
+    font-size: 13px;
+    color: #666;
+    font-weight: 500;
+}
+
+.detail-item p {
+    margin: 0;
+    font-size: 15px;
+    color: #333;
+}
+
+.detail-row {
+    margin-bottom: 16px;
+}
+
+.detail-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 16px 24px;
+    background: #f8f9fa;
+    border-top: 1px solid #eee;
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+}
+
+.modal-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+.modal-btn.primary {
+    background: #144578;
+    color: white;
+}
+
+.modal-btn.primary:hover {
+    background: #0d3057;
+}
+
+.modal-btn.secondary {
+    background: #e0e4e9;
+    color: #555;
+}
+
+.modal-btn.secondary:hover {
+    background: #d0d4d9;
+}
+
+.detail-map {
+    width: 100%;
+    height: 200px;
+    background: #f0f2f5;
+    border-radius: 8px;
+    margin-top: 16px;
+}
+
+.detail-full {
+    grid-column: 1 / -1;
+}

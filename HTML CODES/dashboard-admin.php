@@ -528,7 +528,7 @@ try {
                             <span class="status-message">Job completed</span>
                         <?php endif; ?>
                         <button type="button" class="view-btn" onclick="viewDetails(<?php echo $appointment['appointment_id']; ?>)">
-                            <i class='bx bx-show'></i> View
+                            <i class='bx bx-show'></i> View Details
                         </button>
                     </div>
                 </td>

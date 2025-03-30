@@ -121,15 +121,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Auto refresh work orders table every 30 seconds
-    if (document.querySelector('.work-orders-table')) {
-        setInterval(function() {
-            if (document.getElementById('work-orders').classList.contains('active')) {
-                location.reload();
-            }
-        }, 30000); // 30 seconds
-    }
-    
     // Filter functionality
     const filterButtons = document.querySelectorAll('.filter-btn');
     filterButtons.forEach(button => {
@@ -338,15 +329,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const assignForm = document.getElementById('assignTechForm');
     if (assignForm) {
         assignForm.addEventListener('submit', handleAssignSubmit);
-    }
-
-    // Auto refresh work orders table every 30 seconds
-    if (document.querySelector('.work-orders-table')) {
-        setInterval(function() {
-            if (document.getElementById('work-orders').classList.contains('active')) {
-                location.reload();
-            }
-        }, 30000); // 30 seconds
     }
     
     // Filter functionality
