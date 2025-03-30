@@ -401,6 +401,70 @@ try {
                             </tbody>
                         </table>
                     </div>
+
+                    <div class="service-reports-container">
+                        <div class="table-header">
+                            <div class="search-filters">
+                                <div class="search-box">
+                                    <i class='bx bx-search'></i>
+                                    <input type="text" placeholder="Search reports...">
+                                </div>
+                                <div class="filter-buttons">
+                                    <button type="button" class="filter-btn active" data-filter="all">All Reports</button>
+                                    <button type="button" class="filter-btn" data-filter="new">New</button>
+                                    <button type="button" class="filter-btn" data-filter="reviewed">Reviewed</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="reports-grid">
+                            <?php if (!empty($service_reports)): ?>
+                                <?php foreach ($service_reports as $report): ?>
+                                    <div class="report-card">
+                                        <div class="report-header">
+                                            <span class="report-id">#<?php echo htmlspecialchars($report['report_id']); ?></span>
+                                            <span class="status <?php echo strtolower($report['status']); ?>">
+                                                <?php echo htmlspecialchars($report['status']); ?>
+                                            </span>
+                                        </div>
+                                        <div class="report-body">
+                                            <div class="info-group">
+                                                <i class='bx bx-user'></i>
+                                                <div>
+                                                    <small>Technician</small>
+                                                    <p><?php echo htmlspecialchars($report['tech_name']); ?></p>
+                                                </div>
+                                            </div>
+                                            <div class="info-group">
+                                                <i class='bx bx-calendar'></i>
+                                                <div>
+                                                    <small>Service Date</small>
+                                                    <p><?php echo date('M d, Y', strtotime($report['service_date'])); ?></p>
+                                                </div>
+                                            </div>
+                                            <div class="info-group">
+                                                <i class='bx bx-package'></i>
+                                                <div>
+                                                    <small>Service Type</small>
+                                                    <p><?php echo htmlspecialchars($report['service_type']); ?></p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="report-footer">
+                                            <button type="button" class="view-report-btn" onclick="viewReport(<?php echo $report['report_id']; ?>)">
+                                                <i class='bx bx-show'></i> View Details
+                                            </button>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <div class="no-reports">
+                                    <i class='bx bx-file'></i>
+                                    <p>No service reports found</p>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
                 </form>
             </div>
         </main>

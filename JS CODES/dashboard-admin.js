@@ -176,6 +176,30 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // Initialize report cards
+    initializeReportCards();
+
+    // Add modal close handlers
+    const closeButtons = document.querySelectorAll('.close-modal');
+    closeButtons.forEach(button => {
+        button.addEventListener('click', closeReportModal);
+    });
+
+    // Close modal when clicking outside
+    window.addEventListener('click', function(event) {
+        const modal = document.getElementById('reportModal');
+        if (event.target === modal) {
+            closeReportModal();
+        }
+    });
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            closeReportModal();
+        }
+    });
 });
 
 // Technician Assignment Functions
@@ -417,8 +441,67 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+// Updated Report Modal Functions
+function openReportModal(reportId) {
+    const modal = document.getElementById('reportModal');
+    if (!modal) {
+        console.error('Modal element not found');
+        return;
+    }
+    modal.classList.add('show'); // Add show class instead of display:block
+    modal.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeReportModal() {
+    const modal = document.getElementById('reportModal');
+    if (!modal) return;
+    modal.classList.remove('show');
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+function initializeReportCards() {
+    const reportCards = document.querySelectorAll('.report-card');
+    reportCards.forEach(card => {
+        card.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const reportId = this.dataset.reportId;
+            openReportModal(reportId);
+        });
+    });
+}
+
+function approveReport() {
+    // Add approve logic here
+    alert('Report approved successfully!');
+    closeReportModal();
+}
+
+function rejectReport() {
+    // Add reject logic here
+    const reason = prompt('Please enter the reason for rejection:');
+    if (reason) {
+        alert('Report rejected. Reason: ' + reason);
+        closeReportModal();
+    }
+}
+
+function printReport() {
+    window.print();
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('reportModal');
+    if (event.target === modal) {
+        closeReportModal();
+    }
+}
+
 function showSection(sectionId) {
-    // Hide all sections completely
+    // Hide all sections
     document.querySelectorAll('.section').forEach(section => {
         section.style.display = 'none';
         section.classList.remove('active');
@@ -429,19 +512,32 @@ function showSection(sectionId) {
     if (targetSection) {
         targetSection.style.display = 'block';
         targetSection.classList.add('active');
-    } else {
-        console.error(`Section with ID "${sectionId}" not found.`);
-    }
 
-    // Update the active menu item in the sidebar
-    document.querySelectorAll('#sidebar .side-menu li').forEach(item => {
-        item.classList.remove('active');
-    });
-    const activeMenuItem = document.querySelector(`#sidebar .side-menu a[href="#${sectionId}"]`);
-    if (activeMenuItem) {
-        activeMenuItem.parentElement.classList.add('active');
+        // Update the active menu item in the sidebar
+        document.querySelectorAll('#sidebar .side-menu.top li').forEach(item => {
+            item.classList.remove('active');
+        });
+        const menuItem = document.querySelector(`#sidebar .side-menu.top li a[href="#${sectionId}"]`).parentElement;
+        if (menuItem) {
+            menuItem.classList.add('active');
+        }
     }
 }
+
+// Add click event listeners to all sidebar menu items
+document.addEventListener('DOMContentLoaded', function() {
+    const sideMenuItems = document.querySelectorAll('#sidebar .side-menu.top li a');
+    sideMenuItems.forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            const sectionId = this.getAttribute('href').substring(1); // Remove the # from href
+            showSection(sectionId);
+        });
+    });
+
+    // Show dashboard by default
+    showSection('content');
+});
 
 
 

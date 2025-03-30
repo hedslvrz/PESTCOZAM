@@ -125,6 +125,37 @@ try {
     error_log("Error fetching technicians: " . $e->getMessage());
     $technicians = [];
 }
+
+// Get service reports
+try {
+    $serviceReportsQuery = "SELECT 
+        sr.report_id,
+        sr.date_of_treatment,
+        sr.time_in,
+        sr.time_out,
+        sr.treatment_type,
+        sr.treatment_method,
+        sr.pest_count,
+        sr.device_installation,
+        sr.consumed_chemicals,
+        sr.frequency_of_visits,
+        sr.photos,
+        sr.location,
+        sr.account_name,
+        sr.contact_no,
+        sr.status,
+        CONCAT(u.firstname, ' ', u.lastname) AS tech_name
+    FROM service_reports sr
+    JOIN users u ON sr.technician_id = u.id
+    ORDER BY sr.date_of_treatment DESC";
+
+    $stmt = $db->prepare($serviceReportsQuery);
+    $stmt->execute();
+    $serviceReports = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch(PDOException $e) {
+    error_log("Error fetching service reports: " . $e->getMessage());
+    $serviceReports = [];
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -1014,24 +1045,176 @@ try {
 <!-- Reports Section -->
 <section id="reports" class="section">
     <main>
-        <form id="reports-form" method="POST" action="process_reports.php">
-            <div class="head-title">
-                <div class="left">
-                    <h1>Reports Management</h1>
-                    <ul class="breadcrumb">
-                        <li><a href="#">Reports</a></li>
-                        <li><i class='bx bx-right-arrow-alt'></i></li>
-                        <li><a class="active" href="#">Overview</a></li>
-                    </ul>
+        <div class="head-title">
+            <div class="left">
+                <h1>Manage Technicians Reports</h1>
+                <ul class="breadcrumb">
+                    <li><a href="#">Reports</a></li>
+                    <li><i class='bx bx-chevron-right'></i></li>
+                    <li><a class="active" href="#">Technician Reports</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="reports-grid">
+            <!-- Sample Report Card -->
+            <div class="report-card" data-report-id="1" onclick="openReportModal(1)">
+                <div class="report-header">
+                    <div class="report-status pending">Pending Review</div>
+                    <div class="report-date">March 15, 2024</div>
+                </div>
+                <div class="report-body">
+                    <div class="technician-info">
+                        <img src="../Pictures/boy.png" alt="Technician">
+                        <div>
+                            <h3>John Smith</h3>
+                            <span>Senior Technician</span>
+                        </div>
+                    </div>
+                    <div class="report-preview">
+                        <p><i class='bx bx-map'></i> Tetuan, Zamboanga City</p>
+                        <p><i class='bx bx-user'></i> Client: Maria Garcia</p>
+                        <p><i class='bx bx-spray-can'></i> Service: Pest Control</p>
+                    </div>
                 </div>
             </div>
-            <div class="table-data">
-                <div class="reports-list">
-                    <!-- Reports specific content -->
+
+            <!-- More Sample Cards -->
+            <div class="report-card" data-report-id="2" onclick="openReportModal(2)">
+                <div class="report-header">
+                    <div class="report-status approved">Approved</div>
+                    <div class="report-date">March 14, 2024</div>
+                </div>
+                <div class="report-body">
+                    <div class="technician-info">
+                        <img src="../Pictures/boy.png" alt="Technician">
+                        <div>
+                            <h3>Mike Johnson</h3>
+                            <span>Pest Control Specialist</span>
+                        </div>
+                    </div>
+                    <div class="report-preview">
+                        <p><i class='bx bx-map'></i> Sta. Maria, Zamboanga City</p>
+                        <p><i class='bx bx-user'></i> Client: John Doe</p>
+                        <p><i class='bx bx-spray-can'></i> Service: Termite Control</p>
+                    </div>
                 </div>
             </div>
-        </form>
+        </div>
     </main>
+
+    <!-- Report Details Modal -->
+    <div id="reportModal" class="modal">
+        <div class="report-modal-content">
+            <span class="close-modal" onclick="closeReportModal()">&times;</span>
+            <form id="reportForm" class="report-form">
+                <h2>Service Report Details</h2>
+                
+                <div class="form-section">
+                    <h3>Basic Information</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Report ID</label>
+                            <input type="text" value="REP-2024-001" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Date Submitted</label>
+                            <input type="text" value="March 15, 2024" readonly>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Technician Name</label>
+                            <input type="text" value="John Smith" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Client Name</label>
+                            <input type="text" value="Maria Garcia" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Service Details</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Service Type</label>
+                            <input type="text" value="Pest Control" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Location</label>
+                            <input type="text" value="Tetuan, Zamboanga City" readonly>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Time In</label>
+                            <input type="time" value="09:00" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Time Out</label>
+                            <input type="time" value="11:30" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Treatment Information</h3>
+                    <div class="form-group full-width">
+                        <label>Treatment Method</label>
+                        <textarea readonly>Spray treatment and bait installation for comprehensive pest control</textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Chemicals Used</label>
+                            <input type="text" value="PestAway Pro, RoachGuard" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Quantity Used</label>
+                            <input type="text" value="2L, 500g" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Documentation</h3>
+                    <div class="image-gallery">
+                        <div class="image-item">
+                            <img src="../Pictures/sample-report-1.jpg" alt="Before Treatment">
+                            <span>Before Treatment</span>
+                        </div>
+                        <div class="image-item">
+                            <img src="../Pictures/sample-report-2.jpg" alt="After Treatment">
+                            <span>After Treatment</span>
+                        </div>
+                        <div class="image-item">
+                            <img src="../Pictures/sample-report-3.jpg" alt="Area Treated">
+                            <span>Area Treated</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Additional Notes</h3>
+                    <div class="form-group full-width">
+                        <textarea readonly>Client requested follow-up treatment in 3 months. Areas treated: kitchen, bathroom, and garden perimeter. Recommended preventive measures explained to client.</textarea>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-approve" onclick="approveReport()">
+                        <i class='bx bx-check'></i> Approve Report
+                    </button>
+                    <button type="button" class="btn-reject" onclick="rejectReport()">
+                        <i class='bx bx-x'></i> Reject Report
+                    </button>
+                    <button type="button" class="btn-print" onclick="printReport()">
+                        <i class='bx bx-printer'></i> Print Report
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </section>
 
 <!-- Manage Billing Section -->
@@ -1280,33 +1463,11 @@ try {
     </main>
 </section>
 
-<!-- CONTENT -->
+<!-- MODAL FOR LOGOUT -->
     <!-- Logout Confirmation Modal -->
     <div id="logoutModal" class="modal">
         <div class="modal-content">
-            <h2>Confirm Logout</h2>
-            <p>Are you sure you want to logout?</p>
-            <div class="modal-buttons">
-                <button id="confirmLogout" class="btn-confirm">Yes, Logout</button>
-                <button id="cancelLogout" class="btn-cancel">Cancel</button>
-            </div>
-        </div>
     </div>
     <script src="../JS CODES/dashboard-admin.js"></script>
-    <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Initially show only the content section (dashboard)
-    showSection('content');
-    
-    // Fix for the logout functionality
-    const logoutLink = document.querySelector('a.logout');
-    if (logoutLink) {
-        logoutLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            document.getElementById('logoutModal').style.display = 'block';
-        });
-    }
-});
-</script>
 </body>
 </html>
