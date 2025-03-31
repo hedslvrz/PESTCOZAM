@@ -203,4 +203,81 @@ document.addEventListener('DOMContentLoaded', function() {
             customModal.showUpdateSuccess();
         });
     });
+
+    // Add modal close handlers
+    const closeButtons = document.querySelectorAll('.close-modal');
+    closeButtons.forEach(button => {
+        button.addEventListener('click', closeReportModal);
+    });
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        const modal = document.getElementById('reportModal');
+        if (event.target === modal) {
+            closeReportModal();
+        }
+    };
+
+    // Initialize report cards
+    initializeReportCards();
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            closeReportModal();
+        }
+    });
 });
+
+// Report Modal Functions
+function openReportModal(reportId) {
+    const modal = document.getElementById('reportModal');
+    if (!modal) {
+        console.error('Modal element not found');
+        return;
+    }
+    modal.classList.add('show');
+    modal.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+
+    // You can add logic here to fetch and populate report data based on reportId
+}
+
+function closeReportModal() {
+    const modal = document.getElementById('reportModal');
+    if (!modal) return;
+    modal.classList.remove('show');
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+function approveReport() {
+    // Add approve logic here
+    alert('Report approved successfully!');
+    closeReportModal();
+}
+
+function rejectReport() {
+    // Add reject logic here
+    const reason = prompt('Please enter the reason for rejection:');
+    if (reason) {
+        alert('Report rejected. Reason: ' + reason);
+        closeReportModal();
+    }
+}
+
+function printReport() {
+    window.print();
+}
+
+function initializeReportCards() {
+    const reportCards = document.querySelectorAll('.report-card');
+    reportCards.forEach(card => {
+        card.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const reportId = this.dataset.reportId;
+            openReportModal(reportId);
+        });
+    });
+}

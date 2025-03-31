@@ -210,7 +210,7 @@ try {
             <li>
                 <a href="#reports" onclick="showSection('reports')">
                     <i class='bx bxs-report' ></i>
-                    <span class="text">Manage Reports</span>
+                    <span class="text">Manage Technician Reports</span>
                 </a>
             </li><li>
                 <a href="#billing" onclick="showSection('billing')">

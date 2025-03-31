@@ -2593,80 +2593,34 @@ th {
 
 /* Logout Modal Styles */
 .modal {
-    display: flex; /* Center the modal content */
-    align-items: center; /* Center vertically */
-    justify-content: center; /* Center horizontally */
-    overflow-y: auto; /* Allow scrolling for content */
-    padding: 20px; /* Add padding outside the modal content */
+    display: none;
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.75);
     z-index: 1000;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
 .modal.show {
-    opacity: 1;
-    visibility: visible;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .report-modal-content {
     background: white;
     padding: 30px;
-    border-radius: 12px;
-    max-width: 600px; /* Set a maximum width */
-    width: 100%; /* Ensure it adjusts to smaller screens */
-    max-height: 80vh; /* Limit height to 80% of the viewport */
-    overflow-y: auto; /* Enable scrolling for content */
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    border-radius: 15px;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto; /* Center horizontally */
+    max-height: 85vh;
     position: relative;
-    transform: translateY(-20px);
-    transition: transform 0.3s ease;
-}
-
-.modal.show .report-modal-content {
-    transform: translateY(0);
-}
-
-.close-modal {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    font-size: 24px;
-    cursor: pointer;
-    color: #666;
-    transition: color 0.2s ease;
-}
-
-.close-modal:hover {
-    color: #333;
-}
-
-/* Ensure modal content is scrollable */
-.report-modal-content::-webkit-scrollbar {
-    width: 8px;
-}
-
-.report-modal-content::-webkit-scrollbar-thumb {
-    background: #ccc;
-    border-radius: 4px;
-}
-
-.report-modal-content::-webkit-scrollbar-thumb:hover {
-    background: #aaa;
-}
-
-/* Responsive adjustments */
-@media screen and (max-width: 768px) {
-    .report-modal-content {
-        max-width: 90%; /* Adjust width for smaller screens */
-        padding: 20px;
-    }
+    overflow-y: auto;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    transform: none; /* Remove any transform that might affect centering */
 }
 
 /* Small Card Styles */
@@ -2896,7 +2850,13 @@ th {
     border: 1px solid #ddd;
     border-radius: 6px;
     font-size: 0.9rem;
-    font-family: 'Roboto', sans-serif;
+    width: 100%;
+    box-sizing: border-box;
+    resize: none; /* Prevent resizing */
+}
+
+#reports .form-group textarea {
+    height: 120px; /* Fixed height for textareas */
 }
 
 /* Image Gallery */
@@ -2995,6 +2955,13 @@ th {
     font-family: 'Roboto', sans-serif;
     font-size: 0.95rem;
     padding: 10px 12px;
+    width: 100%;
+    box-sizing: border-box;
+    resize: none; /* Prevent resizing */
+}
+
+.report-modal-content textarea {
+    height: 120px; /* Fixed height for textareas */
 }
 
 /* Modal Buttons */
@@ -3021,9 +2988,10 @@ th {
     position: fixed;
     top: 0;
     left: 0;
+    right: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.6); /* Darker background for better focus */
+    background: rgba(0, 0, 0, 0.75); /* Darker background for better focus */
     z-index: 1000;
     opacity: 0;
     visibility: hidden;
@@ -3126,8 +3094,8 @@ th {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 30px;
-    padding: 30px;
-    margin: 20px 30px;
+    padding: 10px;
+    margin: 20px 5px;
     width: calc(100% - 60px);
     max-width: 1600px;
 }
@@ -3273,6 +3241,13 @@ th {
     border: 1px solid #ddd;
     border-radius: 6px;
     font-size: 0.9rem;
+    width: 100%;
+    box-sizing: border-box;
+    resize: none; /* Prevent resizing */
+}
+
+#reports .form-group textarea {
+    height: 120px; /* Fixed height for textareas */
 }
 
 #reports .image-gallery {

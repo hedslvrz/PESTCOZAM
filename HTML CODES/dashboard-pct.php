@@ -543,46 +543,90 @@ try {
     <!-- Profile Section -->
     <section id="profile" class="section">
         <main>
-            <div class="form-container">
-                <form id="profile-form" method="POST" action="process_profile.php" enctype="multipart/form-data">
-                    <div class="head-title">
-                        <div class="left">
-                            <h1>Profile</h1>
-                            <ul class="breadcrumb">
-                                <li><a href="#">Profile</a></li>
-                                <li><i class='bx bx-right-arrow-alt'></i></li>
-                                <li><a class="active" href="#">My Account</a></li>
-                            </ul>
+            <form id="profile-form" method="POST" action="process_profile.php" enctype="multipart/form-data">
+                <div class="head-title">
+                    <div class="left">
+                        <h1>My Profile</h1>
+                        <ul class="breadcrumb">
+                            <li>
+                                <a href="#">Profile</a>
+                            </li>
+                            <li><i class='bx bx-right-arrow-alt'></i></li>
+                            <li>
+                                <a class="active" href="#">Details</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="profile-container">
+                    <!-- Profile Card -->
+                    <div class="profile-card">
+                        <div class="profile-avatar">
+                            <input type="file" name="profile_image" id="profile_image" hidden>
+                            <label for="profile_image">
+                                <img src="images/profile-image.png" alt="Profile Picture">
+                            </label>
+                        </div>
+                        <div class="profile-info">
+                            <h3>John Smith</h3>
+                            <p>Pest Control Technician</p>
+                            <p>PCT-001</p>
                         </div>
                     </div>
 
-                    <div class="profile-container">
-                        <div class="profile-card">
-                            <div class="profile-avatar">
-                                <img src="../Pictures/tech-profile.jpg" alt="Profile Picture">
-                            </div>
-                            <div class="profile-info">
-                                <h3><?php echo htmlspecialchars($technician['name']); ?></h3>
-                                <p><?php echo htmlspecialchars($technician['role']); ?></p>
-                                <p>ID: <?php echo htmlspecialchars($technician['id']); ?></p>
-                            </div>
+                    <!-- Personal Information -->
+                    <div class="info-section">
+                        <div class="section-header">
+                            <h3>Personal Information</h3>
+                            <button class="edit-btn"><i class="bx bx-edit"></i> Edit</button>
                         </div>
-
-                        <div class="info-section">
-                            <div class="section-header">
-                                <h3>Personal Information</h3>
-                                <button class="edit-btn">
-                                    <i class='bx bx-edit'></i>
-                                    Edit
-                                </button>
+                        <div class="info-content">
+                            <div class="info-row">
+                                <p><strong>First Name</strong></p>
+                                <p><strong>Last Name</strong></p>
+                                <p><strong>Date of Birth</strong></p>
                             </div>
-                            <div class="info-content">
-                                <!-- Personal information fields -->
+                            <div class="info-row">
+                                <p>John</p>
+                                <p>Smith</p>
+                                <p>03-05-1995</p>
+                            </div>
+                            <div class="info-row">
+                                <p><strong>Email:</strong></p>
+                                <p><strong>Phone Number:</strong></p>
+                                <p><strong>User Role:</strong></p>
+                            </div>
+                            <div class="info-row">
+                                <p>john.smith@pestcozam.com</p>
+                                <p>0953-654-4541</p>
+                                <p>Pest Control Technician</p>
                             </div>
                         </div>
                     </div>
-                </form>
-            </div>
+
+                    <!-- Address Section -->
+                    <div class="info-section">
+                        <div class="section-header">
+                            <h3>Address</h3>
+                            <button class="edit-btn"><i class="bx bx-edit"></i> Edit</button>
+                        </div>
+                        <div class="info-content">
+                            <div class="info-row">
+                                <p><strong>Country</strong></p>
+                                <p><strong>City:</strong></p>
+                                <p><strong>City Address</strong></p>
+                                <p><strong>Postal Code</strong></p>
+                            </div>
+                            <div class="info-row">
+                                <p>Philippines</p>
+                                <p>Zamboanga City</p>
+                                <p>Tetuan, Zamboanga City</p>
+                                <p>7000</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
         </main>
     </section>
 
