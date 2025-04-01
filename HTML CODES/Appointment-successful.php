@@ -2,8 +2,8 @@
 session_start();
 require_once "../database.php";
 
-// Check if user is logged in and appointment exists
-if (!isset($_SESSION['user_id'])) {
+// Check if user is logged in and appointment exists in session
+if (!isset($_SESSION['user_id']) || !isset($_SESSION['appointment'])) {
     header("Location: Login.php");
     exit();
 }
@@ -11,53 +11,125 @@ if (!isset($_SESSION['user_id'])) {
 $database = new Database();
 $db = $database->getConnection();
 
-try {
-    // Update the SQL query to include both appointment and user details
-    $query = "SELECT 
-                a.*,
-                s.service_name,
-                s.starting_price,
-                CASE 
-                    WHEN a.is_for_self = 1 THEN u.firstname
-                    ELSE a.firstname
-                END as display_firstname,
-                CASE 
-                    WHEN a.is_for_self = 1 THEN u.lastname
-                    ELSE a.lastname
-                END as display_lastname,
-                CASE 
-                    WHEN a.is_for_self = 1 THEN u.email
-                    ELSE a.email
-                END as display_email,
-                CASE 
-                    WHEN a.is_for_self = 1 THEN u.mobile_number
-                    ELSE a.mobile_number
-                END as display_mobile_number
-              FROM appointments a 
-              JOIN services s ON a.service_id = s.service_id 
-              JOIN users u ON a.user_id = u.id
-              WHERE a.user_id = :user_id 
-              ORDER BY a.created_at DESC 
-              LIMIT 1";
-
-    $stmt = $db->prepare($query);
-    $stmt->execute([':user_id' => $_SESSION['user_id']]);
-    $appointment = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if (!$appointment) {
-        // No appointment found
-        $_SESSION['error'] = "No appointment found. Please book an appointment first.";
+// Process the appointment confirmation
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    if (isset($_POST['confirm'])) {
+        try {
+            // Get all appointment data from session
+            $appointmentData = $_SESSION['appointment'];
+            
+            // Update the appointment in the database
+            $query = "UPDATE appointments SET 
+                    appointment_date = :appointment_date,
+                    appointment_time = :appointment_time,
+                    service_id = :service_id,
+                    status = 'confirmed'
+                    WHERE user_id = :user_id 
+                    ORDER BY created_at DESC
+                    LIMIT 1";
+                    
+            $stmt = $db->prepare($query);
+            $result = $stmt->execute([
+                ':appointment_date' => $appointmentData['appointment_date'],
+                ':appointment_time' => $appointmentData['appointment_time'],
+                ':service_id' => $appointmentData['service_id'],
+                ':user_id' => $_SESSION['user_id']
+            ]);
+            
+            if ($result) {
+                $_SESSION['appointment_confirmed'] = true;
+            } else {
+                $_SESSION['error'] = "Failed to confirm appointment. Please try again.";
+            }
+        } catch (PDOException $e) {
+            error_log("Database Error: " . $e->getMessage());
+            $_SESSION['error'] = "An error occurred while saving your appointment.";
+        }
+    } elseif (isset($_POST['cancel'])) {
+        // User cancelled the appointment
+        unset($_SESSION['appointment']);
         header("Location: Appointment-service.php");
         exit();
+    }
+}
+
+try {
+    // Check if appointment was already confirmed
+    if (isset($_SESSION['appointment_confirmed']) && $_SESSION['appointment_confirmed']) {
+        // Get the confirmed appointment from the database
+        $query = "SELECT 
+                    a.*,
+                    s.service_name,
+                    s.starting_price,
+                    CASE 
+                        WHEN a.is_for_self = 1 THEN u.firstname
+                        ELSE a.firstname
+                    END as display_firstname,
+                    CASE 
+                        WHEN a.is_for_self = 1 THEN u.lastname
+                        ELSE a.lastname
+                    END as display_lastname,
+                    CASE 
+                        WHEN a.is_for_self = 1 THEN u.email
+                        ELSE a.email
+                    END as display_email,
+                    CASE 
+                        WHEN a.is_for_self = 1 THEN u.mobile_number
+                        ELSE a.mobile_number
+                    END as display_mobile_number
+                  FROM appointments a 
+                  JOIN services s ON a.service_id = s.service_id 
+                  JOIN users u ON a.user_id = u.id
+                  WHERE a.user_id = :user_id 
+                  ORDER BY a.created_at DESC 
+                  LIMIT 1";
+        
+        $stmt = $db->prepare($query);
+        $stmt->execute([':user_id' => $_SESSION['user_id']]);
+        $appointment = $stmt->fetch(PDO::FETCH_ASSOC);
+    } else {
+        // Get appointment details from session and join with service info
+        $query = "SELECT 
+                    s.service_name,
+                    s.starting_price
+                  FROM services s
+                  WHERE s.service_id = :service_id";
+        
+        $stmt = $db->prepare($query);
+        $stmt->execute([':service_id' => $_SESSION['appointment']['service_id']]);
+        $service = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        // Get user details
+        $query = "SELECT * FROM users WHERE id = :user_id";
+        $stmt = $db->prepare($query);
+        $stmt->execute([':user_id' => $_SESSION['user_id']]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        // Combine appointment, service, and user info
+        $appointment = array_merge(
+            $_SESSION['appointment'],
+            $service ?? [],
+            [
+                'display_firstname' => $user['firstname'] ?? '',
+                'display_lastname' => $user['lastname'] ?? '',
+                'display_email' => $user['email'] ?? '',
+                'display_mobile_number' => $user['mobile_number'] ?? '',
+                'street_address' => $_SESSION['appointment']['street_address'] ?? '',
+                'barangay' => $_SESSION['appointment']['barangay'] ?? '',
+                'city' => $_SESSION['appointment']['city'] ?? '',
+                'province' => $_SESSION['appointment']['province'] ?? '',
+                'region' => $_SESSION['appointment']['region'] ?? ''
+            ]
+        );
     }
 
     // Format the date and time
     $appointmentDate = date('F d, Y', strtotime($appointment['appointment_date']));
-    $appointmentTime = date('h:i A', strtotime($appointment['appointment_time']));
+    $appointmentTime = $appointment['appointment_time'];
 
 } catch (PDOException $e) {
     error_log("Database Error: " . $e->getMessage());
-    $_SESSION['error'] = "An error occurred while retrieving your appointment.";
+    $_SESSION['error'] = "An error occurred while retrieving appointment details.";
     header("Location: Appointment-service.php");
     exit();
 }
@@ -131,11 +203,24 @@ try {
     
     <!-- Thank_You - SECTION -->
     <main class="thank-you-section">
+        <?php if (isset($_SESSION['error'])): ?>
+            <div class="error-message">
+                <?php echo $_SESSION['error']; unset($_SESSION['error']); ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if (isset($_SESSION['appointment_confirmed']) && $_SESSION['appointment_confirmed']): ?>
         <div class="thank-you-box">
             <img src="../Pictures/success-icon.png" alt="Success Icon" class="check-icon">
             <h2>Thank You!</h2>
             <p>Your Appointment Has Been Successfully Booked!</p>
         </div>
+        <?php else: ?>
+        <div class="review-box">
+            <h2>Review Your Appointment</h2>
+            <p>Please confirm your appointment details below:</p>
+        </div>
+        <?php endif; ?>
 
         <!-- Appointment Receipt Section -->
         <div class="appointment-receipt">
@@ -187,8 +272,14 @@ try {
         </div>
 
         <div class="thank-you-nav">
-            <button class="back-btn" onclick="window.location.href='Appointment-calendar.php'">Back</button>
-            <button class="next-btn" onclick="window.location.href='../Index.php'">Done</button>
+            <?php if (isset($_SESSION['appointment_confirmed']) && $_SESSION['appointment_confirmed']): ?>
+                <button class="next-btn" onclick="window.location.href='../Index.php'">Done</button>
+            <?php else: ?>
+                <form method="post" style="display: flex; gap: 15px; width: 100%; justify-content: space-between;">
+                    <button type="submit" name="cancel" class="back-btn">Cancel</button>
+                    <button type="submit" name="confirm" class="next-btn">Confirm Appointment</button>
+                </form>
+            <?php endif; ?>
         </div>
     </main>
 

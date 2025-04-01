@@ -9,28 +9,20 @@ if (!isset($_SESSION['appointment'])) {
 
 $database = new Database();
 $db = $database->getConnection();
-$user_id = $_SESSION['appointment']['user_id'];
+$user_id = $_SESSION['user_id']; 
 $service_id = $_SESSION['appointment']['service_id'];
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $data = json_decode(file_get_contents("php://input"), true);
     
-    if (isset($data['appointment_date'], $data['appointment_time'], $data['service_type'])) {
-        $query = "UPDATE appointments SET 
-                appointment_date = :appointment_date,
-                appointment_time = :appointment_time,
-                service_type = :service_type
-                WHERE user_id = :user_id AND service_id = :service_id";
-
-        $stmt = $db->prepare($query);
-        $stmt->execute([
-            ':appointment_date' => $data['appointment_date'],
-            ':appointment_time' => $data['appointment_time'],
-            ':service_type' => $data['service_type'],
-            ':user_id' => $user_id,
-            ':service_id' => $service_id
-        ]);
-
+    if (isset($data['appointment_date'], $data['appointment_time'], $data['service_id'])) {
+        // Store data in session instead of updating the database
+        $_SESSION['appointment']['appointment_date'] = $data['appointment_date'];
+        $_SESSION['appointment']['appointment_time'] = $data['appointment_time'];
+        $_SESSION['appointment']['service_id'] = $data['service_id'];
+        $_SESSION['appointment']['status'] = 'pending';
+        
+        // Return success response to redirect to confirmation page
         echo json_encode(["success" => true]);
         exit();
     }
@@ -181,14 +173,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <h3>Select Service Type</h3>
         <div class="service-options">
           <label class="service-option" for="ocular">
-            <input type="radio" id="ocular" name="service_type" value="ocular" required>
+            <input type="radio" id="ocular" name="service_id" value="1" required>
             <div class="service-details">
               <span class="service-title">Ocular Inspection</span>
               <p>Initial assessment of pest problems</p>
             </div>
           </label>
           <label class="service-option" for="treatment">
-            <input type="radio" id="treatment" name="service_type" value="treatment" required>
+            <input type="radio" id="treatment" name="service_id" value="2" required>
             <div class="service-details">
               <span class="service-title">Treatment Service</span>
               <p>Full pest control implementation</p>
@@ -334,11 +326,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         return;
       }
 
-      const serviceType = document.querySelector('input[name="service_type"]:checked');
-      if (!serviceType) {
+      const serviceId = document.querySelector('input[name="service_id"]:checked');
+      if (!serviceId) {
         alert('Please select a service type');
         return;
       }
+
+      // Disable the button to prevent multiple submissions
+      document.getElementById('nextButton').disabled = true;
+      document.getElementById('nextButton').textContent = 'Processing...';
 
       fetch('Appointment-calendar.php', {
         method: 'POST',
@@ -346,16 +342,30 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         body: JSON.stringify({
           appointment_date: selectedDate,
           appointment_time: selectedTime,
-          service_type: serviceType.value
+          service_id: serviceId.value
         })
       })
-      .then(response => response.json())
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
       .then(data => {
         if (data.success) {
           window.location.href = 'Appointment-successful.php';
+        } else {
+          alert('Error: ' + (data.message || 'Failed to save appointment details'));
+          document.getElementById('nextButton').disabled = false;
+          document.getElementById('nextButton').textContent = 'Next';
         }
       })
-      .catch(error => console.error('Error:', error));
+      .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred. Please try again.');
+        document.getElementById('nextButton').disabled = false;
+        document.getElementById('nextButton').textContent = 'Next';
+      });
     }
   </script>
 </body>
