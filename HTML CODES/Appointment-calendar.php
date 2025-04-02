@@ -24,12 +24,6 @@ if (!$serviceData) {
 }
 $service_id = $serviceData['service_id'];
 
-// Get service data to determine the appointment type
-$is_for_self = isset($serviceData['is_for_self']) ? (int)$serviceData['is_for_self'] : 1;
-
-// Determine the back button URL based on appointment type
-$backUrl = ($is_for_self === 0) ? 'Appointment-info.php' : 'Appointment-loc.php';
-
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $data = json_decode(file_get_contents("php://input"), true);
     
@@ -213,7 +207,7 @@ $calendarData = AppointmentSession::getData('calendar', []);
 
       <!-- Navigation Buttons -->
       <div class="calendar-nav">
-        <button class="back-btn" onclick="window.location.href='<?php echo $backUrl; ?>'">Back</button>
+        <button class="back-btn" onclick="window.location.href='Appointment-info.php'">Back</button>
         <button class="next-btn" disabled id="nextButton" onclick="saveDateTime()">Next</button>
       </div>
     </div>

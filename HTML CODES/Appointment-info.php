@@ -21,14 +21,10 @@
       exit();
   }
   
-  $is_for_self = isset($serviceData['is_for_self']) ? (int)$serviceData['is_for_self'] : 1;
+  $is_for_self = $serviceData['is_for_self'];
   
   // We want this page to show ONLY for "someone_else" (value 0)
-  // Log the value for debugging
-  error_log("Appointment-info.php: is_for_self value is " . $is_for_self);
-  
-  if ($is_for_self === 1) {
-    error_log("Redirecting to calendar page because is_for_self=1");
+  if ($is_for_self != 0) {
     header("Location: Appointment-calendar.php");
     exit();
   }

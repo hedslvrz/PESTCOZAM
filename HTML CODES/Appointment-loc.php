@@ -73,14 +73,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             ':service_id' => $service_id
         ]);
 
-        // Determine next page based on appointment type
-        $nextPage = $is_for_self == 0 ? "Appointment-info.php" : "Appointment-calendar.php";
-        
         echo json_encode([
             "success" => true,
             "message" => "Location details saved.",
             "is_for_self" => $is_for_self,
-            "next_page" => $nextPage
+            "next_page" => $is_for_self == 0 ? "Appointment-info.php" : "Appointment-calendar.php"
         ]);
         exit();
     } else {
@@ -322,22 +319,6 @@ $locationData = AppointmentSession::getData('location', []);
         longitude: document.getElementById("longitude").value
       };
 
-      // Basic validation
-      if (!formData.barangay) {
-        alert("Please select a barangay");
-        return;
-      }
-      
-      if (!formData.street_address) {
-        alert("Please enter a street address");
-        return;
-      }
-      
-      if (!formData.latitude || !formData.longitude) {
-        alert("Please mark your location on the map");
-        return;
-      }
-
       fetch("Appointment-loc.php", {  
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -346,8 +327,7 @@ $locationData = AppointmentSession::getData('location', []);
       .then(response => response.json())
       .then(data => {
           if (data.success) {
-              console.log("Redirecting to: " + data.next_page);
-              window.location.href = data.next_page;
+              window.location.href = data.is_for_self == 0 ? "Appointment-info.php" : "Appointment-calendar.php";
           } else {
               alert("Error: " + data.message);
           }

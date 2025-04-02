@@ -16,9 +16,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['next'])) {
     $service_id = $_POST['service_id'];
     $isForSelf = isset($_POST['is_for_self']) ? (int)$_POST['is_for_self'] : 1;
     
-    // Debug logging
-    error_log("POST data received - service_id: $service_id, is_for_self: $isForSelf");
-    
     // Initialize appointment session
     AppointmentSession::initialize($user_id);
     
@@ -281,21 +278,20 @@ if (isset($_SESSION['appointment'])) {
         selectService(<?php echo $selectedServiceId; ?>);
         <?php endif; ?>
 
+        // Rest of your existing code...
         // Set initial value based on the checked radio button
         const checkedRadio = document.querySelector('input[name="appointment_for"]:checked');
         if (checkedRadio) {
             document.getElementById('isForSelf').value = checkedRadio.value;
-            document.getElementById('isForSelfHidden').value = checkedRadio.value;
         }
 
         // Add event listeners for radio buttons
         const radioButtons = document.querySelectorAll('input[name="appointment_for"]');
         radioButtons.forEach(radio => {
             radio.addEventListener('change', function() {
-                const value = this.value;
-                document.getElementById('isForSelf').value = value;
-                document.getElementById('isForSelfHidden').value = value;
-                console.log("Updated isForSelf value to: " + value);
+                document.getElementById('isForSelf').value = this.value;
+                document.getElementById('isForSelfHidden').value = this.value;
+                console.log("Updated isForSelf value to: " + this.value);
             });
         });
     });

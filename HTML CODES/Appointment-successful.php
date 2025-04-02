@@ -1,17 +1,10 @@
 <?php
 session_start();
 require_once "../database.php";
-require_once "../PHP CODES/AppointmentSession.php";
 
 // Check if user is logged in and appointment exists in session
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['appointment'])) {
     header("Location: Login.php");
-    exit();
-}
-
-// Verify access to this step
-if (!isset($_SESSION['appointment']) || !AppointmentSession::canAccessStep('confirmation')) {
-    header("Location: Appointment-service.php");
     exit();
 }
 
@@ -23,21 +16,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (isset($_POST['confirm'])) {
         try {
             // Get all appointment data from session
-            $serviceData = AppointmentSession::getData('service');
-            $locationData = AppointmentSession::getData('location');
-            $personalInfo = AppointmentSession::getData('personal_info');
-            $calendarData = AppointmentSession::getData('calendar');
-            
-            if (!$serviceData || !$locationData || !$calendarData) {
-                $_SESSION['error'] = "Missing required appointment information. Please start again.";
-                header("Location: Appointment-service.php");
-                exit();
-            }
+            $appointmentData = $_SESSION['appointment'];
             
             // Update the appointment in the database
             $query = "UPDATE appointments SET 
                     appointment_date = :appointment_date,
                     appointment_time = :appointment_time,
+                    service_id = :service_id,
                     status = 'confirmed'
                     WHERE user_id = :user_id 
                     ORDER BY created_at DESC
@@ -45,14 +30,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     
             $stmt = $db->prepare($query);
             $result = $stmt->execute([
-                ':appointment_date' => $calendarData['appointment_date'],
-                ':appointment_time' => $calendarData['appointment_time'],
+                ':appointment_date' => $appointmentData['appointment_date'],
+                ':appointment_time' => $appointmentData['appointment_time'],
+                ':service_id' => $appointmentData['service_id'],
                 ':user_id' => $_SESSION['user_id']
             ]);
             
             if ($result) {
-                // Save to session that appointment is confirmed
-                AppointmentSession::saveStep('confirmation', ['status' => 'confirmed']);
                 $_SESSION['appointment_confirmed'] = true;
             } else {
                 $_SESSION['error'] = "Failed to confirm appointment. Please try again.";
@@ -63,7 +47,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     } elseif (isset($_POST['cancel'])) {
         // User cancelled the appointment
-        AppointmentSession::clear();
+        unset($_SESSION['appointment']);
         header("Location: Appointment-service.php");
         exit();
     }
@@ -104,16 +88,15 @@ try {
         $stmt->execute([':user_id' => $_SESSION['user_id']]);
         $appointment = $stmt->fetch(PDO::FETCH_ASSOC);
     } else {
-        // Combine all data from session
-        $serviceData = AppointmentSession::getData('service');
-        $locationData = AppointmentSession::getData('location');
-        $personalInfo = AppointmentSession::getData('personal_info', []);
-        $calendarData = AppointmentSession::getData('calendar');
+        // Get appointment details from session and join with service info
+        $query = "SELECT 
+                    s.service_name,
+                    s.starting_price
+                  FROM services s
+                  WHERE s.service_id = :service_id";
         
-        // Get service details
-        $query = "SELECT service_name, starting_price FROM services WHERE service_id = :service_id";
         $stmt = $db->prepare($query);
-        $stmt->execute([':service_id' => $serviceData['service_id']]);
+        $stmt->execute([':service_id' => $_SESSION['appointment']['service_id']]);
         $service = $stmt->fetch(PDO::FETCH_ASSOC);
         
         // Get user details
@@ -122,37 +105,27 @@ try {
         $stmt->execute([':user_id' => $_SESSION['user_id']]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
         
-        // Build appointment details
-        $appointment = [
-            'service_name' => $service['service_name'],
-            'starting_price' => $service['starting_price'],
-            'appointment_date' => $calendarData['appointment_date'],
-            'appointment_time' => $calendarData['appointment_time'],
-            'region' => $locationData['region'],
-            'province' => $locationData['province'],
-            'city' => $locationData['city'],
-            'barangay' => $locationData['barangay'],
-            'street_address' => $locationData['street_address'],
-            'is_for_self' => $serviceData['is_for_self']
-        ];
-        
-        // Set name, email, phone based on is_for_self
-        if ($serviceData['is_for_self'] == 1) {
-            $appointment['display_firstname'] = $user['firstname'];
-            $appointment['display_lastname'] = $user['lastname'];
-            $appointment['display_email'] = $user['email'];
-            $appointment['display_mobile_number'] = $user['mobile_number'];
-        } else {
-            $appointment['display_firstname'] = $personalInfo['firstname'] ?? '';
-            $appointment['display_lastname'] = $personalInfo['lastname'] ?? '';
-            $appointment['display_email'] = $personalInfo['email'] ?? '';
-            $appointment['display_mobile_number'] = $personalInfo['mobile_number'] ?? '';
-        }
+        // Combine appointment, service, and user info
+        $appointment = array_merge(
+            $_SESSION['appointment'],
+            $service ?? [],
+            [
+                'display_firstname' => $user['firstname'] ?? '',
+                'display_lastname' => $user['lastname'] ?? '',
+                'display_email' => $user['email'] ?? '',
+                'display_mobile_number' => $user['mobile_number'] ?? '',
+                'street_address' => $_SESSION['appointment']['street_address'] ?? '',
+                'barangay' => $_SESSION['appointment']['barangay'] ?? '',
+                'city' => $_SESSION['appointment']['city'] ?? '',
+                'province' => $_SESSION['appointment']['province'] ?? '',
+                'region' => $_SESSION['appointment']['region'] ?? ''
+            ]
+        );
     }
 
     // Format the date and time
-    $appointmentDate = isset($appointment['appointment_date']) ? date('F d, Y', strtotime($appointment['appointment_date'])) : '';
-    $appointmentTime = $appointment['appointment_time'] ?? '';
+    $appointmentDate = date('F d, Y', strtotime($appointment['appointment_date']));
+    $appointmentTime = $appointment['appointment_time'];
 
 } catch (PDOException $e) {
     error_log("Database Error: " . $e->getMessage());
