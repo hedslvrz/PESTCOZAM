@@ -1,17 +1,7 @@
 <?php
 session_start();
 require_once '../database.php'; 
-
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    echo "<pre>POST data: ";
-    print_r($_POST);
-    echo "</pre>";
-    
-    // Check the value being stored in session
-    if (isset($_POST['is_for_self'])) {
-        echo "<pre>is_for_self value: " . $_POST['is_for_self'] . "</pre>";
-    }
-}
+require_once '../PHP CODES/AppointmentSession.php';
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: Login.php"); // Redirect if not logged in
@@ -26,15 +16,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['next'])) {
     $service_id = $_POST['service_id'];
     $isForSelf = isset($_POST['is_for_self']) ? (int)$_POST['is_for_self'] : 1;
     
-    // Debug
-    error_log("Value of is_for_self: " . $isForSelf);
-
-    // Store progress in session
-    $_SESSION['appointment'] = [
-        'user_id' => $user_id,
+    // Debug logging
+    error_log("POST data received - service_id: $service_id, is_for_self: $isForSelf");
+    
+    // Initialize appointment session
+    AppointmentSession::initialize($user_id);
+    
+    // Save data to session
+    AppointmentSession::saveStep('service', [
         'service_id' => $service_id,
         'is_for_self' => $isForSelf
-    ];
+    ]);
 
     // Insert a new appointment
     $insertQuery = "INSERT INTO appointments (user_id, service_id, is_for_self, status) 
@@ -47,8 +39,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['next'])) {
         ':status' => 'pending'
     ]);
 
-    
-        header("Location: Appointment-loc.php");
+    header("Location: Appointment-loc.php");
     exit();
 }
 
@@ -63,6 +54,15 @@ $query = "SELECT service_id, service_name, description, estimated_time, starting
 $stmt = $db->prepare($query);
 $stmt->execute();
 $services = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Pre-select service if it exists in session
+$selectedServiceId = '';
+if (isset($_SESSION['appointment'])) {
+    $serviceData = AppointmentSession::getData('service');
+    if ($serviceData && isset($serviceData['service_id'])) {
+        $selectedServiceId = $serviceData['service_id'];
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -274,53 +274,31 @@ $services = $stmt->fetchAll(PDO::FETCH_ASSOC);
         // Update the reference
         previousSelectedButton = clickedButton;
     }
-    // Add event listeners for radio buttons
-        document.addEventListener('DOMContentLoaded', function() {
-            // Set initial value based on the checked radio button
-            const checkedRadio = document.querySelector('input[name="appointment_for"]:checked');
-            if (checkedRadio) {
-                document.getElementById('isForSelf').value = checkedRadio.value;
-            }
 
-            // Add event listeners for radio buttons
-            const radioButtons = document.querySelectorAll('input[name="appointment_for"]');
-            radioButtons.forEach(radio => {
-                radio.addEventListener('change', function() {
-                    document.getElementById('isForSelf').value = this.value;
-                    console.log("Updated isForSelf value to: " + this.value); // Debug line
-                });
-            });
-        });
-        document.addEventListener('DOMContentLoaded', function() {
-            // Set up radio button event listeners
-            const radioButtons = document.querySelectorAll('input[name="appointment_for"]');
-            radioButtons.forEach(radio => {
-                radio.addEventListener('change', function() {
-                    // Update the hidden form field with numeric values
-                    document.getElementById('isForSelf').value = this.value; // Will be "1" or "0" as strings
-                    console.log('isForSelf value updated to: ' + this.value);
-                });
-            });
-            
-            // Rest of your code...
-        });
-        // Update the event listener code
-        document.addEventListener('DOMContentLoaded', function() {
-            // Set initial value based on the checked radio button
-            const checkedRadio = document.querySelector('input[name="appointment_for"]:checked');
-            if (checkedRadio) {
-                document.getElementById('isForSelfHidden').value = checkedRadio.value;
-            }
+    // Initialize with pre-selected service if available
+    document.addEventListener('DOMContentLoaded', function() {
+        <?php if (!empty($selectedServiceId)): ?>
+        selectService(<?php echo $selectedServiceId; ?>);
+        <?php endif; ?>
 
-            // Add event listeners for radio buttons
-            const radioButtons = document.querySelectorAll('input[name="appointment_for"]');
-            radioButtons.forEach(radio => {
-                radio.addEventListener('change', function() {
-                    document.getElementById('isForSelfHidden').value = this.value;
-                    console.log("Updated isForSelf value to: " + this.value);
-                });
+        // Set initial value based on the checked radio button
+        const checkedRadio = document.querySelector('input[name="appointment_for"]:checked');
+        if (checkedRadio) {
+            document.getElementById('isForSelf').value = checkedRadio.value;
+            document.getElementById('isForSelfHidden').value = checkedRadio.value;
+        }
+
+        // Add event listeners for radio buttons
+        const radioButtons = document.querySelectorAll('input[name="appointment_for"]');
+        radioButtons.forEach(radio => {
+            radio.addEventListener('change', function() {
+                const value = this.value;
+                document.getElementById('isForSelf').value = value;
+                document.getElementById('isForSelfHidden').value = value;
+                console.log("Updated isForSelf value to: " + value);
             });
         });
+    });
     </script>
 </body>
 </html>

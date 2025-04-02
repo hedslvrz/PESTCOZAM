@@ -1,34 +1,62 @@
 <?php 
   session_start();
   require_once "../database.php"; // Ensure database connection
+  require_once "../PHP CODES/AppointmentSession.php";
   
-  if (!isset($_SESSION['appointment'])) {
-      header("Location: Appointment-service.php"); // Redirect if no progress
+  if (!isset($_SESSION['user_id'])) {
+      header("Location: Login.php"); // Redirect if not logged in
       exit();
   }
   
-  // Check if the appointment is for someone else
-  $isForSelf = $_SESSION['appointment']['is_for_self'];
+  // Verify access to this step
+  if (!isset($_SESSION['appointment']) || !AppointmentSession::canAccessStep('personal_info')) {
+      header("Location: Appointment-service.php");
+      exit();
+  }
+  
+  // Get service data from session
+  $serviceData = AppointmentSession::getData('service');
+  if (!$serviceData) {
+      header("Location: Appointment-service.php");
+      exit();
+  }
+  
+  $is_for_self = isset($serviceData['is_for_self']) ? (int)$serviceData['is_for_self'] : 1;
   
   // We want this page to show ONLY for "someone_else" (value 0)
-  if ($isForSelf != 0) {
+  // Log the value for debugging
+  error_log("Appointment-info.php: is_for_self value is " . $is_for_self);
+  
+  if ($is_for_self === 1) {
+    error_log("Redirecting to calendar page because is_for_self=1");
     header("Location: Appointment-calendar.php");
     exit();
   }
   
   $database = new Database();
   $db = $database->getConnection();
-  $user_id = $_SESSION['appointment']['user_id'];
-  $service_id = $_SESSION['appointment']['service_id'];
+  $user_id = $_SESSION['user_id'];
+  $service_id = $serviceData['service_id'];
   
   if ($_SERVER["REQUEST_METHOD"] == "POST") {
       $data = json_decode(file_get_contents("php://input"), true);
   
       if (isset($data['firstname'], $data['lastname'], $data['email'], $data['mobile_number'])) {
+          // Save to session
+          AppointmentSession::saveStep('personal_info', [
+              'firstname' => $data['firstname'],
+              'lastname' => $data['lastname'],
+              'email' => $data['email'],
+              'mobile_number' => $data['mobile_number']
+          ]);
+          
+          // Update database
           $query = "UPDATE appointments SET 
                     firstname = :firstname, lastname = :lastname, 
                     email = :email, mobile_number = :mobile_number 
-                    WHERE user_id = :user_id AND service_id = :service_id";
+                    WHERE user_id = :user_id AND service_id = :service_id
+                    ORDER BY created_at DESC
+                    LIMIT 1";
   
           $stmt = $db->prepare($query);
           $stmt->execute([
@@ -46,7 +74,10 @@
           echo json_encode(["success" => false, "message" => "Missing required fields."]);
           exit();
       }
-  }  
+  }
+  
+  // Pre-populate form fields if personal_info data exists
+  $personalInfo = AppointmentSession::getData('personal_info', []);
 ?>
 
 
@@ -161,14 +192,35 @@
   </footer>
 </body>
 <script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Pre-populate form fields if data exists
+    <?php if (!empty($personalInfo)): ?>
+    document.getElementById("firstname").value = "<?php echo addslashes($personalInfo['firstname'] ?? ''); ?>";
+    document.getElementById("lastname").value = "<?php echo addslashes($personalInfo['lastname'] ?? ''); ?>";
+    document.getElementById("email").value = "<?php echo addslashes($personalInfo['email'] ?? ''); ?>";
+    document.getElementById("mobile_number").value = "<?php echo addslashes($personalInfo['mobile_number'] ?? ''); ?>";
+    <?php endif; ?>
+});
+
 document.getElementById("nextButton").addEventListener("click", function(event) {
     event.preventDefault(); // Prevent immediate redirection
 
+    // Simple form validation
+    const firstname = document.getElementById("firstname").value;
+    const lastname = document.getElementById("lastname").value;
+    const email = document.getElementById("email").value;
+    const mobile_number = document.getElementById("mobile_number").value;
+    
+    if (!firstname || !lastname || !email || !mobile_number) {
+        alert("Please fill in all required fields");
+        return;
+    }
+
     let formData = {
-        firstname: document.getElementById("firstname").value,
-        lastname: document.getElementById("lastname").value,
-        email: document.getElementById("email").value,
-        mobile_number: document.getElementById("mobile_number").value
+        firstname: firstname,
+        lastname: lastname,
+        email: email,
+        mobile_number: mobile_number
     };
 
     fetch("Appointment-info.php", {  

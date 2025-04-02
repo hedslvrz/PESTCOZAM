@@ -1,16 +1,32 @@
 <?php 
 session_start();
-require_once "../database.php"; 
+require_once "../database.php";
+require_once "../PHP CODES/AppointmentSession.php";
 
-if (!isset($_SESSION['appointment'])) {
+if (!isset($_SESSION['user_id'])) {
+    header("Location: Login.php"); // Redirect if not logged in
+    exit();
+}
+
+// Verify access to this step
+if (!isset($_SESSION['appointment']) || !AppointmentSession::canAccessStep('location')) {
     header("Location: Appointment-service.php");
     exit();
 }
 
 $database = new Database();
 $db = $database->getConnection();
-$user_id = $_SESSION['appointment']['user_id'];
-$service_id = $_SESSION['appointment']['service_id'];
+$user_id = $_SESSION['user_id'];
+
+// Get service data from session
+$serviceData = AppointmentSession::getData('service');
+if (!$serviceData) {
+    header("Location: Appointment-service.php");
+    exit();
+}
+
+$service_id = $serviceData['service_id'];
+$is_for_self = $serviceData['is_for_self'];
 
 // Handle POST (JSON) to save data
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -20,6 +36,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         isset($data['region'], $data['province'], $data['city'], $data['barangay']) &&
         isset($data['latitude'], $data['longitude'])
     ) {
+        // Save data to session
+        AppointmentSession::saveStep('location', [
+            'region' => $data['region'],
+            'province' => $data['province'],
+            'city' => $data['city'],
+            'barangay' => $data['barangay'],
+            'street_address' => $data['street_address'],
+            'latitude' => $data['latitude'],
+            'longitude' => $data['longitude']
+        ]);
+        
+        // Update database
         $query = "UPDATE appointments SET 
                   region = :region, 
                   province = :province, 
@@ -28,7 +56,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                   street_address = :street_address,
                   latitude = :latitude,
                   longitude = :longitude
-                  WHERE user_id = :user_id AND service_id = :service_id";
+                  WHERE user_id = :user_id AND service_id = :service_id
+                  ORDER BY created_at DESC
+                  LIMIT 1";
 
         $stmt = $db->prepare($query);
         $result = $stmt->execute([
@@ -43,12 +73,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             ':service_id' => $service_id
         ]);
 
+        // Determine next page based on appointment type
+        $nextPage = $is_for_self == 0 ? "Appointment-info.php" : "Appointment-calendar.php";
+        
         echo json_encode([
             "success" => true,
             "message" => "Location details saved.",
-            "is_for_self" => $_SESSION['appointment']['is_for_self'],
-            "next_page" => $_SESSION['appointment']['is_for_self'] == 0 ? 
-                          "Appointment-info.php" : "Appointment-calendar.php"
+            "is_for_self" => $is_for_self,
+            "next_page" => $nextPage
         ]);
         exit();
     } else {
@@ -56,6 +88,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit();
     }
 }
+
+// Pre-populate form fields if location data exists
+$locationData = AppointmentSession::getData('location', []);
 ?>
 
 <!DOCTYPE html>
@@ -287,6 +322,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         longitude: document.getElementById("longitude").value
       };
 
+      // Basic validation
+      if (!formData.barangay) {
+        alert("Please select a barangay");
+        return;
+      }
+      
+      if (!formData.street_address) {
+        alert("Please enter a street address");
+        return;
+      }
+      
+      if (!formData.latitude || !formData.longitude) {
+        alert("Please mark your location on the map");
+        return;
+      }
+
       fetch("Appointment-loc.php", {  
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -295,12 +346,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       .then(response => response.json())
       .then(data => {
           if (data.success) {
-              // Check session to decide where to go next
-              <?php if ($_SESSION['appointment']['is_for_self'] == 0): ?>
-                  window.location.href = "Appointment-info.php"; 
-              <?php else: ?>
-                  window.location.href = "Appointment-calendar.php"; 
-              <?php endif; ?>
+              console.log("Redirecting to: " + data.next_page);
+              window.location.href = data.next_page;
           } else {
               alert("Error: " + data.message);
           }
@@ -308,7 +355,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       .catch(error => console.error("Error:", error));
     });
 
-    // 2) Populate dropdowns with locked values
+    // Prepopulate form fields if data exists in session
     window.addEventListener('DOMContentLoaded', function() {
       // Region - locked with Region IX
       const region = document.getElementById('region');
@@ -324,6 +371,39 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       const city = document.getElementById('city');
       city.innerHTML = `<option value="Zamboanga City">Zamboanga City</option>`;
       city.disabled = true;
+      
+      <?php if (!empty($locationData)): ?>
+      // Pre-populate from session
+      if (document.getElementById('barangay')) {
+        document.getElementById('barangay').value = "<?php echo addslashes($locationData['barangay'] ?? ''); ?>";
+      }
+      if (document.getElementById('street_address')) {
+        document.getElementById('street_address').value = "<?php echo addslashes($locationData['street_address'] ?? ''); ?>";
+      }
+      if (document.getElementById('latitude')) {
+        document.getElementById('latitude').value = "<?php echo addslashes($locationData['latitude'] ?? ''); ?>";
+      }
+      if (document.getElementById('longitude')) {
+        document.getElementById('longitude').value = "<?php echo addslashes($locationData['longitude'] ?? ''); ?>";
+      }
+
+      // If we have coordinates, set the marker on the map after it's loaded
+      const latitude = <?php echo !empty($locationData['latitude']) ? $locationData['latitude'] : 'null'; ?>;
+      const longitude = <?php echo !empty($locationData['longitude']) ? $locationData['longitude'] : 'null'; ?>;
+      
+      if (latitude && longitude) {
+        setTimeout(() => {
+          if (mymap) {
+            if (userMarker) {
+              userMarker.setLatLng([latitude, longitude]);
+            } else {
+              userMarker = L.marker([latitude, longitude], { draggable: true }).addTo(mymap);
+            }
+            mymap.setView([latitude, longitude], 14);
+          }
+        }, 500); // Short delay to ensure map is loaded
+      }
+      <?php endif; ?>
     });
 
     // 3) Initialize Leaflet Map (Coordinates for Zamboanga City)

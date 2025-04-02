@@ -1,32 +1,54 @@
 <?php
 session_start();
 require_once "../database.php";
+require_once "../PHP CODES/AppointmentSession.php";
 
-if (!isset($_SESSION['appointment'])) {
+if (!isset($_SESSION['user_id'])) {
+    header("Location: Login.php"); // Redirect if not logged in
+    exit();
+}
+
+// Verify access to this step
+if (!isset($_SESSION['appointment']) || !AppointmentSession::canAccessStep('calendar')) {
     header("Location: Appointment-service.php");
     exit();
 }
 
 $database = new Database();
 $db = $database->getConnection();
-$user_id = $_SESSION['user_id']; 
-$service_id = $_SESSION['appointment']['service_id'];
+$user_id = $_SESSION['user_id'];
+$serviceData = AppointmentSession::getData('service');
+if (!$serviceData) {
+    header("Location: Appointment-service.php");
+    exit();
+}
+$service_id = $serviceData['service_id'];
+
+// Get service data to determine the appointment type
+$is_for_self = isset($serviceData['is_for_self']) ? (int)$serviceData['is_for_self'] : 1;
+
+// Determine the back button URL based on appointment type
+$backUrl = ($is_for_self === 0) ? 'Appointment-info.php' : 'Appointment-loc.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $data = json_decode(file_get_contents("php://input"), true);
     
     if (isset($data['appointment_date'], $data['appointment_time'], $data['service_id'])) {
-        // Store data in session instead of updating the database
-        $_SESSION['appointment']['appointment_date'] = $data['appointment_date'];
-        $_SESSION['appointment']['appointment_time'] = $data['appointment_time'];
-        $_SESSION['appointment']['service_id'] = $data['service_id'];
-        $_SESSION['appointment']['status'] = 'pending';
+        // Store in session
+        AppointmentSession::saveStep('calendar', [
+            'appointment_date' => $data['appointment_date'],
+            'appointment_time' => $data['appointment_time'],
+            'service_id' => $data['service_id']
+        ]);
         
         // Return success response to redirect to confirmation page
         echo json_encode(["success" => true]);
         exit();
     }
 }
+
+// Pre-populate form fields if calendar data exists
+$calendarData = AppointmentSession::getData('calendar', []);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -191,7 +213,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
       <!-- Navigation Buttons -->
       <div class="calendar-nav">
-        <button class="back-btn" onclick="window.location.href='Appointment-info.php'">Back</button>
+        <button class="back-btn" onclick="window.location.href='<?php echo $backUrl; ?>'">Back</button>
         <button class="next-btn" disabled id="nextButton" onclick="saveDateTime()">Next</button>
       </div>
     </div>
@@ -300,8 +322,51 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     
     renderCalendar();
 
-    let selectedDate = '';
-    let selectedTime = '';
+    let selectedDate = '<?php echo !empty($calendarData['appointment_date']) ? $calendarData['appointment_date'] : ''; ?>';
+    let selectedTime = '<?php echo !empty($calendarData['appointment_time']) ? $calendarData['appointment_time'] : ''; ?>';
+
+    // Initialize with pre-selected service
+    document.addEventListener('DOMContentLoaded', function() {
+        <?php if (!empty($calendarData['service_id'])): ?>
+        const serviceId = <?php echo $calendarData['service_id']; ?>;
+        const serviceRadio = document.querySelector(`input[name="service_id"][value="${serviceId}"]`);
+        if (serviceRadio) {
+            serviceRadio.checked = true;
+        }
+        <?php endif; ?>
+        
+        // If date is pre-selected
+        <?php if (!empty($calendarData['appointment_date'])): ?>
+        const dateParts = selectedDate.split('-');
+        const year = parseInt(dateParts[0]);
+        const month = parseInt(dateParts[1]) - 1;
+        const day = parseInt(dateParts[2]);
+        
+        monthSelect.value = month;
+        yearSelect.value = year;
+        renderCalendar();
+        
+        // Select the date in calendar
+        setTimeout(() => {
+            const dayElements = document.querySelectorAll('.day');
+            dayElements.forEach(dayElement => {
+                if (parseInt(dayElement.textContent) === day) {
+                    dayElement.click();
+                }
+            });
+        }, 100);
+        <?php endif; ?>
+        
+        // If time is pre-selected
+        <?php if (!empty($calendarData['appointment_time'])): ?>
+        const timeButtons = document.querySelectorAll('.select-time');
+        timeButtons.forEach(button => {
+            if (button.dataset.time === selectedTime) {
+                button.click();
+            }
+        });
+        <?php endif; ?>
+    });
 
     // Add time slot selection handlers
     document.querySelectorAll('.select-time').forEach(button => {
