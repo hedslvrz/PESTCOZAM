@@ -1,4 +1,9 @@
-document.getElementById('bookAppointment').addEventListener('click', function() {
+document.getElementById('bookAppointment').addEventListener('click', function(event) {
+    // Prevent default form submission if this button is inside a form
+    if (this.form) {
+        event.preventDefault();
+    }
+    
     let isForSelf = document.getElementById('is_for_self').checked ? 1 : 0; // Checkbox for self-appointment
 
     let formData = {
@@ -16,13 +21,13 @@ document.getElementById('bookAppointment').addEventListener('click', function() 
 
     // If not booking for self, include additional fields
     if (!isForSelf) {
-        formData.first_name = document.getElementById('first_name').value;
-        formData.last_name = document.getElementById('last_name').value;
+        formData.firstname = document.getElementById('first_name').value;
+        formData.lastname = document.getElementById('last_name').value;
         formData.email = document.getElementById('email').value;
         formData.mobile_number = document.getElementById('mobile_number').value;
     }
 
-    fetch('Insert-Appointment-Api.php', {  
+    fetch('PHP CODES/appointment_api.php', {  // Use the correct path to your API
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
