@@ -158,6 +158,29 @@ $locationData = AppointmentSession::getData('location', []);
     </nav>
   </header>
 
+  <!-- Progress Bar -->
+  <div class="progress-bar">
+      <div class="progress-step completed">
+          <div class="circle">1</div>
+          <div class="label">Select Service</div>
+      </div>
+      <div class="progress-line completed"></div>
+      <div class="progress-step active">
+          <div class="circle">2</div>
+          <div class="label">Location</div>
+      </div>
+      <div class="progress-line"></div>
+      <div class="progress-step">
+          <div class="circle">3</div>
+          <div class="label">Personal Info</div>
+      </div>
+      <div class="progress-line"></div>
+      <div class="progress-step">
+          <div class="circle">4</div>
+          <div class="label">Schedule</div>
+      </div>
+  </div>
+
   <main>
     <div class="appointment-container">
       

@@ -128,6 +128,29 @@ if (isset($_SESSION['appointment'])) {
         </nav>
     </header>
 
+    <!-- Progress Bar -->
+    <div class="progress-bar">
+        <div class="progress-step active">
+            <div class="circle">1</div>
+            <div class="label">Select Service</div>
+        </div>
+        <div class="progress-line"></div>
+        <div class="progress-step">
+            <div class="circle">2</div>
+            <div class="label">Location</div>
+        </div>
+        <div class="progress-line"></div>
+        <div class="progress-step">
+            <div class="circle">3</div>
+            <div class="label">Personal Info</div>
+        </div>
+        <div class="progress-line"></div>
+        <div class="progress-step">
+            <div class="circle">4</div>
+            <div class="label">Schedule</div>
+        </div>
+    </div>
+
     <!-- Appointment Selection Section -->
     <main>
         <div class="form-container">
