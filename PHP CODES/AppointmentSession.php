@@ -4,7 +4,6 @@ class AppointmentSession {
         if (!isset($_SESSION['appointment'])) {
             $_SESSION['appointment'] = [
                 'user_id' => $user_id,
-                'progress' => 'service', // Track current step
                 'data' => []
             ];
         }
@@ -15,7 +14,6 @@ class AppointmentSession {
             throw new Exception('Appointment session not initialized');
         }
         $_SESSION['appointment']['data'][$step] = $data;
-        $_SESSION['appointment']['progress'] = self::getNextStep($step);
     }
 
     public static function getAppointmentData() {
@@ -23,42 +21,26 @@ class AppointmentSession {
     }
 
     public static function getProgress() {
-        return isset($_SESSION['appointment']) ? $_SESSION['appointment']['progress'] : null;
+        return true;
     }
 
     // Get a specific piece of data from the appointment session
     public static function getData($key, $default = null) {
-        if (!isset($_SESSION['appointment']['data'][$key])) {
+        if (!isset($_SESSION['appointment']) || !isset($_SESSION['appointment']['data'][$key])) {
             return $default;
         }
+        
         return $_SESSION['appointment']['data'][$key];
     }
-    
-    // Check if the user can access a specific step
+
+    // Check if a user can access a particular step
     public static function canAccessStep($step) {
-        if (!isset($_SESSION['appointment'])) {
-            return false;
-        }
-        
-        $steps = ['service', 'location', 'personal_info', 'calendar', 'confirmation'];
-        $currentStepIndex = array_search($_SESSION['appointment']['progress'], $steps);
-        $requestedStepIndex = array_search($step, $steps);
-        
-        // Allow access to current or previous steps
-        return $requestedStepIndex <= $currentStepIndex;
+        return true;
     }
-    
+
     // Get the next step in the appointment flow
     private static function getNextStep($currentStep) {
-        $steps = [
-            'service' => 'location',
-            'location' => 'personal_info',
-            'personal_info' => 'calendar',
-            'calendar' => 'confirmation',
-            'confirmation' => 'complete'
-        ];
-        
-        return isset($steps[$currentStep]) ? $steps[$currentStep] : $currentStep;
+        return true;
     }
 
     public static function clear() {

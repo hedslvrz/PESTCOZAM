@@ -8,8 +8,8 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-// Verify access to this step
-if (!isset($_SESSION['appointment']) || !AppointmentSession::canAccessStep('location')) {
+// Modified access check - only check if appointment exists, not step access
+if (!isset($_SESSION['appointment'])) {
     header("Location: Appointment-service.php");
     exit();
 }
