@@ -191,6 +191,21 @@ document.addEventListener('DOMContentLoaded', function() {
             closeReportModal();
         }
     });
+
+    const timeSlotForm = document.getElementById('time-slot-form');
+
+    if (timeSlotForm) {
+        timeSlotForm.addEventListener('submit', function (e) {
+            const appointmentId = document.getElementById('appointment-id').value.trim();
+            const newDate = document.getElementById('new-date').value;
+            const newTime = document.getElementById('new-time').value;
+
+            if (!appointmentId || !newDate || !newTime) {
+                e.preventDefault();
+                alert('Please fill out all fields before submitting.');
+            }
+        });
+    }
 });
 
 // Technician Assignment Functions
@@ -520,6 +535,65 @@ document.addEventListener('DOMContentLoaded', function() {
     // Show dashboard by default
     showSection('content');
 });
+
+// Calendar rendering functionality
+function renderCalendar() {
+    const month = parseInt(monthSelect.value);
+    const year = parseInt(yearSelect.value);
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    const today = new Date();
+    
+    // Clear previous calendar days
+    const calendarGrid = document.querySelector('.calendar-grid');
+    const dayNames = document.querySelectorAll('.day-name');
+    calendarGrid.innerHTML = '';
+    
+    // Re-add day names
+    dayNames.forEach(dayName => {
+        calendarGrid.appendChild(dayName.cloneNode(true));
+    });
+    
+    // Add empty cells for days before the first day of the month
+    for (let i = 0; i < firstDay.getDay(); i++) {
+        const emptyDay = document.createElement('div');
+        emptyDay.className = 'day';
+        calendarGrid.appendChild(emptyDay);
+    }
+    
+    // Add days of the month
+    for (let day = 1; day <= daysInMonth; day++) {
+        const dayElement = document.createElement('div');
+        dayElement.className = 'day';
+        dayElement.textContent = day;
+        
+        // Check if this is today's date
+        if (today.getDate() === day && 
+            today.getMonth() === month && 
+            today.getFullYear() === year) {
+            dayElement.classList.add('today');
+        }
+        
+        dayElement.addEventListener('click', function() {
+            document.querySelectorAll('.day').forEach(d => {
+                d.classList.remove('selected');
+            });
+            this.classList.add('selected');
+            updateTimeSlots(year, month + 1, day);
+        });
+        
+        calendarGrid.appendChild(dayElement);
+    }
+}
+
+function updateTimeSlots(year, month, day) {
+    const selectedDate = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+    document.querySelectorAll('.time-slot').forEach(slot => {
+        // Update time slot availability based on selected date
+        // Add your logic here
+    });
+}
 
 
 

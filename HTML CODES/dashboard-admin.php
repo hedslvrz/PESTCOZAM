@@ -318,6 +318,101 @@ try {
                 </li>
             </ul>
 
+            <!-- Time Slot Management Section -->
+            <div class="time-slot-management">
+                <h2>Time Slot Management</h2>
+                <div class="calendar-container">
+                    <!-- Calendar Section - Left Side -->
+                    <div class="calendar">
+                        <div class="calendar-header">
+                            <select id="monthSelect">
+                                <option value="0">January</option>
+                                <option value="1">February</option>
+                                <option value="2">March</option>
+                                <option value="3">April</option>
+                                <option value="4">May</option>
+                                <option value="5">June</option>
+                                <option value="6">July</option>
+                                <option value="7">August</option>
+                                <option value="8">September</option>
+                                <option value="9">October</option>
+                                <option value="10">November</option>
+                                <option value="11">December</option>
+                            </select>
+                            <select id="yearSelect">
+                                <!-- Will be populated by JavaScript -->
+                            </select>
+                        </div>
+                        <div class="calendar-grid">
+                            <div class="day-name">Sun</div>
+                            <div class="day-name">Mon</div>
+                            <div class="day-name">Tue</div>
+                            <div class="day-name">Wed</div>
+                            <div class="day-name">Thu</div>
+                            <div class="day-name">Fri</div>
+                            <div class="day-name">Sat</div>
+                            <div id="calendar-days" class="calendar-days"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Time Slots Section - Right Side -->
+                    <div class="time-slots-container">
+                        <div class="time-slots">
+                            <!-- Morning Slots -->
+                            <div class="time-slot">
+                                <label><i class='bx bx-time'></i>Morning Slot (7:00 AM - 9:00 AM)</label>
+                                <div class="slot-limit">
+                                    <label class="small-label">Slot Limit:</label>
+                                    <input type="number" name="morning_slot_1_limit" min="1" max="10" value="3" class="limit-input">
+                                </div>
+                            </div>
+                            
+                            <div class="time-slot">
+                                <label><i class='bx bx-time'></i>Morning Slot (9:00 AM - 11:00 AM)</label>
+                                <div class="slot-limit">
+                                    <label class="small-label">Slot Limit:</label>
+                                    <input type="number" name="morning_slot_2_limit" min="1" max="10" value="3" class="limit-input">
+                                </div>
+                            </div>
+                            
+                            <!-- Afternoon Slots -->
+                            <div class="time-slot">
+                                <label><i class='bx bx-time'></i>Afternoon Slot (11:00 AM - 1:00 PM)</label>
+                                <div class="slot-limit">
+                                    <label class="small-label">Slot Limit:</label>
+                                    <input type="number" name="afternoon_slot_1_limit" min="1" max="10" value="3" class="limit-input">
+                                </div>
+                            </div>
+                            
+                            <div class="time-slot">
+                                <label><i class='bx bx-time'></i>Afternoon Slot (1:00 PM - 3:00 PM)</label>
+                                <div class="slot-limit">
+                                    <label class="small-label">Slot Limit:</label>
+                                    <input type="number" name="afternoon_slot_2_limit" min="1" max="10" value="3" class="limit-input">
+                                </div>
+                            </div>
+                            
+                            <!-- Evening Slot -->
+                            <div class="time-slot">
+                                <label><i class='bx bx-time'></i>Afternoon Slot (3:00 PM - 5:00 PM)</label>
+                                <div class="slot-limit">
+                                    <label class="small-label">Slot Limit:</label>
+                                    <input type="number" name="evening_slot_limit" min="1" max="10" value="3" class="limit-input">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="save-btn">
+                                <i class='bx bx-save'></i>
+                                Save Time Slots
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- End Time Slot Management Section -->
+
             <div class="table-data">
                 <div class="recent-appointments">
                     <div class="head">
@@ -411,7 +506,6 @@ try {
     </main>
 </section>
 <!--DASHBOARD CONTENT -->
-
 
 <!-- Job Orders Section -->
 <section id="work-orders" class="section">
@@ -1469,5 +1563,73 @@ try {
         <div class="modal-content">
     </div>
     <script src="../JS CODES/dashboard-admin.js"></script>
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const monthSelect = document.getElementById('monthSelect');
+    const yearSelect = document.getElementById('yearSelect');
+    const calendarDays = document.getElementById('calendar-days');
+    
+    // Initialize year select with dynamic range
+    const currentYear = new Date().getFullYear();
+    const yearRange = 20; // Number of years to show in the future
+    
+    for (let year = currentYear; year <= currentYear + yearRange; year++) {
+        const option = document.createElement('option');
+        option.value = year;
+        option.textContent = year;
+        yearSelect.appendChild(option);
+    }
+    
+    // Set current month and year
+    const currentDate = new Date();
+    monthSelect.value = currentDate.getMonth();
+    yearSelect.value = currentDate.getFullYear();
+    
+    function renderCalendar() {
+        const month = parseInt(monthSelect.value);
+        const year = parseInt(yearSelect.value);
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+        const daysInMonth = lastDay.getDate();
+        
+        calendarDays.innerHTML = '';
+        
+        // Add empty cells for days before the first day of the month
+        for (let i = 0; i < firstDay.getDay(); i++) {
+            const emptyDay = document.createElement('div');
+            emptyDay.className = 'day';
+            calendarDays.appendChild(emptyDay);
+        }
+        
+        // Add days of the month
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dayElement = document.createElement('div');
+            dayElement.className = 'day';
+            dayElement.textContent = day;
+            
+            // Check if this is today's date
+            const currentDate = new Date();
+            if (currentDate.getDate() === day && 
+                currentDate.getMonth() === month && 
+                currentDate.getFullYear() === year) {
+                dayElement.classList.add('today');
+            }
+            
+            dayElement.addEventListener('click', function() {
+                document.querySelectorAll('.day').forEach(d => d.classList.remove('selected'));
+                this.classList.add('selected');
+            });
+            
+            calendarDays.appendChild(dayElement);
+        }
+    }
+    
+    monthSelect.addEventListener('change', renderCalendar);
+    yearSelect.addEventListener('change', renderCalendar);
+    
+    // Initial render
+    renderCalendar();
+});
+    </script>
 </body>
 </html>
