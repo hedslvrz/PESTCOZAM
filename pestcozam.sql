@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Mar 10, 2025 at 06:31 PM
+-- Generation Time: Apr 04, 2025 at 07:09 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -56,11 +56,10 @@ CREATE TABLE `appointments` (
 --
 
 INSERT INTO `appointments` (`id`, `user_id`, `service_id`, `region`, `province`, `city`, `barangay`, `street_address`, `appointment_date`, `appointment_time`, `status`, `created_at`, `is_for_self`, `firstname`, `lastname`, `email`, `mobile_number`, `technician_id`, `latitude`, `longitude`, `updated_at`) VALUES
-(15, 2, 8, '', '', '', '', 'Tumaga', '2025-03-15', '11:00:00', 'Pending', '2025-03-08 08:23:14', 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-03-10 16:10:31'),
-(16, 2, 6, '', '', '', '', '', '2025-03-20', '03:00:00', 'Pending', '2025-03-08 08:32:49', 0, 'Hannah', 'Alvarez', 'hannah1@gmail.com', '09759500345', NULL, NULL, NULL, '2025-03-10 16:10:31'),
-(22, 5, 6, 'Region IX', 'Zamboanga Del Sur', 'Zamboanga City', 'Calarian', 'Ruby Drive', '2025-03-21', '01:00:00', 'Pending', '2025-03-10 14:51:10', 1, NULL, NULL, NULL, NULL, NULL, 6.928694, 122.025373, '2025-03-10 16:10:31'),
-(23, 5, 3, 'Region IX', 'Zamboanga Del Sur', 'Zamboanga City', 'San Roque', 'Carmen Drive', '2025-03-29', '11:00:00', 'Pending', '2025-03-10 14:51:59', 1, NULL, NULL, NULL, NULL, NULL, 6.927831, 122.044193, '2025-03-10 16:10:31'),
-(24, 5, 8, '', '', '', '', NULL, '0000-00-00', '00:00:00', 'Pending', '2025-03-10 15:00:01', 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-03-10 16:10:31');
+(15, 2, 8, '', '', '', '', 'Tumaga', '2025-03-15', '11:00:00', 'Confirmed', '2025-03-08 08:23:14', 1, NULL, NULL, NULL, NULL, 6, NULL, NULL, '2025-03-30 18:06:24'),
+(16, 2, 6, '', '', '', '', '', '2025-03-20', '03:00:00', 'Confirmed', '2025-03-08 08:32:49', 0, 'Hannah', 'Alvarez', 'hannah1@gmail.com', '09759500345', 8, NULL, NULL, '2025-03-30 17:24:08'),
+(22, 5, 6, 'Region IX', 'Zamboanga Del Sur', 'Zamboanga City', 'Calarian', 'Ruby Drive', '2025-03-21', '01:00:00', 'Confirmed', '2025-03-10 14:51:10', 1, NULL, NULL, NULL, NULL, 6, 6.928694, 122.025373, '2025-03-19 02:27:37'),
+(23, 5, 3, 'Region IX', 'Zamboanga Del Sur', 'Zamboanga City', 'San Roque', 'Carmen Drive', '2025-03-29', '11:00:00', 'Confirmed', '2025-03-10 14:51:59', 1, NULL, NULL, NULL, NULL, 8, 6.927831, 122.044193, '2025-03-30 18:05:59');
 
 -- --------------------------------------------------------
 
@@ -89,7 +88,33 @@ INSERT INTO `services` (`service_id`, `service_name`, `description`, `estimated_
 (5, 'Mosquito Control', 'Accumsan iaculis dictumst montes eros nec tristique accumsan. Accumsan iaculis dictumst montes eros.', '1-2 hours', 1500.00, 'Mosquito control.jpg'),
 (6, 'Rat Control', 'Accumsan iaculis dictumst montes eros nec tristique accumsan. Accumsan iaculis dictumst montes eros.', '2-3 hours', 2000.00, 'rat control.jpg'),
 (7, 'Other Flying and Crawling Insects', 'Accumsan iaculis dictumst montes eros nec tristique accumsan. Accumsan iaculis dictumst montes eros.', '1-3 hours', 1800.00, 'Other-flying-insects.jpg'),
-(8, 'Extraction', 'Accumsan iaculis dictumst montes eros nec tristique accumsan. Accumsan iaculis dictumst montes eros.', '2-4 hours', 3500.00, 'Extraction.jpg');
+(8, 'Extraction', 'Accumsan iaculis dictumst montes eros nec tristique accumsan. Accumsan iaculis dictumst montes eros.', '2-4 hours', 3500.00, 'Extraction.jpg'),
+(17, 'Ocular Inspection', 'Our professional pest control experts will conduct a thorough assessment of your property to identify pest problems and recommend the most effective treatment plan.', '30-60 minutes', 0.00, 'ocular-inspection.jpg');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `service_reports`
+--
+
+CREATE TABLE `service_reports` (
+  `id` int(11) NOT NULL,
+  `appointment_id` int(11) NOT NULL,
+  `account_name` varchar(255) NOT NULL,
+  `location` varchar(255) NOT NULL,
+  `contact_no` varchar(20) NOT NULL,
+  `date_of_treatment` date NOT NULL,
+  `time_in` time NOT NULL,
+  `time_out` time NOT NULL,
+  `treatment_type` varchar(255) NOT NULL,
+  `treatment_method` varchar(255) NOT NULL,
+  `pest_count` int(11) NOT NULL,
+  `device_installation` text DEFAULT NULL,
+  `consumed_chemicals` text DEFAULT NULL,
+  `frequency_of_visits` varchar(255) DEFAULT NULL,
+  `photos` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -100,6 +125,7 @@ INSERT INTO `services` (`service_id`, `service_name`, `description`, `estimated_
 CREATE TABLE `users` (
   `id` int(11) NOT NULL,
   `firstname` varchar(100) NOT NULL,
+  `middlename` varchar(255) DEFAULT NULL,
   `lastname` varchar(100) NOT NULL,
   `email` varchar(255) NOT NULL,
   `mobile_number` varchar(15) NOT NULL,
@@ -114,13 +140,16 @@ CREATE TABLE `users` (
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `firstname`, `lastname`, `email`, `mobile_number`, `password`, `created_at`, `role`, `status`, `dob`) VALUES
-(1, 'Hedrian Dunn', 'Alvarez', 'dunnlvrz13@gmail.com', '09759500123', '$2y$10$jn8m3Y/NnSIVBQmWSZdNtuAjpc2lIjj4oJPwqO2e4crXxoQkraRw2', '2025-03-01 07:13:17', 'technician', 'verified', NULL),
-(2, 'Hedrian', 'Alvarez', 'hedrianlvrz13@gmail.com', '09925028930', '$2y$10$llagzPkGmqSRnmdaqysXA.Wma1Ra3r7E0OkE86NGCmG0yJ.7krvXS', '2025-03-04 14:59:55', 'user', 'verified', NULL),
-(5, 'Aldwin', 'Suarez', 'aldwinsuarez@gmail.com', '09929508778', '$2y$10$rtquceequxvXMIEIVquu5OElwdj3R663mROq8hc31WnRIxTioX7Ii', '2025-03-10 04:49:04', 'admin', 'verified', NULL),
-(6, 'John', 'Bue', 'Johnsage@gmail.com', '09292213467', '$2y$10$6BxP6fxlCMdPZwIEb5l8luMXc2AeVRb.oDAh2ok3N0SQLUHlQAgwa', '2025-03-10 05:28:23', 'technician', 'verified', '2025-03-13'),
-(8, 'Andrew', 'Tate', 'AndrewTate@gmail.com', '09776537811', '$2y$10$ZL6SEzVCeeND9wAOr3XvFuF/vG6E0vIUHq9jjggO4o2D1V/ty7ehW', '2025-03-10 05:30:18', 'technician', 'verified', '2025-03-15'),
-(23, 'Diz', 'Nuts', 'DizNutz@gmail.com', '09359472304', '$2y$10$wuGNS/gSlT.dE3K1/no/WeeJbtOA/DxMgNikntsIztDHEihZBLfZq', '2025-03-10 13:07:29', 'supervisor', 'verified', '2025-03-21');
+INSERT INTO `users` (`id`, `firstname`, `middlename`, `lastname`, `email`, `mobile_number`, `password`, `created_at`, `role`, `status`, `dob`) VALUES
+(1, 'Hedrian Dunn', NULL, 'Alvarez', 'dunnlvrz13@gmail.com', '09759500123', '$2y$10$jn8m3Y/NnSIVBQmWSZdNtuAjpc2lIjj4oJPwqO2e4crXxoQkraRw2', '2025-03-01 07:13:17', 'admin', 'verified', '2004-04-13'),
+(2, 'Hedrian', NULL, 'Alvarez', 'hedrianlvrz13@gmail.com', '09925028930', '$2y$10$llagzPkGmqSRnmdaqysXA.Wma1Ra3r7E0OkE86NGCmG0yJ.7krvXS', '2025-03-04 14:59:55', 'user', 'verified', NULL),
+(5, 'Aldwin', NULL, 'Suarez', 'aldwinsuarez@gmail.com', '09929508778', '$2y$10$rtquceequxvXMIEIVquu5OElwdj3R663mROq8hc31WnRIxTioX7Ii', '2025-03-10 04:49:04', 'admin', 'verified', NULL),
+(6, 'John', NULL, 'Bue', 'Johnsage@gmail.com', '09292213467', '$2y$10$6BxP6fxlCMdPZwIEb5l8luMXc2AeVRb.oDAh2ok3N0SQLUHlQAgwa', '2025-03-10 05:28:23', 'technician', 'verified', '2025-03-13'),
+(8, 'Andrew', NULL, 'Tate', 'AndrewTate@gmail.com', '09776537811', '$2y$10$ZL6SEzVCeeND9wAOr3XvFuF/vG6E0vIUHq9jjggO4o2D1V/ty7ehW', '2025-03-10 05:30:18', 'technician', 'verified', '2025-03-15'),
+(23, 'Diz', NULL, 'Nuts', 'DizNutz@gmail.com', '09359472304', '$2y$10$wuGNS/gSlT.dE3K1/no/WeeJbtOA/DxMgNikntsIztDHEihZBLfZq', '2025-03-10 13:07:29', 'supervisor', 'verified', '2025-03-21'),
+(43, 'Francine', NULL, 'Delos Reyes', 'francine@gmail.com', '09726374892', '$2y$10$PA4m0oqFjStb/I//StISk.LdNlnqB.9fod0RWde38Nh4ZTz79VgIG', '2025-03-10 19:18:49', 'admin', 'verified', '2004-03-22'),
+(44, 'Hannah', 'Marie', 'Alvarez', 'hannahlvrz13@gmail.com', '09827182739', '$2y$10$AsWSNGgeI06Tb.yXa6FfsuT2Nu9Q6XDX1w9L.grfPc505me0VHHui', '2025-03-29 04:01:32', 'user', 'verified', '1994-06-26'),
+(45, 'Robert', NULL, 'Downey', 'robertdowney@gmail.com', '09827182837', '$2y$10$4H8vXmg0MfVYH6b4cAKSCOwRRIamEpeuNtLsLoVhFAQjiFZL4NhPe', '2025-03-29 04:04:42', 'supervisor', 'verified', '2043-09-12');
 
 --
 -- Indexes for dumped tables
@@ -142,6 +171,13 @@ ALTER TABLE `services`
   ADD PRIMARY KEY (`service_id`);
 
 --
+-- Indexes for table `service_reports`
+--
+ALTER TABLE `service_reports`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `appointment_id` (`appointment_id`);
+
+--
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
@@ -156,19 +192,25 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `appointments`
 --
 ALTER TABLE `appointments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=70;
 
 --
 -- AUTO_INCREMENT for table `services`
 --
 ALTER TABLE `services`
-  MODIFY `service_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `service_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+
+--
+-- AUTO_INCREMENT for table `service_reports`
+--
+ALTER TABLE `service_reports`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
 
 --
 -- Constraints for dumped tables
@@ -183,6 +225,12 @@ ALTER TABLE `appointments`
   ADD CONSTRAINT `fk_appointments_service` FOREIGN KEY (`service_id`) REFERENCES `services` (`service_id`),
   ADD CONSTRAINT `fk_appointments_technician` FOREIGN KEY (`technician_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_appointments_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
+
+--
+-- Constraints for table `service_reports`
+--
+ALTER TABLE `service_reports`
+  ADD CONSTRAINT `service_reports_ibfk_1` FOREIGN KEY (`appointment_id`) REFERENCES `appointments` (`id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
