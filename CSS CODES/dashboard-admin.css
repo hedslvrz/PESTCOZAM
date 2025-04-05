@@ -1872,7 +1872,7 @@ ul {
 .left {
     display: flex;
     flex-wrap: wrap;
-    padding: 20px;
+    padding: 5px;
     font-family: Arial, sans-serif;
     background-color: #f4f4f4;
     width: 100%;
@@ -4165,16 +4165,18 @@ th {
 /* Updated Time Slots Section */
 .time-slots-container {
     width: 100%;
-    max-width: 800px;
+    max-width: 780px;
     margin: 0 auto;
-    margin-top: 50px;
+    margin-right: 20px;
+    margin-top: 25px;
+    margin-bottom: 10px;
 }
 
 .time-slots {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 16px;
-    padding: 20px;
+    padding: 10px;
     padding-top: 30px;
     background: #f8f9fa;
     border-radius: 8px;
