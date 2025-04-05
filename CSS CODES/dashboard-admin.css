@@ -630,187 +630,176 @@ ul {
     text-decoration: none;
 }
 
-/* Update service cards layout */
+/* Redesigned Service Cards Layout - More Compact Container */
 .service-cards {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 24px;
-    padding: 14px;
-    padding-right: 24px; /* Added extra padding on right */
+    gap: 35px; /* Increased gap between cards */
+    padding: 30px 50px; /* Added more horizontal padding */
     justify-items: center;
-    margin-right: 10px; /* Added margin to prevent sticking to edge */
+    margin: 0 auto; /* Center the grid */
+    max-width: 1200px; /* Reduced from 1400px for smaller container */
+    box-sizing: border-box;
 }
 
 .service-card {
     background: #fff;
     border-radius: 15px;
     overflow: hidden;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* Enhanced shadow for better depth */
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    width: 100%;
-    max-width: 320px;
-    height: 460px;  /* Increased from 420px to accommodate larger image */
+    width: calc(100% - 20px); /* Reduce width to create space around cards */
+    max-width: 340px; /* Slightly increased from 320px for content balance */
+    height: auto; /* Allow height to be determined by content */
+    min-height: 490px; /* Keep minimum height for consistency */
     display: flex;
     flex-direction: column;
-    padding: 15px;
+    padding: 22px; /* Increased padding for more breathing room */
+    margin: 10px; /* Add external margin */
 }
 
+.service-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Better spacing for service image */
 .service-image {
-    height: 200px;  /* Increased from 180px */
+    height: 220px; 
     width: 100%;
     border-radius: 12px;
     overflow: hidden;
-    margin-bottom: 16px;
+    margin-bottom: 22px; /* Increased from 20px for more spacing */
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .service-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.3s ease;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 12px;
 }
 
-.service-card:hover .service-image img {
-    transform: scale(1.05);
-}
-
+/* Content spacing improvements */
 .service-details {
-    padding: 0;
+    padding: 0 8px; /* Increased horizontal padding */
     flex: 1;
     display: flex;
     flex-direction: column;
 }
 
 .service-details h4 {
-    font-size: 1.1rem;
-    margin-bottom: 12px;
+    font-size: 1.2rem;
+    margin-bottom: 18px; /* Increased spacing */
+    color: #144578;
 }
 
 .service-details .description {
-    font-size: 0.9rem;
-    line-height: 1.5;
-    margin-bottom: 16px;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 22px; /* Increased spacing */
     flex-grow: 1;
-    color: #555;
+    color: #444;
 }
 
+/* Enhanced spacing between info elements */
 .service-details .estimated-time {
     background: #f8f9fa;
-    padding: 6px 12px;
-    border-radius: 4px;
-    font-size: 0.85rem;
+    padding: 10px 15px;
+    border-radius: 8px; /* Slightly increased radius */
+    font-size: 0.9rem;
     color: #555;
     display: flex;
     align-items: center;
-    gap: 6px;
-    margin-bottom: 12px;
+    gap: 10px; /* Increased from 8px */
+    margin-bottom: 15px;
 }
 
-.service-details .estimated-time i {
-    color: #144578;
-    font-size: 1rem;
+.service-details .price-tag {
+    background: #e9f7ef;
+    padding: 10px 15px;
+    border-radius: 8px; /* Slightly increased radius */
+    font-size: 0.9rem;
+    color: #27ae60;
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Increased from 8px */
+    margin-bottom: 15px;
+    font-weight: 500;
 }
 
 .inspection-notice {
-    margin-top: auto;
-    padding: 8px;
+    margin-top: 10px;
+    padding: 12px; /* Increased from 10px */
     background: #e6f3ff;
-    border-radius: 6px;
+    border-radius: 8px; /* Slightly increased radius */
     font-size: 0.85rem;
     color: #144578;
     text-align: center;
-    margin-bottom: 12px;
+    margin-bottom: 18px; /* Increased spacing */
 }
 
-/* Update service card button styles */
+/* Better spaced buttons */
 .service-actions {
     display: flex;
     justify-content: space-between;
-    gap: 12px;
-    margin-top: 12px;
+    gap: 15px;
+    margin-top: 18px; /* Increased spacing */
     padding: 0 4px;
 }
 
 .service-actions button {
     flex: 1;
-    padding: 8px 12px;
+    padding: 12px 15px; /* More vertical padding */
     border: none;
-    border-radius: 6px;
+    border-radius: 8px; /* Slightly increased radius */
     cursor: pointer;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    font-size: 0.9rem;
+    gap: 8px;
+    font-size: 0.95rem;
     font-weight: 500;
     transition: all 0.2s ease;
 }
 
-.btn-edit {
-    background-color: #e6f3ff;
-    color: #144578;
-}
-
-.btn-delete {
-    background-color: #ffebee;
-    color: #e53935;
-}
-
-.btn-edit:hover {
-    background-color: #d1eaff;
-}
-
-.btn-delete:hover {
-    background-color: #ffcdd2;
-}
-
-.service-actions i {
-    font-size: 1.1rem;
+/* Ensure service cards don't stretch too much on larger screens */
+@media screen and (min-width: 1600px) {
+    .service-cards {
+        grid-template-columns: repeat(3, 1fr); /* Reduced from 4 columns to 3 for bigger screens */
+        max-width: 1200px; /* Keep container width consistent */
+        padding: 30px 60px; /* Increased padding on large screens */
+    }
 }
 
 /* Responsive adjustments for services */
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 992px) {
     .service-cards {
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    }
-    .section main {
-        width: calc(100% - 60px);
-        margin: 20px !important;
-    }
-    
-    #content main,
-    #services main,
-    #profile main,
-    #billing main,
-    #employees main,
-    #work-orders main,
-    #settings main {
-        margin: 20px !important;
-    }
-    
-    .section main .box-info {
-        margin-right: 20px;
-        width: calc(100% - 20px);
-    }
-    
-    .section main .table-data {
-        margin-right: 20px;
-        width: calc(100% - 20px);
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        padding: 20px 40px; /* Adjusted padding for medium screens */
+        gap: 30px; /* Slightly reduced gap on medium screens */
     }
 }
 
-@media screen and (max-width: 576px) {
+@media screen and (max-width: 768px) {
     .service-cards {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 25px; /* Further reduced gap on small screens */
+        padding: 20px 30px; /* Adjusted padding for small screens */
     }
     
-    .price-duration {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 5px;
+    .service-card {
+        padding: 18px; /* Reduced padding on smaller screens */
+        min-height: 450px; /* Reduced minimum height on smaller screens */
+    }
+    
+    .service-image {
+        height: 180px; /* Reduced height on smaller screens */
+        margin-bottom: 18px; /* Adjusted spacing */
     }
 }
-/* END SERVICES SECTION STYLES */
 
 /* CONTENT */
 

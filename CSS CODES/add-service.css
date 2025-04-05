@@ -1,0 +1,355 @@
+/* General Styles - Matching dashboard-admin.css */
+@font-face {
+    font-family: 'Shrikhand';
+    src: url(../Fonts/Shrikhand-Regular.ttf);
+}
+
+body {
+    background: whitesmoke;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    font-family: 'Roboto', sans-serif;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 50px 20px;
+}
+
+/* Header Styles */
+.head-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+}
+
+.head-title .left {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.head-title .left h1 {
+    font-size: 36px;
+    font-weight: 600;
+    margin: 0;
+    color: #144578;
+}
+
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    grid-gap: 16px;
+}
+
+.breadcrumb li {
+    color: #342E37;
+}
+
+.breadcrumb li a {
+    color: #888;
+    pointer-events: none;
+    text-decoration: none;
+}
+
+.breadcrumb li a.active {
+    color: #144578;
+    pointer-events: unset;
+}
+
+.breadcrumb li + li:before {
+    content: '/';
+    margin-right: 16px;
+    color: #888;
+}
+
+/* Form Styles */
+.add-service-form {
+    background: white;
+    border-radius: 15px;
+    padding: 30px 20px; /* Changed from 30px to 30px 20px */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 900px;
+    margin: 20px auto 50px;
+}
+
+.add-service-form h1 {
+    color: #144578;
+    margin-bottom: 30px;
+    font-size: 28px;
+    text-align: center;
+}
+
+.form-section {
+    margin-bottom: 15px; /* Reduced from 30px to 15px */
+    padding-bottom: 15px; /* Reduced from 20px to 15px */
+    border-bottom: 1px solid #eee;
+}
+
+.form-section:last-of-type {
+    margin-bottom: 0; /* Remove bottom margin from the last section */
+    padding-bottom: 0; /* Remove bottom padding from the last section */
+    border-bottom: none; /* Remove bottom border from the last section */
+}
+
+.form-section h2 {
+    font-size: 20px;
+    color: #333;
+    margin-bottom: 20px;
+    font-weight: 500;
+    padding: 0 5px; /* Add padding to section headers */
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+    margin-bottom: 24px;
+    padding: 0 10px; /* Add horizontal padding to form rows */
+}
+
+.form-group {
+    margin-bottom: 25px;
+    padding: 0 5px; /* Add consistent padding to form groups */
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 10px; /* Increased from 8px */
+    color: #333;
+    padding: 0 5px; /* Add padding to labels */
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: calc(100% - 24px); /* Account for padding */
+    padding: 12px;
+    margin: 0 auto; /* Center the input */
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    display: block; /* Ensure block display for proper centering */
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    border-color: #144578;
+    box-shadow: 0 0 0 2px rgba(20, 69, 120, 0.1);
+    outline: none;
+}
+
+.form-group textarea {
+    height: 150px;
+    resize: none; /* Prevent textarea resizing */
+    min-height: 150px;
+    max-height: 150px; /* Fixed height */
+    width: calc(100% - 24px); /* Account for padding */
+    margin: 0 auto; /* Center the textarea */
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    font-family: inherit;
+}
+
+.form-group .required-field {
+    color: #e53935;
+    margin-left: 4px;
+}
+
+.form-group .helper-text {
+    font-size: 12px;
+    color: #666;
+    margin-top: 8px;
+    padding: 0 5px; /* Add padding to helper text */
+}
+
+#starting_price {
+    width: calc(100% - 24px); /* Match other inputs */
+    max-width: 300px;
+    margin: 0 auto 0 5px; /* Align with other elements but keep left alignment */
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0; /* Reduced from 30px to 0 */
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+.btn {
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 16px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s;
+    border: none;
+    text-decoration: none; /* Remove underline from buttons */
+}
+
+.btn-primary {
+    background: #144578;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #0d3057;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.btn-secondary {
+    background: #f5f5f5;
+    color: #333;
+    border: 1px solid #ddd;
+    text-decoration: none; /* Ensure no underline specifically for the cancel button */
+}
+
+.btn-secondary:hover {
+    background: #e8e8e8;
+    transform: translateY(-2px);
+}
+
+.btn i {
+    font-size: 20px;
+}
+
+/* Image Upload Section */
+.file-upload {
+    position: relative;
+    overflow: hidden;
+    margin-top: 10px;
+    display: inline-block;
+    width: 100%;
+}
+
+.file-upload-btn {
+    border: 1px dashed #ccc;
+    background: #f9f9f9;
+    color: #666;
+    padding: 20px;
+    border-radius: 8px;
+    font-weight: 500;
+    text-align: center;
+    transition: all 0.3s;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    width: 100%;
+}
+
+.file-upload-btn.has-image {
+    padding: 0;
+    border: none;
+    background: none;
+}
+
+.file-upload-btn i {
+    font-size: 24px;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.file-upload-btn:hover {
+    border-color: #144578;
+    color: #144578;
+    background: #f0f7ff;
+}
+
+.file-upload-btn img {
+    max-width: 100%;
+    max-height: 200px;
+    border-radius: 8px;
+    display: block;
+    margin: 0 auto;
+    object-fit: contain;
+}
+
+.file-upload input[type=file] {
+    position: absolute;
+    top: 0;
+    right: 0;
+    min-width: 100%;
+    min-height: 100%;
+    font-size: 100px;
+    text-align: right;
+    filter: alpha(opacity=0);
+    opacity: 0;
+    outline: none;
+    background: white;
+    cursor: pointer;
+    display: block;
+}
+
+/* Responsive Adjustments */
+@media screen and (max-width: 768px) {
+    .add-service-form {
+        padding: 20px;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column-reverse;
+        gap: 15px;
+    }
+    
+    .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Back button style matching dashboard-admin buttons */
+.btn-back {
+    height: 36px;
+    padding: 0 16px;
+    border-radius: 36px;
+    background: #f5f5f5;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    font-weight: 500;
+    text-decoration: none;
+    border: 1px solid #ddd;
+    transition: all 0.3s ease;
+}
+
+.btn-back:hover {
+    background: #e8e8e8;
+    transform: translateY(-2px);
+}

@@ -156,6 +156,17 @@ try {
     error_log("Error fetching service reports: " . $e->getMessage());
     $serviceReports = [];
 }
+
+// Fetch services data from database including starting prices
+try {
+    $servicesQuery = "SELECT * FROM services ORDER BY service_id";
+    $servicesStmt = $db->prepare($servicesQuery);
+    $servicesStmt->execute();
+    $services = $servicesStmt->fetchAll(PDO::FETCH_ASSOC);
+} catch(PDOException $e) {
+    error_log("Error fetching services: " . $e->getMessage());
+    $services = [];
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -824,10 +835,10 @@ try {
                         <li><a class="active" href="#">Available Services</a></li>
                     </ul>
                 </div>
-                <button type="submit" name="action" value="add_service" class="btn-add">
+                <a href="add-service.php" class="btn-add">
                     <i class='bx bx-plus'></i>
                     <span class="text">Add New Service</span>
-                </button>
+                </a>
             </div>
 
             <div class="table-data">
@@ -840,159 +851,37 @@ try {
                         </div>
                     </div>
                     <div class="service-cards">
-                        <div class="service-card">
-                            <input type="hidden" name="service_id[]" value="1">
-                            <div class="service-image">
-                                <img src="../Pictures/card 1 offer.jpg" alt="Soil Poisoning">
-                            </div>
-                            <div class="service-details">
-                                <input type="text" name="service_name[]" value="Soil Poisoning" hidden>
-                                <h4>Soil Poisoning</h4>
-                                <textarea name="description[]" hidden>Professional pre and post-construction soil treatment using advanced chemicals to create a long-lasting barrier against subterranean pests. Protects foundations and structures.</textarea>
-                                <p class="description">Professional pre and post-construction soil treatment using advanced chemicals to create a long-lasting barrier against subterranean pests. Protects foundations and structures.</p>
-                                <div class="estimated-time">
-                                    <i class='bx bx-time-five'></i>
-                                    <span>Estimated time: 2-3 hours</span>
+                        <?php if (!empty($services)): ?>
+                            <?php foreach ($services as $service): ?>
+                                <div class="service-card">
+                                    <input type="hidden" name="service_id[]" value="<?php echo $service['service_id']; ?>">
+                                    <div class="service-image">
+                                        <img src="../Pictures/<?php echo htmlspecialchars($service['image_path']); ?>" alt="<?php echo htmlspecialchars($service['service_name']); ?>">
+                                    </div>
+                                    <div class="service-details">
+                                        <input type="text" name="service_name[]" value="<?php echo htmlspecialchars($service['service_name']); ?>" hidden>
+                                        <h4><?php echo htmlspecialchars($service['service_name']); ?></h4>
+                                        <textarea name="description[]" hidden><?php echo htmlspecialchars($service['description']); ?></textarea>
+                                        <p class="description"><?php echo htmlspecialchars($service['description']); ?></p>
+                                        <div class="estimated-time">
+                                            <i class='bx bx-time-five'></i>
+                                            <span>Estimated time: <?php echo htmlspecialchars($service['estimated_time']); ?></span>
+                                        </div>
+                                        <div class="price-tag">
+                                            <i class='bx bx-money'></i>
+                                            <span>Starting at: ₱<?php echo number_format($service['starting_price'], 2); ?></span>
+                                        </div>
+                                        <div class="inspection-notice">* Final pricing will be determined upon inspection</div>
+                                        <div class="service-actions">
+                                            <button type="submit" name="action" value="edit_<?php echo $service['service_id']; ?>" class="btn-edit"><i class='bx bx-edit'></i> Edit</button>
+                                            <button type="submit" name="action" value="delete_<?php echo $service['service_id']; ?>" class="btn-delete"><i class='bx bx-trash'></i> Delete</button>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="inspection-notice">* Final pricing will be determined upon inspection</div>
-                                <div class="service-actions">
-                                    <button type="submit" name="action" value="edit_1" class="btn-edit"><i class='bx bx-edit'></i> Edit</button>
-                                    <button type="submit" name="action" value="delete_1" class="btn-delete"><i class='bx bx-trash'></i> Delete</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="service-card">
-                            <input type="hidden" name="service_id[]" value="2">
-                            <div class="service-image">
-                                <img src="../Pictures/mound-demolition.jpg" alt="Mound Demolition">
-                            </div>
-                            <div class="service-details">
-                                <input type="text" name="service_name[]" value="Mound Demolition" hidden>
-                                <h4>Mound Demolition</h4>
-                                <textarea name="description[]" hidden>Expert termite mound removal service with thorough colony elimination. Includes site assessment, strategic demolition, and preventive treatment.</textarea>
-                                <p class="description">Expert termite mound removal service with thorough colony elimination. Includes site assessment, strategic demolition, and preventive treatment.</p>
-                                <div class="estimated-time">
-                                    <i class='bx bx-time-five'></i>
-                                    <span>Estimated time: 1-2 hours</span>
-                                </div>
-                                <div class="inspection-notice">* Final pricing will be determined upon inspection</div>
-                                <div class="service-actions">
-                                    <button type="submit" name="action" value="edit_2" class="btn-edit"><i class='bx bx-edit'></i> Edit</button>
-                                    <button type="submit" name="action" value="delete_2" class="btn-delete"><i class='bx bx-trash'></i> Delete</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="service-card">
-                            <input type="hidden" name="service_id[]" value="3">
-                            <div class="service-image">
-                                <img src="../Pictures/termite control.jpg" alt="Termite Control">
-                            </div>
-                            <div class="service-details">
-                                <input type="text" name="service_name[]" value="Termite Control" hidden>
-                                <h4>Termite Control</h4>
-                                <textarea name="description[]" hidden>Complete termite management solution using state-of-the-art detection and elimination methods. Includes barrier treatment and ongoing monitoring.</textarea>
-                                <p class="description">Complete termite management solution using state-of-the-art detection and elimination methods. Includes barrier treatment and ongoing monitoring.</p>
-                                <div class="estimated-time">
-                                    <i class='bx bx-time-five'></i>
-                                    <span>Estimated time: 3-4 hours</span>
-                                </div>
-                                <div class="inspection-notice">* Final pricing will be determined upon inspection</div>
-                                <div class="service-actions">
-                                    <button type="submit" name="action" value="edit_3" class="btn-edit"><i class='bx bx-edit'></i> Edit</button>
-                                    <button type="submit" name="action" value="delete_3" class="btn-delete"><i class='bx bx-trash'></i> Delete</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="service-card">
-                            <input type="hidden" name="service_id[]" value="4">
-                            <div class="service-image">
-                                <img src="../Pictures/general pest control.jpg" alt="General Pest Control">
-                            </div>
-                            <div class="service-details">
-                                <input type="text" name="service_name[]" value="General Pest Control" hidden>
-                                <h4>General Pest Control</h4>
-                                <textarea name="description[]" hidden>Comprehensive pest management for homes and businesses. Targets multiple pest species with eco-friendly solutions and preventive measures.</textarea>
-                                <p class="description">Comprehensive pest management for homes and businesses. Targets multiple pest species with eco-friendly solutions and preventive measures.</p>
-                                <div class="estimated-time">
-                                    <i class='bx bx-time-five'></i>
-                                    <span>Estimated time: 2-3 hours</span>
-                                </div>
-                                <div class="inspection-notice">* Final pricing will be determined upon inspection</div>
-                                <div class="service-actions">
-                                    <button type="submit" name="action" value="edit_4" class="btn-edit"><i class='bx bx-edit'></i> Edit</button>
-                                    <button type="submit" name="action" value="delete_4" class="btn-delete"><i class='bx bx-trash'></i> Delete</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="service-card">
-                            <input type="hidden" name="service_id[]" value="5">
-                            <div class="service-image">
-                                <img src="../Pictures/Mosquito control.jpg" alt="Mosquito Control">
-                            </div>
-                            <div class="service-details">
-                                <input type="text" name="service_name[]" value="Mosquito Control" hidden>
-                                <h4>Mosquito Control</h4>
-                                <textarea name="description[]" hidden>Advanced mosquito reduction program including breeding site elimination, barrier spraying, and ongoing population management.</textarea>
-                                <p class="description">Advanced mosquito reduction program including breeding site elimination, barrier spraying, and ongoing population management.</p>
-                                <div class="estimated-time">
-                                    <i class='bx bx-time-five'></i>
-                                    <span>Estimated time: 1-2 hours</span>
-                                </div>
-                                <div class="inspection-notice">* Final pricing will be determined upon inspection</div>
-                                <div class="service-actions">
-                                    <button type="submit" name="action" value="edit_5" class="btn-edit"><i class='bx bx-edit'></i> Edit</button>
-                                    <button type="submit" name="action" value="delete_5" class="btn-delete"><i class='bx bx-trash'></i> Delete</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="service-card">
-                            <input type="hidden" name="service_id[]" value="6">
-                            <div class="service-image">
-                                <img src="../Pictures/Other-flying-insects.jpg" alt="Rat Control">
-                            </div>
-                            <div class="service-details">
-                                <input type="text" name="service_name[]" value="Rat Control" hidden>
-                                <h4>Rat Control</h4>
-                                <textarea name="description[]" hidden>Specialized rat elimination program including entry point sealing, baiting systems, and sanitation recommendations.</textarea>
-                                <p class="description">Specialized rat elimination program including entry point sealing, baiting systems, and sanitation recommendations.</p>
-                                <div class="estimated-time">
-                                    <i class='bx bx-time-five'></i>
-                                    <span>Estimated time: 2-3 hours</span>
-                                </div>
-                                <div class="inspection-notice">* Final pricing will be determined upon inspection</div>
-                                <div class="service-actions">
-                                    <button type="submit" name="action" value="edit_6" class="btn-edit"><i class='bx bx-edit'></i> Edit</button>
-                                    <button type="submit" name="action" value="delete_6" class="btn-delete"><i class='bx bx-trash'></i> Delete</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="service-card">
-                            <input type="hidden" name="service_id[]" value="7">
-                            <div class="service-image">
-                                <img src="../Pictures/Extraction.jpg" alt="Emergency Pest Control">
-                            </div>
-                            <div class="service-details">
-                                <input type="text" name="service_name[]" value="Emergency Pest Control" hidden>
-                                <h4>Emergency Pest Control</h4>
-                                <textarea name="description[]" hidden>24/7 rapid response service for urgent pest situations. Immediate assessment and treatment with priority scheduling.</textarea>
-                                <p class="description">24/7 rapid response service for urgent pest situations. Immediate assessment and treatment with priority scheduling.</p>
-                                <div class="estimated-time">
-                                    <i class='bx bx-time-five'></i>
-                                    <span>Estimated time: 1-2 hours</span>
-                                </div>
-                                <div class="inspection-notice">* Final pricing will be determined upon inspection</div>
-                                <div class="service-actions">
-                                    <button type="submit" name="action" value="edit_7" class="btn-edit"><i class='bx bx-edit'></i> Edit</button>
-                                    <button type="submit" name="action" value="delete_7" class="btn-delete"><i class='bx bx-trash'></i> Delete</button>
-                                </div>
-                            </div>
-                        </div>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <p class="no-services-message">No services available. Please add services.</p>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
