@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once "../database.php";
+require_once "../PHP CODES/AppointmentSession.php"; // Add this line to include AppointmentSession class
 
 // Check if user is logged in and appointment exists in session
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['appointment'])) {
@@ -46,10 +47,32 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION['error'] = "An error occurred while saving your appointment.";
         }
     } elseif (isset($_POST['cancel'])) {
-        // User cancelled the appointment
-        unset($_SESSION['appointment']);
-        header("Location: Appointment-service.php");
-        exit();
+        try {
+            // Delete the appointment from the database
+            $query = "DELETE FROM appointments 
+                     WHERE user_id = :user_id 
+                     ORDER BY created_at DESC
+                     LIMIT 1";
+            
+            $stmt = $db->prepare($query);
+            $result = $stmt->execute([
+                ':user_id' => $_SESSION['user_id']
+            ]);
+            
+            if (!$result) {
+                $_SESSION['error'] = "Failed to cancel appointment. Please try again.";
+            }
+            
+            // User cancelled the appointment
+            unset($_SESSION['appointment']);
+            header("Location: Appointment-service.php");
+            exit();
+        } catch (PDOException $e) {
+            error_log("Database Error: " . $e->getMessage());
+            $_SESSION['error'] = "An error occurred while cancelling your appointment.";
+            header("Location: Appointment-service.php");
+            exit();
+        }
     }
 }
 
@@ -88,39 +111,51 @@ try {
         $stmt->execute([':user_id' => $_SESSION['user_id']]);
         $appointment = $stmt->fetch(PDO::FETCH_ASSOC);
     } else {
-        // Get appointment details from session and join with service info
-        $query = "SELECT 
-                    s.service_name,
-                    s.starting_price
-                  FROM services s
-                  WHERE s.service_id = :service_id";
+        // Get appointment details from session steps
+        // Get service data
+        $serviceData = AppointmentSession::getData('service', []);
+        $service_id = $serviceData['service_id'] ?? null;
         
+        // Get service details from database
+        $query = "SELECT service_name, starting_price FROM services WHERE service_id = :service_id";
         $stmt = $db->prepare($query);
-        $stmt->execute([':service_id' => $_SESSION['appointment']['service_id']]);
+        $stmt->execute([':service_id' => $service_id]);
         $service = $stmt->fetch(PDO::FETCH_ASSOC);
         
-        // Get user details
+        // Get location data
+        $locationData = AppointmentSession::getData('location', []);
+        
+        // Get calendar data (appointment date and time)
+        $calendarData = AppointmentSession::getData('calendar', []);
+        
+        // Get personal info data if appointment is not for self
+        $personalInfo = AppointmentSession::getData('personal_info', []);
+        
+        // Get user details for self-appointments
         $query = "SELECT * FROM users WHERE id = :user_id";
         $stmt = $db->prepare($query);
         $stmt->execute([':user_id' => $_SESSION['user_id']]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
         
-        // Combine appointment, service, and user info
-        $appointment = array_merge(
-            $_SESSION['appointment'],
-            $service ?? [],
-            [
-                'display_firstname' => $user['firstname'] ?? '',
-                'display_lastname' => $user['lastname'] ?? '',
-                'display_email' => $user['email'] ?? '',
-                'display_mobile_number' => $user['mobile_number'] ?? '',
-                'street_address' => $_SESSION['appointment']['street_address'] ?? '',
-                'barangay' => $_SESSION['appointment']['barangay'] ?? '',
-                'city' => $_SESSION['appointment']['city'] ?? '',
-                'province' => $_SESSION['appointment']['province'] ?? '',
-                'region' => $_SESSION['appointment']['region'] ?? ''
-            ]
-        );
+        // Check if appointment is for self or someone else
+        $isForSelf = $serviceData['is_for_self'] ?? 1;
+        
+        // Combine all data to create appointment array
+        $appointment = [
+            'service_name' => $service['service_name'] ?? 'N/A',
+            'starting_price' => $service['starting_price'] ?? 0,
+            'appointment_date' => $calendarData['appointment_date'] ?? date('Y-m-d'),
+            'appointment_time' => $calendarData['appointment_time'] ?? '12:00:00',
+            'street_address' => $locationData['street_address'] ?? '',
+            'barangay' => $locationData['barangay'] ?? '',
+            'city' => $locationData['city'] ?? 'Zamboanga City',
+            'province' => $locationData['province'] ?? 'Zamboanga Del Sur',
+            'region' => $locationData['region'] ?? 'Region IX',
+            'display_firstname' => $isForSelf ? ($user['firstname'] ?? '') : ($personalInfo['firstname'] ?? ''),
+            'display_lastname' => $isForSelf ? ($user['lastname'] ?? '') : ($personalInfo['lastname'] ?? ''),
+            'display_email' => $isForSelf ? ($user['email'] ?? '') : ($personalInfo['email'] ?? ''),
+            'display_mobile_number' => $isForSelf ? ($user['mobile_number'] ?? '') : ($personalInfo['mobile_number'] ?? ''),
+        ];
     }
 
     // Format the date and time
