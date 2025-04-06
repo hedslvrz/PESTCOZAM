@@ -229,6 +229,29 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </main>
     </section>
 
+    <!-- Delete Service Modal -->
+    <div id="deleteServiceModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Confirm Deletion</h2>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this service? This action cannot be undone.</p>
+                <div class="warning-icon">
+                    <i class='bx bx-error-circle'></i>
+                </div>
+                <form id="deleteServiceForm" method="POST" action="delete-service.php">
+                    <input type="hidden" id="service_id" name="service_id">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary close-modal">Cancel</button>
+                <button class="btn btn-danger" id="confirmDeleteBtn">Delete Service</button>
+            </div>
+        </div>
+    </div>
+
     <script src="../JS CODES/dashboard-admin.js"></script>
     <script>
         // Image preview functionality
@@ -270,5 +293,116 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
         });
     </script>
+
+    <script>
+        // Delete Service Modal Functionality
+        const deleteServiceModal = document.getElementById('deleteServiceModal');
+        const closeButtons = document.getElementsByClassName('close-modal');
+        
+        // Function to open the delete modal with service ID
+        function openDeleteModal(serviceId) {
+            document.getElementById('service_id').value = serviceId;
+            deleteServiceModal.style.display = 'flex';
+        }
+        
+        // Close modal when clicking X or Cancel button
+        for (let i = 0; i < closeButtons.length; i++) {
+            closeButtons[i].addEventListener('click', function() {
+                deleteServiceModal.style.display = 'none';
+            });
+        }
+        
+        // Close modal when clicking outside of it
+        window.addEventListener('click', function(event) {
+            if (event.target == deleteServiceModal) {
+                deleteServiceModal.style.display = 'none';
+            }
+        });
+        
+        // Handle delete confirmation
+        document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+            document.getElementById('deleteServiceForm').submit();
+        });
+    </script>
+
+    <style>
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background-color: #fff;
+            border-radius: 8px;
+            width: 400px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            animation: modalFadeIn 0.3s ease-out;
+        }
+        
+        @keyframes modalFadeIn {
+            from {transform: translateY(-20px); opacity: 0;}
+            to {transform: translateY(0); opacity: 1;}
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .modal-header h2 {
+            margin: 0;
+            font-size: 18px;
+            color: #333;
+        }
+        
+        .close-modal {
+            font-size: 24px;
+            cursor: pointer;
+            color: #888;
+        }
+        
+        .close-modal:hover {
+            color: #000;
+        }
+        
+        .modal-body {
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .warning-icon {
+            font-size: 48px;
+            color: #ff6b6b;
+            margin: 15px 0;
+        }
+        
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            padding: 15px 20px;
+            border-top: 1px solid #eee;
+            gap: 10px;
+        }
+        
+        .btn-danger {
+            background-color: #ff6b6b;
+        }
+        
+        .btn-danger:hover {
+            background-color: #ff4f4f;
+        }
+    </style>
 </body>
 </html>

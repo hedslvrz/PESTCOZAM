@@ -595,6 +595,46 @@ function updateTimeSlots(year, month, day) {
     });
 }
 
+// Service Management Functions
+function editService(serviceId) {
+    window.location.href = `edit-service.php?id=${serviceId}`;
+}
+
+function confirmDeleteService(serviceId, serviceName) {
+    if (confirm(`Are you sure you want to delete "${serviceName}"? This action cannot be undone.`)) {
+        fetch('../PHP CODES/delete-service.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ service_id: serviceId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Service deleted successfully!');
+                location.reload(); // Refresh the page to update the service list
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while deleting the service');
+        });
+    }
+}
+
+function openServiceDeleteModal(serviceId, serviceName) {
+    document.getElementById('serviceIdToDelete').value = serviceId;
+    document.getElementById('serviceToDelete').textContent = serviceName;
+    document.getElementById('deleteServiceModal').style.display = 'flex';
+}
+
+function confirmDeleteService() {
+    document.getElementById('deleteServiceForm').submit();
+}
+
 
 
 

@@ -25,19 +25,21 @@ ul {
     padding: 50px 20px;
 }
 
-/* Header Styles */
+/* Header Styles - Enhanced for better spacing */
 .head-title {
     display: flex;
     align-items: center;
     justify-content: space-between;
     flex-wrap: wrap;
-    margin-bottom: 24px;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eaeaea;
 }
 
 .head-title .left {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 8px;
 }
 
 .head-title .left h1 {
@@ -51,6 +53,7 @@ ul {
     display: flex;
     align-items: center;
     grid-gap: 16px;
+    margin-top: 5px;
 }
 
 .breadcrumb li {
@@ -79,7 +82,7 @@ ul {
     background: white;
     border-radius: 15px;
     padding: 30px 20px; /* Changed from 30px to 30px 20px */
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
     width: 100%;
     max-width: 900px;
     margin: 20px auto 50px;
@@ -352,4 +355,42 @@ ul {
 .btn-back:hover {
     background: #e8e8e8;
     transform: translateY(-2px);
+}
+
+/* Additional styles for edit-service page */
+.page-header {
+    max-width: 900px;
+    margin: 0 auto 20px;
+    padding: 0 20px;
+}
+
+.head-title {
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eaeaea;
+}
+
+.head-title .left h1 {
+    margin-bottom: 10px;
+    font-size: 32px;
+    color: #144578;
+}
+
+.breadcrumb {
+    margin-top: 8px;
+}
+
+.alert {
+    max-width: 900px;
+    margin: 0 auto 20px;
+    padding: 15px 20px;
+    border-radius: 8px;
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* Make form more centered and contained */
+.section.active {
+    padding-top: 40px;
 }

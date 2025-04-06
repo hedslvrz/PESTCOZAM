@@ -873,8 +873,12 @@ try {
                                         </div>
                                         <div class="inspection-notice">* Final pricing will be determined upon inspection</div>
                                         <div class="service-actions">
-                                            <button type="submit" name="action" value="edit_<?php echo $service['service_id']; ?>" class="btn-edit"><i class='bx bx-edit'></i> Edit</button>
-                                            <button type="submit" name="action" value="delete_<?php echo $service['service_id']; ?>" class="btn-delete"><i class='bx bx-trash'></i> Delete</button>
+                                            <button type="button" onclick="editService(<?php echo $service['service_id']; ?>)" class="btn-edit">
+                                                <i class='bx bx-edit'></i> Edit
+                                            </button>
+                                            <button type="button" class="delete-btn" onclick="deleteService(<?php echo $service['service_id']; ?>, '<?php echo addslashes($service['service_name']); ?>')">
+                                                <i class='bx bx-trash'></i> Delete
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -886,6 +890,40 @@ try {
                 </div>
             </div>
         </form>
+
+        <script>
+        function editService(serviceId) {
+            window.location.href = `edit-service.php?id=${serviceId}`;
+        }
+        
+        function deleteService(serviceId, serviceName) {
+            if (confirm(`Are you sure you want to delete "${serviceName}"? This action cannot be undone.`)) {
+                // Use fetch with proper JSON handling
+                fetch(`delete-service.php?id=${serviceId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert(`${serviceName} has been deleted successfully.`);
+                            // Remove the service card from the DOM
+                            const serviceCard = document.querySelector(`input[value="${serviceId}"]`).closest('.service-card');
+                            serviceCard.remove();
+                            
+                            // If no more services, show the "No services available" message
+                            if (document.querySelectorAll('.service-card').length === 0) {
+                                const serviceCards = document.querySelector('.service-cards');
+                                serviceCards.innerHTML = '<p class="no-services-message">No services available. Please add services.</p>';
+                            }
+                        } else {
+                            alert('Error deleting service: ' + (data.message || 'Unknown error'));
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while deleting the service. Please try again.');
+                    });
+            }
+        }
+        </script>
     </main>
 </section>
 <!-- SERVICES SECTION -->
@@ -1068,7 +1106,7 @@ try {
                     <div class="report-status approved">Approved</div>
                     <div class="report-date">March 14, 2024</div>
                 </div>
-                <div class="report-body">
+                <div class="report-body"></div>
                     <div class="technician-info">
                         <img src="../Pictures/boy.png" alt="Technician">
                         <div>
@@ -1110,7 +1148,7 @@ try {
                             <label>Technician Name</label>
                             <input type="text" value="John Smith" readonly>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group"></div>
                             <label>Client Name</label>
                             <input type="text" value="Maria Garcia" readonly>
                         </div>
