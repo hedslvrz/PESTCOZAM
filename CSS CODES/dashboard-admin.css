@@ -4345,3 +4345,253 @@ th {
 .btn-danger:hover {
     background-color: #c82333;
 }
+
+/* Improve feedback button styling in work orders table */
+#work-orders .feedback-btn {
+    background: #e6f3ff;
+    color: #144578;
+    border: none;
+    border-radius: 6px;
+    padding: 7px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+    margin-top: 8px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+#work-orders .feedback-btn:hover {
+    background-color: #144578;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+}
+
+#work-orders .feedback-btn i {
+    font-size: 16px;
+}
+
+/* Enhance action buttons container for better layout */
+#work-orders .action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+#work-orders .view-btn {
+    background: #f0f2f5;
+    color: #344767;
+    border: none;
+    border-radius: 6px;
+    padding: 7px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+#work-orders .view-btn:hover {
+    background: #e0e4e9;
+}
+
+/* Harmonize view and feedback buttons in work orders section */
+#work-orders .action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+}
+
+#work-orders .view-btn,
+#work-orders .feedback-btn {
+    padding: 7px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+    width: 100%;
+    text-decoration: none;
+}
+
+#work-orders .view-btn {
+    background: #f0f2f5;
+    color: #344767;
+}
+
+#work-orders .view-btn:hover {
+    background: #e0e4e9;
+}
+
+#work-orders .feedback-btn {
+    background: #e6f3ff;
+    color: #144578;
+}
+
+#work-orders .feedback-btn:hover {
+    background: #c9e6ff;
+}
+
+#work-orders .view-btn i,
+#work-orders .feedback-btn i {
+    font-size: 16px;
+}
+
+/* Enhanced modal styling for feedback modal */
+#feedbackModal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+/* Support both class addition and direct style setting */
+#feedbackModal.show,
+#feedbackModal[style*="display: flex"] {
+    display: flex !important; /* !important to override any conflicting styles */
+}
+
+/* Ensure modal content is properly visible */
+#feedbackModal .modal-content {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    width: 90%;
+    max-width: 600px;
+    padding: 25px;
+    position: relative;
+    max-height: 85vh;
+    overflow-y: auto;
+    animation: modalFadeIn 0.3s;
+    z-index: 1001; /* Ensure it's above the backdrop */
+}
+
+/* Enhanced modal styling for feedback modal */
+#feedbackModal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+/* Support both class addition and direct style setting */
+#feedbackModal.show,
+#feedbackModal[style*="display: flex"] {
+    display: flex !important; /* !important to override any conflicting styles */
+}
+
+/* Ensure modal content is properly visible */
+#feedbackModal .modal-content {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    width: 90%;
+    max-width: 600px;
+    padding: 25px;
+    position: relative;
+    max-height: 85vh;
+    overflow-y: auto;
+    animation: modalFadeIn 0.3s;
+    z-index: 1001; /* Ensure it's above the backdrop */
+}
+
+/* Enhanced modal styling for feedback modal */
+#feedbackModal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+/* Support both class addition and direct style setting */
+#feedbackModal.show,
+#feedbackModal[style*="display: flex"] {
+    display: flex !important; /* !important to override any conflicting styles */
+}
+
+/* Ensure modal content is properly visible */
+#feedbackModal .modal-content {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    width: 90%;
+    max-width: 600px;
+    padding: 25px;
+    position: relative;
+    max-height: 85vh;
+    overflow-y: auto;
+    animation: modalFadeIn 0.3s;
+    z-index: 1001; /* Ensure it's above the backdrop */
+}
+
+/* Enhanced modal styling for feedback modal */
+#feedbackModal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+/* Support both class addition and direct style setting */
+#feedbackModal.show,
+#feedbackModal[style*="display: flex"] {
+    display: flex !important; /* !important to override any conflicting styles */
+}
+
+/* Ensure modal content is properly visible */
+#feedbackModal .modal-content {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    width: 90%;
+    max-width: 600px;
+    padding: 25px;
+    position: relative;
+    max-height: 85vh;
+    overflow-y: auto;
+    animation: modalFadeIn 0.3s;
+    z-index: 1001; /* Ensure it's above the backdrop */
+}

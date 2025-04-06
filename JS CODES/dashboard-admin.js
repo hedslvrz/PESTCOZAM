@@ -635,6 +635,40 @@ function confirmDeleteService() {
     document.getElementById('deleteServiceForm').submit();
 }
 
+// Incident Report Modal Functions
+function showIncidentModal(appointmentId) {
+    document.getElementById('incident_appointment_id').value = appointmentId;
+    document.getElementById('incidentModal').classList.add('show');
+}
+
+function closeIncidentModal() {
+    document.getElementById('incidentModal').classList.remove('show');
+    document.getElementById('incidentForm').reset();
+}
+
+// Add event listener for incident form submission
+document.getElementById('incidentForm')?.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    try {
+        const response = await fetch(this.action, {
+            method: 'POST',
+            body: new FormData(this)
+        });
+        
+        const result = await response.json();
+        if (result.success) {
+            alert('Incident report submitted successfully');
+            closeIncidentModal();
+        } else {
+            alert('Error submitting report: ' + result.message);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred while submitting the report');
+    }
+});
+
 
 
 

@@ -75,7 +75,7 @@ try {
     ];
 }
 
-// Replace the existing appointments query with this
+// Replace the existing appointments query with this updated version that includes multiple technicians
 try {
     $appointmentsQuery = "SELECT 
         a.id as appointment_id,
@@ -97,7 +97,11 @@ try {
             ELSE a.lastname
         END as client_lastname,
         t.firstname as tech_firstname,
-        t.lastname as tech_lastname
+        t.lastname as tech_lastname,
+        (SELECT GROUP_CONCAT(CONCAT(u2.firstname, ' ', u2.lastname) SEPARATOR ', ') 
+         FROM appointment_technicians at 
+         JOIN users u2 ON at.technician_id = u2.id 
+         WHERE at.appointment_id = a.id) as all_technicians
     FROM appointments a
     JOIN services s ON a.service_id = s.service_id
     JOIN users u ON a.user_id = u.id
@@ -594,10 +598,16 @@ try {
                 </td>
                 <td>
                     <div class="tech-info">
-                        <?php if (!empty($appointment['tech_firstname'])): ?>
+                        <?php if (!empty($appointment['all_technicians'])): ?>
                             <i class='bx bx-user-check'></i>
-                            <span><?php echo htmlspecialchars($appointment['tech_firstname'] . ' ' . 
-                                $appointment['tech_lastname']); ?></span>
+                            <span title="<?php echo htmlspecialchars($appointment['all_technicians']); ?>">
+                                <?php 
+                                $technicians = $appointment['all_technicians'];
+                                echo (strlen($technicians) > 20) ? 
+                                    htmlspecialchars(substr($technicians, 0, 20) . '...') : 
+                                    htmlspecialchars($technicians); 
+                                ?>
+                            </span>
                         <?php else: ?>
                             <span class="no-tech">Not Assigned</span>
                         <?php endif; ?>
@@ -611,30 +621,15 @@ try {
                 <td>
                     <div class="action-buttons">
                         <?php if ($appointment['status'] === 'Pending' || $appointment['status'] === 'Confirmed'): ?>
-                            <form class="inline-assign-form" data-appointment-id="<?php echo $appointment['appointment_id']; ?>">
-                                <select class="tech-select" name="technician_id" required>
-                                    <option value="">-- Select Technician --</option>
-                                    <?php foreach ($technicians as $tech): ?>
-                                        <option value="<?php echo $tech['id']; ?>" 
-                                            <?php echo ($appointment['technician_id'] == $tech['id']) ? 'selected' : ''; ?>>
-                                            <?php echo htmlspecialchars($tech['firstname'] . ' ' . $tech['lastname']); ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                                <button type="submit" class="assign-btn">
-                                    <?php if (empty($appointment['technician_id'])): ?>
-                                        <i class='bx bx-check'></i> Assign
-                                    <?php else: ?>
-                                        <i class='bx bx-refresh'></i> Update
-                                    <?php endif; ?>
-                                </button>
-                            </form>
+                            <a href="job-details.php?id=<?php echo $appointment['appointment_id']; ?>" class="view-btn">
+                                <i class='bx bx-show'></i> View Details
+                            </a>
+                            <button type="button" class="feedback-btn" onclick="showFeedbackModal(<?php echo $appointment['appointment_id']; ?>)">
+                                <i class='bx bx-message-square-detail'></i> Feedback
+                            </button>
                         <?php else: ?>
                             <span class="status-message">Job completed</span>
                         <?php endif; ?>
-                        <button type="button" class="view-btn" onclick="viewDetails(<?php echo $appointment['appointment_id']; ?>)">
-                            <i class='bx bx-show'></i> View Details
-                        </button>
                     </div>
                 </td>
             </tr>
@@ -651,6 +646,159 @@ try {
         </div>
     </main>
 </section>
+
+<!-- Feedback Modal - Updated with proper form fields -->
+<div id="feedbackModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeFeedbackModal()">&times;</span>
+        <h2>Job Feedback / Follow-up Report</h2>
+        <form id="feedbackForm" method="POST">
+            <input type="hidden" name="appointment_id" id="feedback_appointment_id">
+            
+            <div class="form-section">
+                <h3>Report Information</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Report Type:</label>
+                        <select name="report_type" required>
+                            <option value="">Select Report Type</option>
+                            <option value="follow-up">Follow-up Required</option>
+                            <option value="complaint">Customer Complaint</option>
+                            <option value="feedback">General Feedback</option>
+                            <option value="issue">Service Issue</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Priority:</label>
+                        <select name="priority" required>
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                            <option value="urgent">Urgent</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Date of Report:</label>
+                        <input type="date" name="report_date" required value="<?php echo date('Y-m-d'); ?>">
+                    </div>
+                    <div class="form-group">
+                        <label>Follow-up Date (if needed):</label>
+                        <input type="date" name="followup_date">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <h3>Issue Details</h3>
+                <div class="form-group">
+                    <label>Description of Issue/Feedback:</label>
+                    <textarea name="description" rows="4" required placeholder="Provide a detailed description..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Customer Comments:</label>
+                    <textarea name="customer_comments" rows="3" placeholder="Enter any comments from the customer..."></textarea>
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <h3>Action Plan</h3>
+                <div class="form-group">
+                    <label>Recommended Actions:</label>
+                    <textarea name="recommended_actions" rows="3" required placeholder="What needs to be done to address this issue?"></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Assign To:</label>
+                        <select name="assigned_to">
+                            <option value="">Select Technician/Staff</option>
+                            <?php foreach ($technicians as $tech): ?>
+                                <option value="<?php echo $tech['id']; ?>"><?php echo htmlspecialchars($tech['firstname'] . ' ' . $tech['lastname']); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Status:</label>
+                        <select name="status" required>
+                            <option value="pending">Pending</option>
+                            <option value="in_progress">In Progress</option>
+                            <option value="completed">Completed</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="submit-btn">Submit Report</button>
+                <button type="button" class="cancel-btn" onclick="closeFeedbackModal()">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Updated feedback modal functions to fix the display issue
+function showFeedbackModal(appointmentId) {
+    document.getElementById('feedback_appointment_id').value = appointmentId;
+    const modal = document.getElementById('feedbackModal');
+    modal.classList.add('show'); // Changed from style.display = 'flex' to adding 'show' class
+    document.body.style.overflow = 'hidden';
+    
+    // Reset form fields
+    document.getElementById('feedbackForm').reset();
+    // Set the current date as default
+    const today = new Date().toISOString().split('T')[0];
+    document.querySelector('input[name="report_date"]').value = today;
+    
+    // Set a default follow-up date (7 days from now)
+    const followupDate = new Date();
+    followupDate.setDate(followupDate.getDate() + 7);
+    document.querySelector('input[name="followup_date"]').value = followupDate.toISOString().split('T')[0];
+    
+    console.log('Modal should be displayed now with class "show"');
+}
+
+function closeFeedbackModal() {
+    const modal = document.getElementById('feedbackModal');
+    modal.classList.remove('show'); // Changed from style.display = 'none' to removing 'show' class
+    document.body.style.overflow = '';
+}
+
+// Handle form submission
+document.getElementById('feedbackForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Show submission in progress
+    const submitBtn = document.querySelector('.submit-btn');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i> Submitting...';
+    submitBtn.disabled = true;
+    
+    // Collect form data
+    const formData = new FormData(this);
+    
+    // Simulate form submission (replace with actual AJAX submission)
+    setTimeout(() => {
+        alert('Report submitted successfully!');
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+        closeFeedbackModal();
+    }, 1000);
+});
+
+// Close modal when clicking outside
+window.addEventListener('click', function(event) {
+    const modal = document.getElementById('feedbackModal');
+    if (event.target === modal) {
+        closeFeedbackModal();
+    }
+});
+</script>
 
 <!-- Employee Section -->
 <section id="employees" class="section">
