@@ -16,8 +16,25 @@ $db = $database->getConnection();
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (isset($_POST['confirm'])) {
         try {
-            // Get all appointment data from session
-            $appointmentData = $_SESSION['appointment'];
+            // Get appointment data from AppointmentSession
+            $serviceData = AppointmentSession::getData('service', []);
+            $calendarData = AppointmentSession::getData('calendar', []);
+            $locationData = AppointmentSession::getData('location', []);
+            $personalInfo = AppointmentSession::getData('personal_info', []);
+            
+            // Debug log to check what data is available
+            error_log("Service data: " . print_r($serviceData, true));
+            error_log("Calendar data: " . print_r($calendarData, true));
+            
+            // Check if required data exists
+            if (empty($calendarData['appointment_date']) || empty($calendarData['appointment_time']) || empty($serviceData['service_id'])) {
+                error_log("Missing appointment data: Date=" . ($calendarData['appointment_date'] ?? 'missing') . 
+                          ", Time=" . ($calendarData['appointment_time'] ?? 'missing') . 
+                          ", Service ID=" . ($serviceData['service_id'] ?? 'missing'));
+                $_SESSION['error'] = "Missing appointment information. Please start over.";
+                header("Location: Appointment-service.php");
+                exit();
+            }
             
             // Update the appointment in the database
             $query = "UPDATE appointments SET 
@@ -31,9 +48,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     
             $stmt = $db->prepare($query);
             $result = $stmt->execute([
-                ':appointment_date' => $appointmentData['appointment_date'],
-                ':appointment_time' => $appointmentData['appointment_time'],
-                ':service_id' => $appointmentData['service_id'],
+                ':appointment_date' => $calendarData['appointment_date'],
+                ':appointment_time' => $calendarData['appointment_time'],
+                ':service_id' => $serviceData['service_id'],
                 ':user_id' => $_SESSION['user_id']
             ]);
             
@@ -73,6 +90,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             header("Location: Appointment-service.php");
             exit();
         }
+    } elseif (isset($_POST['done'])) {
+        // Clear all appointment related session data
+        unset($_SESSION['appointment']);
+        unset($_SESSION['appointment_confirmed']);
+        
+        // Clear all step data from AppointmentSession
+        AppointmentSession::clearAllData();
+        
+        // Redirect to home page
+        header("Location: ../Index.php");
+        exit();
     }
 }
 
@@ -308,7 +336,9 @@ try {
 
         <div class="thank-you-nav">
             <?php if (isset($_SESSION['appointment_confirmed']) && $_SESSION['appointment_confirmed']): ?>
-                <button class="next-btn" onclick="window.location.href='../Index.php'">Done</button>
+                <form method="post" style="width: 100%; text-align: right;">
+                    <button type="submit" name="done" class="next-btn">Done</button>
+                </form>
             <?php else: ?>
                 <form method="post" style="display: flex; gap: 15px; width: 100%; justify-content: space-between;">
                     <button type="submit" name="cancel" class="back-btn">Cancel</button>

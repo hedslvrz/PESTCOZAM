@@ -46,5 +46,18 @@ class AppointmentSession {
     public static function clear() {
         unset($_SESSION['appointment']);
     }
+
+    /**
+     * Clear all appointment session data
+     */
+    public static function clearAllData() {
+        $steps = ['service', 'location', 'calendar', 'personal_info'];
+        
+        foreach ($steps as $step) {
+            if (isset($_SESSION['appointment_' . $step])) {
+                unset($_SESSION['appointment_' . $step]);
+            }
+        }
+    }
 }
 ?>
