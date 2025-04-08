@@ -1079,139 +1079,181 @@ window.addEventListener('click', function(event) {
 <!-- Customers Section -->
 <section id="customers" class="section">
     <main>
-        <form id="customers-form" method="POST" action="process_customers.php">
+        <?php
+        // Fetch customers data from the database (users with 'user' role only)
+        try {
+            // Set default pagination values
+            $customersPerPage = 10;
+            $page = isset($_GET['customer_page']) ? (int)$_GET['customer_page'] : 1;
+            $offset = ($page - 1) * $customersPerPage;
+            
+            // Handle search functionality
+            $searchTerm = isset($_GET['customer_search']) ? $_GET['customer_search'] : '';
+            
+            // Basic query - filter only for users with role='user'
+            $whereClause = "WHERE role = 'user'";
+            $params = [];
+            
+            if (!empty($searchTerm)) {
+                $whereClause .= " AND (firstname LIKE ? OR lastname LIKE ? OR email LIKE ? OR mobile_number LIKE ?)";
+                $params = ["%$searchTerm%", "%$searchTerm%", "%$searchTerm%", "%$searchTerm%"];
+            }
+            
+            // Count total customers for pagination
+            $countStmt = $db->prepare("SELECT COUNT(*) as total FROM users $whereClause");
+            if (!empty($params)) {
+                $countStmt->execute($params);
+            } else {
+                $countStmt->execute();
+            }
+            $totalCustomers = $countStmt->fetch(PDO::FETCH_ASSOC)['total'];
+            $totalPages = ceil($totalCustomers / $customersPerPage);
+            
+            // Get customer data with appointment count - removed address field
+            $customersQuery = "SELECT 
+                id, 
+                firstname, 
+                middlename, 
+                lastname, 
+                email, 
+                mobile_number, 
+                (SELECT COUNT(*) FROM appointments WHERE user_id = users.id) as appointment_count
+                FROM users 
+                $whereClause 
+                ORDER BY lastname, firstname";
+                
+            if ($page > 0) {
+                $customersQuery .= " LIMIT $offset, $customersPerPage";
+            }
+            
+            $customersStmt = $db->prepare($customersQuery);
+            if (!empty($params)) {
+                $customersStmt->execute($params);
+            } else {
+                $customersStmt->execute();
+            }
+            $customers = $customersStmt->fetchAll(PDO::FETCH_ASSOC);
+            
+        } catch(PDOException $e) {
+            error_log("Error fetching customers: " . $e->getMessage());
+            echo "<div class='error-message'>Database error: " . $e->getMessage() . "</div>";
+            $customers = [];
+            $totalPages = 0;
+        }
+        ?>
+        <form id="customers-form" method="GET" action="#customers">
             <div class="head-title">
                 <div class="left">
-                    <h1>Customer</h1>
+                    <h1>Customer Management</h1>
                     <ul class="breadcrumb">
-                        <li><a href="#">Customer</a></li>
+                        <li><a href="#">Dashboard</a></li>
                         <li><i class='bx bx-right-arrow-alt'></i></li>
-                        <li><a class="active" href="#">List</a></li>
+                        <li><a class="active" href="#">Customer List</a></li>
                     </ul>
                 </div>
             </div>
+            
             <div class="customer-container">
                 <div class="customer-header">
-                    <h2>List of Customer</h2>
+                    <h2>Customer Directory <span class="customer-count">(<?php echo $totalCustomers; ?> total)</span></h2>
+                    <div class="search-container">
+                        <input type="text" name="customer_search" placeholder="Search customers..." value="<?php echo htmlspecialchars($searchTerm); ?>">
+                        <button type="submit" class="search-btn"><i class='bx bx-search'></i></button>
+                    </div>
                 </div>
-                <table class="customer-table">
-                    <thead>
-                        <tr>
-                            <th>First name</th>
-                            <th>Last name</th>
-                            <th>Address</th>
-                            <th>Email</th>
-                            <th>Mobile number</th>
-                            <th>No. of Appointments</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Daniel</td>
-                            <td>Patilla</td>
-                            <td>Tetuan, Hotdog drive, Zamboanga City</td>
-                            <td>Daniel.Patilla@gmail.com</td>
-                            <td>0953342986</td>
-                            <td>454949498</td>
-                        </tr>
-                        <tr>
-                            <td>Daniel</td>
-                            <td>Patilla</td>
-                            <td>Southcom wingo sub, Zamboanga City</td>
-                            <td>Daniel.Patilla@gmail.com</td>
-                            <td>0978121217</td>
-                            <td>454949498</td>
-                        </tr>
-                        <tr>
-                            <td>Jane</td>
-                            <td>Doe</td>
-                            <td>123 Main St, Zamboanga City</td>
-                            <td>Jane.Doe@example.com</td>
-                            <td>0912345678</td>
-                            <td>123456</td>
-                        </tr>
-                        <tr>
-                            <td>John</td>
-                            <td>Smith</td>
-                            <td>456 Elm St, Zamboanga City</td>
-                            <td>John.Smith@example.com</td>
-                            <td>0987654321</td>
-                            <td>789012</td>
-                        </tr>
-                        <tr>
-                            <td>Mary</td>
-                            <td>Johnson</td>
-                            <td>789 Oak St, Zamboanga City</td>
-                            <td>Mary.Johnson@example.com</td>
-                            <td>0911223344</td>
-                            <td>345678</td>
-                        </tr>
-                        <tr>
-                            <td>James</td>
-                            <td>Williams</td>
-                            <td>101 Pine St, Zamboanga City</td>
-                            <td>James.Williams@example.com</td>
-                            <td>0922334455</td>
-                            <td>567890</td>
-                        </tr>
-                        <tr>
-                            <td>James</td>
-                            <td>Williams</td>
-                            <td>101 Pine St, Zamboanga City</td>
-                            <td>James.Williams@example.com</td>
-                            <td>0922334455</td>
-                            <td>567890</td>
-                        </tr>
-                        <tr>
-                            <td>James</td>
-                            <td>Williams</td>
-                            <td>101 Pine St, Zamboanga City</td>
-                            <td>James.Williams@example.com</td>
-                            <td>0922334455</td>
-                            <td>567890</td>
-                        </tr>
-                        <tr>
-                            <td>James</td>
-                            <td>Williams</td>
-                            <td>101 Pine St, Zamboanga City</td>
-                            <td>James.Williams@example.com</td>
-                            <td>0922334455</td>
-                            <td>567890</td>
-                        </tr>
-                        <tr>
-                            <td>James</td>
-                            <td>Williams</td>
-                            <td>101 Pine St, Zamboanga City</td>
-                            <td>James.Williams@example.com</td>
-                            <td>0922334455</td>
-                            <td>567890</td>
-                        </tr>
-                        <tr>
-                            <td>James</td>
-                            <td>Williams</td>
-                            <td>101 Pine St, Zamboanga City</td>
-                            <td>James.Williams@example.com</td>
-                            <td>0922334455</td>
-                            <td>567890</td>
-                        </tr>
-                        <!-- Add more rows as needed -->
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="customer-table">
+                        <thead>
+                            <tr>
+                                <th>First name</th>
+                                <th>Last name</th>
+                                <th>Email</th>
+                                <th>Mobile number</th>
+                                <th>No. of Appointments</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (!empty($customers)): ?>
+                                <?php foreach ($customers as $customer): ?>
+                                    <tr>
+                                        <td><?php echo htmlspecialchars($customer['firstname']); ?></td>
+                                        <td><?php echo htmlspecialchars($customer['lastname']); ?></td>
+                                        <td><?php echo htmlspecialchars($customer['email']); ?></td>
+                                        <td><?php echo htmlspecialchars($customer['mobile_number']); ?></td>
+                                        <td>
+                                            <span class="appointment-count">
+                                                <?php echo $customer['appointment_count']; ?>
+                                            </span>
+                                        </td>
+                                        <td class="actions">
+                                            <a href="view-customer.php?id=<?php echo $customer['id']; ?>" class="view-btn" title="View Details">
+                                                <i class='bx bx-show'></i>
+                                            </a>
+                                            <a href="customer-appointments.php?id=<?php echo $customer['id']; ?>" class="history-btn" title="View Appointment History">
+                                                <i class='bx bx-history'></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="6" class="no-data">
+                                        <?php if (!empty($searchTerm)): ?>
+                                            No customers found matching "<?php echo htmlspecialchars($searchTerm); ?>". 
+                                            <a href="?">Clear search</a>
+                                        <?php else: ?>
+                                            No customers registered in the system.
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <?php if ($totalPages > 1): ?>
                 <div class="pagination">
-                    <button>&laquo;</button>
-                    <button class="active">1</button>
-                    <button>2</button>
-                    <button>3</button>
-                    <button>4</button>
-                    <button>5</button>
-                    <button>&raquo;</button>
+                    <a href="?customer_page=1&customer_search=<?php echo urlencode($searchTerm); ?>" class="<?php echo $page == 1 ? 'disabled' : ''; ?>">&laquo;</a>
+                    
+                    <?php
+                    // Determine page range to show
+                    $startPage = max(1, $page - 2);
+                    $endPage = min($totalPages, $page + 2);
+                    
+                    // Always show first page
+                    if ($startPage > 1) {
+                        echo '<a href="?customer_page=1&customer_search='.urlencode($searchTerm).'">1</a>';
+                        if ($startPage > 2) {
+                            echo '<span class="ellipsis">...</span>';
+                        }
+                    }
+                    
+                    // Show page links
+                    for ($i = $startPage; $i <= $endPage; $i++) {
+                        echo '<a href="?customer_page='.$i.'&customer_search='.urlencode($searchTerm).'" 
+                              class="'.($page == $i ? 'active' : '').'">'.$i.'</a>';
+                    }
+                    
+                    // Always show last page
+                    if ($endPage < $totalPages) {
+                        if ($endPage < $totalPages - 1) {
+                            echo '<span class="ellipsis">...</span>';
+                        }
+                        echo '<a href="?customer_page='.$totalPages.'&customer_search='.urlencode($searchTerm).'">'.$totalPages.'</a>';
+                    }
+                    ?>
+                    
+                    <a href="?customer_page=<?php echo $page < $totalPages ? $page + 1 : $totalPages; ?>&customer_search=<?php echo urlencode($searchTerm); ?>" 
+                       class="<?php echo $page == $totalPages ? 'disabled' : ''; ?>">&raquo;</a>
                 </div>
+                <?php endif; ?>
             </div>
         </form>
     </main>
 </section>
 
-<!-- Reports Section -->
+<!-- Manage Technician Report Section -->
 <section id="reports" class="section">
     <main>
         <div class="head-title">
@@ -1296,7 +1338,7 @@ window.addEventListener('click', function(event) {
                             <label>Technician Name</label>
                             <input type="text" value="John Smith" readonly>
                         </div>
-                        <div class="form-group"></div>
+                        <div class="form-group">
                             <label>Client Name</label>
                             <input type="text" value="Maria Garcia" readonly>
                         </div>
