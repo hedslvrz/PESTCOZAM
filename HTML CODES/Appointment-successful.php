@@ -41,7 +41,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     appointment_date = :appointment_date,
                     appointment_time = :appointment_time,
                     service_id = :service_id,
-                    status = 'confirmed'
+                    status = 'pending'
                     WHERE user_id = :user_id 
                     ORDER BY created_at DESC
                     LIMIT 1";
