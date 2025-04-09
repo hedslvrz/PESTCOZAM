@@ -869,10 +869,14 @@ window.addEventListener('click', function(event) {
                             <thead>
                                 <tr>
                                     <td><input type="checkbox"></td>
+                                    <th>Employee No.</th>
                                     <th>Name</th>
                                     <th>Date of Birth</th>
                                     <th>Email</th>
                                     <th>Mobile Number</th>
+                                    <th>SSS No.</th>
+                                    <th>Pag-ibig No.</th>
+                                    <th>Phil Health No.</th>
                                     <th>Role</th>
                                     <th>Status</th>
                                     <th>Actions</th>
@@ -884,10 +888,14 @@ window.addEventListener('click', function(event) {
                                         <?php if ($res['role'] === 'technician' || $res['role'] === 'supervisor'): ?>
                                         <tr data-role="<?php echo htmlspecialchars($res['role']); ?>" data-status="<?php echo htmlspecialchars($res['status']); ?>">
                                             <td><input type="checkbox"></td>
+                                            <td><?php echo htmlspecialchars($res['employee_no'] ?? 'EMP-'.str_pad(($res['id'] ?? 0), 4, '0', STR_PAD_LEFT)); ?></td>
                                             <td><?php echo htmlspecialchars(($res['firstname'] ?? '') . ' ' . ($res['lastname'] ?? '')); ?></td>
                                             <td><?php echo htmlspecialchars($res['dob'] ?? 'N/A'); ?></td>
                                             <td><?php echo htmlspecialchars($res['email'] ?? 'N/A'); ?></td>
                                             <td><?php echo htmlspecialchars($res['mobile_number'] ?? 'N/A'); ?></td>
+                                            <td><?php echo htmlspecialchars($res['sss_no'] ?? 'N/A'); ?></td>
+                                            <td><?php echo htmlspecialchars($res['pagibig_no'] ?? 'N/A'); ?></td>
+                                            <td><?php echo htmlspecialchars($res['philhealth_no'] ?? 'N/A'); ?></td>
                                             <td><?php echo htmlspecialchars($res['role'] ?? 'N/A'); ?></td>
                                             <td><?php echo htmlspecialchars($res['status'] ?? 'unverified'); ?></td>
                                             <td class="action-buttons">
@@ -900,7 +908,7 @@ window.addEventListener('click', function(event) {
                                     <?php endforeach; ?>
                                 <?php else: ?>
                                     <tr>
-                                        <td colspan="8">No Technicians or Supervisors available</td>
+                                        <td colspan="12">No Technicians or Supervisors available</td>
                                     </tr>
                                 <?php endif; ?>
                             </tbody>
@@ -916,13 +924,25 @@ window.addEventListener('click', function(event) {
                                 let selectedStatus = $("#filterStatus").val();
 
                                 $("#employeeTable tbody tr").each(function () {
-                                    let name = $(this).find("td:nth-child(2)").text().toLowerCase();
-                                    let email = $(this).find("td:nth-child(4)").text().toLowerCase();
-                                    let mobile = $(this).find("td:nth-child(5)").text().toLowerCase();
+                                    let empNo = $(this).find("td:nth-child(2)").text().toLowerCase();
+                                    let name = $(this).find("td:nth-child(3)").text().toLowerCase();
+                                    let email = $(this).find("td:nth-child(5)").text().toLowerCase();
+                                    let mobile = $(this).find("td:nth-child(6)").text().toLowerCase();
+                                    let sssNo = $(this).find("td:nth-child(7)").text().toLowerCase();
+                                    let pagibigNo = $(this).find("td:nth-child(8)").text().toLowerCase();
+                                    let philhealthNo = $(this).find("td:nth-child(9)").text().toLowerCase();
                                     let role = $(this).attr("data-role");
                                     let status = $(this).attr("data-status");
 
-                                    let searchMatch = searchValue === "" || name.includes(searchValue) || email.includes(searchValue) || mobile.includes(searchValue);
+                                    let searchMatch = searchValue === "" || 
+                                        name.includes(searchValue) || 
+                                        email.includes(searchValue) || 
+                                        mobile.includes(searchValue) || 
+                                        empNo.includes(searchValue) ||
+                                        sssNo.includes(searchValue) ||
+                                        pagibigNo.includes(searchValue) ||
+                                        philhealthNo.includes(searchValue);
+                                    
                                     let roleMatch = selectedRole === "" || role === selectedRole;
                                     let statusMatch = selectedStatus === "" || status === selectedStatus;
 
@@ -937,8 +957,8 @@ window.addEventListener('click', function(event) {
                                 if (!sortOrder) return; // No sorting if default option is selected
 
                                 rows.sort(function (a, b) {
-                                    let nameA = $(a).find("td:nth-child(2)").text().trim().toLowerCase();
-                                    let nameB = $(b).find("td:nth-child(2)").text().trim().toLowerCase();
+                                    let nameA = $(a).find("td:nth-child(3)").text().trim().toLowerCase();
+                                    let nameB = $(b).find("td:nth-child(3)").text().trim().toLowerCase();
 
                                     return sortOrder === "asc" ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
                                 });
