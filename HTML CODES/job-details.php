@@ -37,19 +37,30 @@ try {
     $techStmt->execute([$appointmentId]);
     $assignedTechs = $techStmt->fetchAll(PDO::FETCH_COLUMN);
     
+    // Debug output for assigned technicians
+    error_log("Assigned technicians for appointment $appointmentId: " . json_encode($assignedTechs));
+    
 } catch(PDOException $e) {
-    error_log("Error: " . $e->getMessage());
+    error_log("Error fetching appointment data: " . $e->getMessage());
     $appointment = null;
     $assignedTechs = [];
 }
 
 // Fetch available technicians
 try {
-    $techStmt = $db->prepare("SELECT id, firstname, lastname FROM users WHERE role = 'technician' AND status = 'verified'");
+    $techStmt = $db->prepare("SELECT id, firstname, lastname FROM users WHERE role = 'technician'");
     $techStmt->execute();
     $technicians = $techStmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Debug output for available technicians
+    error_log("Available technicians: " . json_encode($technicians));
+    
+    if (empty($technicians)) {
+        error_log("No technicians found with role='technician'");
+    }
+    
 } catch(PDOException $e) {
-    error_log("Error: " . $e->getMessage());
+    error_log("Error fetching technicians: " . $e->getMessage());
     $technicians = [];
 }
 ?>
@@ -263,20 +274,24 @@ try {
 
                     <div class="tech-assignments">
                         <h4>Assign Technicians</h4>
-                        <div class="tech-selection">
-                            <?php foreach ($technicians as $tech): ?>
-                                <div class="tech-option">
-                                    <input type="checkbox" 
-                                           name="technician_ids[]" 
-                                           value="<?php echo $tech['id']; ?>"
-                                           id="tech_<?php echo $tech['id']; ?>"
-                                           <?php echo in_array($tech['id'], $assignedTechs) ? 'checked' : ''; ?>>
-                                    <label for="tech_<?php echo $tech['id']; ?>">
-                                        <?php echo htmlspecialchars($tech['firstname'] . ' ' . $tech['lastname']); ?>
-                                    </label>
-                                </div>
-                            <?php endforeach; ?>
-                        </div>
+                        <?php if (empty($technicians)): ?>
+                            <p class="no-techs-message">No verified technicians available. Please add technicians first.</p>
+                        <?php else: ?>
+                            <div class="tech-selection">
+                                <?php foreach ($technicians as $tech): ?>
+                                    <div class="tech-option">
+                                        <input type="checkbox" 
+                                               name="technician_ids[]" 
+                                               value="<?php echo $tech['id']; ?>"
+                                               id="tech_<?php echo $tech['id']; ?>"
+                                               <?php echo in_array($tech['id'], $assignedTechs) ? 'checked' : ''; ?>>
+                                        <label for="tech_<?php echo $tech['id']; ?>">
+                                            <?php echo htmlspecialchars($tech['firstname'] . ' ' . $tech['lastname']); ?>
+                                        </label>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>

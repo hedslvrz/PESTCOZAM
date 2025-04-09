@@ -21,16 +21,20 @@ try {
         throw new Exception('Invalid appointment ID');
     }
     
-    // First update the timestamp in appointments table - REMOVING time_in and time_out fields
+    // First update the timestamp in appointments table
     $stmt = $db->prepare("UPDATE appointments SET updated_at = NOW() WHERE id = ?");
     $stmt->execute([$appointmentId]);
 
     // Handle technician assignments
     $technicianIds = $_POST['technician_ids'] ?? [];
     
+    // Log received technician IDs
+    error_log("Received technician IDs for appointment $appointmentId: " . json_encode($technicianIds));
+    
     // Delete existing assignments
     $stmt = $db->prepare("DELETE FROM appointment_technicians WHERE appointment_id = ?");
     $stmt->execute([$appointmentId]);
+    error_log("Deleted existing technician assignments for appointment $appointmentId");
     
     // Add new assignments if any technicians are selected
     if (!empty($technicianIds)) {
@@ -38,9 +42,11 @@ try {
         foreach ($technicianIds as $techId) {
             try {
                 $stmt->execute([$appointmentId, $techId]);
+                error_log("Assigned technician $techId to appointment $appointmentId");
             } catch (PDOException $e) {
                 // Skip duplicate entries
                 if ($e->getCode() != 23000) throw $e;
+                error_log("Duplicate entry for technician $techId in appointment $appointmentId: " . $e->getMessage());
             }
         }
         
@@ -48,10 +54,12 @@ try {
         $primaryTechId = $technicianIds[0];
         $stmt = $db->prepare("UPDATE appointments SET technician_id = ? WHERE id = ?");
         $stmt->execute([$primaryTechId, $appointmentId]);
+        error_log("Set primary technician $primaryTechId for appointment $appointmentId");
     } else {
         // If no technicians are selected, set primary technician to NULL
         $stmt = $db->prepare("UPDATE appointments SET technician_id = NULL WHERE id = ?");
         $stmt->execute([$appointmentId]);
+        error_log("No technicians selected, set primary technician to NULL for appointment $appointmentId");
     }
 
     // Store treatment details
