@@ -5,17 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Employee</title>
     <link rel="stylesheet" href="../../CSS CODES/functions-css/functions.css">
-    <style>
-        table {
-            margin-bottom: 20px;
-        }
-        .form-group select[name="status"] {
-            text-align-last: center;
-        }
-        .form-group select option {
-            text-align: center;
-        }
-    </style>
 </head>
 <body>
     <div class="container">
@@ -34,7 +23,13 @@
             $email = trim($_POST['email']);
             $mobile_number = trim($_POST['mobile_number']);
             $role = trim($_POST['role']);
-            $status = trim($_POST['status']);
+            // Status is now automatically set to active
+            $status = 'active';
+            
+            // Get the optional fields (may be empty)
+            $sss_no = isset($_POST['sss_no']) ? trim($_POST['sss_no']) : null;
+            $pagibig_no = isset($_POST['pagibig_no']) ? trim($_POST['pagibig_no']) : null;
+            $philhealth_no = isset($_POST['philhealth_no']) ? trim($_POST['philhealth_no']) : null;
 
             // Validate inputs
             $errors = [];
@@ -44,7 +39,7 @@
             if (empty($email)) $errors[] = "Email field is empty.";
             if (empty($mobile_number)) $errors[] = "Mobile Number field is empty.";
             if (empty($role)) $errors[] = "Role field is empty.";
-            if (empty($status)) $errors[] = "Status field is empty.";
+            // Removed status validation since it's now hardcoded
 
             if (!empty($errors)) {
                 echo "<div class='error'>" . implode("<br/>", $errors) . "</div>";
@@ -56,9 +51,26 @@
                     $default_password = $lastname . $dobFormatted; // Example: "Doe1995-06-15"
                     $hashed_password = password_hash($default_password, PASSWORD_DEFAULT); // Hash the password
 
+                    // Check if email already exists
+                    $stmt = $dbc->prepare("SELECT id FROM users WHERE email = :email");
+                    $stmt->bindParam(':email', $email);
+                    $stmt->execute();
+                    
+                    if ($stmt->fetch()) {
+                        echo "Email already exists. Please use a different email.";
+                        exit();
+                    }
+
+                    // Get the next available employee number
+                    $stmt = $dbc->prepare("SELECT MAX(CAST(SUBSTRING(employee_no, 5) AS UNSIGNED)) as max_id FROM users WHERE employee_no IS NOT NULL");
+                    $stmt->execute();
+                    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+                    $next_id = ($result['max_id'] ?? 0) + 1;
+                    $employee_no = 'EMP-' . str_pad($next_id, 4, '0', STR_PAD_LEFT);
+
                     // Prepare the query with correct placeholders
-                    $stmt = $dbc->prepare("INSERT INTO users (firstname, lastname, dob, email, mobile_number, role, status, password) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-                    $stmt->execute([$firstname, $lastname, $dob, $email, $mobile_number, $role, $status, $hashed_password]);
+                    $stmt = $dbc->prepare("INSERT INTO users (firstname, lastname, dob, email, mobile_number, role, status, password, employee_no, sss_no, pagibig_no, philhealth_no) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                    $stmt->execute([$firstname, $lastname, $dob, $email, $mobile_number, $role, $status, $hashed_password, $employee_no, $sss_no, $pagibig_no, $philhealth_no]);
 
                     echo "<div class='success'>Employee added successfully. Do you want to add again?</div>";
                     echo "<a href='../../HTML CODES/dashboard-admin.php' class='back-link'>View Employees</a>";
@@ -70,7 +82,7 @@
         ?>
 
         <a href="../../HTML CODES/dashboard-admin.php" class="home-link">Home</a>
-        <form action="addform.php" method="post" name="form1" onsubmit="return validateForm();">
+        <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post" name="form1" onsubmit="return validateForm();">
             <div class="form-row">
                 <div class="form-group">
                     <label for="firstname">First Name:</label>
@@ -98,7 +110,7 @@
             <div class="form-row">
                 <div class="form-group">
                     <label for="mobile_number">Mobile Number:</label>
-                    <input type="text" name="mobile_number" id="mobile_number">
+                    <input type="text" name="mobile_number" id="mobile_number" placeholder="11 digits">
                 </div>
 
                 <div class="form-group">
@@ -111,14 +123,23 @@
                 </div>
             </div>
 
+            <!-- Hidden input to automatically set status as active -->
+            <input type="hidden" name="status" value="active">
+
             <div class="form-row">
                 <div class="form-group">
-                    <label for="status">Status:</label>
-                    <select name="status" id="status">
-                        <option value="">Select Status</option>
-                        <option value="verified">Verified</option>
-                        <option value="unverified">Unverified</option>
-                    </select>
+                    <label for="sss_no">SSS Number:</label>
+                    <input type="text" name="sss_no" id="sss_no" placeholder="10 digits">
+                </div>
+
+                <div class="form-group">
+                    <label for="pagibig_no">Pag-IBIG Number:</label>
+                    <input type="text" name="pagibig_no" id="pagibig_no" placeholder="10-12 digits">
+                </div>
+
+                <div class="form-group">
+                    <label for="philhealth_no">PhilHealth Number:</label>
+                    <input type="text" name="philhealth_no" id="philhealth_no" placeholder="10-12 digits">
                 </div>
             </div>
 
@@ -128,7 +149,7 @@
     
     <script>
         function validateForm() {
-            const fields = ["firstname", "lastname", "dob", "email", "mobile_number", "role", "status"];
+            const fields = ["firstname", "lastname", "dob", "email", "mobile_number", "role"];
             for (let field of fields) {
                 if (!document.getElementById(field).value) {
                     alert("All fields must be filled out!");

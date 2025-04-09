@@ -41,10 +41,10 @@ try {
         COUNT(*) AS total, 
         SUM(role = 'technician') AS technicians,
         SUM(role = 'supervisor') AS supervisors,
-        SUM(role = 'technician' AND status = 'verified') AS verified_technicians,
-        SUM(role = 'supervisor' AND status = 'verified') AS verified_supervisors,
-        SUM(role = 'technician' AND status = 'unverified') AS unverified_technicians,
-        SUM(role = 'supervisor' AND status = 'unverified') AS unverified_supervisors
+        SUM(role = 'technician' AND status = 'active') AS active_technicians,
+        SUM(role = 'supervisor' AND status = 'active') AS active_supervisors,
+        SUM(role = 'technician' AND status = 'inactive') AS inactive_technicians,
+        SUM(role = 'supervisor' AND status = 'inactive') AS inactive_supervisors
     FROM users
     WHERE role IN ('technician', 'supervisor')");
 
@@ -56,10 +56,10 @@ try {
             'total' => 0, 
             'technicians' => 0, 
             'supervisors' => 0, 
-            'verified_technicians' => 0, 
-            'verified_supervisors' => 0, 
-            'unverified_technicians' => 0, 
-            'unverified_supervisors' => 0
+            'active_technicians' => 0, 
+            'active_supervisors' => 0, 
+            'inactive_technicians' => 0, 
+            'inactive_supervisors' => 0
         ];
     }
 } catch (PDOException $e) {
@@ -68,10 +68,10 @@ try {
         'total' => 0, 
         'technicians' => 0, 
         'supervisors' => 0, 
-        'verified_technicians' => 0, 
-        'verified_supervisors' => 0, 
-        'unverified_technicians' => 0, 
-        'unverified_supervisors' => 0
+        'active_technicians' => 0, 
+        'active_supervisors' => 0, 
+        'inactive_technicians' => 0, 
+        'inactive_supervisors' => 0
     ];
 }
 
@@ -827,15 +827,15 @@ window.addEventListener('click', function(event) {
                         <div class="stat-card">
                             <i class='bx bxs-user-check'></i>
                             <div class="stat-details">
-                                <h3>Verified</h3>
-                                <p><?php echo $data['verified_technicians'] + $data['verified_supervisors']; ?></p>
+                                <h3>Active</h3>
+                                <p><?php echo $data['active_technicians'] + $data['active_supervisors']; ?></p>
                             </div>
                         </div>
                         <div class="stat-card">
                             <i class='bx bxs-user-x'></i>
                             <div class="stat-details">
-                                <h3>Unverified</h3>
-                                <p><?php echo $data['unverified_technicians'] + $data['unverified_supervisors']; ?></p>
+                                <h3>Inactive</h3>
+                                <p><?php echo $data['inactive_technicians'] + $data['inactive_supervisors']; ?></p>
                             </div>
                         </div>
                     </div>
@@ -858,8 +858,8 @@ window.addEventListener('click', function(event) {
                             </select>
                             <select id="filterStatus">
                                 <option value="">Status</option>
-                                <option value="verified">Verified</option>
-                                <option value="unverified">Unverified</option>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
                             </select>
                         </div>
                     </div>

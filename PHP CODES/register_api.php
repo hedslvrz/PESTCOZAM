@@ -25,7 +25,12 @@ $user->email = filter_var(trim($data['email']), FILTER_SANITIZE_EMAIL);
 $user->mobile_number = preg_replace('/\D/', '', trim($data['mobile_number']));
 $user->password = trim($data['password']);
 $user->role = "user";
-$user->status = "Verified";
+$user->status = "active"; // Changed from "Verified" to "active"
+// Initialize employee fields as NULL for regular users
+$user->employee_no = null;
+$user->sss_no = null;
+$user->pagibig_no = null;
+$user->philhealth_no = null;
 
 // Validate email format
 if (!filter_var($user->email, FILTER_VALIDATE_EMAIL)) {

@@ -3,188 +3,200 @@ body {
     margin: 0;
     padding: 0;
     min-height: 100vh;
-    height: 100vh; /* Force 100% viewport height */
-    overflow: hidden; /* Prevent body scrolling */
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     font-family: 'Poppins', sans-serif;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
 }
 
 .container {
     background: white;
-    padding: 1.5rem;
+    padding: 2.5rem;
     border-radius: 12px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    width: 80%;
-    max-width: 800px;
-    margin: auto;
-    position: absolute;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 90%;
+    max-width: 1000px; /* Increased for two-column layout */
+    margin: 0 auto;
+    position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    max-height: 80vh;
-    display: flex;
-    flex-direction: column;
+    overflow-y: auto;
+    max-height: 90vh;
 }
 
 h1 {
     color: #144578;
     text-align: center;
-    margin-bottom: 0.75rem;
-    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
 }
 
 .home-link {
     display: inline-block;
-    padding: 0.5rem 1rem;
+    padding: 0.7rem 1.2rem;
     background: #144578;
     color: white;
     text-decoration: none;
     border-radius: 6px;
-    margin: 0.5rem 0; /* Reduced from 1rem */
-    transition: background-color 0.3s ease;
+    margin: 1.25rem 0;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    letter-spacing: 0.02em;
 }
 
 .home-link:hover {
     background: #0d2f52;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
-.form-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1.25rem;
-    margin-top: 1rem;
-    padding: 0 0.5rem;
+/* Two-column form layout */
+.form-columns {
+    display: flex;
+    gap: 2rem;
+    width: 100%;
+}
+
+.form-column {
+    flex: 1;
+    padding: 1rem;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+}
+
+.form-column:first-child {
+    border-right: 1px solid #e0e0e0;
+}
+
+.column-title {
+    color: #144578;
+    font-size: 1.2rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #e0e0e0;
+    text-align: center;
+    font-weight: 600;
+}
+
+form {
+    padding: 1rem 0;
 }
 
 .form-group {
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
 }
 
-.form-group label {
+label {
     display: block;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
     color: #144578;
     font-weight: 500;
+    font-size: 1.05rem;
 }
 
-.form-group input,
-.form-group select {
+input, select {
     width: 100%;
-    padding: 0.4rem;
+    padding: 0.9rem;
     border: 1px solid #ddd;
     border-radius: 6px;
-    font-size: 0.95rem;
-    transition: border-color 0.3s ease;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
 }
 
-.form-group input:focus,
-.form-group select:focus {
+input:focus, select:focus {
     outline: none;
     border-color: #144578;
+    box-shadow: 0 0 0 2px rgba(20, 69, 120, 0.2);
 }
 
 .action-buttons {
-    grid-column: 1 / -1;
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    gap: 1rem;
-    margin-top: 1.5rem;
-    text-align: center;
-}
-
-.status-section {
-    margin: 1rem auto;
-    text-align: center;
-}
-
-.status-wrapper {
     display: flex;
     justify-content: center;
-    margin: 1.5rem 0;
-    width: 100%;
-}
-
-.status-center {
-    width: 250px;
-    margin: 0;
-    text-align: center;
-}
-
-.status-center select {
-    text-align: center;
-    text-align-last: center;
-}
-
-.action-section {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.btn-container {
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
+    gap: 1.5rem;
+    margin-top: 2rem;
+    padding: 1rem 0;
+    clear: both; /* Ensures it appears below both columns */
 }
 
 .btn {
-    padding: 0.5rem 1rem;
-    border: none;
+    padding: 0.9rem 1.5rem;
     border-radius: 6px;
-    font-size: 1rem;
-    cursor: pointer;
+    text-decoration: none;
+    font-weight: 600;
+    letter-spacing: 0.03em;
     transition: all 0.3s ease;
-    min-width: 120px;
+    display: inline-block;
     text-align: center;
+    cursor: pointer;
+    border: none;
+    min-width: 120px;
 }
 
-/* Swap the visual order by changing the background colors */
-.btn-update {
+.btn-update, .btn-add {
     background: #144578;
     color: white;
 }
 
-.btn-update:hover {
-    background: #0d2f52;
-}
-
 .btn-cancel {
-    background: #dc3545;
+    background: #6c757d;
     color: white;
 }
 
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+}
+
+.btn-update:hover, .btn-add:hover {
+    background: #0d2f52;
+}
+
 .btn-cancel:hover {
-    background: #bb2d3b;
+    background: #5a6268;
 }
 
-/* Add responsive adjustments for smaller screens */
-@media screen and (max-height: 700px) {
-    .container {
-        padding: 1rem;
-        max-height: 85vh;
-    }
-    
-    .form-grid {
-        gap: 1.5rem; /* Increased from 0.75rem */
-    }
-    
-    .form-group {
-        margin-bottom: 1rem; /* Increased from 0.5rem */
-    }
-    
-    h1 {
-        margin-bottom: 0.75rem;
-    }
+/* Hide scrollbar for better appearance */
+.container::-webkit-scrollbar {
+    width: 6px;
 }
 
-@media screen and (max-height: 600px) {
-    .container {
-        padding: 1rem;
+.container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.container::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.container::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Responsive design */
+@media (max-width: 900px) {
+    .form-columns {
+        flex-direction: column;
     }
     
-    .form-grid {
-        gap: 1rem; /* Increased from 0.5rem */
+    .form-column:first-child {
+        border-right: none;
+        border-bottom: 1px solid #e0e0e0;
+        margin-bottom: 1rem;
+    }
+    
+    .container {
+        max-width: 95%;
+        padding: 1.5rem;
+        top: 5%;
+        transform: translateX(-50%);
+        height: 90vh;
     }
 }

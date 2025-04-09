@@ -22,7 +22,7 @@ if ($stmt->rowCount() > 0) {
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (password_verify($data['password'], $row['password'])) {
-        if (strcasecmp(trim($row['status']), 'Verified') === 0) {
+        if (strcasecmp(trim($row['status']), 'active') === 0) { // Changed from "Verified" to "active"
             // Set all necessary session variables
             $_SESSION['user_id'] = $row['id'];
             $_SESSION['firstname'] = $row['firstname'];
@@ -47,7 +47,7 @@ if ($stmt->rowCount() > 0) {
             ]);
         } else {
             http_response_code(403);
-            echo json_encode(["success" => false, "message" => "Account not verified."]);
+            echo json_encode(["success" => false, "message" => "Account is inactive. Please contact administrator."]); // Updated error message
         }
     } else {
         http_response_code(401);

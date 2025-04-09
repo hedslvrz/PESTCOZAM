@@ -37,8 +37,12 @@ CREATE TABLE `users` (
   `password` varchar(100) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `role` enum('user','admin','supervisor','technician') NOT NULL DEFAULT 'user',
-  `status` enum('verified','unverified') NOT NULL DEFAULT 'unverified',
+  `status` enum('active','inactive') NOT NULL DEFAULT 'inactive',
   `dob` date DEFAULT NULL,
+  `employee_no` varchar(20) DEFAULT NULL,
+  `sss_no` varchar(20) DEFAULT NULL,
+  `pagibig_no` varchar(20) DEFAULT NULL,
+  `philhealth_no` varchar(20) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -47,16 +51,16 @@ CREATE TABLE `users` (
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `firstname`, `middlename`, `lastname`, `email`, `mobile_number`, `password`, `created_at`, `role`, `status`, `dob`) VALUES
-(1, 'Hedrian Dunn', NULL, 'Alvarez', 'dunnlvrz13@gmail.com', '09759500123', '$2y$10$jn8m3Y/NnSIVBQmWSZdNtuAjpc2lIjj4oJPwqO2e4crXxoQkraRw2', '2025-03-01 07:13:17', 'admin', 'verified', '2004-04-13'),
-(2, 'Hedrian', NULL, 'Alvarez', 'hedrianlvrz13@gmail.com', '09925028930', '$2y$10$llagzPkGmqSRnmdaqysXA.Wma1Ra3r7E0OkE86NGCmG0yJ.7krvXS', '2025-03-04 14:59:55', 'user', 'verified', NULL),
-(5, 'Aldwin', NULL, 'Suarez', 'aldwinsuarez@gmail.com', '09929508778', '$2y$10$rtquceequxvXMIEIVquu5OElwdj3R663mROq8hc31WnRIxTioX7Ii', '2025-03-10 04:49:04', 'admin', 'verified', NULL),
-(6, 'John', NULL, 'Bue', 'Johnsage@gmail.com', '09292213467', '$2y$10$6BxP6fxlCMdPZwIEb5l8luMXc2AeVRb.oDAh2ok3N0SQLUHlQAgwa', '2025-03-10 05:28:23', 'technician', 'verified', '2025-03-13'),
-(8, 'Andrew', NULL, 'Tate', 'AndrewTate@gmail.com', '09776537811', '$2y$10$ZL6SEzVCeeND9wAOr3XvFuF/vG6E0vIUHq9jjggO4o2D1V/ty7ehW', '2025-03-10 05:30:18', 'technician', 'verified', '2025-03-15'),
-(23, 'Diz', NULL, 'Nuts', 'DizNutz@gmail.com', '09359472304', '$2y$10$wuGNS/gSlT.dE3K1/no/WeeJbtOA/DxMgNikntsIztDHEihZBLfZq', '2025-03-10 13:07:29', 'supervisor', 'verified', '2025-03-21'),
-(43, 'Francine', NULL, 'Delos Reyes', 'francine@gmail.com', '09726374892', '$2y$10$PA4m0oqFjStb/I//StISk.LdNlnqB.9fod0RWde38Nh4ZTz79VgIG', '2025-03-10 19:18:49', 'admin', 'verified', '2004-03-22'),
-(44, 'Hannah', 'Marie', 'Alvarez', 'hannahlvrz13@gmail.com', '09827182739', '$2y$10$AsWSNGgeI06Tb.yXa6FfsuT2Nu9Q6XDX1w9L.grfPc505me0VHHui', '2025-03-29 04:01:32', 'user', 'verified', '1994-06-26'),
-(45, 'Robert', NULL, 'Downey', 'robertdowney@gmail.com', '09827182837', '$2y$10$4H8vXmg0MfVYH6b4cAKSCOwRRIamEpeuNtLsLoVhFAQjiFZL4NhPe', '2025-03-29 04:04:42', 'supervisor', 'verified', '2043-09-12');
+INSERT INTO `users` (`id`, `firstname`, `middlename`, `lastname`, `email`, `mobile_number`, `password`, `created_at`, `role`, `status`, `dob`, `employee_no`, `sss_no`, `pagibig_no`, `philhealth_no`) VALUES
+(1, 'Hedrian Dunn', NULL, 'Alvarez', 'dunnlvrz13@gmail.com', '09759500123', '$2y$10$jn8m3Y/NnSIVBQmWSZdNtuAjpc2lIjj4oJPwqO2e4crXxoQkraRw2', '2025-03-01 07:13:17', 'admin', 'active', '2004-04-13', 'EMP-0001', '1234567890', '9876543210', '1122334455'),
+(2, 'Hedrian', NULL, 'Alvarez', 'hedrianlvrz13@gmail.com', '09925028930', '$2y$10$llagzPkGmqSRnmdaqysXA.Wma1Ra3r7E0OkE86NGCmG0yJ.7krvXS', '2025-03-04 14:59:55', 'user', 'active', NULL, NULL, NULL, NULL, NULL),
+(5, 'Aldwin', NULL, 'Suarez', 'aldwinsuarez@gmail.com', '09929508778', '$2y$10$rtquceequxvXMIEIVquu5OElwdj3R663mROq8hc31WnRIxTioX7Ii', '2025-03-10 04:49:04', 'admin', 'active', NULL, 'EMP-0002', '2233445566', '5544332211', '6677889900'),
+(6, 'John', NULL, 'Bue', 'Johnsage@gmail.com', '09292213467', '$2y$10$6BxP6fxlCMdPZwIEb5l8luMXc2AeVRb.oDAh2ok3N0SQLUHlQAgwa', '2025-03-10 05:28:23', 'technician', 'active', '2025-03-13', 'EMP-0003', '3344556677', '7766554433', '1122334455'),
+(8, 'Andrew', NULL, 'Tate', 'AndrewTate@gmail.com', '09776537811', '$2y$10$ZL6SEzVCeeND9wAOr3XvFuF/vG6E0vIUHq9jjggO4o2D1V/ty7ehW', '2025-03-10 05:30:18', 'technician', 'active', '2025-03-15', 'EMP-0004', '4455667788', '8877665544', '2233445566'),
+(23, 'Diz', NULL, 'Nuts', 'DizNutz@gmail.com', '09359472304', '$2y$10$wuGNS/gSlT.dE3K1/no/WeeJbtOA/DxMgNikntsIztDHEihZBLfZq', '2025-03-10 13:07:29', 'supervisor', 'active', '2025-03-21', 'EMP-0005', '5566778899', '9988776655', '3344556677'),
+(43, 'Francine', NULL, 'Delos Reyes', 'francine@gmail.com', '09726374892', '$2y$10$PA4m0oqFjStb/I//StISk.LdNlnqB.9fod0RWde38Nh4ZTz79VgIG', '2025-03-10 19:18:49', 'admin', 'active', '2004-03-22', 'EMP-0006', '6677889900', '0099887766', '4455667788'),
+(44, 'Hannah', 'Marie', 'Alvarez', 'hannahlvrz13@gmail.com', '09827182739', '$2y$10$AsWSNGgeI06Tb.yXa6FfsuT2Nu9Q6XDX1w9L.grfPc505me0VHHui', '2025-03-29 04:01:32', 'user', 'active', '1994-06-26', NULL, NULL, NULL, NULL),
+(45, 'Robert', NULL, 'Downey', 'robertdowney@gmail.com', '09827182837', '$2y$10$4H8vXmg0MfVYH6b4cAKSCOwRRIamEpeuNtLsLoVhFAQjiFZL4NhPe', '2025-03-29 04:04:42', 'supervisor', 'active', '2043-09-12', 'EMP-0007', '7788990011', '1100998877', '5566778899');
 
 -- --------------------------------------------------------
 
