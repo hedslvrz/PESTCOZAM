@@ -11,7 +11,7 @@ $database = new Database();
 $db = $database->getConnection();
 
 try {
-    $query = "SELECT a.*, s.service_name,
+    $query = "SELECT a.*, s.service_name, s.service_id,
               CASE 
                   WHEN a.is_for_self = 1 THEN CONCAT(u.firstname, ' ', u.lastname)
                   ELSE CONCAT(a.firstname, ' ', a.lastname)

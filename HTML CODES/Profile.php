@@ -70,11 +70,6 @@ $recent_appointment = $stmt->get_result()->fetch_assoc();
     <link rel="stylesheet" href="../CSS CODES/Profile.css" />
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 </head>
-<style>
-    html {
-    scroll-behavior: smooth;
-  }
-  </style>
 <body>
 
   <!-- HEADER -->
@@ -201,6 +196,14 @@ $recent_appointment = $stmt->get_result()->fetch_assoc();
               <strong>Status:</strong> 
               <span class="appointment-status <?php echo strtolower($recent_appointment['status']); ?>"><?php echo $recent_appointment['status']; ?></span>
             </p>
+            
+            <?php if ($recent_appointment['status'] === 'Completed'): ?>
+              <div class="feedback-section">
+                <button class="send-feedback-btn" onclick="openFeedbackModal(<?php echo $recent_appointment['id']; ?>, <?php echo $recent_appointment['service_id']; ?>)">
+                  <i class='bx bx-message-square-dots'></i> Send Feedback
+                </button>
+              </div>
+            <?php endif; ?>
           <?php else: ?>
             <p>Select an appointment from the history to view details.</p>
           <?php endif; ?>
@@ -243,6 +246,85 @@ $recent_appointment = $stmt->get_result()->fetch_assoc();
     </div>
   </div>
 
+  <!-- Feedback Modal -->
+  <div id="feedbackModal" class="modal">
+    <div class="modal-content feedback-modal-content">
+      <span class="close" onclick="closeFeedbackModal()">&times;</span>
+      <h2>Share Your Experience</h2>
+      <form id="feedbackForm" method="POST" action="submit_review.php">
+        <input type="hidden" id="appointment_id" name="appointment_id">
+        <input type="hidden" id="service_id" name="service_id">
+        
+        <div class="feedback-container">
+          <!-- Ratings Column (Left) -->
+          <div class="ratings-column">
+            <!-- Service Rating -->
+            <div class="rating-group">
+              <p class="rating-label">Service Rating</p>
+              <div class="star-rating service-rating">
+                <input type="radio" id="service_star5" name="service_rating" value="5" required><label for="service_star5" title="Excellent"></label>
+                <input type="radio" id="service_star4" name="service_rating" value="4"><label for="service_star4" title="Very Good"></label>
+                <input type="radio" id="service_star3" name="service_rating" value="3"><label for="service_star3" title="Good"></label>
+                <input type="radio" id="service_star2" name="service_rating" value="2"><label for="service_star2" title="Fair"></label>
+                <input type="radio" id="service_star1" name="service_rating" value="1"><label for="service_star1" title="Poor"></label>
+              </div>
+            </div>
+            
+            <!-- Technician Rating -->
+            <div class="rating-group">
+              <p class="rating-label">Technician Rating</p>
+              <div class="star-rating technician-rating">
+                <input type="radio" id="tech_star5" name="technician_rating" value="5" required><label for="tech_star5" title="Excellent"></label>
+                <input type="radio" id="tech_star4" name="technician_rating" value="4"><label for="tech_star4" title="Very Good"></label>
+                <input type="radio" id="tech_star3" name="technician_rating" value="3"><label for="tech_star3" title="Good"></label>
+                <input type="radio" id="tech_star2" name="technician_rating" value="2"><label for="tech_star2" title="Fair"></label>
+                <input type="radio" id="tech_star1" name="technician_rating" value="1"><label for="tech_star1" title="Poor"></label>
+              </div>
+            </div>
+            
+            <!-- Overall Rating -->
+            <div class="rating-group">
+              <p class="rating-label">Overall Experience</p>
+              <div class="star-rating overall-rating">
+                <input type="radio" id="star5" name="rating" value="5" required><label for="star5" title="Excellent"></label>
+                <input type="radio" id="star4" name="rating" value="4"><label for="star4" title="Very Good"></label>
+                <input type="radio" id="star3" name="rating" value="3"><label for="star3" title="Good"></label>
+                <input type="radio" id="star2" name="rating" value="2"><label for="star2" title="Fair"></label>
+                <input type="radio" id="star1" name="rating" value="1"><label for="star1" title="Poor"></label>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Inputs Column (Right) -->
+          <div class="inputs-column">
+            <!-- Service Feedback -->
+            <div class="form-group">
+              <label for="service_feedback">What did you like about our service?</label>
+              <textarea id="service_feedback" name="service_feedback" rows="3" required placeholder="Tell us what you liked about the service..."></textarea>
+            </div>
+            
+            <!-- Issues Reported -->
+            <div class="form-group">
+              <label for="reported_issues">Any Issues or Concerns?</label>
+              <textarea id="reported_issues" name="reported_issues" rows="3" placeholder="Tell us about any issues you encountered..."></textarea>
+            </div>
+            
+            <!-- General Comments -->
+            <div class="form-group">
+              <label for="review_text">Additional Comments:</label>
+              <textarea id="review_text" name="review_text" rows="3" required placeholder="Any other thoughts about your experience..."></textarea>
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-buttons">
+          <button type="submit" class="submit-btn">Submit Feedback</button>
+          <button type="button" class="cancel-btn" onclick="closeFeedbackModal()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script>
     let lastScrollTop = 0;
     const headerWrapper = document.querySelector('.header-wrapper');
@@ -261,16 +343,15 @@ $recent_appointment = $stmt->get_result()->fetch_assoc();
         
         lastScrollTop = scrollTop <= 0 ? 0 : scrollTop; // For Mobile or negative scrolling
     }, false);
-  </script>
 
-  <script>
     const modal = document.getElementById('editProfileModal');
     const editBtn = document.querySelector('.edit-btn');
     const closeBtn = document.querySelector('.close');
     const form = document.getElementById('editProfileForm');
 
     editBtn.onclick = function() {
-      modal.style.display = "block";
+      modal.style.display = "flex";
+      modal.classList.add("show-modal");
     }
 
     closeBtn.onclick = function() {
@@ -279,6 +360,7 @@ $recent_appointment = $stmt->get_result()->fetch_assoc();
 
     function closeModal() {
       modal.style.display = "none";
+      modal.classList.remove("show-modal");
     }
 
     window.onclick = function(event) {
@@ -304,7 +386,7 @@ $recent_appointment = $stmt->get_result()->fetch_assoc();
           alert('Error updating profile: ' + data.message);
         }
       })
-      .catch(error => {
+        .catch(error => {
         alert('Error updating profile');
         console.error(error);
       });
@@ -323,7 +405,7 @@ $recent_appointment = $stmt->get_result()->fetch_assoc();
           .then(data => {
             if (data.success) {
               const details = data.details;
-              const detailsHtml = `
+              let detailsHtml = `
                 <p><strong>Appointment #:</strong> ${details.id}</p>
                 <p><strong>Client:</strong> ${details.client_name} ${details.is_for_self ? '(Self)' : '(Other)'}</p>
                 <p><strong>Type of Service:</strong> ${details.service_name}</p>
@@ -331,8 +413,21 @@ $recent_appointment = $stmt->get_result()->fetch_assoc();
                 <p><strong>Time:</strong> ${details.appointment_time}</p>
                 <p><strong>Location:</strong> ${details.street_address}</p>
                 <p><strong>Technician:</strong> ${details.technician_name || 'Not yet assigned'}</p>
-                <p><strong>Status:</strong> <span class="appointment-status ${details.status.toLowerCase()}">${details.status}</span></p>
-              `;
+                <p>
+                  <strong>Status:</strong> 
+                  <span class="appointment-status ${details.status.toLowerCase()}">${details.status}</span>
+                </p>`;
+                
+              // Add Send Feedback button when status is Completed
+              if (details.status === 'Completed') {
+                detailsHtml += `
+                  <div class="feedback-section">
+                    <button class="send-feedback-btn" onclick="openFeedbackModal(${details.id}, ${details.service_id})">
+                      <i class='bx bx-message-square-dots'></i> Send Feedback
+                    </button>
+                  </div>`;
+              }
+              
               document.getElementById('appointmentDetails').innerHTML = detailsHtml;
             } else {
               alert('Error fetching appointment details');
@@ -342,6 +437,61 @@ $recent_appointment = $stmt->get_result()->fetch_assoc();
             console.error('Error:', error);
             alert('Error fetching appointment details');
           });
+      });
+    });
+
+    function openFeedbackModal(appointmentId, serviceId) {
+      document.getElementById('appointment_id').value = appointmentId;
+      document.getElementById('service_id').value = serviceId;
+      const feedbackModal = document.getElementById('feedbackModal');
+      feedbackModal.style.display = "flex";
+      feedbackModal.classList.add("show-modal");
+    }
+    
+    function closeFeedbackModal() {
+      const feedbackModal = document.getElementById('feedbackModal');
+      feedbackModal.style.display = "none";
+      feedbackModal.classList.remove("show-modal");
+    }
+    
+    document.getElementById('feedbackForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const formData = new FormData(this);
+      
+      // Show loading state
+      const submitBtn = this.querySelector('.submit-btn');
+      const originalText = submitBtn.textContent;
+      submitBtn.textContent = 'Submitting...';
+      submitBtn.disabled = true;
+      
+      fetch('submit_review.php', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok: ' + response.statusText);
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data.success) {
+          alert('Thank you for your feedback!');
+          closeFeedbackModal();
+        } else {
+          console.error('Server error:', data);
+          alert('Error submitting feedback: ' + (data.message || 'Unknown error'));
+        }
+      })
+      .catch(error => {
+        console.error('Submission error:', error);
+        alert('An error occurred while submitting your feedback. Please try again later.');
+      })
+      .finally(() => {
+        // Reset button state
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
       });
     });
   </script>

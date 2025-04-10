@@ -25,6 +25,24 @@ $stmt = $db->prepare($query);
 $stmt->execute();
 $services = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+// Fetch approved reviews with user information
+$reviews = [];
+try {
+    $query = "SELECT r.*, u.firstname, u.lastname, 
+              './Pictures/boy.png' AS profile_pic 
+              FROM reviews r 
+              JOIN users u ON r.user_id = u.id 
+              WHERE r.status = 'approved' 
+              ORDER BY r.created_at DESC 
+              LIMIT 10";
+    $stmt = $db->prepare($query);
+    $stmt->execute();
+    $reviews = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    // If the table doesn't exist or other error, just continue with empty reviews array
+    error_log('Reviews query failed: ' . $e->getMessage());
+}
+
 // Separate ocular inspection from other services
 $ocularService = null;
 $regularServices = [];
@@ -380,7 +398,7 @@ foreach ($services as $service) {
   </section>
 
 
-<!-- REVIEWS SECTION - HARDCODED MUNA -->
+<!-- REVIEWS SECTION -->
 <section id="reviews-section">
   <div class="reviews-container">
     <div class="reviews-header">
@@ -388,42 +406,42 @@ foreach ($services as $service) {
       <p>See what our happy customers are saying about their experiences with us!</p>
     </div>
     <div class="reviews-slider">
-      <div class="review-slide">
-        <div class="review-card">
-          <img src="./Pictures/woman.png" alt="Evangeline Tecson Bue" class="review-image">
-          <div class="review-content">
-            <h3 class="review-name">Evangeline Tecson Bue</h3>
-            <div class="review-stars">★★★★★</div>
-            <p>"I can't believe the no of caught rats, cockroaches and all. Thank you PESTCOZAM Highly recommended effective and affordable cost"</p>
+      <?php if (count($reviews) > 0): ?>
+        <?php foreach ($reviews as $review): ?>
+          <div class="review-slide">
+            <div class="review-card">
+              <img src="<?= htmlspecialchars($review['profile_pic']) ?>" 
+                   alt="<?= htmlspecialchars($review['firstname'] . ' ' . $review['lastname']) ?>" 
+                   class="review-image">
+              <div class="review-content">
+                <h3 class="review-name"><?= htmlspecialchars($review['firstname'] . ' ' . $review['lastname']) ?></h3>
+                <div class="review-stars">
+                  <?php 
+                    $rating = (int)$review['rating'];
+                    echo str_repeat('★', $rating) . str_repeat('☆', 5 - $rating); 
+                  ?>
+                </div>
+                <p>"<?= htmlspecialchars($review['review_text']) ?>"</p>
+              </div>
+            </div>
+          </div>
+        <?php endforeach; ?>
+      <?php else: ?>
+        <div class="review-slide">
+          <div class="review-card">
+            <div class="review-content">
+              <h3 class="review-name">No Reviews Yet</h3>
+              <p>Be the first to leave a review after experiencing our service!</p>
+            </div>
           </div>
         </div>
-      </div>
-      <div class="review-slide">
-        <div class="review-card">
-          <img src="./Pictures/woman.png" alt="Loriel Keme" class="review-image">
-          <div class="review-content">
-            <h3 class="review-name">Loriel Keme</h3>
-            <div class="review-stars">★★★★★</div>
-            <p>"Outstanding pest control service. Prompt response, friendly staff and through inspection. The technician was knowledgeable, used eco-friendly products. Highly recommended this professional and effective service"</p>
-          </div>
-        </div>
-      </div>
-      <div class="review-slide">
-        <div class="review-card">
-          <img src="./Pictures/boy.png" alt="Martin Go" class="review-image">
-          <div class="review-content">
-            <h3 class="review-name">Martin Go</h3>
-            <div class="review-stars">★★★★★</div>
-            <p>Great service and very detail oriented, would definitely recommend!</p>
-          </div>
-        </div>
-      </div>
-      </div>
+      <?php endif; ?>
+    </div>
     <div class="slider-controls">
       <button class="prev-button">←</button>
       <button class="next-button">→</button>
     </div>
-    <a href="./HTML CDOES/Appointment-service.php" class="book-now-button">BOOK NOW!</a>
+    <a href="./HTML CODES/Appointment-service.php" class="book-now-button">BOOK NOW!</a>
   </div>
 </section>
 

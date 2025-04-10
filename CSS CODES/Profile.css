@@ -3,6 +3,9 @@
   src: url(../Fonts/Shrikhand-Regular.ttf);
 }
 
+html {
+  scroll-behavior: smooth;
+}
 
 body {
   font-family: Arial, sans-serif;
@@ -237,9 +240,6 @@ nav ul li a:hover {
 .profile-dropdown:hover .dropdown-content {
   display: block;
 }
-
-
-
 
 /* MAIN CONTAINER */
 .main-container {
@@ -590,7 +590,7 @@ td:has(.status-badge) {
 
 /* Modal Styles */
 .modal {
-  display: none;
+  display: none; /* Default state is hidden */ /* This is getting overridden */
   position: fixed;
   z-index: 1001;
   left: 0;
@@ -598,11 +598,19 @@ td:has(.status-badge) {
   width: 100%;
   height: 100%;
   background-color: rgba(0,0,0,0.5);
+  overflow-y: auto; /* Enable scrolling if needed */
+} /* This is overriding the display:none above */
+
+/* Additional class to apply when showing modals */
+.modal.show-modal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .modal-content {
   background-color: #fefefe;
-  margin: 10% auto;
+  margin: 20px;
   padding: 20px;
   border-radius: 8px;
   width: 80%;
@@ -668,6 +676,26 @@ td:has(.status-badge) {
 
 .cancel-btn:hover {
   background-color: #545b62;
+}
+
+/* Feedback Modal Styling */
+.feedback-modal-content {
+  max-width: 800px !important;
+  border-radius: 15px;
+  padding: 30px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+  background: linear-gradient(to bottom, #ffffff, #f9f9f9);
+  border: 1px solid #eaeaea;
+  margin: auto; /* Center the modal */
+  max-height: 90vh; /* Limit height to 90% of viewport */
+  overflow-y: auto; /* Allow scrolling for content */
+}
+
+.feedback-container {
+  display: flex;
+  gap: 30px;
+  margin-top: 20px;
+  flex-wrap: wrap; /* Allow wrapping on smaller screens */
 }
 
 /* RESPONSIVE BREAKPOINTS */
@@ -769,4 +797,262 @@ table td:last-child {
 
 .history-row:hover {
   background-color: #f0f0f0;
+}
+
+/* Feedback Section */
+.feedback-section {
+  margin-top: 15px;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+}
+
+.send-feedback-btn {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  margin: 0 auto; /* Center the button */
+  gap: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.send-feedback-btn:hover {
+  background-color: #45a049;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* Feedback Modal */
+.feedback-modal-content {
+  max-width: 800px !important;
+  border-radius: 15px;
+  padding: 30px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+  background: linear-gradient(to bottom, #ffffff, #f9f9f9);
+  border: 1px solid #eaeaea;
+  margin: auto; /* Center the modal */
+  max-height: 90vh; /* Limit height to 90% of viewport */
+  overflow-y: auto; /* Allow scrolling for content */
+}
+
+.feedback-container {
+  display: flex;
+  gap: 30px;
+  margin-top: 20px;
+  flex-wrap: wrap; /* Allow wrapping on smaller screens */
+}
+
+.ratings-column {
+  flex: 1;
+  padding: 15px;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: inset 0 0 5px rgba(0,0,0,0.05);
+}
+
+.inputs-column {
+  flex: 1.5;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.rating-group {
+  margin-bottom: 25px;
+  padding: 15px;
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+#feedbackModal h2 {
+  margin-bottom: 25px;
+  color: #2c3e50;
+  text-align: center;
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 15px;
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+#feedbackModal .form-group {
+  margin-bottom: 22px;
+  width: 100%;
+  background-color: #fff;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+#feedbackModal .rating-label {
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: #34495e;
+  font-size: 16px;
+  text-align: center;
+}
+
+/* Star Rating Styling */
+.star-rating {
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: center;
+  margin-bottom: 10px;
+  gap: 5px;
+}
+
+.star-rating input {
+  display: none;
+}
+
+.star-rating label {
+  cursor: pointer;
+  width: 35px;
+  height: 35px;
+  background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="%23d4d4d4"/></svg>');
+  background-repeat: no-repeat;
+  background-size: contain;
+  transition: all 0.3s ease;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));
+}
+
+.star-rating input:checked ~ label,
+.star-rating label:hover,
+.star-rating label:hover ~ label {
+  background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="%23FFD700"/></svg>');
+  transform: scale(1.1);
+}
+
+/* Textarea Styling */
+#feedbackModal textarea {
+  width: 100%;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  resize: none;
+  font-family: inherit;
+  font-size: 15px;
+  height: 100px;
+  transition: border-color 0.3s;
+}
+
+#feedbackModal textarea:focus {
+  border-color: #4CAF50;
+  outline: none;
+  box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
+}
+
+/* Form Buttons */
+#feedbackModal .form-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 25px;
+  gap: 15px;
+}
+
+#feedbackModal .submit-btn {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 25px;
+  padding: 12px 30px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s;
+  box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+  flex: 1;
+  font-size: 16px;
+}
+
+#feedbackModal .submit-btn:hover {
+  background-color: #45a049;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(76, 175, 80, 0.4);
+}
+
+#feedbackModal .cancel-btn {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  border-radius: 25px;
+  padding: 12px 30px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s;
+  box-shadow: 0 4px 8px rgba(244, 67, 54, 0.3);
+  flex: 1;
+  font-size: 16px;
+}
+
+#feedbackModal .cancel-btn:hover {
+  background-color: #d32f2f;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(244, 67, 54, 0.4);
+}
+
+/* Modal Close Button */
+#feedbackModal .close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  position: absolute;
+  right: 25px;
+  top: 15px;
+  transition: 0.3s;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+#feedbackModal .close:hover {
+  color: #333;
+  cursor: pointer;
+  background-color: rgba(0,0,0,0.05);
+}
+
+/* Service, Technician, Overall Rating specific styling */
+.service-rating {
+  background-color: transparent; /* Removed colored background */
+}
+
+.technician-rating {
+  background-color: transparent; /* Removed colored background */
+}
+
+.overall-rating {
+  background-color: transparent; /* Removed colored background */
+}
+
+/* Responsive styling for the feedback modal */
+@media (max-width: 768px) {
+  .feedback-container {
+    flex-direction: column;
+  }
+  
+  .feedback-modal-content {
+    max-width: 95% !important;
+    padding: 20px;
+    margin: 10px;
+    max-height: 85vh; /* Slightly smaller on mobile */
+  }
+  
+  .form-buttons {
+    position: sticky; /* Make buttons sticky on mobile */
+    bottom: 0;
+    background-color: rgba(255,255,255,0.9);
+    padding: 10px 0;
+    z-index: 5;
+  }
 }
