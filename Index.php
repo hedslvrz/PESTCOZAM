@@ -1,6 +1,9 @@
 <?php
 session_start();
 
+// Include database connection
+require_once 'database.php';
+
 // Check if user is logged in
 $is_logged_in = isset($_SESSION['user_id']);
 
@@ -8,6 +11,30 @@ $is_logged_in = isset($_SESSION['user_id']);
 if ($is_logged_in) {
     $user_id = $_SESSION['user_id'];
     $profile_pic = isset($_SESSION['profile_pic']) ? $_SESSION['profile_pic'] : './Pictures/boy.png';
+}
+
+// Initialize database connection
+$database = new Database();
+$db = $database->getConnection();
+
+// Fetch services from database
+$query = "SELECT service_id, service_name, description, estimated_time, starting_price, image_path, 
+          CASE WHEN service_name = 'Ocular Inspection' THEN 1 ELSE 0 END AS is_ocular 
+          FROM services ORDER BY is_ocular DESC, service_id ASC";
+$stmt = $db->prepare($query);
+$stmt->execute();
+$services = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Separate ocular inspection from other services
+$ocularService = null;
+$regularServices = [];
+
+foreach ($services as $service) {
+    if ($service['service_name'] == 'Ocular Inspection') {
+        $ocularService = $service;
+    } else {
+        $regularServices[] = $service;
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -234,11 +261,6 @@ if ($is_logged_in) {
   </div>
 </section>
 
-
-
-
-
-
   <!-- WHAT WE OFFER SECTION -->
   <section class="offer-section" id="offer-section">
     <div class="offer-container">
@@ -246,177 +268,57 @@ if ($is_logged_in) {
       <p class="section-subtitle">WHAT WE OFFER</p>
       <h2 class="pest-title">Our Pest Solutions</h2>
 
+      <?php if ($ocularService): ?>
+      <!-- Ocular Inspection Card -->
+      <div class="offer-card">
+        <img src="./Pictures/<?= htmlspecialchars($ocularService['image_path']) ?>" alt="<?= htmlspecialchars($ocularService['service_name']) ?>" />
+        <div class="offer-text">
+          <h3><?= htmlspecialchars($ocularService['service_name']) ?></h3>
+          <p><?= htmlspecialchars($ocularService['description']) ?></p>
+          <div class="service-details">
+            <p><i class='bx bx-time'></i> Est. Time: <?= htmlspecialchars($ocularService['estimated_time']) ?></p>
+            <?php if ($ocularService['starting_price'] == 0): ?>
+              <p><i class='bx bx-check-circle'></i> Free of Charge</p>
+            <?php else: ?>
+              <p><i class='bx bx-money'></i> Starting at ₱<?= number_format($ocularService['starting_price']) ?></p>
+            <?php endif; ?>
+            <p><i class='bx bx-info-circle'></i> Required before any treatment service</p>
+          </div>
+          <div class="button-group">
+            <button class="book-now-btn" onclick="window.location.href='./HTML CODES/Appointment-service.php'">Book Now</button>
+            <button class="learn-more-btn" onclick="window.location.href='./HTML CODES/Lrn_more_sp.php?service_id=<?= $ocularService['service_id'] ?>'">Learn More</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-divider"></div>
+      <?php endif; ?>
+
       <div class="offer-grid">
-        
-        <!-- Card 1 -->
+        <?php foreach ($regularServices as $service): ?>
+        <!-- Service Card -->
         <div class="offer-card">
-          <img src="./Pictures/card 1 offer.jpg" alt="Soil Poisoning" />
+          <img src="./Pictures/<?= htmlspecialchars($service['image_path']) ?>" alt="<?= htmlspecialchars($service['service_name']) ?>" />
           <div class="offer-text">
-            <h3>Soil Poisoning</h3>
-            <p>
-              Accumsan iaculis dictumst montes eros nec tristique accumsan. 
-              Accumsan iaculis dictumst montes eros.
-            </p>
+            <h3><?= htmlspecialchars($service['service_name']) ?></h3>
+            <p><?= htmlspecialchars($service['description']) ?></p>
             <div class="service-details">
-              <p><i class='bx bx-time'></i> Est. Time: 2-4 hours</p>
-              <p><i class='bx bx-money'></i> Starting at ₱3,000</p>
+              <p><i class='bx bx-time'></i> Est. Time: <?= htmlspecialchars($service['estimated_time']) ?></p>
+              <p><i class='bx bx-money'></i> Starting at ₱<?= number_format($service['starting_price']) ?></p>
             </div>
             <div class="button-group">
-                <button class="book-now-btn" onclick="window.location.href='./HTML CODES/Appointment-service.php'">Book Now</button>
-                <button class="learn-more-btn" onclick="window.location.href='./HTML CODES/Lrn_more_sp.php'">Learn More</button>
+              <button class="book-now-btn" onclick="window.location.href='./HTML CODES/Appointment-service.php'">Book Now</button>
+              <button class="learn-more-btn" onclick="window.location.href='./HTML CODES/Lrn_more_sp.php?service_id=<?= $service['service_id'] ?>'">Learn More</button>
             </div>
           </div>
         </div>
-
-        <!-- Card 2 -->
-        <div class="offer-card">
-          <img src="./Pictures/mound-demolition.jpg" alt="Mound Demolition" />
-          <div class="offer-text">
-            <h3>Mound Demolition</h3>
-            <p>
-              Accumsan iaculis dictumst montes eros nec tristique accumsan. 
-              Accumsan iaculis dictumst montes eros.
-            </p>
-            <div class="service-details">
-              <p><i class='bx bx-time'></i> Est. Time: 3-5 hours</p>
-              <p><i class='bx bx-money'></i> Starting at ₱4,500</p>
-            </div>
-            <div class="button-group">
-                <button class="book-now-btn" onclick="window.location.href='./HTML CODES/Appointment-service.php'">Book Now</button>
-                <button class="learn-more-btn" onclick="window.location.href='./HTML CODES/Lrn_more_sp.php'">Learn More</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Card 3 -->
-        <div class="offer-card">
-          <img src="./Pictures/gpc pic.jpg" alt="General Pest Control" />
-          <div class="offer-text">
-            <h3>General Pest Control</h3>
-            <p>
-              Accumsan iaculis dictumst montes eros nec tristique accumsan. 
-              Accumsan iaculis dictumst montes eros.
-            </p>
-            <div class="service-details">
-              <p><i class='bx bx-time'></i> Est. Time: 2-3 hours</p>
-              <p><i class='bx bx-money'></i> Starting at ₱3,000</p>
-            </div>
-            <div class="button-group">
-                <button class="book-now-btn" onclick="window.location.href='./HTML CODES/Appointment-service.php'">Book Now</button>
-                <button class="learn-more-btn" onclick="window.location.href='./HTML CODES/Lrn_more_sp.php'">Learn More</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Card 4 -->
-        <div class="offer-card">
-          <img src="./Pictures/termite control.jpg" alt="Termite Control" />
-          <div class="offer-text">
-            <h3>Termite Control</h3>
-            <p>
-              Accumsan iaculis dictumst montes eros nec tristique accumsan. 
-              Accumsan iaculis dictumst montes eros.
-            </p>
-            <div class="service-details">
-              <p><i class='bx bx-time'></i> Est. Time: 1-3 hours</p>
-              <p><i class='bx bx-money'></i> Starting at ₱2,000</p>
-            </div>
-            <div class="button-group">
-                <button class="book-now-btn" onclick="window.location.href='./HTML CODES/Appointment-service.php'">Book Now</button>
-                <button class="learn-more-btn" onclick="window.location.href='./HTML CODES/Lrn_more_sp.php'">Learn More</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Card 5 -->
-        <div class="offer-card">
-          <img src="./Pictures/Mosquito control.jpg" alt="Mosquito Control" />
-          <div class="offer-text">
-            <h3>Mosquito Control</h3>
-            <p>
-              Accumsan iaculis dictumst montes eros nec tristique accumsan. 
-              Accumsan iaculis dictumst montes eros.
-            </p>
-            <div class="service-details">
-              <p><i class='bx bx-time'></i> Est. Time: 1-2 hours</p>
-              <p><i class='bx bx-money'></i> Starting at ₱1,500</p>
-            </div>
-            <div class="button-group">
-                <button class="book-now-btn" onclick="window.location.href='./HTML CODES/Appointment-service.php'">Book Now</button>
-                <button class="learn-more-btn" onclick="window.location.href='./HTML CODES/Lrn_more_sp.php'">Learn More</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Card 6 -->
-        <div class="offer-card">
-          <img src="./Pictures/rat control.jpg" alt="Rat Control" />
-          <div class="offer-text">
-            <h3>Rat Control</h3>
-            <p>
-              Accumsan iaculis dictumst montes eros nec tristique accumsan. 
-              Accumsan iaculis dictumst montes eros.
-            </p>
-            <div class="service-details">
-              <p><i class='bx bx-time'></i> Est. Time: 2-3 hours</p>
-              <p><i class='bx bx-money'></i> Starting at ₱2,000</p>
-            </div>
-            <div class="button-group">
-                <button class="book-now-btn" onclick="window.location.href='./HTML CODES/Appointment-service.php'">Book Now</button>
-                <button class="learn-more-btn" onclick="window.location.href='./HTML CODES/Lrn_more_sp.php'">Learn More</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Card 7 -->
-        <div class="offer-card">
-          <img src="./Pictures/Other-flying-insects.jpg" alt="Flying & Crawling Photo" />
-          <div class="offer-text">
-            <h3>Other Flying and Crawling Insects</h3>
-            <p>
-              Accumsan iaculis dictumst montes eros nec tristique accumsan. 
-              Accumsan iaculis dictumst montes eros.
-            </p>
-            <div class="service-details">
-              <p><i class='bx bx-time'></i> Est. Time: 1-3 hours</p>
-              <p><i class='bx bx-money'></i> Starting at ₱1,800</p>
-            </div>
-            <div class="button-group">
-                <button class="book-now-btn" onclick="window.location.href='./HTML CODES/Appointment-service.php'">Book Now</button>
-                <button class="learn-more-btn" onclick="window.location.href='./HTML CODES/Lrn_more_sp.php'">Learn More</button>
-            </div>
-          </div>
-        </div>
-
-         <!-- Card 8 -->
-         <div class="offer-card">
-          <img src="./Pictures/Extraction.jpg" alt="Extraction" />
-          <div class="offer-text">
-            <h3>Extraction</h3>
-            <p>
-              Accumsan iaculis dictumst montes eros nec tristique accumsan. 
-              Accumsan iaculis dictumst montes eros.
-            </p>
-            <div class="service-details">
-              <p><i class='bx bx-time'></i> Est. Time: 2-4 hours</p>
-              <p><i class='bx bx-money'></i> Starting at ₱3,500</p>
-            </div>
-            <div class="button-group">
-                <button class="book-now-btn" onclick="window.location.href='./HTML CODES/Appointment-service.php'">Book Now</button>
-                <button class="learn-more-btn" onclick="window.location.href='./HTML CODES/Lrn_more_sp.php'">Learn More</button>
-            </div>
-          </div>
-        </div>
+        <?php endforeach; ?>
       </div>
       <div class="pricing-notice">
         <p><i class='bx bx-info-circle'></i> Note: Final pricing may vary based on inspection and property size.</p>
       </div>
     </div>
   </section>
-
-
-
-
 
 <!-- ABOUT US SECTION -->
   <div class="image-container" id="about-us-section">
@@ -524,10 +426,6 @@ if ($is_logged_in) {
     <a href="./HTML CDOES/Appointment-service.php" class="book-now-button">BOOK NOW!</a>
   </div>
 </section>
-
-
-
-
 
   <!-- FOOTER SECTION -->
   <footer class="footer-section">
