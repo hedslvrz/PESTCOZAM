@@ -190,6 +190,25 @@ CREATE TABLE `service_reports` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `time_slots`
+--
+
+CREATE TABLE `time_slots` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `date` date NOT NULL,
+  `slot_name` varchar(50) NOT NULL,
+  `time_range` varchar(50) NOT NULL,
+  `slot_limit` int(11) NOT NULL DEFAULT 3,
+  `available_slots` int(11) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_date_slot` (`date`, `slot_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -216,6 +235,12 @@ ALTER TABLE `service_reports`
 --
 ALTER TABLE `users`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
+
+--
+-- AUTO_INCREMENT for table `time_slots`
+--
+ALTER TABLE `time_slots`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 COMMIT;
 
