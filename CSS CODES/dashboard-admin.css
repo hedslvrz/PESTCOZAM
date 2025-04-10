@@ -4145,18 +4145,11 @@ th {
     transform: none;
 }
 
-.time-slots-container {
-    width: 100%;
-    max-width: 800px;
-    margin: 0 auto;
-}
-
-/* Updated Time Slots Section */
+/* Time Slots Section */
 .time-slots-container {
     width: 100%;
     max-width: 780px;
     margin: 0 auto;
-    margin-right: 20px;
     margin-top: 25px;
     margin-bottom: 10px;
 }
@@ -4594,4 +4587,96 @@ th {
     overflow-y: auto;
     animation: modalFadeIn 0.3s;
     z-index: 1001; /* Ensure it's above the backdrop */
+}
+
+/* Alert notifications */
+.alert {
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    font-size: 0.95rem;
+}
+
+.alert-success {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    border-left: 4px solid #2e7d32;
+}
+
+.alert-error {
+    background-color: #ffebee;
+    color: #c62828;
+    border-left: 4px solid #c62828;
+}
+
+/* Selected dates styles */
+.selected-dates {
+    margin-top: 20px;
+    border-top: 1px solid #e5e7eb;
+    padding-top: 16px;
+}
+
+.selected-dates h4 {
+    font-size: 1rem;
+    color: #344767;
+    margin-bottom: 12px;
+    font-weight: 600;
+}
+
+.selected-dates .no-dates {
+    color: #777;
+    font-style: italic;
+    font-size: 0.9rem;
+    padding: 8px 0;
+}
+
+.date-tag {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #e6f3ff;
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    color: #144578;
+    transition: all 0.2s ease;
+}
+
+.date-tag:hover {
+    background: #d0e8ff;
+}
+
+.remove-date {
+    background: none;
+    border: none;
+    color: #555;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.remove-date:hover {
+    background: rgba(0, 0, 0, 0.1);
+    color: #333;
+}
+
+/* Add styles for past dates */
+.day.past {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Add style for active day */
+.day.selected {
+    background-color: #144578;
+    color: white;
+    transform: scale(1.05);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }

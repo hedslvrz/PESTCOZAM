@@ -206,6 +206,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // Initialize calendar for time slot management
+    initTimeSlotCalendar();
 });
 
 // Technician Assignment Functions
@@ -668,6 +671,170 @@ document.getElementById('incidentForm')?.addEventListener('submit', async functi
         alert('An error occurred while submitting the report');
     }
 });
+
+// Calendar and Time Slot Management
+function initTimeSlotCalendar() {
+    const monthSelect = document.getElementById('monthSelect');
+    const yearSelect = document.getElementById('yearSelect');
+    const calendarDays = document.getElementById('calendar-days');
+    const selectedDatesInput = document.getElementById('selectedDatesInput');
+    const selectedDatesList = document.getElementById('selectedDatesList');
+    
+    // Set up year select options
+    const currentYear = new Date().getFullYear();
+    for (let year = currentYear; year <= currentYear + 2; year++) {
+        const option = document.createElement('option');
+        option.value = year;
+        option.textContent = year;
+        yearSelect.appendChild(option);
+    }
+    
+    // Set current month and year as default
+    const currentDate = new Date();
+    monthSelect.value = currentDate.getMonth();
+    yearSelect.value = currentDate.getFullYear();
+    
+    // Store selected dates
+    let selectedDates = [];
+    
+    // Render calendar
+    function renderCalendar() {
+        const month = parseInt(monthSelect.value);
+        const year = parseInt(yearSelect.value);
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+        const daysInMonth = lastDay.getDate();
+        const today = new Date();
+        
+        // Clear previous calendar days
+        calendarDays.innerHTML = '';
+        
+        // Add empty cells for days before the first day of the month
+        for (let i = 0; i < firstDay.getDay(); i++) {
+            const emptyDay = document.createElement('div');
+            emptyDay.className = 'day';
+            calendarDays.appendChild(emptyDay);
+        }
+        
+        // Add days of the month
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dayElement = document.createElement('div');
+            dayElement.className = 'day';
+            dayElement.textContent = day;
+            
+            // Check if this is today's date
+            if (today.getDate() === day && 
+                today.getMonth() === month && 
+                today.getFullYear() === year) {
+                dayElement.classList.add('today');
+            }
+            
+            // Check if this date is selected
+            const dateString = `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+            if (selectedDates.includes(dateString)) {
+                dayElement.classList.add('selected');
+            }
+            
+            // Make past dates unselectable
+            const dayDate = new Date(year, month, day);
+            if (dayDate < new Date(new Date().setHours(0,0,0,0))) {
+                dayElement.classList.add('past');
+                dayElement.style.opacity = '0.5';
+                dayElement.style.cursor = 'not-allowed';
+            } else {
+                // Add click event for selectable days
+                dayElement.addEventListener('click', function() {
+                    toggleDateSelection(dateString, dayElement);
+                });
+            }
+            
+            calendarDays.appendChild(dayElement);
+        }
+    }
+    
+    // Toggle date selection
+    function toggleDateSelection(dateString, dayElement) {
+        const index = selectedDates.indexOf(dateString);
+        
+        if (index === -1) {
+            // Add date if not already selected
+            selectedDates.push(dateString);
+            dayElement.classList.add('selected');
+        } else {
+            // Remove date if already selected
+            selectedDates.splice(index, 1);
+            dayElement.classList.remove('selected');
+        }
+        
+        // Update hidden input and display selected dates
+        selectedDatesInput.value = JSON.stringify(selectedDates);
+        updateSelectedDatesDisplay();
+    }
+    
+    // Update the display of selected dates
+    function updateSelectedDatesDisplay() {
+        selectedDatesList.innerHTML = '';
+        
+        if (selectedDates.length === 0) {
+            const emptyMessage = document.createElement('div');
+            emptyMessage.className = 'no-dates';
+            emptyMessage.textContent = 'No dates selected';
+            selectedDatesList.appendChild(emptyMessage);
+            return;
+        }
+        
+        // Sort dates before displaying
+        selectedDates.sort();
+        
+        selectedDates.forEach(dateString => {
+            const date = new Date(dateString);
+            const formattedDate = date.toLocaleDateString('en-US', { 
+                weekday: 'short', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+            
+            const dateTag = document.createElement('div');
+            dateTag.className = 'date-tag';
+            
+            const dateText = document.createElement('span');
+            dateText.textContent = formattedDate;
+            
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.className = 'remove-date';
+            removeBtn.innerHTML = '<i class="bx bx-x"></i>';
+            removeBtn.addEventListener('click', function() {
+                removeDateSelection(dateString);
+            });
+            
+            dateTag.appendChild(dateText);
+            dateTag.appendChild(removeBtn);
+            selectedDatesList.appendChild(dateTag);
+        });
+    }
+    
+    // Remove date selection
+    function removeDateSelection(dateString) {
+        const index = selectedDates.indexOf(dateString);
+        if (index !== -1) {
+            selectedDates.splice(index, 1);
+            selectedDatesInput.value = JSON.stringify(selectedDates);
+            
+            // Re-render calendar to update UI
+            renderCalendar();
+            updateSelectedDatesDisplay();
+        }
+    }
+    
+    // Event listeners for month and year changes
+    monthSelect.addEventListener('change', renderCalendar);
+    yearSelect.addEventListener('change', renderCalendar);
+    
+    // Initial render
+    renderCalendar();
+    updateSelectedDatesDisplay();
+}
 
 
 

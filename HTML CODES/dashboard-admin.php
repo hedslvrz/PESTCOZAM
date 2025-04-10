@@ -278,6 +278,7 @@ try {
 <!--DASHBOARD CONTENT -->
 <section id="content" class="section active">
     <main>
+        <!-- Start dashboard form - closing before time slot section -->
         <form id="dashboard-form" method="POST" action="process_dashboard.php">
             <div class="head-title">
                 <div class="left">
@@ -332,10 +333,28 @@ try {
                     </span>
                 </li>
             </ul>
-
-            <!-- Time Slot Management Section -->
-            <div class="time-slot-management">
-                <h2>Time Slot Management</h2>
+        </form><!-- End dashboard form BEFORE time slot management section -->
+        
+        <!-- Time Slot Management Section - Now outside the dashboard form -->
+        <div class="time-slot-management">
+            <h2>Time Slot Management</h2>
+            
+            <!-- Notification Messages -->
+            <?php if (isset($_SESSION['timeslot_success'])): ?>
+            <div class="alert alert-success">
+                <?php echo htmlspecialchars($_SESSION['timeslot_success']); ?>
+                <?php unset($_SESSION['timeslot_success']); ?>
+            </div>
+            <?php endif; ?>
+            
+            <?php if (isset($_SESSION['timeslot_error'])): ?>
+            <div class="alert alert-error">
+                <?php echo htmlspecialchars($_SESSION['timeslot_error']); ?>
+                <?php unset($_SESSION['timeslot_error']); ?>
+            </div>
+            <?php endif; ?>
+            
+            <form id="timeSlotForm" method="POST" action="../PHP CODES/process_timeslot.php">
                 <div class="calendar-container">
                     <!-- Calendar Section - Left Side -->
                     <div class="calendar">
@@ -368,6 +387,14 @@ try {
                             <div class="day-name">Sat</div>
                             <div id="calendar-days" class="calendar-days"></div>
                         </div>
+                        
+                        <!-- Selected dates display -->
+                        <div id="selectedDatesContainer" class="selected-dates">
+                            <h4>Selected Dates</h4>
+                            <div id="selectedDatesList"></div>
+                            <!-- Hidden input to store selected dates -->
+                            <input type="hidden" name="selected_dates" id="selectedDatesInput">
+                        </div>
                     </div>
                     
                     <!-- Time Slots Section - Right Side -->
@@ -378,7 +405,8 @@ try {
                                 <label><i class='bx bx-time'></i>Morning Slot (7:00 AM - 9:00 AM)</label>
                                 <div class="slot-limit">
                                     <label class="small-label">Slot Limit:</label>
-                                    <input type="number" name="morning_slot_1_limit" min="1" max="10" value="3" class="limit-input">
+                                    <input type="number" name="time_slots[morning_slot_1]" min="1" max="10" value="3" class="limit-input">
+                                    <input type="hidden" name="time_ranges[morning_slot_1]" value="07:00 AM - 09:00 AM">
                                 </div>
                             </div>
                             
@@ -386,7 +414,8 @@ try {
                                 <label><i class='bx bx-time'></i>Morning Slot (9:00 AM - 11:00 AM)</label>
                                 <div class="slot-limit">
                                     <label class="small-label">Slot Limit:</label>
-                                    <input type="number" name="morning_slot_2_limit" min="1" max="10" value="3" class="limit-input">
+                                    <input type="number" name="time_slots[morning_slot_2]" min="1" max="10" value="3" class="limit-input">
+                                    <input type="hidden" name="time_ranges[morning_slot_2]" value="09:00 AM - 11:00 AM">
                                 </div>
                             </div>
                             
@@ -395,7 +424,8 @@ try {
                                 <label><i class='bx bx-time'></i>Afternoon Slot (11:00 AM - 1:00 PM)</label>
                                 <div class="slot-limit">
                                     <label class="small-label">Slot Limit:</label>
-                                    <input type="number" name="afternoon_slot_1_limit" min="1" max="10" value="3" class="limit-input">
+                                    <input type="number" name="time_slots[afternoon_slot_1]" min="1" max="10" value="3" class="limit-input">
+                                    <input type="hidden" name="time_ranges[afternoon_slot_1]" value="11:00 AM - 01:00 PM">
                                 </div>
                             </div>
                             
@@ -403,7 +433,8 @@ try {
                                 <label><i class='bx bx-time'></i>Afternoon Slot (1:00 PM - 3:00 PM)</label>
                                 <div class="slot-limit">
                                     <label class="small-label">Slot Limit:</label>
-                                    <input type="number" name="afternoon_slot_2_limit" min="1" max="10" value="3" class="limit-input">
+                                    <input type="number" name="time_slots[afternoon_slot_2]" min="1" max="10" value="3" class="limit-input">
+                                    <input type="hidden" name="time_ranges[afternoon_slot_2]" value="01:00 PM - 03:00 PM">
                                 </div>
                             </div>
                             
@@ -412,7 +443,8 @@ try {
                                 <label><i class='bx bx-time'></i>Afternoon Slot (3:00 PM - 5:00 PM)</label>
                                 <div class="slot-limit">
                                     <label class="small-label">Slot Limit:</label>
-                                    <input type="number" name="evening_slot_limit" min="1" max="10" value="3" class="limit-input">
+                                    <input type="number" name="time_slots[evening_slot]" min="1" max="10" value="3" class="limit-input">
+                                    <input type="hidden" name="time_ranges[evening_slot]" value="03:00 PM - 05:00 PM">
                                 </div>
                             </div>
                         </div>
@@ -425,9 +457,12 @@ try {
                         </div>
                     </div>
                 </div>
-            </div>
-            <!-- End Time Slot Management Section -->
+            </form>
+        </div>
+        <!-- End Time Slot Management Section -->
 
+        <!-- Start new form for the table data section -->
+        <form id="table-form" method="POST" action="process_dashboard.php">
             <div class="table-data">
                 <div class="recent-appointments">
                     <div class="head">
@@ -1705,6 +1740,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const monthSelect = document.getElementById('monthSelect');
     const yearSelect = document.getElementById('yearSelect');
     const calendarDays = document.getElementById('calendar-days');
+    const selectedDatesInput = document.getElementById('selectedDatesInput');
+    const selectedDatesList = document.getElementById('selectedDatesList');
     
     // Initialize year select with dynamic range
     const currentYear = new Date().getFullYear();
@@ -1722,12 +1759,16 @@ document.addEventListener('DOMContentLoaded', function() {
     monthSelect.value = currentDate.getMonth();
     yearSelect.value = currentDate.getFullYear();
     
+    // Store selected dates
+    let selectedDates = [];
+    
     function renderCalendar() {
         const month = parseInt(monthSelect.value);
         const year = parseInt(yearSelect.value);
         const firstDay = new Date(year, month, 1);
         const lastDay = new Date(year, month + 1, 0);
         const daysInMonth = lastDay.getDate();
+        const today = new Date();
         
         calendarDays.innerHTML = '';
         
@@ -1745,28 +1786,174 @@ document.addEventListener('DOMContentLoaded', function() {
             dayElement.textContent = day;
             
             // Check if this is today's date
-            const currentDate = new Date();
-            if (currentDate.getDate() === day && 
-                currentDate.getMonth() === month && 
-                currentDate.getFullYear() === year) {
+            if (today.getDate() === day && 
+                today.getMonth() === month && 
+                today.getFullYear() === year) {
                 dayElement.classList.add('today');
             }
             
-            dayElement.addEventListener('click', function() {
-                document.querySelectorAll('.day').forEach(d => d.classList.remove('selected'));
-                this.classList.add('selected');
-            });
+            // Check if this date is selected
+            const dateString = `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+            if (selectedDates.includes(dateString)) {
+                dayElement.classList.add('selected');
+            }
+            
+            // Make past dates unselectable
+            const dayDate = new Date(year, month, day);
+            if (dayDate < new Date(new Date().setHours(0,0,0,0))) {
+                dayElement.classList.add('past');
+                dayElement.style.opacity = '0.5';
+                dayElement.style.cursor = 'not-allowed';
+            } else {
+                // Add click event for selectable days
+                dayElement.addEventListener('click', function() {
+                    toggleDateSelection(dateString, dayElement);
+                });
+            }
             
             calendarDays.appendChild(dayElement);
         }
     }
     
+    // Toggle date selection
+    function toggleDateSelection(dateString, dayElement) {
+        const index = selectedDates.indexOf(dateString);
+        
+        if (index === -1) {
+            // Add date if not already selected
+            selectedDates.push(dateString);
+            dayElement.classList.add('selected');
+            
+            // Fetch time slot data for this date
+            fetchTimeSlotData(dateString);
+        } else {
+            // Remove date if already selected
+            selectedDates.splice(index, 1);
+            dayElement.classList.remove('selected');
+            
+            // If there are other selected dates, fetch data for the last selected date
+            if (selectedDates.length > 0) {
+                fetchTimeSlotData(selectedDates[selectedDates.length - 1]);
+            } else {
+                resetTimeSlotInputs(); // Reset to defaults if no dates selected
+            }
+        }
+        
+        // Update hidden input and display selected dates
+        selectedDatesInput.value = JSON.stringify(selectedDates);
+        updateSelectedDatesDisplay();
+    }
+    
+    // Fetch time slot data for a specific date
+    function fetchTimeSlotData(date) {
+        fetch(`../PHP CODES/fetch_timeslot.php?date=${date}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    updateTimeSlotInputs(data.slots);
+                } else {
+                    console.error('Error fetching time slot data:', data.error);
+                    resetTimeSlotInputs();
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching time slot data:', error);
+                resetTimeSlotInputs();
+            });
+    }
+    
+    // Update time slot inputs with fetched data
+    function updateTimeSlotInputs(slots) {
+        resetTimeSlotInputs(); // Reset to defaults first
+        
+        // Update with data from database
+        slots.forEach(slot => {
+            const input = document.querySelector(`input[name="time_slots[${slot.slot_name}]"]`);
+            if (input) {
+                input.value = slot.slot_limit;
+            }
+        });
+    }
+    
+    // Reset time slot inputs to default values
+    function resetTimeSlotInputs() {
+        const defaultLimit = 3;
+        document.querySelectorAll('.time-slots input[type="number"]').forEach(input => {
+            input.value = defaultLimit;
+        });
+    }
+    
+    // Update the display of selected dates
+    function updateSelectedDatesDisplay() {
+        selectedDatesList.innerHTML = '';
+        
+        if (selectedDates.length === 0) {
+            const emptyMessage = document.createElement('div');
+            emptyMessage.className = 'no-dates';
+            emptyMessage.textContent = 'No dates selected';
+            selectedDatesList.appendChild(emptyMessage);
+            return;
+        }
+        
+        // Sort dates before displaying
+        selectedDates.sort();
+        
+        selectedDates.forEach(dateString => {
+            const date = new Date(dateString);
+            const formattedDate = date.toLocaleDateString('en-US', { 
+                weekday: 'short', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+            
+            const dateTag = document.createElement('div');
+            dateTag.className = 'date-tag';
+            
+            const dateText = document.createElement('span');
+            dateText.textContent = formattedDate;
+            
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.className = 'remove-date';
+            removeBtn.innerHTML = '<i class="bx bx-x"></i>';
+            removeBtn.addEventListener('click', function() {
+                removeDateSelection(dateString);
+            });
+            
+            dateTag.appendChild(dateText);
+            dateTag.appendChild(removeBtn);
+            selectedDatesList.appendChild(dateTag);
+        });
+    }
+    
+    // Remove date selection
+    function removeDateSelection(dateString) {
+        const index = selectedDates.indexOf(dateString);
+        if (index !== -1) {
+            selectedDates.splice(index, 1);
+            selectedDatesInput.value = JSON.stringify(selectedDates);
+            
+            // Re-render calendar to update UI
+            renderCalendar();
+            updateSelectedDatesDisplay();
+            
+            // Update time slot inputs based on remaining selected dates
+            if (selectedDates.length > 0) {
+                fetchTimeSlotData(selectedDates[selectedDates.length - 1]);
+            } else {
+                resetTimeSlotInputs();
+            }
+        }
+    }
+    
+    // Event listeners for month and year changes
     monthSelect.addEventListener('change', renderCalendar);
     yearSelect.addEventListener('change', renderCalendar);
     
     // Initial render
     renderCalendar();
+    updateSelectedDatesDisplay();
 });
-    </script>
+</script>
 </body>
 </html>
