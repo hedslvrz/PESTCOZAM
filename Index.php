@@ -491,19 +491,28 @@ foreach ($services as $service) {
 
 
     document.addEventListener("DOMContentLoaded", function () {
-        document.querySelectorAll(".appointment-btn").forEach(button => {
+        // Handle all appointment buttons including .btn-appointment and .book-now-btn
+        document.querySelectorAll(".btn-appointment, .book-now-btn").forEach(button => {
             button.addEventListener("click", function (event) {
                 event.preventDefault();
     
-                fetch("check_session.php") // Check if user is logged in
+                // First check if user is logged in
+                fetch("./PHP CODES/check_session.php")
                     .then(response => response.json())
                     .then(data => {
                         if (data.loggedIn) {
-                            window.location.href = "appointment-service.php";
+                            // If logged in, clear any existing appointment session first
+                            fetch("./PHP CODES/clear_appointment_session.php")
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.success) {
+                                        window.location.href = "./HTML CODES/Appointment-service.php";
+                                    }
+                                });
                         } else {
-                            sessionStorage.setItem("redirectTo", "appointment-service.php"); // Store for redirection
+                            sessionStorage.setItem("redirectTo", "./HTML CODES/Appointment-service.php");
                             alert("You must log in first to make an appointment.");
-                            window.location.href = "login.php";
+                            window.location.href = "./HTML CODES/Login.php";
                         }
                     });
             });

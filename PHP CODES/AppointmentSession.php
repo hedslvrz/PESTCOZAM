@@ -1,12 +1,15 @@
 <?php
 class AppointmentSession {
     public static function initialize($user_id) {
-        if (!isset($_SESSION['appointment'])) {
-            $_SESSION['appointment'] = [
-                'user_id' => $user_id,
-                'data' => []
-            ];
-        }
+        // Clear any existing appointment session data first
+        self::clear();
+        
+        // Start a fresh appointment session
+        $_SESSION['appointment'] = [
+            'user_id' => $user_id,
+            'data' => [],
+            'started_at' => time() // Add timestamp for tracking session age
+        ];
     }
 
     public static function saveStep($step, $data) {
@@ -44,7 +47,9 @@ class AppointmentSession {
     }
 
     public static function clear() {
-        unset($_SESSION['appointment']);
+        if (isset($_SESSION['appointment'])) {
+            unset($_SESSION['appointment']);
+        }
     }
 
     /**
@@ -58,6 +63,9 @@ class AppointmentSession {
                 unset($_SESSION['appointment_' . $step]);
             }
         }
+        
+        // Also clear the main appointment session
+        self::clear();
     }
 }
 ?>
