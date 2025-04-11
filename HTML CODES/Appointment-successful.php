@@ -56,6 +56,104 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             
             if ($result) {
                 $_SESSION['appointment_confirmed'] = true;
+                
+                // Send confirmation email
+                require_once "../PHP CODES/mailer.php";
+                
+                // Get user's email - send to the appropriate person based on appointment type
+                $isForSelf = $serviceData['is_for_self'] ?? 1;
+                $userEmail = $isForSelf ? $_SESSION['email'] : $personalInfo['email'];
+                
+                // Get complete service details
+                $serviceQuery = "SELECT service_name, starting_price FROM services WHERE service_id = :service_id";
+                $serviceStmt = $db->prepare($serviceQuery);
+                $serviceStmt->execute([':service_id' => $serviceData['service_id']]);
+                $serviceDetails = $serviceStmt->fetch(PDO::FETCH_ASSOC);
+                
+                // Format the appointment date and time
+                $formattedDate = date('F d, Y', strtotime($calendarData['appointment_date']));
+                $formattedTime = date('h:i A', strtotime($calendarData['appointment_time']));
+                
+                // Get user details for self-appointments
+                $query = "SELECT * FROM users WHERE id = :user_id";
+                $stmt = $db->prepare($query);
+                $stmt->execute([':user_id' => $_SESSION['user_id']]);
+                $user = $stmt->fetch(PDO::FETCH_ASSOC);
+                
+                // Determine name and contact details based on appointment type
+                $displayFirstname = $isForSelf ? $user['firstname'] : $personalInfo['firstname'];
+                $displayLastname = $isForSelf ? $user['lastname'] : $personalInfo['lastname'];
+                $displayEmail = $isForSelf ? $user['email'] : $personalInfo['email'];
+                $displayMobile = $isForSelf ? $user['mobile_number'] : $personalInfo['mobile_number'];
+                $fullName = htmlspecialchars($displayFirstname . ' ' . $displayLastname);
+                
+                // Get full address
+                $fullAddress = htmlspecialchars(
+                    $locationData['street_address'] . ', ' . 
+                    $locationData['barangay'] . ', ' . 
+                    $locationData['city'] . ', ' . 
+                    $locationData['province'] . ', ' . 
+                    $locationData['region']
+                );
+                
+                // Prepare email subject and body
+                $emailSubject = "PESTCOZAM - Appointment Confirmation";
+                $emailBody = "
+                    <html>
+                    <head>
+                        <style>
+                            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                            .container { max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff; }
+                            .header { background-color: #1e88e5; color: white; padding: 15px; text-align: center; border-radius: 5px 5px 0 0; }
+                            .content { padding: 20px; border: 1px solid #e0e0e0; border-top: none; }
+                            .footer { font-size: 12px; text-align: center; margin-top: 20px; color: #757575; padding: 10px; background-color: #f5f5f5; }
+                            .important-note { background-color: #e3f2fd; padding: 10px; border-left: 4px solid #1e88e5; margin: 15px 0; }
+                            ul { padding-left: 20px; }
+                            li { margin-bottom: 5px; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class='container'>
+                            <div class='header'>
+                                <h2>Appointment Confirmation</h2>
+                            </div>
+                            <div class='content'>
+                                <p>Dear " . htmlspecialchars($displayFirstname) . ",</p>
+                                <p>Your appointment has been successfully booked with PESTCOZAM. Here are your appointment details:</p>
+                                <ul>
+                                    <li><strong>Client Name:</strong> " . $fullName . "</li>
+                                    <li><strong>Service:</strong> " . htmlspecialchars($serviceDetails['service_name']) . "</li>
+                                    <li><strong>Date:</strong> " . $formattedDate . "</li>
+                                    <li><strong>Time:</strong> " . $formattedTime . "</li>
+                                    <li><strong>Location:</strong> " . $fullAddress . "</li>
+                                    <li><strong>Email:</strong> " . htmlspecialchars($displayEmail) . "</li>
+                                    <li><strong>Phone:</strong> " . htmlspecialchars($displayMobile) . "</li>
+                                    <li><strong>Starting Price:</strong> ₱" . number_format($serviceDetails['starting_price'], 2) . "</li>
+                                </ul>
+                                
+                                <div class='important-note'>
+                                    <p><strong>Important:</strong> Please note that a technician will be assigned to your appointment soon. You will be contacted once a technician has been assigned to your service.</p>
+                                </div>
+                                
+                                <p>Please note that the final price will be determined after ocular inspection.</p>
+                                <p>If you need to make any changes to your appointment or have any questions, please contact us at 0905-177-5662 or reply to this email.</p>
+                                <p>Thank you for choosing PESTCOZAM for your pest control needs!</p>
+                            </div>
+                            <div class='footer'>
+                                <p>© 2025 PESTCOZAM. All rights reserved.</p>
+                            </div>
+                        </div>
+                    </body>
+                    </html>
+                ";
+                
+                // Send the email
+                $emailResult = sendEmail($userEmail, $emailSubject, $emailBody);
+                
+                // Log email status but don't show errors to the user
+                if (!$emailResult['success']) {
+                    error_log("Failed to send confirmation email: " . $emailResult['message']);
+                }
             } else {
                 $_SESSION['error'] = "Failed to confirm appointment. Please try again.";
             }
