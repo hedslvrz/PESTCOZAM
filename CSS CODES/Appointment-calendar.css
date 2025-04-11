@@ -393,8 +393,14 @@ nav ul li a:hover {
 }
 
 .select-time.selected {
-  background-color: #2563EB;
+  background-color: #27ae60;
   color: white;
+}
+
+.select-time:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 /* Service Type Form */
@@ -574,4 +580,30 @@ nav ul li a:hover {
 }
 .progress-line.completed {
   background-color: #007bff; /* Blue color */
+}
+
+/* Loading Slots */
+.loading-slots {
+  text-align: center;
+  color: #666;
+  padding: 15px;
+}
+
+.loading-slots i {
+  margin-right: 5px;
+}
+
+.error-message {
+  text-align: center;
+  color: #e74c3c;
+  padding: 15px;
+}
+
+.closed-slot {
+  color: #777;
+  background-color: #f5f5f5;
+}
+
+.closed-slot .slot-status {
+  color: #e74c3c;
 }

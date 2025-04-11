@@ -177,29 +177,7 @@ $calendarData = AppointmentSession::getData('calendar', []);
             </thead>
             <tbody id="timeSlots">
               <tr>
-                <td>07:00 AM - 09:00 AM</td>
-                <td class="slot-status">Open (5 more slots)</td>
-                <td><button type="button" class="select-time" data-time="07:00 AM - 09:00 AM">Select</button></td>
-              </tr>
-              <tr class="closed-slot">
-                <td>09:00 AM - 11:00 AM</td>
-                <td class="slot-status">Closed (0 slots)</td>
-                <td><button type="button" class="select-time" data-time="09:00 AM - 11:00 AM" disabled>Select</button></td>
-              </tr>
-              <tr>
-                <td>11:00 AM - 01:00 PM</td>
-                <td class="slot-status">Open (3 more slots)</td>
-                <td><button type="button" class="select-time" data-time="11:00 AM - 01:00 PM">Select</button></td>
-              </tr>
-              <tr>
-                <td>01:00 PM - 03:00 PM</td>
-                <td class="slot-status">Open (4 more slots)</td>
-                <td><button type="button" class="select-time" data-time="01:00 PM - 03:00 PM">Select</button></td>
-              </tr>
-              <tr>
-                <td>03:00 PM - 05:00 PM</td>
-                <td class="slot-status">Open (2 more slots)</td>
-                <td><button type="button" class="select-time" data-time="03:00 PM - 05:00 PM">Select</button></td>
+                <td colspan="3" class="loading-slots">Select a date to view available time slots</td>
               </tr>
             </tbody>
           </table>
@@ -211,14 +189,14 @@ $calendarData = AppointmentSession::getData('calendar', []);
         <h3>Select Service Type</h3>
         <div class="service-options">
           <label class="service-option" for="ocular">
-            <input type="radio" id="ocular" name="service_id" value="1" required>
+            <input type="radio" id="ocular" name="service_id" value="17" required>
             <div class="service-details">
               <span class="service-title">Ocular Inspection</span>
               <p>Initial assessment of pest problems</p>
             </div>
           </label>
           <label class="service-option" for="treatment">
-            <input type="radio" id="treatment" name="service_id" value="2" required>
+            <input type="radio" id="treatment" name="service_id" value="<?php echo htmlspecialchars($service_id); ?>" required>
             <div class="service-details">
               <span class="service-title">Treatment Service</span>
               <p>Full pest control implementation</p>
@@ -265,6 +243,7 @@ $calendarData = AppointmentSession::getData('calendar', []);
     const yearSelect = document.getElementById('year-select');
     const calendarDays = document.getElementById('calendar-days');
     const selectedDateHeading = document.getElementById('selected-date-heading');
+    const timeSlotsContainer = document.getElementById('timeSlots');
 
     const monthNames = [
       'January', 'February', 'March', 'April', 'May', 'June',
@@ -310,27 +289,40 @@ $calendarData = AppointmentSession::getData('calendar', []);
         calendarDays.appendChild(blankDay);
       }
 
+      const currentDate = new Date();
+      currentDate.setHours(0, 0, 0, 0);
+
       for (let dayNum = 1; dayNum <= daysInMonth; dayNum++) {
         const dayDiv = document.createElement('div');
         dayDiv.classList.add('day');
         dayDiv.textContent = dayNum;
 
-        dayDiv.addEventListener('click', () => {
-          document.querySelectorAll('.day.selected').forEach(d => {
-            d.classList.remove('selected');
-          });
-          dayDiv.classList.add('selected');
+        // Check if this day is in the past
+        const thisDay = new Date(selectedYear, selectedMonth, dayNum);
+        if (thisDay < currentDate) {
+          dayDiv.classList.add('disabled');
+          dayDiv.title = 'Past dates cannot be selected';
+        } else {
+          dayDiv.addEventListener('click', () => {
+            document.querySelectorAll('.day.selected').forEach(d => {
+              d.classList.remove('selected');
+            });
+            dayDiv.classList.add('selected');
 
-          selectedDate = `${selectedYear}-${(selectedMonth + 1).toString().padStart(2, '0')}-${dayNum.toString().padStart(2, '0')}`;
-          selectedDateHeading.textContent = `${monthNames[selectedMonth]} ${dayNum}, ${selectedYear}`;
-          
-          // Reset time selection when date changes
-          document.querySelectorAll('.select-time').forEach(btn => {
-            btn.classList.remove('selected');
+            selectedDate = `${selectedYear}-${(selectedMonth + 1).toString().padStart(2, '0')}-${dayNum.toString().padStart(2, '0')}`;
+            selectedDateHeading.textContent = `${monthNames[selectedMonth]} ${dayNum}, ${selectedYear}`;
+            
+            // Show loading state
+            timeSlotsContainer.innerHTML = '<tr><td colspan="3" class="loading-slots"><i class="bx bx-loader-alt bx-spin"></i> Loading available time slots...</td></tr>';
+            
+            // Reset time selection when date changes
+            selectedTime = '';
+            document.getElementById('nextButton').disabled = true;
+            
+            // Fetch time slots for the selected date
+            fetchTimeSlots(selectedDate);
           });
-          selectedTime = '';
-          document.getElementById('nextButton').disabled = true;
-        });
+        }
 
         calendarDays.appendChild(dayDiv);
       }
@@ -340,6 +332,101 @@ $calendarData = AppointmentSession::getData('calendar', []);
 
     let selectedDate = '<?php echo !empty($calendarData['appointment_date']) ? $calendarData['appointment_date'] : ''; ?>';
     let selectedTime = '<?php echo !empty($calendarData['appointment_time']) ? $calendarData['appointment_time'] : ''; ?>';
+    
+    function fetchTimeSlots(date) {
+      fetch(`../PHP CODES/fetch_time_slots.php?date=${date}`)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.json();
+        })
+        .then(data => {
+          if (data.success) {
+            displayTimeSlots(data.time_slots);
+          } else {
+            timeSlotsContainer.innerHTML = `<tr><td colspan="3" class="error-message">Error: ${data.message || 'Failed to load time slots'}</td></tr>`;
+          }
+        })
+        .catch(error => {
+          console.error('Error fetching time slots:', error);
+          timeSlotsContainer.innerHTML = '<tr><td colspan="3" class="error-message">Error loading time slots. Please try again.</td></tr>';
+        });
+    }
+    
+    function displayTimeSlots(timeSlots) {
+      timeSlotsContainer.innerHTML = '';
+      
+      if (!timeSlots || timeSlots.length === 0) {
+        timeSlotsContainer.innerHTML = '<tr><td colspan="3">No time slots available for this date.</td></tr>';
+        return;
+      }
+      
+      // No need to sort as they come pre-sorted from the server
+      timeSlots.forEach(slot => {
+        const row = document.createElement('tr');
+        if (!slot.is_available) {
+          row.classList.add('closed-slot');
+        }
+        
+        // Time column
+        const timeCell = document.createElement('td');
+        timeCell.textContent = slot.time_range;
+        row.appendChild(timeCell);
+        
+        // Availability column
+        const availabilityCell = document.createElement('td');
+        availabilityCell.classList.add('slot-status');
+        
+        if (slot.is_available) {
+          availabilityCell.textContent = `Open (${slot.available_slots} ${slot.available_slots === 1 ? 'slot' : 'slots'} left)`;
+        } else {
+          availabilityCell.textContent = 'Closed (0 slots)';
+        }
+        row.appendChild(availabilityCell);
+        
+        // Action column
+        const actionCell = document.createElement('td');
+        const selectButton = document.createElement('button');
+        selectButton.type = 'button';
+        selectButton.classList.add('select-time');
+        selectButton.dataset.time = slot.time_range;
+        selectButton.textContent = 'Select';
+        
+        if (!slot.is_available) {
+          selectButton.disabled = true;
+        } else {
+          selectButton.addEventListener('click', (e) => {
+            document.querySelectorAll('.select-time').forEach(btn => {
+              btn.classList.remove('selected');
+            });
+            e.target.classList.add('selected');
+            
+            // Extract the start time (e.g., "07:00 AM" from "07:00 AM - 09:00 AM")
+            const timeRange = e.target.dataset.time;
+            const startTime = timeRange.split(' - ')[0];
+            
+            // Convert to 24-hour format for database
+            const [time, period] = startTime.split(' ');
+            const [hour, minute] = time.split(':');
+            let hour24 = parseInt(hour);
+            
+            if (period === 'PM' && hour24 < 12) hour24 += 12;
+            if (period === 'AM' && hour24 === 12) hour24 = 0;
+            
+            // Format as HH:MM:00
+            selectedTime = `${hour24.toString().padStart(2, '0')}:${minute}:00`;
+            
+            document.getElementById('nextButton').disabled = false;
+          });
+        }
+        
+        actionCell.appendChild(selectButton);
+        row.appendChild(actionCell);
+        
+        timeSlotsContainer.appendChild(row);
+      });
+    }
 
     // Initialize with pre-selected service
     document.addEventListener('DOMContentLoaded', function() {
@@ -366,39 +453,12 @@ $calendarData = AppointmentSession::getData('calendar', []);
         setTimeout(() => {
             const dayElements = document.querySelectorAll('.day');
             dayElements.forEach(dayElement => {
-                if (parseInt(dayElement.textContent) === day) {
+                if (parseInt(dayElement.textContent) === day && !dayElement.classList.contains('disabled')) {
                     dayElement.click();
                 }
             });
         }, 100);
         <?php endif; ?>
-        
-        // If time is pre-selected
-        <?php if (!empty($calendarData['appointment_time'])): ?>
-        const timeButtons = document.querySelectorAll('.select-time');
-        timeButtons.forEach(button => {
-            if (button.dataset.time === selectedTime) {
-                button.click();
-            }
-        });
-        <?php endif; ?>
-    });
-
-    // Add time slot selection handlers
-    document.querySelectorAll('.select-time').forEach(button => {
-      button.addEventListener('click', (e) => {
-        if (!selectedDate) {
-          alert('Please select a date first');
-          return;
-        }
-
-        document.querySelectorAll('.select-time').forEach(btn => {
-          btn.classList.remove('selected');
-        });
-        e.target.classList.add('selected');
-        selectedTime = e.target.dataset.time;
-        document.getElementById('nextButton').disabled = false;
-      });
     });
 
     function saveDateTime() {
