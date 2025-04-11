@@ -209,6 +209,52 @@ CREATE TABLE `time_slots` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `reviews`
+--
+
+CREATE TABLE `reviews` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `service_id` int(11) DEFAULT NULL,
+  `appointment_id` int(11) DEFAULT NULL,
+  `rating` int(1) NOT NULL CHECK (`rating` BETWEEN 1 AND 5),
+  `review_text` text NOT NULL,
+  `service_rating` int(1) DEFAULT NULL,
+  `technician_rating` int(1) DEFAULT NULL,
+  `service_feedback` text DEFAULT NULL,
+  `reported_issues` text DEFAULT NULL,
+  `status` enum('pending','approved','rejected') NOT NULL DEFAULT 'pending',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`),
+  KEY `service_id` (`service_id`),
+  KEY `appointment_id` (`appointment_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `reviews`
+--
+
+INSERT INTO `reviews` (`id`, `user_id`, `service_id`, `appointment_id`, `rating`, `review_text`, `service_rating`, `technician_rating`, `service_feedback`, `reported_issues`, `status`, `created_at`, `updated_at`) VALUES
+(1, 2, 8, 15, 5, 'The extraction service was incredibly thorough! The technician was professional and removed the pest infestation completely. Would definitely recommend to anyone dealing with stubborn pests.', 5, 5, 'Excellent service, very thorough work.', NULL, 'approved', '2025-04-01 10:30:22', '2025-04-01 14:15:00'),
+(2, 5, 6, 22, 4, 'Great rat control service. The team was prompt and efficient. My home has been rodent-free since their visit. Took off one star because they were a bit late, but the service itself was excellent.', 4, 5, 'The service was great, just wished they were on time.', 'The team was about 20 minutes late.', 'approved', '2025-04-02 15:45:10', '2025-04-03 09:22:15'),
+(3, 44, 3, NULL, 5, 'The termite control service was outstanding. Not only did they eliminate the termites, but they also provided helpful tips on preventing future infestations. Very knowledgeable staff!', 5, 5, 'Very informative and helpful advice provided.', NULL, 'approved', '2025-04-05 08:12:30', '2025-04-05 13:40:00'),
+(4, 2, 4, 16, 3, 'The general pest control was okay. It took care of most of the issues but I still noticed some insects after a week. Customer service was responsive when I called about this.', 3, 4, 'Good service but not fully effective.', 'Some insects still present after treatment.', 'pending', '2025-04-07 11:20:45', '2025-04-07 11:20:45'),
+(5, 5, 3, 23, 2, 'I was not entirely satisfied with the termite treatment. The technicians were friendly, but the problem returned within two weeks. Currently working with them on a follow-up appointment.', 2, 4, 'Technicians were professional but service wasn\'t effective.', 'Termites returned within two weeks.', 'rejected', '2025-04-09 16:05:22', '2025-04-10 09:30:15');
+
+--
+-- Constraints for table `reviews`
+--
+
+ALTER TABLE `reviews`
+  ADD CONSTRAINT `reviews_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `reviews_ibfk_2` FOREIGN KEY (`service_id`) REFERENCES `services` (`service_id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `reviews_ibfk_3` FOREIGN KEY (`appointment_id`) REFERENCES `appointments` (`id`) ON DELETE SET NULL;
+
+-- --------------------------------------------------------
+
+--
 -- AUTO_INCREMENT for dumped tables
 --
 
