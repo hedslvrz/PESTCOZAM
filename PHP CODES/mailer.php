@@ -37,13 +37,13 @@ function sendEmail($to, $subject, $body, $attachments = []) {
         $mail->isSMTP();
         $mail->Host = 'smtp.gmail.com';
         $mail->SMTPAuth = true;
-        $mail->Username = 'aldwinsuarez56@gmail.com';
-        $mail->Password = 'wnobpnaneikdqzvz'; // Use App Password, not your Gmail password
+        $mail->Username = ''; // Your SMTP username (email address)
+        $mail->Password = ''; // Your SMTP password (app password or email password)
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port = 587;
         
         // Recipients
-        $mail->setFrom('aldwinsuarez56@gmail.com', 'PESTCOZAM');
+        $mail->setFrom('', ''); // Your email address and name
         $mail->addAddress($to);
         
         // Content

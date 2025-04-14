@@ -6,52 +6,6 @@
 }
 
 /* Header and Breadcrumb */
-.head-title {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-    gap: 20px;
-}
-
-.head-title .left {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.head-title .left h1 {
-    font-size: 28px;
-    font-weight: 600;
-    color: #344767;
-    margin: 0;
-}
-
-.head-title .breadcrumb {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.head-title .breadcrumb li {
-    display: flex;
-    align-items: center;
-}
-
-.head-title .breadcrumb li a {
-    color: #666;
-    text-decoration: none;
-    font-size: 14px;
-}
-
-.head-title .breadcrumb li a.active {
-    color: #144578;
-    font-weight: 500;
-}
 
 .back-btn {
     display: flex;
@@ -885,4 +839,255 @@ select.form-input {
 /* Ensure the next section (technician assignment) starts immediately after */
 .detail-section:nth-of-type(5) {
     margin-top: 12px !important;
+}
+
+/* Additional CSS for the new treatment types and methods structure */
+.treatment-type {
+    margin-bottom: 18px;
+    border: 1px solid #dde1e7;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    transition: all 0.3s ease;
+}
+
+.treatment-type:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.treatment-type:last-child {
+    margin-bottom: 0;
+}
+
+.treatment-type-header {
+    background-color: #eef2f7;
+    padding: 14px 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid #dde1e7;
+}
+
+.treatment-type-header:hover {
+    background-color: #e3ecf7;
+}
+
+.treatment-type-header h4 {
+    color: #144578;
+    margin: 0;
+    font-size: 17px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.treatment-type-header h4::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 18px;
+    background: #144578;
+    border-radius: 3px;
+}
+
+.treatment-type-content {
+    display: none;
+    padding: 0;
+    background-color: #fcfcfd;
+}
+
+.treatment-type.active .treatment-type-content {
+    display: block;
+}
+
+.treatment-method {
+    margin: 10px;
+    border: 1px solid #e8edf3;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    transition: all 0.2s ease;
+}
+
+.treatment-method:hover {
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+}
+
+.treatment-method-header {
+    background-color: #f6f9fc;
+    padding: 12px 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid #e8edf3;
+}
+
+.treatment-method-header:hover {
+    background-color: #edf4fc;
+}
+
+.treatment-method-header h5 {
+    color: #2c3e50;
+    margin: 0;
+    font-size: 15px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+}
+
+.treatment-method-header h5::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: #3498db;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.treatment-method-content {
+    display: none;
+    padding: 15px;
+    background-color: #fff;
+}
+
+.treatment-method.active {
+    border-color: #c4d5e9;
+}
+
+.treatment-method.active .treatment-method-header {
+    background-color: #e8f1fb;
+    border-bottom-color: #c4d5e9;
+}
+
+.treatment-method.active .treatment-method-content {
+    display: block;
+}
+
+.toggle-icon {
+    color: #3498db;
+    font-size: 20px;
+    transition: transform 0.3s ease;
+}
+
+.treatment-type.active .toggle-icon,
+.treatment-method.active .toggle-icon {
+    transform: rotate(180deg);
+}
+
+.chemical-items {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+.chemical-item {
+    background: white;
+    padding: 10px 14px;
+    border-radius: 6px;
+    border: 1px solid #e0e7ef;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.2s ease;
+}
+
+.chemical-item:hover {
+    background-color: #f9fbfe;
+    border-color: #c4d5e9;
+}
+
+.chemical-item label {
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+    margin-right: 10px;
+    cursor: pointer;
+    color: #455766;
+    font-size: 14px;
+}
+
+.chemical-item input[type="checkbox"] {
+    margin-right: 10px;
+    width: 16px;
+    height: 16px;
+    accent-color: #3498db;
+    cursor: pointer;
+}
+
+.chemical-item input[type="checkbox"]:checked + span {
+    color: #2c3e50;
+    font-weight: 500;
+}
+
+.chemical-item .quantity-input {
+    width: 70px;
+    text-align: center;
+    padding: 6px;
+    border: 1px solid #d1dce7;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #2c3e50;
+    transition: all 0.2s ease;
+}
+
+.chemical-item .quantity-input:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.15);
+    outline: none;
+}
+
+.add-chemical-btn {
+    margin-top: 15px;
+    background: #edf4fc;
+    border: 1px dashed #3498db;
+    color: #3498db;
+    padding: 10px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    width: auto;
+}
+
+.add-chemical-btn:hover {
+    background: #d4e6f9;
+    color: #1a5f94;
+}
+
+.add-chemical-btn i {
+    font-size: 16px;
+}
+
+/* Custom chemicals section styling */
+.custom-chemicals {
+    margin-top: 18px;
+}
+
+.custom-chemicals .treatment-type-header h4 {
+    color: #2980b9;
+}
+
+.custom-chemicals .treatment-type-header h4::before {
+    background: #2980b9;
+}
+
+/* Empty chemical state styling */
+.chemical-item.empty-state {
+    justify-content: center;
+    padding: 12px;
+    color: #7f8c8d;
+    font-style: italic;
+    background-color: #f9f9fb;
+    border: 1px dashed #cfd9e4;
 }
