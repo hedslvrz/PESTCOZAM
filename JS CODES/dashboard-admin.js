@@ -696,6 +696,8 @@ function initTimeSlotCalendar() {
     
     // Store selected dates
     let selectedDates = [];
+    // Track the last selected date to clear its time slot inputs when a new date is selected
+    let lastSelectedDate = null;
     
     // Render calendar
     function renderCalendar() {
@@ -722,6 +724,10 @@ function initTimeSlotCalendar() {
             dayElement.className = 'day';
             dayElement.textContent = day;
             
+            // Create date string and store it as a data attribute
+            const dateString = `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+            dayElement.setAttribute('data-date', dateString);
+            
             // Check if this is today's date
             if (today.getDate() === day && 
                 today.getMonth() === month && 
@@ -730,7 +736,6 @@ function initTimeSlotCalendar() {
             }
             
             // Check if this date is selected
-            const dateString = `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
             if (selectedDates.includes(dateString)) {
                 dayElement.classList.add('selected');
             }
@@ -757,18 +762,51 @@ function initTimeSlotCalendar() {
         const index = selectedDates.indexOf(dateString);
         
         if (index === -1) {
+            // Before adding new date, reset the time slot values to default
+            if (selectedDates.length > 0) {
+                resetTimeSlotValues();
+            }
+            
             // Add date if not already selected
             selectedDates.push(dateString);
             dayElement.classList.add('selected');
+            
+            // Remove any other selected dates - we're implementing single date selection
+            const prevSelectedDays = document.querySelectorAll('.day.selected');
+            prevSelectedDays.forEach(day => {
+                if (day !== dayElement) {
+                    day.classList.remove('selected');
+                    const dateVal = day.getAttribute('data-date');
+                    if (dateVal && dateVal !== dateString) {
+                        const idx = selectedDates.indexOf(dateVal);
+                        if (idx !== -1) {
+                            selectedDates.splice(idx, 1);
+                        }
+                    }
+                }
+            });
+            
+            // Set lastSelectedDate and fetch time slots for the selected date
+            lastSelectedDate = dateString;
+            fetchTimeSlots(dateString);
         } else {
             // Remove date if already selected
             selectedDates.splice(index, 1);
             dayElement.classList.remove('selected');
+            resetTimeSlotValues();
+            lastSelectedDate = null;
         }
         
         // Update hidden input and display selected dates
         selectedDatesInput.value = JSON.stringify(selectedDates);
         updateSelectedDatesDisplay();
+    }
+    
+    // Reset time slot values to default
+    function resetTimeSlotValues() {
+        document.querySelectorAll('.time-slots input[type="number"]').forEach(input => {
+            input.value = 3; // Reset to default value
+        });
     }
     
     // Update the display of selected dates
@@ -821,10 +859,62 @@ function initTimeSlotCalendar() {
             selectedDates.splice(index, 1);
             selectedDatesInput.value = JSON.stringify(selectedDates);
             
+            // Reset time slot values if the removed date was the last selected date
+            if (dateString === lastSelectedDate) {
+                resetTimeSlotValues();
+                lastSelectedDate = null;
+            }
+            
             // Re-render calendar to update UI
             renderCalendar();
             updateSelectedDatesDisplay();
         }
+    }
+    
+    // Fetch time slots for a selected date
+    function fetchTimeSlots(date) {
+        // Show loading indicator
+        const timeSlotContainers = document.querySelectorAll('.time-slot');
+        timeSlotContainers.forEach(container => {
+            const loadingIndicator = document.createElement('div');
+            loadingIndicator.className = 'loading-indicator';
+            loadingIndicator.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i> Loading...';
+            container.appendChild(loadingIndicator);
+        });
+        
+        fetch(`../PHP CODES/fetch_timeslot.php?date=${date}`)
+            .then(response => response.json())
+            .then(data => {
+                // Remove loading indicators
+                document.querySelectorAll('.loading-indicator').forEach(indicator => {
+                    indicator.remove();
+                });
+                
+                if (data.error) {
+                    console.error('Error fetching time slots:', data.error);
+                    return;
+                }
+                
+                // Reset to default values first
+                resetTimeSlotValues();
+                
+                // Update the slot limits with fetched data
+                if (data.slots && data.slots.length > 0) {
+                    data.slots.forEach(slot => {
+                        const inputElement = document.querySelector(`input[name="time_slots[${slot.slot_name}]"]`);
+                        if (inputElement) {
+                            inputElement.value = slot.slot_limit;
+                        }
+                    });
+                }
+            })
+            .catch(error => {
+                // Remove loading indicators on error
+                document.querySelectorAll('.loading-indicator').forEach(indicator => {
+                    indicator.remove();
+                });
+                console.error('Error fetching time slots:', error);
+            });
     }
     
     // Event listeners for month and year changes
@@ -835,6 +925,11 @@ function initTimeSlotCalendar() {
     renderCalendar();
     updateSelectedDatesDisplay();
 }
+
+// Initialize time slot calendar when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    initTimeSlotCalendar();
+});
 
 
 

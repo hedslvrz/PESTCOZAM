@@ -182,6 +182,7 @@ try {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../CSS CODES/dashboard-admin.css">
+    <link rel="stylesheet" href="../CSS CODES/timeslot.css">
     <title>Pestcozam Dashboard</title>
 </head>
 <body>
@@ -440,7 +441,7 @@ try {
                             
                             <!-- Evening Slot -->
                             <div class="time-slot">
-                                <label><i class='bx bx-time'></i>Afternoon Slot (3:00 PM - 5:00 PM)</label>
+                                <label><i class='bx bx-time'></i>Evening Slot (3:00 PM - 5:00 PM)</label>
                                 <div class="slot-limit">
                                     <label class="small-label">Slot Limit:</label>
                                     <input type="number" name="time_slots[evening_slot]" min="1" max="10" value="3" class="limit-input">
