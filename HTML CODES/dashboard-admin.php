@@ -605,76 +605,79 @@ try {
                             </tr>
                         </thead>
                         <tbody>
-    <?php if (!empty($appointments)): ?>
-        <?php foreach ($appointments as $appointment): ?>
-            <tr>
-                <td>#<?php echo htmlspecialchars($appointment['appointment_id']); ?></td>
-                <td>
-                    <div class="schedule-info">
-                        <i class='bx bx-calendar'></i>
-                        <div>
-                            <span class="date"><?php echo date('M d, Y', strtotime($appointment['appointment_date'])); ?></span>
-                            <span class="time"><?php echo date('h:i A', strtotime($appointment['appointment_time'])); ?></span>
-                        </div>
-                    </div>
-                </td>
-                <td>
-                    <div class="customer-info">
-                        <i class='bx bx-user'></i>
-                        <span><?php echo htmlspecialchars($appointment['client_firstname'] . ' ' . 
-                            $appointment['client_lastname']); ?></span>
-                    </div>
-                </td>
-                <td>
-                    <div class="service-info">
-                        <i class='bx bx-package'></i>
-                        <span><?php echo htmlspecialchars($appointment['service_name']); ?></span>
-                    </div>
-                </td>
-                <td>
-                    <div class="tech-info">
-                        <?php if (!empty($appointment['all_technicians'])): ?>
-                            <i class='bx bx-user-check'></i>
-                            <span title="<?php echo htmlspecialchars($appointment['all_technicians']); ?>">
-                                <?php 
-                                $technicians = $appointment['all_technicians'];
-                                echo (strlen($technicians) > 20) ? 
-                                    htmlspecialchars(substr($technicians, 0, 20) . '...') : 
-                                    htmlspecialchars($technicians); 
-                                ?>
-                            </span>
-                        <?php else: ?>
-                            <span class="no-tech">Not Assigned</span>
-                        <?php endif; ?>
-                    </div>
-                </td>
-                <td>
-                    <span class="status <?php echo strtolower($appointment['status']); ?>">
-                        <?php echo htmlspecialchars($appointment['status']); ?>
-                    </span>
-                </td>
-                <td>
-                    <div class="action-buttons">
-                        <?php if ($appointment['status'] === 'Pending' || $appointment['status'] === 'Confirmed'): ?>
-                            <a href="job-details.php?id=<?php echo $appointment['appointment_id']; ?>" class="view-btn">
-                                <i class='bx bx-show'></i> View Details
-                            </a>
-                            <button type="button" class="feedback-btn" onclick="showFeedbackModal(<?php echo $appointment['appointment_id']; ?>)">
-                                <i class='bx bx-message-square-detail'></i> Feedback
-                            </button>
-                        <?php else: ?>
-                            <span class="status-message">Job completed</span>
-                        <?php endif; ?>
-                    </div>
-                </td>
-            </tr>
-        <?php endforeach; ?>
-    <?php else: ?>
-        <tr>
-            <td colspan="7" class="no-records">No appointments found</td>
-        </tr>
-    <?php endif; ?>
-</tbody>
+                            <?php if (!empty($appointments)): ?>
+                                <?php foreach ($appointments as $appointment): ?>
+                                    <tr>
+                                        <td>#<?php echo htmlspecialchars($appointment['appointment_id']); ?></td>
+                                        <td>
+                                            <div class="schedule-info">
+                                                <i class='bx bx-calendar'></i>
+                                                <div>
+                                                    <span class="date"><?php echo date('M d, Y', strtotime($appointment['appointment_date'])); ?></span>
+                                                    <span class="time"><?php echo date('h:i A', strtotime($appointment['appointment_time'])); ?></span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="customer-info">
+                                                <i class='bx bx-user'></i>
+                                                <span><?php echo htmlspecialchars($appointment['client_firstname'] . ' ' . 
+                                                    $appointment['client_lastname']); ?></span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="service-info">
+                                                <i class='bx bx-package'></i>
+                                                <span><?php echo htmlspecialchars($appointment['service_name']); ?></span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="tech-info">
+                                                <?php if (!empty($appointment['all_technicians'])): ?>
+                                                    <i class='bx bx-user-check'></i>
+                                                    <span title="<?php echo htmlspecialchars($appointment['all_technicians']); ?>">
+                                                        <?php 
+                                                        $technicians = $appointment['all_technicians'];
+                                                        $techArray = explode(', ', $technicians);
+                                                        echo '<ul class="tech-list">';
+                                                        foreach ($techArray as $tech) {
+                                                            echo '<li>' . htmlspecialchars($tech) . '</li>';
+                                                        }
+                                                        echo '</ul>';
+                                                        ?>
+                                                    </span>
+                                                <?php else: ?>
+                                                    <span class="no-tech">Not Assigned</span>
+                                                <?php endif; ?>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="status <?php echo strtolower($appointment['status']); ?>">
+                                                <?php echo htmlspecialchars($appointment['status']); ?>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <?php if ($appointment['status'] === 'Pending' || $appointment['status'] === 'Confirmed'): ?>
+                                                    <a href="job-details.php?id=<?php echo $appointment['appointment_id']; ?>" class="view-btn">
+                                                        <i class='bx bx-show'></i> View Details
+                                                    </a>
+                                                    <button type="button" class="feedback-btn" onclick="showFeedbackModal(<?php echo $appointment['appointment_id']; ?>)">
+                                                        <i class='bx bx-message-square-detail'></i> Feedback
+                                                    </button>
+                                                <?php else: ?>
+                                                    <span class="status-message">Job completed</span>
+                                                <?php endif; ?>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="7" class="no-records">No appointments found</td>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
                     </table>
                 </div>
             </div>
@@ -1059,7 +1062,24 @@ window.addEventListener('click', function(event) {
                                 <div class="service-card">
                                     <input type="hidden" name="service_id[]" value="<?php echo $service['service_id']; ?>">
                                     <div class="service-image">
-                                        <img src="../Pictures/<?php echo htmlspecialchars($service['image_path']); ?>" alt="<?php echo htmlspecialchars($service['service_name']); ?>">
+                                        <?php 
+                                        // Define the image path
+                                        $imagePath = $service['image_path'];
+                                        
+                                        // For web display, use relative URL path
+                                        $displayImagePath = "../Pictures/" . $imagePath;
+                                        
+                                        // For file_exists check, use server file system path
+                                        $serverImagePath = $_SERVER['DOCUMENT_ROOT'] . "/PESTCOZAM/Pictures/" . $imagePath;
+                                        
+                                        // Check if image exists and path is not empty
+                                        if (!empty($imagePath) && file_exists($serverImagePath)) {
+                                            echo '<img src="' . htmlspecialchars($displayImagePath) . '" alt="' . htmlspecialchars($service['service_name']) . '">';
+                                        } else {
+                                            // If image doesn't exist or path is empty, show placeholder
+                                            echo '<img src="../Pictures/service-placeholder.png" alt="' . htmlspecialchars($service['service_name']) . '" class="placeholder-img">';
+                                        }
+                                        ?>
                                     </div>
                                     <div class="service-details">
                                         <input type="text" name="service_name[]" value="<?php echo htmlspecialchars($service['service_name']); ?>" hidden>
@@ -1735,225 +1755,6 @@ window.addEventListener('click', function(event) {
         <div class="modal-content">
     </div>
     <script src="../JS CODES/dashboard-admin.js"></script>
-    <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const monthSelect = document.getElementById('monthSelect');
-    const yearSelect = document.getElementById('yearSelect');
-    const calendarDays = document.getElementById('calendar-days');
-    const selectedDatesInput = document.getElementById('selectedDatesInput');
-    const selectedDatesList = document.getElementById('selectedDatesList');
-    
-    // Initialize year select with dynamic range
-    const currentYear = new Date().getFullYear();
-    const yearRange = 20; // Number of years to show in the future
-    
-    for (let year = currentYear; year <= currentYear + yearRange; year++) {
-        const option = document.createElement('option');
-        option.value = year;
-        option.textContent = year;
-        yearSelect.appendChild(option);
-    }
-    
-    // Set current month and year
-    const currentDate = new Date();
-    monthSelect.value = currentDate.getMonth();
-    yearSelect.value = currentDate.getFullYear();
-    
-    // Store selected dates
-    let selectedDates = [];
-    
-    function renderCalendar() {
-        const month = parseInt(monthSelect.value);
-        const year = parseInt(yearSelect.value);
-        const firstDay = new Date(year, month, 1);
-        const lastDay = new Date(year, month + 1, 0);
-        const daysInMonth = lastDay.getDate();
-        const today = new Date();
-        
-        calendarDays.innerHTML = '';
-        
-        // Add empty cells for days before the first day of the month
-        for (let i = 0; i < firstDay.getDay(); i++) {
-            const emptyDay = document.createElement('div');
-            emptyDay.className = 'day';
-            calendarDays.appendChild(emptyDay);
-        }
-        
-        // Add days of the month
-        for (let day = 1; day <= daysInMonth; day++) {
-            const dayElement = document.createElement('div');
-            dayElement.className = 'day';
-            dayElement.textContent = day;
-            
-            // Check if this is today's date
-            if (today.getDate() === day && 
-                today.getMonth() === month && 
-                today.getFullYear() === year) {
-                dayElement.classList.add('today');
-            }
-            
-            // Check if this date is selected
-            const dateString = `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
-            if (selectedDates.includes(dateString)) {
-                dayElement.classList.add('selected');
-            }
-            
-            // Make past dates unselectable
-            const dayDate = new Date(year, month, day);
-            if (dayDate < new Date(new Date().setHours(0,0,0,0))) {
-                dayElement.classList.add('past');
-                dayElement.style.opacity = '0.5';
-                dayElement.style.cursor = 'not-allowed';
-            } else {
-                // Add click event for selectable days
-                dayElement.addEventListener('click', function() {
-                    toggleDateSelection(dateString, dayElement);
-                });
-            }
-            
-            calendarDays.appendChild(dayElement);
-        }
-    }
-    
-    // Toggle date selection
-    function toggleDateSelection(dateString, dayElement) {
-        const index = selectedDates.indexOf(dateString);
-        
-        if (index === -1) {
-            // Add date if not already selected
-            selectedDates.push(dateString);
-            dayElement.classList.add('selected');
-            
-            // Fetch time slot data for this date
-            fetchTimeSlotData(dateString);
-        } else {
-            // Remove date if already selected
-            selectedDates.splice(index, 1);
-            dayElement.classList.remove('selected');
-            
-            // If there are other selected dates, fetch data for the last selected date
-            if (selectedDates.length > 0) {
-                fetchTimeSlotData(selectedDates[selectedDates.length - 1]);
-            } else {
-                resetTimeSlotInputs(); // Reset to defaults if no dates selected
-            }
-        }
-        
-        // Update hidden input and display selected dates
-        selectedDatesInput.value = JSON.stringify(selectedDates);
-        updateSelectedDatesDisplay();
-    }
-    
-    // Fetch time slot data for a specific date
-    function fetchTimeSlotData(date) {
-        fetch(`../PHP CODES/fetch_timeslot.php?date=${date}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    updateTimeSlotInputs(data.slots);
-                } else {
-                    console.error('Error fetching time slot data:', data.error);
-                    resetTimeSlotInputs();
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching time slot data:', error);
-                resetTimeSlotInputs();
-            });
-    }
-    
-    // Update time slot inputs with fetched data
-    function updateTimeSlotInputs(slots) {
-        resetTimeSlotInputs(); // Reset to defaults first
-        
-        // Update with data from database
-        slots.forEach(slot => {
-            const input = document.querySelector(`input[name="time_slots[${slot.slot_name}]"]`);
-            if (input) {
-                input.value = slot.slot_limit;
-            }
-        });
-    }
-    
-    // Reset time slot inputs to default values
-    function resetTimeSlotInputs() {
-        const defaultLimit = 3;
-        document.querySelectorAll('.time-slots input[type="number"]').forEach(input => {
-            input.value = defaultLimit;
-        });
-    }
-    
-    // Update the display of selected dates
-    function updateSelectedDatesDisplay() {
-        selectedDatesList.innerHTML = '';
-        
-        if (selectedDates.length === 0) {
-            const emptyMessage = document.createElement('div');
-            emptyMessage.className = 'no-dates';
-            emptyMessage.textContent = 'No dates selected';
-            selectedDatesList.appendChild(emptyMessage);
-            return;
-        }
-        
-        // Sort dates before displaying
-        selectedDates.sort();
-        
-        selectedDates.forEach(dateString => {
-            const date = new Date(dateString);
-            const formattedDate = date.toLocaleDateString('en-US', { 
-                weekday: 'short', 
-                month: 'short', 
-                day: 'numeric' 
-            });
-            
-            const dateTag = document.createElement('div');
-            dateTag.className = 'date-tag';
-            
-            const dateText = document.createElement('span');
-            dateText.textContent = formattedDate;
-            
-            const removeBtn = document.createElement('button');
-            removeBtn.type = 'button';
-            removeBtn.className = 'remove-date';
-            removeBtn.innerHTML = '<i class="bx bx-x"></i>';
-            removeBtn.addEventListener('click', function() {
-                removeDateSelection(dateString);
-            });
-            
-            dateTag.appendChild(dateText);
-            dateTag.appendChild(removeBtn);
-            selectedDatesList.appendChild(dateTag);
-        });
-    }
-    
-    // Remove date selection
-    function removeDateSelection(dateString) {
-        const index = selectedDates.indexOf(dateString);
-        if (index !== -1) {
-            selectedDates.splice(index, 1);
-            selectedDatesInput.value = JSON.stringify(selectedDates);
-            
-            // Re-render calendar to update UI
-            renderCalendar();
-            updateSelectedDatesDisplay();
-            
-            // Update time slot inputs based on remaining selected dates
-            if (selectedDates.length > 0) {
-                fetchTimeSlotData(selectedDates[selectedDates.length - 1]);
-            } else {
-                resetTimeSlotInputs();
-            }
-        }
-    }
-    
-    // Event listeners for month and year changes
-    monthSelect.addEventListener('change', renderCalendar);
-    yearSelect.addEventListener('change', renderCalendar);
-    
-    // Initial render
-    renderCalendar();
-    updateSelectedDatesDisplay();
-});
-</script>
+    <script src="../JS CODES/work-orders.js"></script>
 </body>
 </html>

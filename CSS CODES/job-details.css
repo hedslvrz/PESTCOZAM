@@ -1091,3 +1091,122 @@ select.form-input {
     background-color: #f9f9fb;
     border: 1px dashed #cfd9e4;
 }
+
+/* Improved Treatment Method Design */
+.treatment-method-section {
+    background-color: white;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.treatment-method-section h4 {
+    margin-top: 0;
+    margin-bottom: 16px;
+    color: #144578;
+    font-size: 16px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.treatment-method-section h4::before {
+    content: '';
+    display: inline-block;
+    width: 5px;
+    height: 16px;
+    background: #144578;
+    border-radius: 3px;
+}
+
+.method-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.method-option {
+    position: relative;
+}
+
+.method-option input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.method-option label {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 16px;
+    background-color: #f6f9fc;
+    border: 1px solid #dde1e7;
+    border-radius: 30px;
+    color: #455766;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.method-option input[type="checkbox"]:checked + label {
+    background-color: #e8f1fb;
+    border-color: #3498db;
+    color: #144578;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+}
+
+.method-option label:hover {
+    background-color: #edf4fc;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+}
+
+.add-method-btn {
+    background-color: white;
+    border: 1px dashed #3498db;
+    color: #3498db;
+    border-radius: 30px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    width: auto;
+    margin-bottom: 0 !important;
+}
+
+.add-method-btn:hover {
+    background-color: #f0f7ff;
+    transform: translateY(-1px);
+}
+
+.add-method-btn i {
+    font-size: 16px;
+}
+
+/* Responsive adjustments for method options */
+@media screen and (max-width: 576px) {
+    .method-options {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .method-option {
+        width: 100%;
+    }
+    
+    .method-option label {
+        width: 100%;
+        justify-content: center;
+    }
+}

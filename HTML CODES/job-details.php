@@ -276,43 +276,43 @@ $treatmentTypes = [
                         <h4>Treatment Method</h4>
                         <div class="method-options">
                             <div class="method-option">
-                                <label>
-                                    <input type="checkbox" name="method[]" value="spraying" <?php echo in_array('spraying', $savedMethods) ? 'checked' : ''; ?>>
+                                <input type="checkbox" id="method-spraying" name="method[]" value="spraying" <?php echo in_array('spraying', $savedMethods) ? 'checked' : ''; ?>>
+                                <label for="method-spraying">
                                     Spraying
                                 </label>
                             </div>
                             <div class="method-option">
-                                <label>
-                                    <input type="checkbox" name="method[]" value="misting" <?php echo in_array('misting', $savedMethods) ? 'checked' : ''; ?>>
+                                <input type="checkbox" id="method-misting" name="method[]" value="misting" <?php echo in_array('misting', $savedMethods) ? 'checked' : ''; ?>>
+                                <label for="method-misting">
                                     Misting
                                 </label>
                             </div>
                             <div class="method-option">
-                                <label>
-                                    <input type="checkbox" name="method[]" value="baiting" <?php echo in_array('baiting', $savedMethods) ? 'checked' : ''; ?>>
+                                <input type="checkbox" id="method-baiting" name="method[]" value="baiting" <?php echo in_array('baiting', $savedMethods) ? 'checked' : ''; ?>>
+                                <label for="method-baiting">
                                     Baiting
                                 </label>
                             </div>
                             <div class="method-option">
-                                <label>
-                                    <input type="checkbox" name="method[]" value="dusting" <?php echo in_array('dusting', $savedMethods) ? 'checked' : ''; ?>>
+                                <input type="checkbox" id="method-dusting" name="method[]" value="dusting" <?php echo in_array('dusting', $savedMethods) ? 'checked' : ''; ?>>
+                                <label for="method-dusting">
                                     Dusting
                                 </label>
                             </div>
                             <div class="method-option">
-                                <label>
-                                    <input type="checkbox" name="method[]" value="fogging" <?php echo in_array('fogging', $savedMethods) ? 'checked' : ''; ?>>
+                                <input type="checkbox" id="method-fogging" name="method[]" value="fogging" <?php echo in_array('fogging', $savedMethods) ? 'checked' : ''; ?>>
+                                <label for="method-fogging">
                                     Fogging
                                 </label>
                             </div>
                             <div class="method-option">
-                                <label>
-                                    <input type="checkbox" name="method[]" value="trapping" <?php echo in_array('trapping', $savedMethods) ? 'checked' : ''; ?>>
+                                <input type="checkbox" id="method-trapping" name="method[]" value="trapping" <?php echo in_array('trapping', $savedMethods) ? 'checked' : ''; ?>>
+                                <label for="method-trapping">
                                     Trapping
                                 </label>
                             </div>
                         </div>
-                        <button type="button" class="add-method-btn">+ Add Method</button>
+                        <button type="button" class="add-method-btn"><i class='bx bx-plus'></i> Add Method</button>
                     </div>
 
                     <!-- Chemical Categories Section -->
@@ -534,16 +534,19 @@ $treatmentTypes = [
             });
         });
         
-        // Add new treatment method
+        // Add new treatment method - Modified for improved styling
         document.querySelector('.add-method-btn').addEventListener('click', function() {
             const input = prompt('Enter new treatment method:');
             if (input && input.trim() !== '') {
                 const methodOptions = document.querySelector('.method-options');
+                const methodValue = input.toLowerCase().trim();
+                const methodId = 'method-' + methodValue.replace(/\s+/g, '-');
+                
                 const div = document.createElement('div');
                 div.className = 'method-option';
                 div.innerHTML = `
-                    <label>
-                        <input type="checkbox" name="method[]" value="${input.toLowerCase().trim()}">
+                    <input type="checkbox" id="${methodId}" name="method[]" value="${methodValue}" checked>
+                    <label for="${methodId}">
                         ${input.trim()}
                     </label>
                 `;
