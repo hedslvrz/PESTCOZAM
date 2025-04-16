@@ -29,179 +29,23 @@ function showSection(sectionId) {
 // Remove the duplicate DOMContentLoaded event listeners
 // and replace with the new one
 document.addEventListener('DOMContentLoaded', function() {
-    const modal = document.getElementById('assignTechModal');
-    const form = document.getElementById('assignTechForm');
-    const closeBtn = modal.querySelector('.close');
-    const cancelBtn = modal.querySelector('.btn-cancel');
-
-    // Close modal function
-    function closeModal() {
-        modal.style.display = 'none';
-        form.reset();
-    }
-
-    // Close modal event listeners
-    closeBtn.addEventListener('click', closeModal);
-    cancelBtn.addEventListener('click', closeModal);
-    window.onclick = function(event) {
-        if (event.target === modal) {
-            closeModal();
-        }
-    };
-
-    // Handle form submission
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const formData = {
-            appointment_id: document.getElementById('appointmentId').value,
-            technician_id: document.getElementById('technicianId').value
-        };
-
-        console.log('Sending data:', formData); // Debug log
-
-        if (!formData.technician_id) {
-            alert('Please select a technician');
-            return;
-        }
-
-        fetch('../PHP CODES/assign_technician.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(formData)
-        })
-        .then(response => {
-            console.log('Response status:', response.status); // Debug log
-            return response.text().then(text => {
-                try {
-                    return JSON.parse(text);
-                } catch (e) {
-                    console.error('Failed to parse JSON:', text);
-                    throw new Error('Invalid JSON response from server');
-                }
-            });
-        })
-        .then(data => {
-            console.log('Parsed response:', data); // Debug log
-            if (data.success) {
-                alert('Technician assigned successfully!');
-                closeModal();
-                location.reload();
-            } else {
-                throw new Error(data.message || 'Failed to assign technician');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Error assigning technician: ' + error.message);
-        });
-    });
-
-    // Filter functionality
-    const filterButtons = document.querySelectorAll('.filter-btn');
-    filterButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const filter = this.getAttribute('data-filter');
-            
-            filterButtons.forEach(btn => btn.classList.remove('active'));
-            this.classList.add('active');
-            
-            const rows = document.querySelectorAll('tbody tr');
-            rows.forEach(row => {
-                if (filter === 'all' || row.getAttribute('data-status') === filter) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-        });
-    });
-
-    // Logout confirmation
-    const logoutLink = document.querySelector('a[href*="logout"]');
-    if (logoutLink) {
-        logoutLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            if (confirm('Are you sure you want to logout?')) {
-                window.location.href = this.href;
-            }
-        });
-    }
-    // Restore active section after page refresh
+    // Check if there's a stored active section (from job-details page)
     const activeSection = localStorage.getItem('activeSection');
     if (activeSection) {
         showSection(activeSection);
         localStorage.removeItem('activeSection'); // Clear stored section
     }
 
-    // Handle logout click
+    // Fixed direct logout handler - simple and reliable
     document.querySelector('.logout').addEventListener('click', function(e) {
-        e.preventDefault();
-        customModal.showConfirm("Are you sure you want to logout?", () => {
-            window.location.href = "../HTML CODES/login.php";
-        });
-    });
-
-    // Inline technician assignment handling
-    const assignForms = document.querySelectorAll('.inline-assign-form');
-    
-    assignForms.forEach(form => {
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const appointmentId = this.dataset.appointmentId;
-            const techSelect = this.querySelector('.tech-select');
-            const technicianId = techSelect.value;
-            const technicianName = techSelect.options[techSelect.selectedIndex].text;
-            
-            if (!technicianId) {
-                customModal.showWarning('Please select a technician');
-                return;
-            }
-            
-            try {
-                const response = await fetch('../PHP CODES/assign_technician.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        appointment_id: appointmentId,
-                        technician_id: technicianId
-                    })
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    const action = this.querySelector('.assign-btn').textContent.trim().toLowerCase().includes('assign') ? 'assigned' : 'updated';
-                    customModal.showSuccess(
-                        `Technician successfully ${action} to ${technicianName}!`,
-                        () => window.location.reload()
-                    );
-                } else {
-                    customModal.showError(result.message || 'Failed to assign technician');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                customModal.showError('An error occurred while processing your request');
-            }
-        });
-    });
-
-    // Handle technician update form submission
-    const updateTechForms = document.querySelectorAll('.update-technician-form');
-    updateTechForms.forEach(form => {
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            // Your existing update technician code here...
-            
-            // After successful update:
-            customModal.showUpdateSuccess();
-        });
+        // Don't prevent default - let the natural link behavior work
+        // This matches how dashboard-admin.php handles logout
+        
+        // If you want a confirmation, use this simple approach:
+        if (!confirm("Are you sure you want to logout?")) {
+            e.preventDefault(); // Only prevent if user cancels
+        }
+        // If confirmed, the link will work naturally
     });
 
     // Add modal close handlers
@@ -227,6 +71,9 @@ document.addEventListener('DOMContentLoaded', function() {
             closeReportModal();
         }
     });
+
+    // Initialize Work Orders Functionality
+    initWorkOrdersFilters();
 });
 
 // Report Modal Functions
@@ -280,4 +127,218 @@ function initializeReportCards() {
             openReportModal(reportId);
         });
     });
+}
+
+// Work Orders Filtering and Search Functionality
+function initWorkOrdersFilters() {
+    // Get references to elements
+    const searchInput = document.getElementById('searchAppointments');
+    const filterButtons = document.querySelectorAll('.filter-buttons .filter-btn');
+    const dateFilter = document.getElementById('filterDate');
+    const tableRows = document.querySelectorAll('.work-orders-table tbody tr');
+    
+    if (!searchInput || !dateFilter || tableRows.length === 0) {
+        // Elements don't exist, probably on a different page
+        return;
+    }
+    
+    // Set default date to today
+    const today = new Date().toISOString().split('T')[0];
+    dateFilter.value = today;
+    
+    // Function to filter table rows by search term
+    function filterBySearchTerm(term) {
+        term = term.toLowerCase().trim();
+        
+        tableRows.forEach(row => {
+            if (row.classList.contains('no-records')) return;
+            
+            const text = row.textContent.toLowerCase();
+            if (text.includes(term)) {
+                row.dataset.searchMatch = "true";
+            } else {
+                row.dataset.searchMatch = "false";
+            }
+            
+            checkRowVisibility(row);
+        });
+        
+        checkNoResults();
+    }
+    
+    // Function to filter table rows by status
+    function filterByStatus(status) {
+        tableRows.forEach(row => {
+            if (row.classList.contains('no-records')) return;
+            
+            if (status === 'all' || row.getAttribute('data-status') === status) {
+                row.dataset.statusMatch = "true";
+            } else {
+                row.dataset.statusMatch = "false";
+            }
+            
+            checkRowVisibility(row);
+        });
+        
+        checkNoResults();
+    }
+    
+    // Function to filter table rows by date
+    function filterByDate(date) {
+        if (!date) {
+            // If no date is selected, show all rows
+            tableRows.forEach(row => {
+                if (row.classList.contains('no-records')) return;
+                row.dataset.dateMatch = "true";
+                checkRowVisibility(row);
+            });
+            return;
+        }
+        
+        tableRows.forEach(row => {
+            if (row.classList.contains('no-records')) return;
+            
+            const rowDate = row.getAttribute('data-date');
+            if (rowDate === date) {
+                row.dataset.dateMatch = "true";
+            } else {
+                row.dataset.dateMatch = "false";
+            }
+            
+            checkRowVisibility(row);
+        });
+        
+        checkNoResults();
+    }
+    
+    // Function to check if a row should be visible based on all filters
+    function checkRowVisibility(row) {
+        if (row.classList.contains('no-records')) return;
+        
+        const searchMatch = row.dataset.searchMatch !== "false";
+        const statusMatch = row.dataset.statusMatch !== "false";
+        const dateMatch = row.dataset.dateMatch !== "false";
+        
+        if (searchMatch && statusMatch && dateMatch) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    }
+    
+    // Function to check if there are no visible results and show a message
+    function checkNoResults() {
+        let hasVisibleRows = false;
+        
+        tableRows.forEach(row => {
+            if (!row.classList.contains('no-records') && row.style.display !== 'none') {
+                hasVisibleRows = true;
+            }
+        });
+        
+        // Get or create the "no results" row
+        let noResultsRow = document.querySelector('.work-orders-table tbody tr.no-results');
+        
+        if (!hasVisibleRows) {
+            if (!noResultsRow) {
+                noResultsRow = document.createElement('tr');
+                noResultsRow.className = 'no-results';
+                noResultsRow.innerHTML = '<td colspan="7" class="no-records">No matching records found</td>';
+                document.querySelector('.work-orders-table tbody').appendChild(noResultsRow);
+            }
+            noResultsRow.style.display = '';
+        } else if (noResultsRow) {
+            noResultsRow.style.display = 'none';
+        }
+    }
+    
+    // Apply all filters together
+    function applyAllFilters() {
+        const searchTerm = searchInput.value;
+        const activeFilterBtn = document.querySelector('.filter-btn.active');
+        const status = activeFilterBtn ? activeFilterBtn.getAttribute('data-filter') : 'all';
+        const date = dateFilter.value;
+        
+        // Initialize datasets for all rows
+        tableRows.forEach(row => {
+            if (row.classList.contains('no-records')) return;
+            row.dataset.searchMatch = "true";
+            row.dataset.statusMatch = "true";
+            row.dataset.dateMatch = "true";
+        });
+        
+        if (searchTerm) filterBySearchTerm(searchTerm);
+        filterByStatus(status);
+        if (date) filterByDate(date);
+    }
+    
+    // Event listeners
+    searchInput.addEventListener('input', function() {
+        applyAllFilters();
+    });
+    
+    filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Remove active class from all buttons
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            
+            // Add active class to clicked button
+            this.classList.add('active');
+            
+            // Apply all filters
+            applyAllFilters();
+        });
+    });
+    
+    dateFilter.addEventListener('change', function() {
+        applyAllFilters();
+    });
+    
+    // Initialize table with all rows visible
+    tableRows.forEach(row => {
+        if (!row.classList.contains('no-records')) {
+            row.dataset.searchMatch = "true";
+            row.dataset.statusMatch = "true";
+            row.dataset.dateMatch = "true";
+            row.style.display = '';
+        }
+    });
+
+    // Store active section when clicking on view details
+    document.querySelectorAll('.view-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            localStorage.setItem('activeSection', 'work-orders');
+        });
+    });
+}
+
+// Feedback Modal Functions
+function showFeedbackModal(appointmentId) {
+    const modal = document.getElementById('feedbackModal');
+    if (!modal) {
+        console.error('Feedback modal element not found');
+        return;
+    }
+    
+    // Set the appointment ID in the form
+    const idInput = document.getElementById('feedback_appointment_id');
+    if (idInput) {
+        idInput.value = appointmentId;
+    }
+    
+    // Show the modal
+    modal.classList.add('show');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeFeedbackModal() {
+    const modal = document.getElementById('feedbackModal');
+    if (!modal) return;
+    
+    modal.classList.remove('show');
+    document.body.style.overflow = '';
+    
+    // Reset the form
+    const form = document.getElementById('feedbackForm');
+    if (form) form.reset();
 }

@@ -10,27 +10,30 @@ document.addEventListener('DOMContentLoaded', function() {
     const dateFilter = document.getElementById('filterDate');
     const tableRows = document.querySelectorAll('.work-orders-table tbody tr');
     
+    // If elements don't exist, exit early
+    if (!searchInput || !dateFilter || tableRows.length === 0) {
+        return;
+    }
+    
     // Set default date to today
     const today = new Date().toISOString().split('T')[0];
     dateFilter.value = today;
-    
-    // Initial state - show all records first instead of filtering immediately
-    // Comment out initial date filtering to show all records first
-    // filterByDate(today);
     
     // Function to filter table rows by search term
     function filterBySearchTerm(term) {
         term = term.toLowerCase().trim();
         
         tableRows.forEach(row => {
-            if (!row.classList.contains('no-records')) {
-                const text = row.textContent.toLowerCase();
-                if (term === '' || text.includes(term)) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
+            if (row.classList.contains('no-records')) return;
+            
+            const text = row.textContent.toLowerCase();
+            if (text.includes(term)) {
+                row.dataset.searchMatch = "true";
+            } else {
+                row.dataset.searchMatch = "false";
             }
+            
+            checkRowVisibility(row);
         });
         
         checkNoResults();
@@ -39,25 +42,15 @@ document.addEventListener('DOMContentLoaded', function() {
     // Function to filter table rows by status
     function filterByStatus(status) {
         tableRows.forEach(row => {
-            if (!row.classList.contains('no-records')) {
-                if (status === 'all') {
-                    row.style.display = '';
-                } else {
-                    const statusCell = row.querySelector('.status');
-                    if (statusCell) {
-                        // Make case-insensitive comparison and handle partial matches
-                        const statusText = statusCell.textContent.toLowerCase().trim();
-                        // Check if status text contains the filter term rather than exact match
-                        if (statusText.includes(status)) {
-                            row.style.display = '';
-                        } else {
-                            row.style.display = 'none';
-                        }
-                    } else {
-                        row.style.display = 'none';
-                    }
-                }
+            if (row.classList.contains('no-records')) return;
+            
+            if (status === 'all' || row.getAttribute('data-status') === status) {
+                row.dataset.statusMatch = "true";
+            } else {
+                row.dataset.statusMatch = "false";
             }
+            
+            checkRowVisibility(row);
         });
         
         checkNoResults();
@@ -68,174 +61,89 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!date) {
             // If no date is selected, show all rows
             tableRows.forEach(row => {
-                if (!row.classList.contains('no-records')) {
-                    row.style.display = '';
-                }
+                if (row.classList.contains('no-records')) return;
+                row.dataset.dateMatch = "true";
+                checkRowVisibility(row);
             });
             return;
         }
         
-        // Convert input date to a Date object for comparison
-        const filterDate = new Date(date);
-        const filterYear = filterDate.getFullYear();
-        const filterMonth = filterDate.getMonth();
-        const filterDay = filterDate.getDate();
-        
         tableRows.forEach(row => {
-            if (!row.classList.contains('no-records')) {
-                const dateElement = row.querySelector('.schedule-info .date');
-                if (dateElement) {
-                    try {
-                        // Parse the date displayed in the row (format: "May 1, 2023")
-                        const displayedDate = dateElement.textContent.trim();
-                        const rowDate = new Date(displayedDate);
-                        
-                        // Make sure rowDate is valid before comparing
-                        if (!isNaN(rowDate.getTime())) {
-                            // Compare year, month, and day for equality instead of string comparison
-                            const rowYear = rowDate.getFullYear();
-                            const rowMonth = rowDate.getMonth();
-                            const rowDay = rowDate.getDate();
-                            
-                            if (rowYear === filterYear && rowMonth === filterMonth && rowDay === filterDay) {
-                                row.style.display = '';
-                            } else {
-                                row.style.display = 'none';
-                            }
-                        } else {
-                            console.warn(`Could not parse date: ${displayedDate}`);
-                            row.style.display = ''; // Keep visible if cannot parse
-                        }
-                    } catch (error) {
-                        console.error('Error parsing date:', error);
-                        row.style.display = ''; // Keep visible if error
-                    }
-                } else {
-                    row.style.display = ''; // If no date element found, keep visible
-                }
+            if (row.classList.contains('no-records')) return;
+            
+            const rowDate = row.getAttribute('data-date');
+            if (rowDate === date) {
+                row.dataset.dateMatch = "true";
+            } else {
+                row.dataset.dateMatch = "false";
             }
+            
+            checkRowVisibility(row);
         });
         
         checkNoResults();
     }
     
+    // Function to check if a row should be visible based on all filters
+    function checkRowVisibility(row) {
+        if (row.classList.contains('no-records')) return;
+        
+        const searchMatch = row.dataset.searchMatch !== "false";
+        const statusMatch = row.dataset.statusMatch !== "false";
+        const dateMatch = row.dataset.dateMatch !== "false";
+        
+        if (searchMatch && statusMatch && dateMatch) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    }
+    
     // Function to check if there are no visible results and show a message
     function checkNoResults() {
-        let visibleRows = 0;
+        let hasVisibleRows = false;
+        
         tableRows.forEach(row => {
-            if (row.style.display !== 'none' && !row.classList.contains('no-records')) {
-                visibleRows++;
+            if (!row.classList.contains('no-records') && row.style.display !== 'none') {
+                hasVisibleRows = true;
             }
         });
         
-        const tbody = document.querySelector('.work-orders-table tbody');
+        // Get or create the "no results" row
+        let noResultsRow = document.querySelector('.work-orders-table tbody tr.no-results');
         
-        // Remove existing no-results row if it exists
-        const existingNoResults = tbody.querySelector('.no-results');
-        if (existingNoResults) {
-            tbody.removeChild(existingNoResults);
-        }
-        
-        // Add no-results message if needed
-        if (visibleRows === 0) {
-            const noResultsRow = document.createElement('tr');
-            noResultsRow.className = 'no-results';
-            noResultsRow.innerHTML = '<td colspan="7" class="no-records">No matching work orders found</td>';
-            tbody.appendChild(noResultsRow);
+        if (!hasVisibleRows) {
+            if (!noResultsRow) {
+                noResultsRow = document.createElement('tr');
+                noResultsRow.className = 'no-results';
+                noResultsRow.innerHTML = '<td colspan="7" class="no-records">No matching records found</td>';
+                document.querySelector('.work-orders-table tbody').appendChild(noResultsRow);
+            }
+            noResultsRow.style.display = '';
+        } else if (noResultsRow) {
+            noResultsRow.style.display = 'none';
         }
     }
     
     // Apply all filters together
     function applyAllFilters() {
-        const searchTerm = searchInput.value.toLowerCase().trim();
-        const activeFilterButton = document.querySelector('.filter-buttons .filter-btn.active');
-        const status = activeFilterButton ? activeFilterButton.getAttribute('data-filter') : 'all';
+        const searchTerm = searchInput.value;
+        const activeFilterBtn = document.querySelector('.filter-btn.active');
+        const status = activeFilterBtn ? activeFilterBtn.getAttribute('data-filter') : 'all';
         const date = dateFilter.value;
         
-        // Reset display
+        // Initialize datasets for all rows
         tableRows.forEach(row => {
-            if (!row.classList.contains('no-records')) {
-                row.style.display = '';
-            }
+            if (row.classList.contains('no-records')) return;
+            row.dataset.searchMatch = "true";
+            row.dataset.statusMatch = "true";
+            row.dataset.dateMatch = "true";
         });
         
-        // Apply search filter
-        if (searchTerm !== '') {
-            tableRows.forEach(row => {
-                if (!row.classList.contains('no-records') && row.style.display !== 'none') {
-                    const text = row.textContent.toLowerCase();
-                    if (!text.includes(searchTerm)) {
-                        row.style.display = 'none';
-                    }
-                }
-            });
-        }
-        
-        // Apply status filter
-        if (status !== 'all') {
-            tableRows.forEach(row => {
-                if (!row.classList.contains('no-records') && row.style.display !== 'none') {
-                    const statusCell = row.querySelector('.status');
-                    if (statusCell) {
-                        const statusText = statusCell.textContent.toLowerCase().trim();
-                        if (!statusText.includes(status)) {
-                            row.style.display = 'none';
-                        }
-                    } else {
-                        row.style.display = 'none';
-                    }
-                }
-            });
-        }
-        
-        // Apply date filter
-        if (date) {
-            // Convert input date to a Date object for comparison
-            const filterDate = new Date(date);
-            const filterYear = filterDate.getFullYear();
-            const filterMonth = filterDate.getMonth();
-            const filterDay = filterDate.getDate();
-            
-            tableRows.forEach(row => {
-                if (!row.classList.contains('no-records') && row.style.display !== 'none') {
-                    const dateElement = row.querySelector('.schedule-info .date');
-                    if (dateElement) {
-                        try {
-                            const displayedDate = dateElement.textContent.trim();
-                            const rowDate = new Date(displayedDate);
-                            
-                            if (!isNaN(rowDate.getTime())) {
-                                // Compare year, month, and day for equality
-                                const rowYear = rowDate.getFullYear();
-                                const rowMonth = rowDate.getMonth();
-                                const rowDay = rowDate.getDate();
-                                
-                                if (!(rowYear === filterYear && rowMonth === filterMonth && rowDay === filterDay)) {
-                                    row.style.display = 'none';
-                                }
-                            }
-                        } catch (error) {
-                            console.error('Error parsing date:', error);
-                        }
-                    }
-                }
-            });
-        }
-        
-        checkNoResults();
+        if (searchTerm) filterBySearchTerm(searchTerm);
+        filterByStatus(status);
+        if (date) filterByDate(date);
     }
-    
-    // Add console logging to help debug
-    console.log(`Total work order rows: ${tableRows.length}`);
-    console.log(`Work orders with 'no-records' class: ${document.querySelectorAll('.work-orders-table tbody tr.no-records').length}`);
-    
-    // Show all records when the page loads
-    console.log('Showing all work order records by default');
-    tableRows.forEach(row => {
-        if (!row.classList.contains('no-records')) {
-            row.style.display = '';
-        }
-    });
     
     // Event listeners
     searchInput.addEventListener('input', function() {
@@ -250,11 +158,22 @@ document.addEventListener('DOMContentLoaded', function() {
             // Add active class to clicked button
             this.classList.add('active');
             
+            // Apply all filters
             applyAllFilters();
         });
     });
     
     dateFilter.addEventListener('change', function() {
         applyAllFilters();
+    });
+    
+    // Initialize table with all rows visible
+    tableRows.forEach(row => {
+        if (!row.classList.contains('no-records')) {
+            row.dataset.searchMatch = "true";
+            row.dataset.statusMatch = "true";
+            row.dataset.dateMatch = "true";
+            row.style.display = '';
+        }
     });
 });

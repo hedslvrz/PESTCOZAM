@@ -2,12 +2,28 @@
 session_start();
 require_once '../database.php';
 
+// Check if user is logged in
+if(!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
+
 // Check if appointment ID is provided
 $appointmentId = $_GET['id'] ?? null;
 if (!$appointmentId) {
-    header('Location: dashboard-admin.php#work-orders');
+    // Check user role and redirect accordingly
+    if (isset($_SESSION['role']) && $_SESSION['role'] === 'supervisor') {
+        header('Location: dashboard-aos.php#work-orders');
+    } else {
+        header('Location: dashboard-admin.php#work-orders');
+    }
     exit;
 }
+
+// Determine the return page based on user role
+$returnPage = (isset($_SESSION['role']) && $_SESSION['role'] === 'supervisor') 
+    ? 'dashboard-aos.php#work-orders' 
+    : 'dashboard-admin.php#work-orders';
 
 // Initialize database connection
 $database = new Database();
@@ -168,12 +184,12 @@ $treatmentTypes = [
             <div class="left">
                 <h1>Job Order Details #<?php echo htmlspecialchars($appointmentId); ?></h1>
                 <ul class="breadcrumb">
-                    <li><a href="dashboard-admin.php#work-orders">Work Orders</a></li>
+                    <li><a href="<?php echo $returnPage; ?>">Work Orders</a></li>
                     <li><i class='bx bx-chevron-right'></i></li>
                     <li><a class="active" href="#">Job Details</a></li>
                 </ul>
             </div>
-            <a href="dashboard-admin.php#work-orders" class="back-btn">
+            <a href="<?php echo $returnPage; ?>" class="back-btn">
                 <i class='bx bx-arrow-back'></i> Back to Work Orders
             </a>
         </div>
