@@ -74,6 +74,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize Work Orders Functionality
     initWorkOrdersFilters();
+
+    // Initialize time slot selection for schedule follow-up
+    if (document.querySelector('.time-option')) {
+        initTimeSlotSelection();
+    }
+
+    // Event listener for time option selection
+    const timeOptions = document.querySelectorAll('.time-option');
+    timeOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            // Remove selected class from all options
+            timeOptions.forEach(opt => opt.classList.remove('selected'));
+            // Add selected class to clicked option
+            this.classList.add('selected');
+        });
+    });
 });
 
 // Report Modal Functions
@@ -341,4 +357,266 @@ function closeFeedbackModal() {
     // Reset the form
     const form = document.getElementById('feedbackForm');
     if (form) form.reset();
+}
+
+// Schedule Follow-up Functions
+function generateVisitDates() {
+    const customerSelect = document.getElementById('customer-select');
+    const planType = document.getElementById('plan-type');
+    const frequency = document.getElementById('frequency-select');
+    const startDate = document.getElementById('start-date');
+    const contractDuration = document.getElementById('contract-duration');
+    
+    // Validate required fields
+    if (!customerSelect.value || !planType.value || !frequency.value || !startDate.value || !contractDuration.value) {
+        showAlert('Please fill in all required fields before generating a schedule.');
+        return;
+    }
+    
+    // Clear existing schedule
+    const scheduleContainer = document.getElementById('visit-schedule');
+    scheduleContainer.innerHTML = '';
+    
+    // Parse input values
+    const start = new Date(startDate.value);
+    const duration = parseInt(contractDuration.value);
+    const freq = parseInt(frequency.value);
+    
+    // Calculate end date (months from start)
+    const endDate = new Date(start);
+    endDate.setMonth(endDate.getMonth() + duration);
+    
+    // Generate dates based on plan type and frequency
+    const dates = [];
+    let currentDate = new Date(start);
+    let visitCount = 1;
+    
+    while (currentDate < endDate) {
+        // Add current date to the schedule
+        addVisitToSchedule(scheduleContainer, new Date(currentDate), visitCount);
+        visitCount++;
+        
+        // Increment date based on plan type and frequency
+        if (planType.value === 'weekly') {
+            // Add 7/freq days (e.g., for freq=2, add 3.5 days)
+            currentDate.setDate(currentDate.getDate() + Math.ceil(7/freq));
+        } else if (planType.value === 'monthly') {
+            if (freq >= 4) {
+                // Weekly visits
+                currentDate.setDate(currentDate.getDate() + 7);
+            } else {
+                // Calculate days per month based on frequency
+                const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
+                const increment = Math.floor(daysInMonth / freq);
+                currentDate.setDate(currentDate.getDate() + increment);
+            }
+        } else if (planType.value === 'quarterly') {
+            const monthsPerVisit = 3 / freq;
+            currentDate.setMonth(currentDate.getMonth() + monthsPerVisit);
+        } else if (planType.value === 'yearly') {
+            const monthsPerVisit = 12 / freq;
+            currentDate.setMonth(currentDate.getMonth() + monthsPerVisit);
+        }
+    }
+    
+    // Show success message
+    showAlert(`Successfully generated ${visitCount-1} follow-up visits for the selected plan.`);
+}
+
+// Helper function to add a visit date to the schedule display
+function addVisitToSchedule(container, date, visitNumber) {
+    const timeOption = document.querySelector('.time-option.selected');
+    const customTimeStart = document.getElementById('custom-time-start');
+    const customTimeEnd = document.getElementById('custom-time-end');
+    
+    let timeDisplay = '8:00 AM - 10:00 AM'; // Default time
+    
+    if (timeOption) {
+        timeDisplay = timeOption.getAttribute('data-time');
+    } else if (customTimeStart.value && customTimeEnd.value) {
+        // Format custom time
+        const start = formatTimeDisplay(customTimeStart.value);
+        const end = formatTimeDisplay(customTimeEnd.value);
+        timeDisplay = `${start} - ${end}`;
+    }
+    
+    // Format date
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    const formattedDate = date.toLocaleDateString('en-US', options);
+    
+    // Create visit item
+    const visitItem = document.createElement('div');
+    visitItem.classList.add('visit-date-item');
+    visitItem.innerHTML = `
+        <div class="visit-info">
+            <span class="date">${formattedDate}</span>
+            <span class="time">${timeDisplay}</span>
+        </div>
+        <span class="visit-number">Visit #${visitNumber}</span>
+    `;
+    
+    container.appendChild(visitItem);
+}
+
+// Helper function to format time display (from 24h to 12h format)
+function formatTimeDisplay(time24h) {
+    const [hours, minutes] = time24h.split(':');
+    const hour = parseInt(hours);
+    const suffix = hour >= 12 ? 'PM' : 'AM';
+    const hour12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+    return `${hour12}:${minutes} ${suffix}`;
+}
+
+// Helper function to show alerts
+function showAlert(message) {
+    // Use existing modal if available
+    if (typeof showModal === 'function') {
+        showModal('Schedule Generator', message);
+    } else {
+        alert(message);
+    }
+}
+
+// Function to clear the schedule
+function clearSchedule() {
+    document.getElementById('visit-schedule').innerHTML = '';
+    document.getElementById('customer-select').value = '';
+    document.getElementById('plan-type').value = '';
+    document.getElementById('frequency-select').innerHTML = '<option value="">Select Frequency</option>';
+    document.getElementById('start-date').value = '';
+    document.getElementById('contract-duration').value = '3';
+    
+    // Clear time selection
+    const selectedTimeOption = document.querySelector('.time-option.selected');
+    if (selectedTimeOption) {
+        selectedTimeOption.classList.remove('selected');
+    }
+    document.getElementById('custom-time-start').value = '';
+    document.getElementById('custom-time-end').value = '';
+    
+    showAlert('Schedule cleared successfully.');
+}
+
+// Function to save/submit the generated schedule to the database
+function saveSchedule() {
+    const scheduleItems = document.querySelectorAll('.visit-date-item');
+    
+    if (scheduleItems.length === 0) {
+        showAlert('Please generate a schedule before submitting.');
+        return;
+    }
+    
+    const customerSelect = document.getElementById('customer-select');
+    if (!customerSelect.value) {
+        showAlert('Please select a customer before submitting the schedule.');
+        return;
+    }
+    
+    // In a real implementation, this would gather all schedule data
+    // and send it to the server using AJAX/fetch
+    
+    // For demonstration purposes:
+    showAlert('Schedule submitted successfully! The follow-up appointments have been created and the customer will be notified.');
+    
+    // Optional: Clear the form after successful submission
+    // clearSchedule();
+}
+
+// Function to clear the schedule
+function clearSchedule() {
+    document.getElementById('visit-schedule').innerHTML = '';
+    document.getElementById('customer-select').value = '';
+    document.getElementById('plan-type').value = '';
+    document.getElementById('frequency-select').innerHTML = '<option value="">Select Frequency</option>';
+    document.getElementById('start-date').value = '';
+    document.getElementById('contract-duration').value = '3';
+    
+    // Clear time selection
+    const selectedTimeOption = document.querySelector('.time-option.selected');
+    if (selectedTimeOption) {
+        selectedTimeOption.classList.remove('selected');
+    }
+    document.getElementById('custom-time-start').value = '';
+    document.getElementById('custom-time-end').value = '';
+    
+    showAlert('Schedule cleared successfully.');
+}
+
+// Function to update frequency options based on plan type
+function updateFrequencyOptions() {
+    const planType = document.getElementById('plan-type').value;
+    const frequencySelect = document.getElementById('frequency-select');
+    
+    // Clear existing options
+    frequencySelect.innerHTML = '<option value="">Select Frequency</option>';
+    
+    // Add appropriate options based on plan type
+    if (planType === 'weekly') {
+        addOption(frequencySelect, '1', '1 visit per week');
+        addOption(frequencySelect, '2', '2 visits per week');
+        addOption(frequencySelect, '3', '3 visits per week');
+    } else if (planType === 'monthly') {
+        addOption(frequencySelect, '1', '1 visit per month');
+        addOption(frequencySelect, '2', '2 visits per month');
+        addOption(frequencySelect, '4', 'Weekly (4 visits per month)');
+    } else if (planType === 'quarterly') {
+        addOption(frequencySelect, '1', '1 visit per quarter');
+        addOption(frequencySelect, '2', '2 visits per quarter');
+        addOption(frequencySelect, '3', '3 visits per quarter (monthly)');
+    } else if (planType === 'yearly') {
+        addOption(frequencySelect, '1', '1 visit per year');
+        addOption(frequencySelect, '2', '2 visits per year (semi-annual)');
+        addOption(frequencySelect, '4', '4 visits per year (quarterly)');
+        addOption(frequencySelect, '12', '12 visits per year (monthly)');
+    }
+}
+
+// Helper function to add options to select element
+function addOption(selectElement, value, text) {
+    const option = document.createElement('option');
+    option.value = value;
+    option.textContent = text;
+    selectElement.appendChild(option);
+}
+
+// Initialize time slot selection
+function initTimeSlotSelection() {
+    const timeOptions = document.querySelectorAll('.time-option');
+    const customTimeStart = document.getElementById('custom-time-start');
+    const customTimeEnd = document.getElementById('custom-time-end');
+    
+    // Handle predefined time slot selection
+    timeOptions.forEach(option => {
+        option.addEventListener('click', () => {
+            timeOptions.forEach(btn => btn.classList.remove('selected'));
+            option.classList.add('selected');
+            
+            // Clear custom time inputs
+            customTimeStart.value = '';
+            customTimeEnd.value = '';
+        });
+    });
+
+    // Handle custom time input
+    function handleCustomTimeInput() {
+        const start = customTimeStart.value;
+        const end = customTimeEnd.value;
+        
+        if (start && end) {
+            // Validate time range (7 AM - 5 PM)
+            const startHour = parseInt(start.split(':')[0]);
+            const endHour = parseInt(end.split(':')[0]);
+            
+            if (startHour < 7 || endHour > 17 || startHour >= endHour) {
+                alert('Please select a valid time between 7:00 AM and 5:00 PM');
+                return;
+            }
+
+            // Clear predefined selections
+            timeOptions.forEach(btn => btn.classList.remove('selected'));
+        }
+    }
+
+    customTimeStart.addEventListener('input', handleCustomTimeInput);
+    customTimeEnd.addEventListener('input', handleCustomTimeInput);
 }

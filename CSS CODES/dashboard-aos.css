@@ -64,7 +64,7 @@
     border-radius: 20px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     width: 100%;
-    max-width: 1200px;
+    box-sizing: border-box;
     margin: 0 auto;
 }
 
@@ -118,8 +118,52 @@
 .form-actions {
     display: flex;
     justify-content: flex-end;
+    gap: 20px;
+    margin: 0;
+    background: #f5f9ff;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.07);
+    border: 1px solid #d0e1fd;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.btn-clear, .btn-submit {
+    padding: 15px 30px;
+    border-radius: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
     gap: 10px;
-    margin-top: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 16px;
+}
+
+.btn-clear {
+    background: #fff;
+    color: #dc3545;
+    border: 2px solid #dc3545;
+}
+
+.btn-submit {
+    background: linear-gradient(135deg, #144578, #2a6db5);
+    color: white;
+    border: none;
+    box-shadow: 0 6px 15px rgba(20, 69, 120, 0.2);
+}
+
+.btn-clear:hover {
+    background: #fff5f5;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(220, 53, 69, 0.1);
+}
+
+.btn-submit:hover {
+    background: linear-gradient(135deg, #0d3863, #1e5da1);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(20, 69, 120, 0.3);
 }
 
 /* Service Reports Grid Styles */
@@ -166,27 +210,6 @@
 .report-status.approved {
     background: #e8f5e9;
     color: #2e7d32;
-}
-
-.reports-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
-    margin-top: 20px;
-}
-
-.report-card {
-    background: white;
-    border-radius: 10px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    padding: 15px;
-}
-
-.report-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
 }
 
 .report-id {
@@ -263,9 +286,498 @@
     margin-bottom: 10px;
 }
 
+/* Enhanced Schedule Follow-up Styles with improved design */
+.followup-form-container {
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 25px;
+    background-color: #f8faff;
+    border-radius: 20px;
+    box-sizing: border-box;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+    border: 1px solid #e6effd;
+    position: relative;
+    margin-top: 30px;
+}
+
+.followup-label {
+    position: absolute;
+    top: -20px;
+    left: 25px;
+    background-color: #144578;
+    color: white;
+    padding: 8px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 16px;
+    box-shadow: 0 4px 12px rgba(20, 69, 120, 0.2);
+    z-index: 2;
+}
+
+.followup-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.calendar-container {
+    width: 100%;
+    padding: 0;
+    background: transparent;
+    box-shadow: none;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    box-sizing: border-box;
+}
+
+.settings-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 8px 25px rgba(20, 69, 120, 0.08);
+    margin-bottom: 0;
+    overflow: visible;
+    border: 1px solid #e6effd;
+    transition: all 0.3s ease;
+    width: 100%;
+    padding: 0 0 30px 0;
+    position: relative;
+    box-sizing: border-box;
+}
+
+/* Only apply hover effects to non-schedule cards */
+.settings-card:not(.no-hover):hover {
+    box-shadow: 0 12px 30px rgba(20, 69, 120, 0.12);
+    transform: translateY(-5px);
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 25px 30px;
+    background: linear-gradient(to right, #eef5ff, #f5f9ff);
+    border-bottom: 1px solid #d0e1fd;
+    border-radius: 20px 20px 0 0;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.card-header i {
+    font-size: 26px;
+    color: #144578;
+    background-color: rgba(20, 69, 120, 0.1);
+    padding: 12px;
+    border-radius: 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.card-header h4 {
+    background-color: transparent;
+    font-size: 20px;
+    color: #144578;
+    margin: 0;
+    font-weight: 600;
+}
+
+/* Improved Plan Frequency Layout */
+.plan-frequency {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    padding: 35px;
+    background-color: white;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.plan-frequency .form-group {
+    margin: 0;
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.plan-frequency label {
+    display: block;
+    margin-bottom: 0; /* Remove bottom margin since we're using flex gap */
+    color: #144578;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.plan-frequency input,
+.plan-frequency select {
+    width: 100%;
+    padding: 18px 20px;
+    border: 2px solid #d0e1fd;
+    border-radius: 15px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    background-color: #f8faff;
+    box-shadow: 0 4px 15px rgba(20, 69, 120, 0.05);
+    height: 60px; /* Standardize height */
+    box-sizing: border-box;
+}
+
+/* Time Selection Container - Improved styling */
+.time-selection-container {
+    padding: 35px;
+    width: 100%;
+    background-color: white;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.predefined-slots {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 35px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.time-option {
+    background: #f5f9ff;
+    padding: 20px;
+    border: 2px solid #d0e1fd;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    font-weight: 600;
+    color: #144578;
+    width: 100%;
+    font-size: 16px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(20, 69, 120, 0.05);
+}
+
+.time-option:before {
+    content: '\f017';
+    font-family: 'boxicons';
+    position: absolute;
+    top: 8px;
+    left: 10px;
+    font-size: 16px;
+    color: #144578;
+    opacity: 0.5;
+}
+
+.time-option:hover {
+    background: #e3f2fd;
+    border-color: #144578;
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(20, 69, 120, 0.15);
+}
+
+.time-option.selected {
+    background: linear-gradient(135deg, #144578, #2a6db5);
+    color: white;
+    border-color: #144578;
+    box-shadow: 0 8px 20px rgba(20, 69, 120, 0.25);
+}
+
+.time-option.selected:before {
+    color: white;
+}
+
+.custom-time {
+    background: #f5f9ff;
+    padding: 30px;
+    border-radius: 18px;
+    margin: 0 auto;
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    border: 2px solid #d0e1fd;
+    box-shadow: 0 6px 18px rgba(20, 69, 120, 0.08);
+    box-sizing: border-box;
+}
+
+.custom-time label {
+    margin-bottom: 22px;
+    color: #144578;
+    font-weight: 600;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.custom-time label:before {
+    content: '\f017';
+    font-family: 'boxicons';
+    font-size: 22px;
+}
+
+.custom-time-inputs {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 30px;
+    width: 100%;
+    max-width: 600px;
+    box-sizing: border-box;
+}
+
+.custom-time-inputs input[type="time"] {
+    padding: 18px 20px;
+    border: 2px solid #d0e1fd;
+    border-radius: 15px;
+    width: 100%;
+    font-size: 16px;
+    text-align: center;
+    background-color: white;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(20, 69, 120, 0.05);
+}
+
+.custom-time-inputs input[type="time"]:focus {
+    border-color: #144578;
+    box-shadow: 0 0 0 4px rgba(20, 69, 120, 0.1);
+}
+
+.custom-time-inputs span {
+    color: #144578;
+    font-weight: 600;
+    font-size: 18px;
+}
+
+.btn-generate {
+    margin: 35px auto 25px;
+    padding: 18px 35px;
+    background: linear-gradient(135deg, #144578, #2a6db5);
+    color: white;
+    border: none;
+    border-radius: 15px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: auto;
+    min-width: 280px;
+    font-size: 18px;
+    box-shadow: 0 8px 20px rgba(20, 69, 120, 0.2);
+}
+
+.btn-generate:hover {
+    background: linear-gradient(135deg, #0d3863, #1e5da1);
+    transform: translateY(-5px);
+    box-shadow: 0 12px 25px rgba(20, 69, 120, 0.3);
+}
+
+.btn-generate i {
+    font-size: 22px;
+}
+
+/* Generated Schedule List - Improved styling with no hover effects */
+.visit-schedule-list {
+    padding: 35px;
+    display: grid;
+    gap: 20px;
+    max-height: 500px;
+    overflow-y: auto;
+    width: 100%;
+    background-color: white;
+    box-sizing: border-box;
+}
+
+.visit-date-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 22px 25px;
+    background: #f5f9ff;
+    border-radius: 15px;
+    border: 2px solid #d0e1fd;
+    box-shadow: 0 4px 15px rgba(20, 69, 120, 0.05);
+}
+
+/* Button Container for Schedule Actions */
+.schedule-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 20px;
+    margin: 20px 0;
+    padding: 20px;
+    background: linear-gradient(to right, #f5f9ff, #eef5ff);
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(20, 69, 120, 0.05);
+    border: 1px solid #d0e1fd;
+}
+
+/* Centered Button Container for Schedule Actions */
+.schedule-actions-centered {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin: 20px auto;
+    padding: 10px;
+    /* box-shadow: 0 2px 5px rgba(20, 69, 120, 0.03); */
+    max-width: 600px;
+}
+
+/* Table Wrapper - Enhanced styling */
+.table-wrapper {
+    padding: 35px;
+    overflow-x: auto;
+    width: 100%;
+    background-color: white;
+    box-sizing: border-box;
+}
+
+.appointments-table {
+    width: 100%;
+    min-width: 800px;
+    border-collapse: separate;
+    border-spacing: 0;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.appointments-table th {
+    background: linear-gradient(to right, #eef5ff, #f5f9ff);
+    color: #144578;
+    font-weight: 600;
+    padding: 20px 22px;
+    text-align: left;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    border-bottom: 2px solid #d0e1fd;
+    font-size: 16px;
+}
+
+.appointments-table td {
+    padding: 18px 22px;
+    border-bottom: 1px solid #e6effd;
+    color: #444;
+    font-size: 15px;
+}
+
+.appointments-table tr:hover {
+    background-color: #f5f9ff;
+}
+
+/* Form Actions - Enhanced styling */
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 20px;
+    margin: 10px 0;
+    background: #f5f9ff;
+    padding: 30px;
+    border-radius: 18px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    border: 2px solid #d0e1fd;
+    box-sizing: border-box;
+    width: 100%;
+}
+
 /* Responsive adjustments */
 @media screen and (max-width: 768px) {
     .reports-grid {
         grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .predefined-slots {
+        grid-template-columns: 1fr;
+    }
+    
+    .time-option {
+        margin: 0 auto;
+    }
+    
+    .appointments-table {
+        width: 700px;
+    }
+
+    .schedule-actions-centered {
+        flex-direction: column;
+        gap: 15px;
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 992px) {
+    .followup-grid {
+        flex-direction: column;
+    }
+    
+    .plan-frequency {
+        grid-template-columns: 1fr;
+        gap: 25px; /* Consistent gap in mobile view */
+    }
+    
+    .predefined-slots {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .btn-clear, .btn-submit {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .plan-frequency, 
+    .time-selection-container,
+    .visit-schedule-list,
+    .table-wrapper {
+        padding: 20px;
+    }
+    
+    .predefined-slots {
+        gap: 15px;
+    }
+    
+    .time-option {
+        padding: 15px;
+        font-size: 14px;
+    }
+    
+    .custom-time {
+        padding: 20px;
+    }
+    
+    .custom-time-inputs {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .custom-time-inputs span {
+        margin: -5px 0;
+    }
+    
+    .form-actions {
+        padding: 20px;
+        flex-direction: column;
+    }
+    
+    .btn-clear, .btn-submit {
+        width: 100%;
+        justify-content: center;
+        padding: 12px 20px;
     }
 }
