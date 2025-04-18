@@ -186,7 +186,7 @@ $recent_appointment = $stmt->get_result()->fetch_assoc();
           <?php if ($recent_appointment): ?>
             <p><strong>Appointment #:</strong> <?php echo $recent_appointment['id']; ?></p>
             <p><strong>Client:</strong> <?php echo htmlspecialchars($recent_appointment['client_name']); ?> 
-                <?php echo $recent_appointment['is_for_self'] ? '(Self)' : '(Other)'; ?></p>
+                <?php echo $recent_appointment['is_for_self'] == 1 ? '(Self)' : '(Other)'; ?></p>
             <p><strong>Type of Service:</strong> <?php echo htmlspecialchars($recent_appointment['service_name']); ?></p>
             <p><strong>Date:</strong> <?php echo date('F d, Y', strtotime($recent_appointment['appointment_date'])); ?></p>
             <p><strong>Time:</strong> <?php echo date('h:i A', strtotime($recent_appointment['appointment_time'])); ?></p>
@@ -407,7 +407,7 @@ $recent_appointment = $stmt->get_result()->fetch_assoc();
               const details = data.details;
               let detailsHtml = `
                 <p><strong>Appointment #:</strong> ${details.id}</p>
-                <p><strong>Client:</strong> ${details.client_name} ${details.is_for_self ? '(Self)' : '(Other)'}</p>
+                <p><strong>Client:</strong> ${details.client_name} ${details.is_for_self == 1 ? '(Self)' : '(Other)'}</p>
                 <p><strong>Type of Service:</strong> ${details.service_name}</p>
                 <p><strong>Date:</strong> ${details.appointment_date}</p>
                 <p><strong>Time:</strong> ${details.appointment_time}</p>
