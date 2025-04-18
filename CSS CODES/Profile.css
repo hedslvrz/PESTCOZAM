@@ -10,6 +10,7 @@ html {
 body {
   font-family: Arial, sans-serif;
   background-color: #f5f5f5;
+  font-weight: 400; /* Set default font weight */
 }
 
 /* RESET & GLOBAL */
@@ -33,6 +34,7 @@ body {
   color: white;
   padding: 20px 0;
   font-size: 14px;
+  font-weight: 500; /* Medium weight for header text */
   width: 100%;
 }
 
@@ -111,7 +113,7 @@ body {
 
 .brand-name{
   font-size: 30px;
-  font-weight: bold;
+  font-weight: 700; /* Bold for emphasis */
   color: white;
   font-family: 'Shrikhand', cursive;
   letter-spacing: 5px;
@@ -145,7 +147,7 @@ nav ul li a {
   text-decoration: none;
   color: black;
   font-size: 18px; 
-  font-weight: 600;
+  font-weight: 500; /* Medium weight for navigation links */
   padding: 8px 16px;
   border-radius: 10px;
   transition: all 0.3s ease;
@@ -312,11 +314,13 @@ nav ul li a:hover {
   font-size: 1.3rem;
   margin-bottom: 4px;
   color: #2c3e50;
+  font-weight: 600; /* Semi-bold for user name */
 }
 
 .user-info p {
   color: #666;
   font-size: 1.1rem;
+  font-weight: 400; /* Regular weight for email */
 }
 
 .edit-btn {
@@ -340,6 +344,7 @@ nav ul li a:hover {
   font-size: 1.2rem;
   margin-bottom: 15px;
   margin-left: 10px;
+  font-weight: 800; /* Semi-bold for section title */
 }
 
 /* Update details grid spacing */
@@ -358,12 +363,14 @@ nav ul li a:hover {
   border-radius: 6px;
   background: white;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  font-weight: bold; /* Reduced from default to lighter weight */
 }
 
 .details-grid strong {
   margin-bottom: 8px;
   color: #444;
   font-size: 0.95rem;
+  font-weight: 600; /* Semi-bold for labels */
 }
 
 /* HISTORY SECTION */
@@ -378,6 +385,7 @@ nav ul li a:hover {
 .history-section h3 {
   font-size: 1.2rem;
   margin-bottom: 15px;
+  font-weight: 600; /* Semi-bold for section title */
 }
 
 table {
@@ -404,10 +412,12 @@ th, td {
 
 th {
   font-size: 1.1rem;
+  font-weight: 600; /* Semi-bold for table headers */
 }
 
 td {
   font-size: 1rem;
+  font-weight: 400; /* Regular weight for table data */
   vertical-align: middle;
   height: 40px;
   padding: 6px 10px;
@@ -437,6 +447,7 @@ tbody tr:hover {
 .appointment-card h3 {
   font-size: 1.2rem;
   margin: 0 0 15px 0;
+  font-weight: 800; /* Semi-bold for card title */
   padding: 0 15px;
 }
 
@@ -460,6 +471,7 @@ tbody tr:hover {
   transition: background-color 0.2s;
   min-height: 32px;
   justify-content: space-between;  /* Space between label and status */
+  font-weight: bold; /* Reduced from default to lighter weight */
 }
 
 .appointment-details p:hover {
@@ -876,10 +888,10 @@ table td:last-child {
   margin-bottom: 25px;
   color: #2c3e50;
   text-align: center;
+  font-size: 24px;
+  font-weight: 700; /* Bold for modal title */
   border-bottom: 2px solid #f0f0f0;
   padding-bottom: 15px;
-  font-size: 24px;
-  font-weight: 600;
   letter-spacing: 0.5px;
 }
 
@@ -893,11 +905,10 @@ table td:last-child {
 }
 
 #feedbackModal .rating-label {
-  font-weight: 600;
+  font-weight: 600; /* Semi-bold for rating labels */
   margin-bottom: 10px;
   color: #34495e;
   font-size: 16px;
-  text-align: center;
 }
 
 /* Star Rating Styling */
@@ -940,6 +951,7 @@ table td:last-child {
   resize: none;
   font-family: inherit;
   font-size: 15px;
+  font-weight: 400; /* Regular weight for text input */
   height: 100px;
   transition: border-color 0.3s;
 }
