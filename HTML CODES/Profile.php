@@ -69,6 +69,7 @@ $recent_appointment = $stmt->get_result()->fetch_assoc();
     <title>User Profile</title>
     <link rel="stylesheet" href="../CSS CODES/Profile.css" />
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
 </head>
 <body>
 
@@ -181,6 +182,11 @@ $recent_appointment = $stmt->get_result()->fetch_assoc();
     <div class="right-column">
       <!-- APPOINTMENT CARD -->
       <div class="appointment-card">
+        <div class="receipt-btn-container left-align">
+          <button class="download-receipt-btn" onclick="downloadCurrentReceipt()">
+            <i class='bx bx-download'></i> Download Receipt
+          </button>
+        </div>
         <h3>Appointment Details</h3>
         <div id="appointmentDetails" class="appointment-details">
           <?php if ($recent_appointment): ?>
@@ -196,7 +202,6 @@ $recent_appointment = $stmt->get_result()->fetch_assoc();
               <strong>Status:</strong> 
               <span class="appointment-status <?php echo strtolower($recent_appointment['status']); ?>"><?php echo $recent_appointment['status']; ?></span>
             </p>
-            
             <?php if ($recent_appointment['status'] === 'Completed'): ?>
               <div class="feedback-section">
                 <button class="send-feedback-btn" onclick="openFeedbackModal(<?php echo $recent_appointment['id']; ?>, <?php echo $recent_appointment['service_id']; ?>)">
@@ -392,6 +397,8 @@ $recent_appointment = $stmt->get_result()->fetch_assoc();
       });
     }
 
+    let currentAppointment = <?php echo json_encode($recent_appointment); ?>;
+
     document.querySelectorAll('.history-row').forEach(row => {
       row.addEventListener('click', function() {
         // Remove active class from all rows
@@ -404,6 +411,7 @@ $recent_appointment = $stmt->get_result()->fetch_assoc();
           .then(response => response.json())
           .then(data => {
             if (data.success) {
+              currentAppointment = data.details; // Update the current appointment
               const details = data.details;
               let detailsHtml = `
                 <p><strong>Appointment #:</strong> ${details.id}</p>
@@ -494,6 +502,47 @@ $recent_appointment = $stmt->get_result()->fetch_assoc();
         submitBtn.disabled = false;
       });
     });
+
+    async function downloadCurrentReceipt() {
+      if (!currentAppointment) {
+        alert('No appointment selected to download.');
+        return;
+      }
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      // Add header
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(16);
+      doc.text("PESTCOZAM Appointment Receipt", 105, 20, { align: "center" });
+
+      // Add subheader
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(12);
+      doc.text("Estrada St, Zamboanga City, Zamboanga Del Sur, 7000", 105, 30, { align: "center" });
+      doc.text("Contact: 0905-177-5662 | Email: pestcozam@yahoo.com", 105, 36, { align: "center" });
+
+      // Add a horizontal line
+      doc.line(10, 40, 200, 40);
+
+      // Add appointment details
+      doc.setFontSize(12);
+      doc.text(`Appointment #: ${currentAppointment.id}`, 10, 50);
+      doc.text(`Client: ${currentAppointment.client_name} ${currentAppointment.is_for_self == 1 ? '(Self)' : '(Other)'}`, 10, 60);
+      doc.text(`Type of Service: ${currentAppointment.service_name}`, 10, 70);
+      doc.text(`Date: ${currentAppointment.appointment_date}`, 10, 80);
+      doc.text(`Time: ${currentAppointment.appointment_time}`, 10, 90);
+      doc.text(`Location: ${currentAppointment.street_address}`, 10, 100);
+      doc.text(`Technician: ${currentAppointment.technician_name || 'Not yet assigned'}`, 10, 110);
+      doc.text(`Status: ${currentAppointment.status}`, 10, 120);
+
+      // Add footer
+      doc.setFontSize(10);
+      doc.text("Thank you for choosing PESTCOZAM!", 105, 280, { align: "center" });
+
+      doc.save(`Appointment_${currentAppointment.id}_Receipt.pdf`);
+    }
   </script>
 </body>
 </html>

@@ -437,11 +437,12 @@ tbody tr:hover {
   flex: 1;
   display: flex;
   flex-direction: column;
-  height: 100%;
+  height: auto; /* Allow height to adjust based on content */
   background: #fff;
   border-radius: 10px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   padding: 15px;
+  overflow: hidden; /* Prevent content overflow */
 }
 
 .appointment-card h3 {
@@ -455,10 +456,16 @@ tbody tr:hover {
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: center; /* Center content vertically */
-  gap: 8px; /* Consistent spacing between items */
+  justify-content: flex-start; /* Align content to the top */
+  gap: 8px; /* Add consistent spacing between items */
   padding: 10px;
   background: transparent;
+  overflow-wrap: break-word; /* Prevent text overflow */
+  word-wrap: break-word;
+  word-break: break-word;
+  overflow: visible; /* Ensure content is not clipped */
+  height: auto; /* Automatically adjust height based on content */
+  min-height: 50px; /* Optional: Set a minimum height */
 }
 
 .appointment-details p {
@@ -468,10 +475,10 @@ tbody tr:hover {
   border-bottom: 1px solid #eee;
   display: flex;
   align-items: center; /* Align status with text */
-  transition: background-color 0.2s;
+  justify-content: space-between; /* Space between label and value */
   min-height: 32px;
-  justify-content: space-between;  /* Space between label and status */
-  font-weight: bold; /* Reduced from default to lighter weight */
+  font-weight: bold;
+  overflow-wrap: break-word; /* Ensure long text wraps */
 }
 
 .appointment-details p:hover {
@@ -486,10 +493,9 @@ tbody tr:hover {
   min-width: 140px;
   display: inline-block;
   color: #444;
-  margin-right: auto;  /* Push status to the right */
+  margin-right: auto; /* Push value to the right */
+  overflow-wrap: break-word; /* Prevent text overflow */
 }
-
-/* Remove all previous .status related styles */
 
 /* Unified Status Badge Styles */
 .status-badge {
@@ -1067,4 +1073,49 @@ table td:last-child {
     padding: 10px 0;
     z-index: 5;
   }
+
+  .appointment-card {
+    padding: 10px; /* Adjust padding for smaller screens */
+  }
+
+  .appointment-details p {
+    flex-direction: column; /* Stack label and value vertically */
+    align-items: flex-start; /* Align items to the left */
+    gap: 4px; /* Add spacing between label and value */
+  }
+
+  .appointment-details strong {
+    margin-right: 0; /* Remove right margin for smaller screens */
+  }
+}
+
+/* Download Receipt Button */
+.receipt-btn-container {
+  display: flex;
+  margin-bottom: 10px;
+}
+
+.receipt-btn-container.left-align {
+  justify-content: flex-start;
+}
+
+.download-receipt-btn {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.download-receipt-btn:hover {
+  background-color: #0056b3;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
