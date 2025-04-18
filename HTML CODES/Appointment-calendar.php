@@ -207,7 +207,12 @@ $calendarData = AppointmentSession::getData('calendar', []);
 
       <!-- Navigation Buttons -->
       <div class="calendar-nav">
-        <button class="back-btn" onclick="window.location.href='Appointment-info.php'">Back</button>
+        <?php
+        // Check if appointment is for self or someone else
+        $is_for_self = $serviceData['is_for_self'] ?? 1;
+        $backUrl = $is_for_self == 1 ? 'Appointment-loc.php' : 'Appointment-info.php';
+        ?>
+        <button class="back-btn" onclick="window.location.href='<?php echo $backUrl; ?>'">Back</button>
         <button class="next-btn" disabled id="nextButton" onclick="saveDateTime()">Next</button>
       </div>
     </div>
