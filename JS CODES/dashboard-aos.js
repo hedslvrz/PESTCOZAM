@@ -6,24 +6,60 @@ menuBar.addEventListener('click', function () {
     sidebar.classList.toggle('hide');
 });
 
-// Section display
+// Section display - enhanced with debugging
 function showSection(sectionId) {
+    console.log(`Attempting to show section: ${sectionId}`);
+    
+    // Validate section exists
+    const targetSection = document.getElementById(sectionId);
+    if (!targetSection) {
+        console.error(`Section with ID "${sectionId}" not found!`);
+        return;
+    }
+    
     // Hide all sections
-    document.querySelectorAll('.section').forEach(section => {
+    const allSections = document.querySelectorAll('.section');
+    console.log(`Found ${allSections.length} sections to hide`);
+    
+    allSections.forEach(section => {
         section.classList.remove('active');
+        console.log(`Removed active class from: ${section.id}`);
     });
     
     // Show selected section
-    document.getElementById(sectionId).classList.add('active');
+    targetSection.classList.add('active');
+    console.log(`Added active class to: ${sectionId}`);
     
     // Update active menu item
-    document.querySelectorAll('.side-menu li').forEach(item => {
+    const allMenuItems = document.querySelectorAll('.side-menu li');
+    console.log(`Found ${allMenuItems.length} menu items to update`);
+    
+    allMenuItems.forEach(item => {
         item.classList.remove('active');
     });
     
-    // Find and activate the menu item
-    const menuItem = document.querySelector(`a[href="#${sectionId}"]`).parentElement;
-    menuItem.classList.add('active');
+    // Find and activate the menu item - more robust selection
+    const menuLinks = document.querySelectorAll('.side-menu a');
+    console.log(`Found ${menuLinks.length} menu links to check`);
+    
+    let menuItemFound = false;
+    menuLinks.forEach(link => {
+        const href = link.getAttribute('href');
+        console.log(`Checking menu link with href: ${href}`);
+        
+        if (href === `#${sectionId}` || href.endsWith(`#${sectionId}`)) {
+            const menuItem = link.closest('li');
+            if (menuItem) {
+                menuItem.classList.add('active');
+                console.log(`Set active menu item for: ${sectionId}`);
+                menuItemFound = true;
+            }
+        }
+    });
+    
+    if (!menuItemFound) {
+        console.warn(`No menu item found for section: ${sectionId}`);
+    }
 }
 
 // Remove the duplicate DOMContentLoaded event listeners
@@ -619,4 +655,238 @@ function initTimeSlotSelection() {
 
     customTimeStart.addEventListener('input', handleCustomTimeInput);
     customTimeEnd.addEventListener('input', handleCustomTimeInput);
+}
+
+// Function to load customer details when a customer is selected - simplified
+function loadCustomerDetails(appointmentId) {
+    if (!appointmentId) {
+        // Clear fields if no appointment is selected
+        document.getElementById('service-type').value = '';
+        document.getElementById('customer-location').value = '';
+        document.getElementById('technician-select').value = '';
+        return;
+    }
+    
+    console.log("Loading details for appointment ID:", appointmentId);
+    
+    // Get data from option attributes
+    const selectedOption = document.querySelector(`#customer-select option[value="${appointmentId}"]`);
+    if (selectedOption) {
+        const serviceId = selectedOption.getAttribute('data-service');
+        const locationText = selectedOption.getAttribute('data-location');
+        const technicianId = selectedOption.getAttribute('data-technician');
+        
+        console.log("Option data:", {
+            serviceId,
+            locationText,
+            technicianId
+        });
+        
+        // Set the service type if available
+        if (serviceId) {
+            document.getElementById('service-type').value = serviceId;
+            console.log("Set service type:", serviceId);
+        }
+        
+        // Set the customer location if available
+        if (locationText) {
+            document.getElementById('customer-location').value = locationText;
+            console.log("Set location:", locationText);
+        }
+        
+        // Set the technician if available
+        if (technicianId && technicianId !== "null" && technicianId !== "undefined") {
+            const techSelect = document.getElementById('technician-select');
+            techSelect.value = technicianId;
+            console.log("Set technician:", technicianId);
+            
+            // Log whether the value was actually set
+            if (techSelect.value === technicianId) {
+                console.log("Successfully set technician select value");
+            } else {
+                console.warn("Failed to set technician. Available options:", Array.from(techSelect.options).map(o => o.value));
+            }
+        } else {
+            console.warn("No technician ID available in the data attributes");
+        }
+    }
+}
+
+// Function to load customer details for follow-up scheduling
+function loadCustomerDetails(appointmentId) {
+    if (!appointmentId) return;
+    
+    // Get the selected option
+    const selectedOption = document.querySelector(`#customer-select option[value="${appointmentId}"]`);
+    
+    if (selectedOption) {
+        // Set service dropdown
+        const serviceId = selectedOption.getAttribute('data-service');
+        if (serviceId) {
+            document.getElementById('service-type').value = serviceId;
+        }
+        
+        // Set location
+        const location = selectedOption.getAttribute('data-location');
+        if (location) {
+            document.getElementById('customer-location').value = location;
+        }
+        
+        // Get technician information - try all technicians first, then fall back to main technician
+        let technicianId = null;
+        const allTechnicians = selectedOption.getAttribute('data-all-technicians');
+        
+        if (allTechnicians && allTechnicians.length > 0) {
+            // Use the first technician from the list if available
+            technicianId = allTechnicians.split(',')[0];
+        } else {
+            // Fall back to the main technician
+            technicianId = selectedOption.getAttribute('data-technician');
+        }
+        
+        if (technicianId) {
+            document.getElementById('technician-select').value = technicianId;
+        }
+        
+        // For debugging
+        console.log("Appointment ID:", appointmentId);
+        console.log("Service ID:", serviceId);
+        console.log("Location:", location);
+        console.log("All Technicians:", allTechnicians);
+        console.log("Selected Technician ID:", technicianId);
+    }
+}
+
+// Function to schedule a follow-up appointment
+function scheduleFollowUp() {
+    // Get form values
+    const appointmentId = document.getElementById('customer-select').value;
+    const serviceId = document.getElementById('service-type').value;
+    const technicianId = document.getElementById('technician-select').value;
+    const followupDate = document.getElementById('followup-date').value;
+    const followupTime = document.getElementById('followup-time').value;
+    const notes = document.getElementById('followup-notes').value;
+    
+    // Validate required fields
+    if (!appointmentId || !serviceId || !technicianId || !followupDate || !followupTime) {
+        alert('Please fill all required fields');
+        return;
+    }
+    
+    // Create form data
+    const formData = new FormData();
+    formData.append('appointment_id', appointmentId);
+    formData.append('service_id', serviceId);
+    formData.append('technician_id', technicianId);
+    formData.append('followup_date', followupDate);
+    formData.append('followup_time', followupTime);
+    formData.append('notes', notes);
+    
+    // Send AJAX request
+    fetch('schedule_followup.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Show success message
+            alert('Follow-up scheduled successfully!');
+            
+            // Reload the page or just the follow-ups table
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            // Show error message
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while scheduling the follow-up');
+    });
+}
+
+// Function to schedule a follow-up
+function scheduleFollowUp() {
+    const customerId = document.getElementById('customer-select').value;
+    const serviceId = document.getElementById('service-type').value;
+    const technicianId = document.getElementById('technician-select').value;
+    const followupDate = document.getElementById('followup-date').value;
+    const followupTime = document.getElementById('followup-time').value;
+    const notes = document.getElementById('followup-notes').value;
+    
+    // Validate form
+    if (!customerId || !serviceId || !technicianId || !followupDate || !followupTime) {
+        showNotification('Please fill in all required fields', 'error');
+        return;
+    }
+    
+    // Prepare data for submission
+    const formData = new FormData();
+    formData.append('appointment_id', customerId);
+    formData.append('service_id', serviceId);
+    formData.append('technician_id', technicianId);
+    formData.append('followup_date', followupDate);
+    formData.append('followup_time', followupTime);
+    formData.append('notes', notes);
+    
+    // Submit the form
+    fetch('schedule_followup.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Follow-up scheduled successfully!', 'success');
+            // Refresh the followups list
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        } else {
+            showNotification(data.message || 'Error scheduling follow-up', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error scheduling follow-up:', error);
+        showNotification('An error occurred while scheduling the follow-up', 'error');
+    });
+}
+
+// Utility function to show notifications
+function showNotification(message, type = 'info') {
+    // Check if customModal exists
+    const modal = document.getElementById('customModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalMessage = document.getElementById('modalMessage');
+    const modalOkBtn = document.getElementById('modalOkBtn');
+    
+    if (modal && modalTitle && modalMessage) {
+        // Set modal content based on notification type
+        modalTitle.textContent = type.charAt(0).toUpperCase() + type.slice(1);
+        modalMessage.textContent = message;
+        
+        // Apply styling based on notification type
+        const modalContent = document.querySelector('.modal-content');
+        modalContent.className = 'modal-content'; // Reset classes
+        modalContent.classList.add(`modal-${type}`);
+        
+        // Show the modal
+        modal.style.display = 'block';
+        
+        // Set up close button
+        modalOkBtn.onclick = function() {
+            modal.style.display = 'none';
+        };
+        
+        // Close when clicking X
+        document.querySelector('.close').onclick = function() {
+            modal.style.display = 'none';
+        };
+    } else {
+        // Fallback to alert if modal elements don't exist
+        alert(message);
+    }
 }

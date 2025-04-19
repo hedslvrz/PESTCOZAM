@@ -86,6 +86,13 @@ try {
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../CSS CODES/dashboard-aos.css">
     <link rel="stylesheet" href="../CSS CODES/modal.css">
+    <style>
+        /* Override disabled option styling for technician select */
+        #technician-select option[disabled] {
+            background-color: transparent;
+            color: inherit;
+        }
+    </style>
     <title>AOS Dashboard</title>
 </head>
 <body>
@@ -340,135 +347,164 @@ try {
             </div>
 
             <div class="followup-form-container">
-                <div class="followup-label">Arrange schedule settings</div>
+                <div class="followup-label">Schedule Follow-up Visit</div>
                 <div class="followup-grid">
                     <!-- Main Schedule Content -->
                     <div class="calendar-container">
-                        <!-- 1. VISIT SCHEDULE SETTINGS -->
+                        <!-- FOLLOW-UP FORM -->
                         <div class="settings-card no-hover">
                             <div class="card-header">
                                 <i class='bx bx-calendar-edit'></i>
-                                <h4>Visit Schedule Settings</h4>
+                                <h4>Follow-up Details</h4>
                             </div>
                             <div class="plan-frequency">
-                                <!-- Customer Selection -->
+                                <!-- Customer Selection - Updated to load completed appointments -->
                                 <div class="form-group">
-                                    <label>Schedule For:</label>
-                                    <select id="customer-select" required>
-                                        <option value="">Select Customer</option>
-                                        <option value="1">John Smith - #APT-2024-001</option>
-                                        <option value="2">Maria Garcia - #APT-2024-002</option>
-                                        <option value="3">Robert Lee - #APT-2024-003</option>
-                                        <option value="4">Sarah Johnson - #APT-2024-004</option>
+                                    <label>Select Customer's Last Appointment:</label>
+                                    <select id="customer-select" required onchange="loadCustomerDetails(this.value)">
+                                        <option value="" disabled selected>Select Customer</option>
+                                        <?php 
+                                        try {
+                                            $customerQuery = "SELECT 
+                                                a.id as appointment_id, 
+                                                CASE 
+                                                    WHEN a.is_for_self = 1 THEN CONCAT(u.firstname, ' ', u.lastname)
+                                                    ELSE CONCAT(a.firstname, ' ', a.lastname)
+                                                END as customer_name,
+                                                a.service_id,
+                                                s.service_name,
+                                                a.appointment_date,
+                                                a.technician_id,
+                                                CONCAT(t.firstname, ' ', t.lastname) as technician_name,
+                                                CONCAT(a.street_address, ', ', a.barangay, ', ', a.city) as location,
+                                                (SELECT GROUP_CONCAT(at.technician_id) 
+                                                FROM appointment_technicians at 
+                                                WHERE at.appointment_id = a.id) as all_technician_ids,
+                                                (SELECT GROUP_CONCAT(CONCAT(u2.firstname, ' ', u2.lastname) SEPARATOR ', ') 
+                                                FROM appointment_technicians at 
+                                                JOIN users u2 ON at.technician_id = u2.id 
+                                                WHERE at.appointment_id = a.id) as all_technician_names
+                                            FROM appointments a
+                                            JOIN users u ON a.user_id = u.id
+                                            JOIN services s ON a.service_id = s.service_id
+                                            LEFT JOIN users t ON a.technician_id = t.id
+                                            WHERE a.status = 'Completed'
+                                            ORDER BY a.appointment_date DESC";
+                                            
+                                            // Add detailed error logging
+                                            error_log("Executing customer query for follow-up: " . $customerQuery);
+                                            
+                                            $stmt = $db->prepare($customerQuery);
+                                            $stmt->execute();
+                                            $customers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                                            
+                                            error_log("Number of customers with completed appointments found: " . count($customers));
+                                            
+                                            // Check if any customers were found
+                                            if (empty($customers)) {
+                                                echo '<option value="">No completed appointments found</option>';
+                                            } else {
+                                                foreach ($customers as $customer) {
+                                                    $displayDate = date('M d, Y', strtotime($customer['appointment_date']));
+                                                    echo '<option value="' . $customer['appointment_id'] . '" '
+                                                         . 'data-service="' . $customer['service_id'] . '" '
+                                                         . 'data-location="' . htmlspecialchars($customer['location']) . '" '
+                                                         . 'data-technician="' . $customer['technician_id'] . '" '
+                                                         . 'data-technician-name="' . htmlspecialchars($customer['technician_name']) . '" '
+                                                         . 'data-all-technicians="' . htmlspecialchars($customer['all_technician_ids']) . '" '
+                                                         . 'data-all-technician-names="' . htmlspecialchars($customer['all_technician_names']) . '">'
+                                                         . htmlspecialchars($customer['customer_name']) . ' - ' 
+                                                         . htmlspecialchars($customer['service_name']) . ' (' . $displayDate . ')'
+                                                         . '</option>';
+                                                }
+                                            }
+                                        } catch(PDOException $e) {
+                                            // Improved error logging with detailed message
+                                            error_log("Error in customer query for follow-up: " . $e->getMessage());
+                                            echo '<option value="">Error loading customers: ' . $e->getMessage() . '</option>';
+                                        }
+                                        ?>
                                     </select>
                                 </div>
                                 
+                                <!-- Service Type -->
                                 <div class="form-group">
-                                    <label>Plan Type:</label>
-                                    <select id="plan-type" required onchange="updateFrequencyOptions()">
-                                        <option value="">Select Plan Type</option>
-                                        <option value="weekly">Weekly</option>
-                                        <option value="monthly">Monthly</option>
-                                        <option value="quarterly">Quarterly</option>
-                                        <option value="yearly">Yearly</option>
+                                    <label>Service Type:</label>
+                                    <select id="service-type" required>
+                                        <option value="">Select Service</option>
+                                        <?php 
+                                        try {
+                                            $serviceQuery = "SELECT service_id, service_name FROM services ORDER BY service_name";
+                                            $stmt = $db->prepare($serviceQuery);
+                                            $stmt->execute();
+                                            $services = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                                            
+                                            foreach ($services as $service) {
+                                                echo '<option value="' . $service['service_id'] . '">' . 
+                                                    htmlspecialchars($service['service_name']) . '</option>';
+                                            }
+                                        } catch(PDOException $e) {
+                                            echo '<option value="">Error loading services</option>';
+                                        }
+                                        ?>
                                     </select>
                                 </div>
                                 
+                                <!-- Customer Location (Read-only display) -->
                                 <div class="form-group">
-                                    <label>Visit Frequency:</label>
-                                    <select id="frequency-select" required>
-                                        <option value="">Select Frequency</option>
-                                        <!-- Options will be dynamically populated based on plan type -->
+                                    <label>Customer Location:</label>
+                                    <input type="text" id="customer-location" readonly>
+                                </div>
+                                
+                                <!-- Technician Selection (Default to last assigned) -->
+                                <div class="form-group">
+                                    <label>Assign Technician:</label>
+                                    <select id="technician-select" required multiple size="6" style="width: 100%; max-width: 300px; min-height: 150px;">
+                                        <option value="" disabled selected>Show Technician/s</option>
+                                        <?php 
+                                        if (!empty($technicians)) {
+                                            foreach ($technicians as $tech) {
+                                                echo '<option value="' . $tech['id'] . '">' . 
+                                                    htmlspecialchars($tech['firstname'] . ' ' . $tech['lastname']) . '</option>';
+                                            }
+                                        }
+                                        ?>
                                     </select>
                                 </div>
                                 
+                                <!-- Follow-up Date -->
                                 <div class="form-group">
-                                    <label>Start Date:</label>
-                                    <input type="date" id="start-date" class="calendar-input" required>
+                                    <label>Follow-up Date:</label>
+                                    <input type="date" id="followup-date" required min="<?php echo date('Y-m-d'); ?>">
                                 </div>
                                 
+                                <!-- Follow-up Time -->
                                 <div class="form-group">
-                                    <label>Contract Duration:</label>
-                                    <select id="contract-duration" required>
-                                        <option value="3">3 months</option>
-                                        <option value="6">6 months</option>
-                                        <option value="12">1 year</option>
-                                        <option value="24">2 years</option>
+                                    <label>Follow-up Time:</label>
+                                    <select id="followup-time" required>
+                                        <option value="">Select Time</option>
+                                        <option value="07:00:00">7:00 AM - 9:00 AM</option>
+                                        <option value="09:00:00">9:00 AM - 11:00 AM</option>
+                                        <option value="11:00:00">11:00 AM - 1:00 PM</option>
+                                        <option value="13:00:00">1:00 PM - 3:00 PM</option>
+                                        <option value="15:00:00">3:00 PM - 5:00 PM</option>
                                     </select>
                                 </div>
-                            </div>
-                        </div>
-
-                        <!-- 2. TIME SLOT SELECTION -->
-                        <div class="settings-card no-hover">
-                            <div class="card-header">
-                                <i class='bx bx-time'></i>
-                                <h4>Select Preferred Time Slot</h4>
-                            </div>
-                            <div class="time-selection-container">
-                                <div class="predefined-slots">
-                                    <button type="button" class="time-option" data-time="07:00 AM - 09:00 AM">7:00 AM - 9:00 AM</button>
-                                    <button type="button" class="time-option" data-time="09:00 AM - 11:00 AM">9:00 AM - 11:00 AM</button>
-                                    <button type="button" class="time-option" data-time="11:00 AM - 01:00 PM">11:00 AM - 1:00 PM</button>
-                                    <button type="button" class="time-option" data-time="01:00 PM - 03:00 PM">1:00 PM - 3:00 PM</button>
-                                    <button type="button" class="time-option" data-time="03:00 PM - 05:00 PM">3:00 PM - 5:00 PM</button>
-                                </div>
                                 
-                                <div class="custom-time">
-                                    <label>Custom Time:</label>
-                                    <div class="custom-time-inputs">
-                                        <input type="time" id="custom-time-start" min="07:00" max="17:00" step="1800">
-                                        <span>to</span>
-                                        <input type="time" id="custom-time-end" min="07:00" max="17:00" step="1800">
-                                    </div>
+                                <!-- Submit Button -->
+                                <div class="form-group">
+                                    <button type="button" class="btn-submit" id="schedule-followup-btn">
+                                        <i class='bx bx-calendar-check'></i> Schedule Follow-up
+                                    </button>
                                 </div>
                             </div>
-                            
-                            <button type="button" class="btn-generate" onclick="generateVisitDates()">
-                                <i class='bx bx-calendar-plus'></i> Generate Visit Schedule
-                            </button>
-                        </div>
-
-                        <!-- 3. GENERATED VISIT SCHEDULE -->
-                        <div class="settings-card no-hover">
-                            <div class="card-header">
-                                <i class='bx bx-list-check'></i>
-                                <h4>Generated Visit Schedule</h4>
-                            </div>
-                            <div class="visit-schedule-list" id="visit-schedule">
-                                <!-- Weekly Plan Example -->
-                                <div class="visit-date-item">
-                                    <div class="visit-info">
-                                        <span class="date">Monday, March 18, 2024</span>
-                                        <span class="time">8:00 AM - 10:00 AM</span>
-                                    </div>
-                                    <span class="visit-number">Visit #1</span>
-                                </div>
-                                <div class="visit-date-item">
-                                    <div class="visit-info">
-                                        <span class="date">Monday, March 25, 2024</span>
-                                        <span class="time">8:00 AM - 10:00 AM</span>
-                                    </div>
-                                    <span class="visit-number">Visit #2</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Schedule action buttons centered -->
-                        <div class="schedule-actions-centered">
-                            <button type="button" class="btn-clear" onclick="clearSchedule()">
-                                <i class='bx bx-trash'></i> Clear Schedule
-                            </button>
-                            <button type="submit" class="btn-submit" onclick="saveSchedule()">
-                                <i class='bx bx-calendar-check'></i> Submit Schedule
-                            </button>
                         </div>
                         
-                        <!-- Current Appointments Card (with no-hover class) -->
+                        <!-- Current Appointments Card -->
                         <div class="settings-card no-hover">
                             <div class="card-header">
                                 <i class='bx bx-notepad'></i>
-                                <h4>Current Appointments</h4>
+                                <h4>Scheduled Follow-ups</h4>
                             </div>
                             <div class="table-wrapper">
                                 <table class="appointments-table">
@@ -476,26 +512,62 @@ try {
                                         <tr>
                                             <th>Date & Time</th>
                                             <th>Client</th>
+                                            <th>Service</th>
                                             <th>Technician</th>
                                             <th>Location</th>
                                             <th>Status</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>Mar 18, 2024 8:00 AM</td>
-                                            <td>John Smith</td>
-                                            <td>Mark Johnson</td>
-                                            <td>123 Main St, Zamboanga</td>
-                                            <td><span class="status pending">Pending</span></td>
-                                        </tr>
-                                        <tr>
-                                            <td>Mar 20, 2024 1:00 PM</td>
-                                            <td>Maria Garcia</td>
-                                            <td>Sarah Williams</td>
-                                            <td>456 Park Ave, Zamboanga</td>
-                                            <td><span class="status confirmed">Confirmed</span></td>
-                                        </tr>
+                                    <tbody id="followups-list">
+                                        <?php
+                                        try {
+                                            $followupsQuery = "SELECT 
+                                                a.id as appointment_id,
+                                                a.appointment_date,
+                                                a.appointment_time,
+                                                CASE 
+                                                    WHEN a.is_for_self = 1 THEN CONCAT(u.firstname, ' ', u.lastname)
+                                                    ELSE CONCAT(a.firstname, ' ', a.lastname)
+                                                END as customer_name,
+                                                s.service_name,
+                                                GROUP_CONCAT(CONCAT(tech.firstname, ' ', tech.lastname) SEPARATOR ', ') as technician_names,
+                                                CONCAT(a.street_address, ', ', a.barangay, ', ', a.city) as location,
+                                                a.status
+                                            FROM appointments a
+                                            JOIN users u ON a.user_id = u.id
+                                            JOIN services s ON a.service_id = s.service_id
+                                            LEFT JOIN appointment_technicians at ON a.id = at.appointment_id
+                                            LEFT JOIN users tech ON at.technician_id = tech.id
+                                            WHERE a.status = 'Confirmed' 
+                                            AND a.appointment_date >= CURDATE()
+                                            GROUP BY a.id
+                                            ORDER BY a.appointment_date ASC, a.appointment_time ASC
+                                            LIMIT 10";
+                                            
+                                            $stmt = $db->prepare($followupsQuery);
+                                            $stmt->execute();
+                                            $followups = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                                            
+                                            if (!empty($followups)) {
+                                                foreach ($followups as $followup) {
+                                                    echo '<tr>';
+                                                    echo '<td>' . date('M d, Y', strtotime($followup['appointment_date'])) . ' ' . 
+                                                         date('h:i A', strtotime($followup['appointment_time'])) . '</td>';
+                                                    echo '<td>' . htmlspecialchars($followup['customer_name']) . '</td>';
+                                                    echo '<td>' . htmlspecialchars($followup['service_name']) . '</td>';
+                                                    echo '<td>' . htmlspecialchars($followup['technician_names'] ?? 'Not Assigned') . '</td>';
+                                                    echo '<td>' . htmlspecialchars($followup['location']) . '</td>';
+                                                    echo '<td><span class="status ' . strtolower($followup['status']) . '">' . 
+                                                         htmlspecialchars($followup['status']) . '</span></td>';
+                                                    echo '</tr>';
+                                                }
+                                            } else {
+                                                echo '<tr><td colspan="6">No follow-ups scheduled</td></tr>';
+                                            }
+                                        } catch(PDOException $e) {
+                                            echo '<tr><td colspan="6">Error loading follow-ups</td></tr>';
+                                        }
+                                        ?>
                                     </tbody>
                                 </table>
                             </div>
@@ -786,6 +858,127 @@ try {
     
     <script src="../JS CODES/modal.js"></script>
     <script src="../JS CODES/dashboard-aos.js"></script>
+    <script src="../JS CODES/followup.js"></script>
     <script src="../JS CODES/work-orders.js"></script>
+    <script>
+        function loadCustomerDetails(selectedValue) {
+            if (!selectedValue || selectedValue === "") {
+                // Clear form fields if no appointment is selected
+                document.getElementById('service-type').value = '';
+                document.getElementById('customer-location').value = '';
+                // For multi-select, clear all selections
+                const techSelect = document.getElementById('technician-select');
+                if (techSelect) {
+                    for (let i = 0; i < techSelect.options.length; i++) {
+                        techSelect.options[i].selected = false;
+                    }
+                }
+                return;
+            }
+            
+            console.log('Loading details for appointment ID:', selectedValue);
+            
+            // Get the selected option element
+            const selectedOption = document.querySelector(`#customer-select option[value="${selectedValue}"]`);
+            if (!selectedOption) {
+                console.error('Selected option not found for appointment ID:', selectedValue);
+                return;
+            }
+            
+            // Extract data from data attributes
+            const serviceId = selectedOption.getAttribute('data-service');
+            const location = selectedOption.getAttribute('data-location');
+            const allTechnicians = selectedOption.getAttribute('data-all-technicians');
+            const allTechnicianNames = selectedOption.getAttribute('data-all-technician-names');
+            
+            console.log('Appointment details found:', { serviceId, location, allTechnicians });
+            
+            // Set service type and customer location if available
+            if (serviceId) document.getElementById('service-type').value = serviceId;
+            if (location) document.getElementById('customer-location').value = location;
+            
+            const technicianSelect = document.getElementById('technician-select');
+            if (technicianSelect) {
+                // Clear previous selections
+                for (let i = 0; i < technicianSelect.options.length; i++) {
+                    technicianSelect.options[i].selected = false;
+                }
+                
+                // Process technician IDs from all_technicians attribute
+                if (allTechnicians && allTechnicians.trim() !== "" && allTechnicians.toLowerCase() !== "null") {
+                    const techIds = allTechnicians.split(',').map(id => id.trim());
+                    const techNames = allTechnicianNames ? 
+                        allTechnicianNames.split(',').map(name => name.trim()) : 
+                        techIds.map(id => `Technician ${id}`);
+                    
+                    console.log('Setting technicians:', techIds);
+                    
+                    // Select technicians that exist in the dropdown
+                    for (let i = 0; i < technicianSelect.options.length; i++) {
+                        if (techIds.includes(technicianSelect.options[i].value)) {
+                            technicianSelect.options[i].selected = true;
+                        }
+                    }
+                    
+                    // Add any missing technicians to the dropdown
+                    techIds.forEach((id, index) => {
+                        const exists = Array.from(technicianSelect.options)
+                            .some(opt => opt.value === id);
+                        
+                        if (!exists && id) {
+                            const name = techNames[index] || `Technician ${id}`;
+                            const opt = document.createElement('option');
+                            opt.value = id;
+                            opt.text = name;
+                            technicianSelect.appendChild(opt);
+                            opt.selected = true;
+                        }
+                    });
+                } else {
+                    // Fallback to main technician if no multi-technician data
+                    const mainTechId = selectedOption.getAttribute('data-technician');
+                    if (mainTechId && mainTechId !== 'null') {
+                        const mainTechName = selectedOption.getAttribute('data-technician-name');
+                        console.log('Setting main technician:', mainTechId, mainTechName);
+                        
+                        // Check if the technician exists in the dropdown
+                        let techExists = false;
+                        for (let i = 0; i < technicianSelect.options.length; i++) {
+                            if (technicianSelect.options[i].value === mainTechId) {
+                                technicianSelect.options[i].selected = true;
+                                techExists = true;
+                                break;
+                            }
+                        }
+                        
+                        // If not found, add it
+                        if (!techExists && mainTechId) {
+                            const opt = document.createElement('option');
+                            opt.value = mainTechId;
+                            opt.text = mainTechName || `Technician ${mainTechId}`;
+                            technicianSelect.appendChild(opt);
+                            opt.selected = true;
+                        }
+                    }
+                }
+            }
+        }
+        
+        // When the page loads, attach event handler to the schedule button
+        document.addEventListener('DOMContentLoaded', function() {
+            const scheduleBtn = document.getElementById('schedule-followup-btn');
+            if (scheduleBtn) {
+                scheduleBtn.addEventListener('click', scheduleFollowUp);
+            }
+            
+            // Initialize customer select change event if it exists on this page
+            const customerSelect = document.getElementById('customer-select');
+            if (customerSelect) {
+                customerSelect.addEventListener('change', function() {
+                    loadCustomerDetails(this.value);
+                });
+            }
+        });
+    </script>
 </body>
 </html>

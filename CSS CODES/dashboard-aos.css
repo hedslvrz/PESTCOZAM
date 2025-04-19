@@ -428,6 +428,28 @@
     box-sizing: border-box;
 }
 
+/* Additional style for fixed height textarea */
+.plan-frequency textarea {
+    width: 100%;
+    padding: 18px 20px;
+    border: 2px solid #d0e1fd;
+    border-radius: 15px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    background-color: #f8faff;
+    box-shadow: 0 4px 15px rgba(20, 69, 120, 0.05);
+    font-family: 'Poppins', sans-serif;
+    box-sizing: border-box;
+    resize: none;
+    height: 120px;
+}
+
+.plan-frequency textarea:focus {
+    border-color: #144578;
+    box-shadow: 0 0 0 4px rgba(20, 69, 120, 0.1);
+    outline: none;
+}
+
 /* Time Selection Container - Improved styling */
 .time-selection-container {
     padding: 35px;
@@ -689,6 +711,41 @@
     border: 2px solid #d0e1fd;
     box-sizing: border-box;
     width: 100%;
+}
+
+/* Debug helper styles */
+.debug-info {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 10px;
+    padding: 15px;
+    margin: 15px 0;
+    font-size: 14px;
+    color: #495057;
+    font-family: monospace;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.error-indicator {
+    border-color: #dc3545 !important;
+    background-color: #fff8f8 !important;
+}
+
+.error-message {
+    color: #dc3545;
+    font-size: 14px;
+    margin-top: 8px;
+    display: block;
+}
+
+/* Empty state for select boxes */
+select:invalid {
+    color: #6c757d;
+}
+
+select option {
+    color: #212529;
 }
 
 /* Responsive adjustments */
