@@ -27,10 +27,23 @@ document.getElementById('bookAppointment').addEventListener('click', function(ev
         formData.mobile_number = document.getElementById('mobile_number').value;
     }
 
-    fetch('PHP CODES/appointment_api.php', {  // Use the correct path to your API
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+    // First clear any existing appointment session
+    fetch('PHP CODES/clear_appointment_session.php', {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(sessionData => {
+        // Only proceed with appointment creation if session was cleared
+        if (sessionData.success) {
+            // Create new appointment
+            return fetch('PHP CODES/appointment_api.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+        } else {
+            throw new Error('Failed to clear session');
+        }
     })
     .then(response => response.json())
     .then(data => {
