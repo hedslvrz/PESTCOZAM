@@ -16,8 +16,44 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['next'])) {
     $service_id = $_POST['service_id'];
     $isForSelf = isset($_POST['is_for_self']) ? (int)$_POST['is_for_self'] : 1;
     
-    // Initialize appointment session
-    AppointmentSession::initialize($user_id);
+    // Check if we have an existing appointment in progress
+    $appointment_id = AppointmentSession::getAppointmentId();
+    
+    if ($appointment_id) {
+        // Update existing appointment
+        $updateQuery = "UPDATE appointments SET 
+                        service_id = :service_id, 
+                        is_for_self = :is_for_self 
+                        WHERE id = :appointment_id AND user_id = :user_id";
+        $stmt = $db->prepare($updateQuery);
+        $stmt->execute([
+            ':service_id' => $service_id,
+            ':is_for_self' => $isForSelf,
+            ':appointment_id' => $appointment_id,
+            ':user_id' => $user_id
+        ]);
+    } else {
+        // Insert a new appointment
+        $insertQuery = "INSERT INTO appointments (user_id, service_id, is_for_self, status) 
+                        VALUES (:user_id, :service_id, :is_for_self, :status)";
+        $stmt = $db->prepare($insertQuery);
+        $stmt->execute([
+            ':user_id' => $user_id,
+            ':service_id' => $service_id,
+            ':is_for_self' => $isForSelf,
+            ':status' => 'pending'
+        ]);
+        
+        // Get the newly created appointment ID
+        $appointment_id = $db->lastInsertId();
+    }
+    
+    // Initialize or update appointment session with the appointment ID
+    if (!AppointmentSession::isInProgress()) {
+        AppointmentSession::initialize($user_id, $appointment_id);
+    } else {
+        AppointmentSession::setAppointmentId($appointment_id);
+    }
     
     // Save data to session
     AppointmentSession::saveStep('service', [
@@ -25,19 +61,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['next'])) {
         'is_for_self' => $isForSelf
     ]);
 
-    // Insert a new appointment
-    $insertQuery = "INSERT INTO appointments (user_id, service_id, is_for_self, status) 
-                    VALUES (:user_id, :service_id, :is_for_self, :status)";
-    $stmt = $db->prepare($insertQuery);
-    $stmt->execute([
-        ':user_id' => $user_id,
-        ':service_id' => $service_id,
-        ':is_for_self' => $isForSelf,
-        ':status' => 'pending'
-    ]);
-
     header("Location: Appointment-loc.php");
     exit();
+}
+
+// Check if there's an ongoing appointment in the session
+$ongoing_appointment = false;
+$selectedServiceId = '';
+$selectedIsForSelf = 1;
+
+if (AppointmentSession::isInProgress()) {
+    $ongoing_appointment = true;
+    $serviceData = AppointmentSession::getData('service');
+    if ($serviceData) {
+        $selectedServiceId = $serviceData['service_id'] ?? '';
+        $selectedIsForSelf = $serviceData['is_for_self'] ?? 1;
+    }
 }
 
 // Initialize database class
@@ -51,15 +90,6 @@ $query = "SELECT service_id, service_name, description, estimated_time, starting
 $stmt = $db->prepare($query);
 $stmt->execute();
 $services = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-// Pre-select service if it exists in session
-$selectedServiceId = '';
-if (isset($_SESSION['appointment'])) {
-    $serviceData = AppointmentSession::getData('service');
-    if ($serviceData && isset($serviceData['service_id'])) {
-        $selectedServiceId = $serviceData['service_id'];
-    }
-}
 ?>
 
 <!DOCTYPE html>
@@ -217,7 +247,7 @@ if (isset($_SESSION['appointment'])) {
                 <p>Who is this appointment for?</p>
                 <div class="radio-group">
                     <label>
-                        <input type="radio" name="appointment_for" value="1" checked id="for-myself">For Myself
+                        <input type="radio" name="appointment_for" value="1" id="for-myself">For Myself
                     </label>
                     <label>
                         <input type="radio" name="appointment_for" value="0" id="for-someone-else">For Someone Else
@@ -301,12 +331,16 @@ if (isset($_SESSION['appointment'])) {
         selectService(<?php echo $selectedServiceId; ?>);
         <?php endif; ?>
 
-        // Rest of your existing code...
-        // Set initial value based on the checked radio button
-        const checkedRadio = document.querySelector('input[name="appointment_for"]:checked');
-        if (checkedRadio) {
-            document.getElementById('isForSelf').value = checkedRadio.value;
+        // Set initial value for "Who is this appointment for?" radio buttons
+        <?php if (isset($selectedIsForSelf)): ?>
+        const forSelf = <?php echo $selectedIsForSelf; ?>;
+        const radioToSelect = forSelf === 1 ? document.getElementById('for-myself') : document.getElementById('for-someone-else');
+        if (radioToSelect) {
+            radioToSelect.checked = true;
+            document.getElementById('isForSelf').value = forSelf;
+            document.getElementById('isForSelfHidden').value = forSelf;
         }
+        <?php endif; ?>
 
         // Add event listeners for radio buttons
         const radioButtons = document.querySelectorAll('input[name="appointment_for"]');

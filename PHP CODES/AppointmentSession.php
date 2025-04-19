@@ -1,15 +1,35 @@
 <?php
 class AppointmentSession {
-    public static function initialize($user_id) {
+    public static function initialize($user_id, $appointment_id = null) {
         // Clear any existing appointment session data first
         self::clear();
         
         // Start a fresh appointment session
         $_SESSION['appointment'] = [
             'user_id' => $user_id,
+            'appointment_id' => $appointment_id, // Store appointment ID
             'data' => [],
             'started_at' => time() // Add timestamp for tracking session age
         ];
+    }
+
+    // Get current appointment ID
+    public static function getAppointmentId() {
+        return isset($_SESSION['appointment']) && isset($_SESSION['appointment']['appointment_id']) 
+            ? $_SESSION['appointment']['appointment_id'] 
+            : null;
+    }
+
+    // Set appointment ID
+    public static function setAppointmentId($appointment_id) {
+        if (isset($_SESSION['appointment'])) {
+            $_SESSION['appointment']['appointment_id'] = $appointment_id;
+        }
+    }
+
+    // Check if appointment is in progress
+    public static function isInProgress() {
+        return isset($_SESSION['appointment']) && !empty($_SESSION['appointment']['data']);
     }
 
     public static function saveStep($step, $data) {
