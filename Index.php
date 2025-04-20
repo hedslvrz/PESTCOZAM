@@ -164,7 +164,7 @@ foreach ($services as $service) {
         </a>
     </section>
     
-    <!-- WHO WE ARE SECTION -->
+    <!--   WE ARE SECTION -->
     <section class="who-we-are">
       <div class="who-container">
         <div class="who-text">

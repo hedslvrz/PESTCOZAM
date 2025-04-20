@@ -490,13 +490,11 @@ try {
                                         <option value="15:00:00">3:00 PM - 5:00 PM</option>
                                     </select>
                                 </div>
-                                
-                                <!-- Submit Button -->
-                                <div class="form-group">
-                                    <button type="button" class="btn-submit" id="schedule-followup-btn">
-                                        <i class='bx bx-calendar-check'></i> Schedule Follow-up
-                                    </button>
-                                </div>
+                            </div>
+                            <div class="schedule-actions-centered">
+                                <button type="button" class="btn-submit" id="schedule-followup-btn">
+                                    <i class='bx bx-calendar-check'></i> Schedule Follow-up
+                                </button>
                             </div>
                         </div>
                         
@@ -506,7 +504,19 @@ try {
                                 <i class='bx bx-notepad'></i>
                                 <h4>Scheduled Follow-ups</h4>
                             </div>
-                            <div class="table-wrapper">
+                            <div class="followups-controls">
+                                <div class="search-box">
+                                    <i class='bx bx-search'></i>
+                                    <input type="text" id="followup-search" placeholder="Search follow-ups...">
+                                </div>
+                                <div class="filter-buttons">
+                                    <button type="button" class="filter-btn active" data-filter="all">All</button>
+                                    <button type="button" class="filter-btn" data-filter="thisweek">This Week</button>
+                                    <button type="button" class="filter-btn" data-filter="nextweek">Next Week</button>
+                                    <button type="button" class="filter-btn" data-filter="nextmonth">Next Month</button>
+                                </div>
+                            </div>
+                            <div class="table-wrapper scrollable-table">
                                 <table class="appointments-table">
                                     <thead>
                                         <tr>
@@ -542,7 +552,7 @@ try {
                                             AND a.appointment_date >= CURDATE()
                                             GROUP BY a.id
                                             ORDER BY a.appointment_date ASC, a.appointment_time ASC
-                                            LIMIT 10";
+                                            LIMIT 50";
                                             
                                             $stmt = $db->prepare($followupsQuery);
                                             $stmt->execute();
@@ -550,8 +560,28 @@ try {
                                             
                                             if (!empty($followups)) {
                                                 foreach ($followups as $followup) {
-                                                    echo '<tr>';
-                                                    echo '<td>' . date('M d, Y', strtotime($followup['appointment_date'])) . ' ' . 
+                                                    $appointmentDate = strtotime($followup['appointment_date']);
+                                                    $dateClass = '';
+                                                    
+                                                    // Calculate if appointment is this week, next week, or this month
+                                                    $today = strtotime('today');
+                                                    $weekStart = strtotime('monday this week', $today);
+                                                    $weekEnd = strtotime('sunday this week', $today);
+                                                    $nextWeekStart = strtotime('monday next week', $today);
+                                                    $nextWeekEnd = strtotime('sunday next week', $today);
+                                                    $monthStart = strtotime('first day of this month', $today);
+                                                    $monthEnd = strtotime('last day of this month', $today);
+                                                    
+                                                    if ($appointmentDate >= $weekStart && $appointmentDate <= $weekEnd) {
+                                                        $dateClass = 'thisweek';
+                                                    } elseif ($appointmentDate >= $nextWeekStart && $appointmentDate <= $nextWeekEnd) {
+                                                        $dateClass = 'nextweek';
+                                                    } elseif ($appointmentDate >= $monthStart && $appointmentDate <= $monthEnd) {
+                                                        $dateClass = 'thismonth';
+                                                    }
+                                                    
+                                                    echo '<tr class="followup-row" data-date="'.date('Y-m-d', $appointmentDate).'" data-period="'.$dateClass.'">';
+                                                    echo '<td>' . date('M d, Y', $appointmentDate) . ' ' . 
                                                          date('h:i A', strtotime($followup['appointment_time'])) . '</td>';
                                                     echo '<td>' . htmlspecialchars($followup['customer_name']) . '</td>';
                                                     echo '<td>' . htmlspecialchars($followup['service_name']) . '</td>';
@@ -570,6 +600,9 @@ try {
                                         ?>
                                     </tbody>
                                 </table>
+                            </div>
+                            <div id="followups-pagination" class="pagination-controls">
+                                <!-- Pagination will be inserted via JavaScript -->
                             </div>
                         </div>
                     </div>
