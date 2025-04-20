@@ -36,6 +36,10 @@ try {
             WHEN a.is_for_self = 1 THEN u.lastname
             ELSE a.lastname
         END as client_lastname,
+        CASE 
+            WHEN a.is_for_self = 1 THEN u.mobile_number
+            ELSE a.mobile_number
+        END as client_mobile,
         s.service_name,
         s.service_id
     FROM appointments a
@@ -287,7 +291,22 @@ try {
                 </div>
 
                 <div class="report-form-container wide">
+                    <?php if(isset($_SESSION['report_success'])): ?>
+                        <div class="alert alert-success">
+                            <?php echo $_SESSION['report_success']; unset($_SESSION['report_success']); ?>
+                        </div>
+                    <?php endif; ?>
+                    
+                    <?php if(isset($_SESSION['report_error'])): ?>
+                        <div class="alert alert-error">
+                            <?php echo $_SESSION['report_error']; unset($_SESSION['report_error']); ?>
+                        </div>
+                    <?php endif; ?>
+                    
                     <form class="service-report-form" method="POST" action="../PHP CODES/submit_report.php" enctype="multipart/form-data">
+                        <!-- Hidden field for technician ID -->
+                        <input type="hidden" name="technician_id" value="<?php echo $_SESSION['user_id']; ?>">
+                        
                         <!-- Appointment Selection -->
                         <div class="form-section">
                             <div class="section-header">
@@ -295,11 +314,15 @@ try {
                                 <h3>Select Appointment</h3>
                             </div>
                             <div class="field-group">
-                                <label for="appointment">Choose an appointment to report</label>
-                                <select name="appointment_id" id="appointment" required>
-                                    <option value="">Select an appointment</option>
+                                <label for="appointment">Choose an appointment to report (optional)</label>
+                                <select name="appointment_id" id="appointment">
+                                    <option value="">Select an appointment (or leave blank for non-appointment service)</option>
                                     <?php foreach ($assignments as $assignment): ?>
-                                        <option value="<?php echo $assignment['appointment_id']; ?>">
+                                        <option value="<?php echo $assignment['appointment_id']; ?>" 
+                                                data-client="<?php echo htmlspecialchars($assignment['client_firstname'] . ' ' . $assignment['client_lastname']); ?>"
+                                                data-location="<?php echo htmlspecialchars(implode(', ', array_filter([$assignment['street_address'], $assignment['barangay'], $assignment['city']]))); ?>"
+                                                data-service="<?php echo htmlspecialchars($assignment['service_name']); ?>"
+                                                data-contact="<?php echo htmlspecialchars($assignment['client_mobile'] ?? ''); ?>">
                                             <?php echo date('M d, Y', strtotime($assignment['appointment_date'])) . ' - ' . 
                                                  $assignment['client_firstname'] . ' ' . $assignment['client_lastname'] . ' - ' . 
                                                  $assignment['service_name']; ?>
@@ -317,20 +340,20 @@ try {
                             </div>
                             <div class="report-grid-3col">
                                 <div class="field-group">
-                                    <label for="account_name">Account Name</label>
+                                    <label for="account_name">Account/Client Name</label>
                                     <input type="text" name="account_name" id="account_name" required>
                                 </div>
                                 <div class="field-group">
-                                    <label for="location">Location</label>
+                                    <label for="location">Location/Address</label>
                                     <input type="text" name="location" id="location" required>
                                 </div>
                                 <div class="field-group">
                                     <label for="contact_no">Contact No</label>
-                                    <input type="text" name="contact_no" id="contact_no" required>
+                                    <input type="text" name="contact_no" id="contact_no" required pattern="[0-9\-\+\s]+" title="Enter a valid phone number">
                                 </div>
                                 <div class="field-group">
                                     <label for="date_of_treatment">Date of Treatment</label>
-                                    <input type="date" name="date_of_treatment" id="date_of_treatment" required>
+                                    <input type="date" name="date_of_treatment" id="date_of_treatment" required value="<?php echo date('Y-m-d'); ?>">
                                 </div>
                                 <div class="field-group">
                                     <label for="time_in">Time In</label>
@@ -342,30 +365,51 @@ try {
                                 </div>
                                 <div class="field-group">
                                     <label for="treatment_type">Treatment Type</label>
-                                    <input type="text" name="treatment_type" id="treatment_type" required>
+                                    <select name="treatment_type" id="treatment_type" required>
+                                        <option value="">Select Treatment Type</option>
+                                        <option value="Soil Poisoning">Soil Poisoning</option>
+                                        <option value="Mound Demolition">Mound Demolition</option>
+                                        <option value="Termite Control">Termite Control</option>
+                                        <option value="General Pest Control">General Pest Control</option>
+                                        <option value="Mosquito Control">Mosquito Control</option>
+                                        <option value="Rat Control">Rat Control</option>
+                                        <option value="Flying & Crawling Insect Control">Flying & Crawling Insect Control</option>
+                                        <option value="Extraction">Extraction</option>
+                                        <option value="Ocular Inspection">Ocular Inspection</option>
+                                        <option value="Other">Other (specify in treatment method)</option>
+                                    </select>
                                 </div>
                                 <div class="field-group">
-                                    <label for="treatment_method">Treatment Method</label>
-                                    <input type="text" name="treatment_method" id="treatment_method" required>
+                                    <label for="pest_count">Pest Count (if applicable)</label>
+                                    <input type="text" name="pest_count" id="pest_count" placeholder="e.g., 15 roaches, 3 rats">
                                 </div>
                                 <div class="field-group">
-                                    <label for="pest_count">PCT (Pest Count)</label>
-                                    <input type="number" name="pest_count" id="pest_count" required>
+                                    <label for="frequency_of_visits">Frequency of Visits</label>
+                                    <select name="frequency_of_visits" id="frequency_of_visits">
+                                        <option value="">Select Recommended Frequency</option>
+                                        <option value="One-time">One-time</option>
+                                        <option value="Weekly">Weekly</option>
+                                        <option value="Bi-weekly">Bi-weekly</option>
+                                        <option value="Monthly">Monthly</option>
+                                        <option value="Quarterly">Quarterly</option>
+                                        <option value="Semi-annually">Semi-annually</option>
+                                        <option value="Annually">Annually</option>
+                                    </select>
                                 </div>
                             </div>
                             
                             <div class="report-grid-2col">
                                 <div class="field-group">
-                                    <label for="device_installation">Device Installation</label>
-                                    <textarea name="device_installation" id="device_installation" rows="2"></textarea>
+                                    <label for="treatment_method">Treatment Method/Description</label>
+                                    <textarea name="treatment_method" id="treatment_method" rows="3" required placeholder="Describe the treatment methods used in detail..."></textarea>
                                 </div>
                                 <div class="field-group">
-                                    <label for="consumed_chemicals">Consumed Chemicals</label>
-                                    <textarea name="consumed_chemicals" id="consumed_chemicals" rows="2"></textarea>
+                                    <label for="device_installation">Device Installation (if any)</label>
+                                    <textarea name="device_installation" id="device_installation" rows="3" placeholder="Describe any devices installed or set..."></textarea>
                                 </div>
                                 <div class="field-group">
-                                    <label for="frequency_of_visits">Frequency of Visits</label>
-                                    <input type="text" name="frequency_of_visits" id="frequency_of_visits">
+                                    <label for="consumed_chemicals">Consumed Chemicals/Products</label>
+                                    <textarea name="consumed_chemicals" id="consumed_chemicals" rows="3" placeholder="List chemicals used with quantities..."></textarea>
                                 </div>
                             </div>
                         </div>
@@ -383,7 +427,7 @@ try {
                                     <span>or</span>
                                     <label for="photos" class="upload-btn">Choose Files</label>
                                     <input type="file" name="photos[]" id="photos" multiple accept="image/*">
-                                    <small>Upload up to 5 photos (Max 2MB each)</small>
+                                    <small>Upload up to 5 photos (Max 2MB each). Include before/after photos if available.</small>
                                 </div>
                                 <div class="photo-preview" id="photo-preview-container">
                                     <!-- Preview images will appear here -->
@@ -404,6 +448,131 @@ try {
                 </div>
             </div>
         </main>
+        
+        <script>
+            // Auto-fill form when appointment is selected
+            document.getElementById('appointment').addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                
+                if (this.value) {
+                    // Get data from the selected option's data attributes
+                    const clientName = selectedOption.getAttribute('data-client');
+                    const location = selectedOption.getAttribute('data-location');
+                    const treatmentType = selectedOption.getAttribute('data-service');
+                    const contactNo = selectedOption.getAttribute('data-contact');
+                    
+                    // Fill in the form fields
+                    document.getElementById('account_name').value = clientName;
+                    document.getElementById('location').value = location;
+                    document.getElementById('contact_no').value = contactNo;
+                    
+                    // Handle dropdown for treatment type
+                    const treatmentTypeSelect = document.getElementById('treatment_type');
+                    
+                    // Try to find a matching option
+                    let optionFound = false;
+                    for (let i = 0; i < treatmentTypeSelect.options.length; i++) {
+                        if (treatmentTypeSelect.options[i].value === treatmentType || 
+                            treatmentTypeSelect.options[i].text === treatmentType) {
+                            treatmentTypeSelect.selectedIndex = i;
+                            optionFound = true;
+                            break;
+                        }
+                    }
+                    
+                    // If no exact match found, look for a partial match
+                    if (!optionFound) {
+                        for (let i = 0; i < treatmentTypeSelect.options.length; i++) {
+                            if (treatmentTypeSelect.options[i].text.includes(treatmentType) || 
+                                treatmentType.includes(treatmentTypeSelect.options[i].text)) {
+                                treatmentTypeSelect.selectedIndex = i;
+                                break;
+                            }
+                        }
+                    }
+                } else {
+                    // Clear fields if "Select an appointment" is chosen
+                    document.getElementById('account_name').value = '';
+                    document.getElementById('location').value = '';
+                    document.getElementById('contact_no').value = '';
+                    document.getElementById('treatment_type').selectedIndex = 0;
+                }
+            });
+            
+            // Handle file uploads and preview
+            document.getElementById('photos').addEventListener('change', function(e) {
+                const previewContainer = document.getElementById('photo-preview-container');
+                previewContainer.innerHTML = ''; // Clear previous previews
+                
+                if (this.files.length > 5) {
+                    alert('You can only upload a maximum of 5 photos.');
+                    this.value = ''; // Clear selected files
+                    return;
+                }
+                
+                for (let i = 0; i < this.files.length; i++) {
+                    const file = this.files[i];
+                    
+                    // Check file size (max 2MB)
+                    if (file.size > 2 * 1024 * 1024) {
+                        alert(`File ${file.name} exceeds 2MB. Please select a smaller file.`);
+                        continue;
+                    }
+                    
+                    // Create preview element
+                    const preview = document.createElement('div');
+                    preview.className = 'preview-item';
+                    
+                    const img = document.createElement('img');
+                    img.src = URL.createObjectURL(file);
+                    img.onload = function() {
+                        URL.revokeObjectURL(this.src); // Free memory
+                    };
+                    
+                    const caption = document.createElement('span');
+                    caption.className = 'file-name';
+                    caption.textContent = file.name;
+                    
+                    const removeBtn = document.createElement('button');
+                    removeBtn.type = 'button';
+                    removeBtn.className = 'remove-file';
+                    removeBtn.innerHTML = '<i class="bx bx-x"></i>';
+                    removeBtn.onclick = function() {
+                        preview.remove();
+                        // Note: This doesn't actually remove the file from the input
+                        // You would need a more complex solution to truly remove a single file
+                    };
+                    
+                    preview.appendChild(img);
+                    preview.appendChild(caption);
+                    preview.appendChild(removeBtn);
+                    previewContainer.appendChild(preview);
+                }
+            });
+            
+            // Set default time values based on current time
+            document.addEventListener('DOMContentLoaded', function() {
+                const now = new Date();
+                const timeIn = document.getElementById('time_in');
+                const timeOut = document.getElementById('time_out');
+                
+                // Format current time for time inputs (HH:MM)
+                const formatTime = (date) => {
+                    return date.toTimeString().slice(0, 5);
+                };
+                
+                // Set time_in to current time if not already set
+                if (!timeIn.value) {
+                    timeIn.value = formatTime(now);
+                }
+                
+                // Set time_out to 2 hours later if not already set
+                if (!timeOut.value) {
+                    const later = new Date(now.getTime() + 2 * 60 * 60 * 1000); // 2 hours later
+                    timeOut.value = formatTime(later);
+                }
+            });
+        </script>
     </section>
 
     <!-- Schedule Follow-up Section -->
