@@ -51,10 +51,44 @@ try {
     $stmt = $db->prepare($appointmentsQuery);
     $stmt->execute([$_SESSION['user_id']]);
     $assignments = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Get only confirmed appointments for the report dropdown
+    $confirmedAppointmentsQuery = "SELECT 
+        a.id as appointment_id,
+        a.appointment_date,
+        a.appointment_time,
+        a.status,
+        a.street_address,
+        a.barangay,
+        a.city,
+        CASE 
+            WHEN a.is_for_self = 1 THEN u.firstname
+            ELSE a.firstname
+        END as client_firstname,
+        CASE 
+            WHEN a.is_for_self = 1 THEN u.lastname
+            ELSE a.lastname
+        END as client_lastname,
+        CASE 
+            WHEN a.is_for_self = 1 THEN u.mobile_number
+            ELSE a.mobile_number
+        END as client_mobile,
+        s.service_name,
+        s.service_id
+    FROM appointments a
+    INNER JOIN services s ON a.service_id = s.service_id
+    INNER JOIN users u ON a.user_id = u.id
+    WHERE a.technician_id = ? AND LOWER(a.status) = 'confirmed'
+    ORDER BY a.appointment_date ASC, a.appointment_time ASC";
+    
+    $stmt = $db->prepare($confirmedAppointmentsQuery);
+    $stmt->execute([$_SESSION['user_id']]);
+    $confirmedAppointments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch(PDOException $e) {
     error_log("Error: " . $e->getMessage());
     $technician = null;
     $assignments = [];
+    $confirmedAppointments = [];
 }
 ?>
 <!DOCTYPE html>
@@ -317,15 +351,15 @@ try {
                                 <label for="appointment">Choose an appointment to report (optional)</label>
                                 <select name="appointment_id" id="appointment">
                                     <option value="">Select an appointment (or leave blank for non-appointment service)</option>
-                                    <?php foreach ($assignments as $assignment): ?>
-                                        <option value="<?php echo $assignment['appointment_id']; ?>" 
-                                                data-client="<?php echo htmlspecialchars($assignment['client_firstname'] . ' ' . $assignment['client_lastname']); ?>"
-                                                data-location="<?php echo htmlspecialchars(implode(', ', array_filter([$assignment['street_address'], $assignment['barangay'], $assignment['city']]))); ?>"
-                                                data-service="<?php echo htmlspecialchars($assignment['service_name']); ?>"
-                                                data-contact="<?php echo htmlspecialchars($assignment['client_mobile'] ?? ''); ?>">
-                                            <?php echo date('M d, Y', strtotime($assignment['appointment_date'])) . ' - ' . 
-                                                 $assignment['client_firstname'] . ' ' . $assignment['client_lastname'] . ' - ' . 
-                                                 $assignment['service_name']; ?>
+                                    <?php foreach ($confirmedAppointments as $appointment): ?>
+                                        <option value="<?php echo $appointment['appointment_id']; ?>" 
+                                                data-client="<?php echo htmlspecialchars($appointment['client_firstname'] . ' ' . $appointment['client_lastname']); ?>"
+                                                data-location="<?php echo htmlspecialchars(implode(', ', array_filter([$appointment['street_address'], $appointment['barangay'], $appointment['city']]))); ?>"
+                                                data-service="<?php echo htmlspecialchars($appointment['service_name']); ?>"
+                                                data-contact="<?php echo htmlspecialchars($appointment['client_mobile'] ?? ''); ?>">
+                                            <?php echo date('M d, Y', strtotime($appointment['appointment_date'])) . ' - ' . 
+                                                 $appointment['client_firstname'] . ' ' . $appointment['client_lastname'] . ' - ' . 
+                                                 $appointment['service_name']; ?>
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
