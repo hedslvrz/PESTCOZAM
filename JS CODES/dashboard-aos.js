@@ -62,6 +62,125 @@ function showSection(sectionId) {
     }
 }
 
+// NEW GLOBAL FUNCTIONS FOR PROFILE MODAL
+
+function openProfileModal() {
+    const modal = document.getElementById('profileModal');
+    if (!modal) return;
+    modal.style.display = 'flex';
+    // Force reflow then add show class for transition
+    void modal.offsetWidth;
+    modal.classList.add('show');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeProfileModal() {
+    const modal = document.getElementById('profileModal');
+    if (!modal) return;
+    modal.classList.remove('show');
+    setTimeout(() => {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }, 300);
+}
+
+function updateUserProfile(form) {
+    const submitBtn = form.querySelector('[type="submit"]');
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = 'Saving...';
+    submitBtn.disabled = true;
+    
+    const formData = new FormData(form);
+    
+    fetch('update_profile.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Profile updated successfully!');
+            updateProfileDisplay(formData);
+            closeProfileModal();
+            // Clear POST data by replacing state if needed
+            history.replaceState(null, null, location.pathname);
+        } else {
+            alert('Error: ' + (data.message || 'Update failed'));
+        }
+    })
+    .catch(error => {
+        console.error('Error updating profile:', error);
+        alert('An error occurred while updating profile');
+    })
+    .finally(() => {
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+    });
+}
+
+function updateProfileDisplay(formData) {
+    const firstname = formData.get('firstname');
+    const lastname = formData.get('lastname');
+    const email = formData.get('email');
+    
+    // Update Profile Card (using .profile-info)
+    const profileName = document.querySelector('.profile-info h3');
+    const profileEmail = document.querySelector('.profile-info p');
+    if (profileName) profileName.textContent = `${firstname} ${lastname}`;
+    if (profileEmail) profileEmail.textContent = email;
+    
+    // Update details in personal information section
+    const fnameDetail = document.querySelector('[data-field="firstname"]');
+    const middlenameDetail = document.querySelector('[data-field="middlename"]');
+    const lnameDetail = document.querySelector('[data-field="lastname"]');
+    const emailDetail = document.querySelector('[data-field="email"]');
+    const phoneDetail = document.querySelector('[data-field="mobile_number"]');
+    if (fnameDetail) fnameDetail.textContent = firstname;
+    if (middlenameDetail) middlenameDetail.textContent = formData.get('middlename') || 'Not set';
+    if (lnameDetail) lnameDetail.textContent = lastname;
+    if (emailDetail) emailDetail.textContent = email;
+    if (phoneDetail) phoneDetail.textContent = formData.get('mobile_number');
+}
+
+// NEW: Initialize profile editor functionality
+function initProfileEditor() {
+    const editProfileBtn = document.getElementById('openProfileModalBtn');
+    const profileModal = document.getElementById('profileModal');
+    const closeBtn = profileModal ? profileModal.querySelector('.close') : null;
+    const cancelBtn = document.getElementById('closeProfileModalBtn');
+    const profileForm = document.getElementById('editProfileForm');
+    
+    if (editProfileBtn && profileModal && profileForm) {
+        editProfileBtn.addEventListener('click', function() {
+            openProfileModal();
+        });
+        if (closeBtn) {
+            closeBtn.addEventListener('click', function() {
+                closeProfileModal();
+            });
+        }
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', function() {
+                closeProfileModal();
+            });
+        }
+        window.addEventListener('click', function(event) {
+            if (event.target === profileModal) {
+                closeProfileModal();
+        }}
+    );
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' && profileModal.classList.contains('show')) {
+                closeProfileModal();
+            }
+        });
+        profileForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            updateUserProfile(this);
+        });
+    }
+}
+
 // Remove the duplicate DOMContentLoaded event listeners
 // and replace with the new one
 document.addEventListener('DOMContentLoaded', function() {
@@ -129,6 +248,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize follow-ups table functionality
     initFollowupsTable();
+
+    // Initialize profile editor functionality
+    initProfileEditor();
 });
 
 // Report Modal Functions
@@ -982,6 +1104,155 @@ function initFollowupsTable() {
         }
         
         updateTableDisplay();
+    }
+
+    // Add profile editing functionality
+    function initProfileEditor() {
+        console.log('Initializing profile editor');
+        const editProfileBtn = document.querySelector('.profile-edit-btn');
+        const profileModal = document.getElementById('profileModal');
+        const closeBtn = profileModal ? profileModal.querySelector('.close') : null;
+        const profileForm = document.getElementById('editProfileForm');
+        
+        if (!editProfileBtn || !profileModal || !profileForm) {
+            console.error('Profile editor initialization failed. Missing elements:', {
+                editBtn: !editProfileBtn,
+                modal: !profileModal,
+                form: !profileForm
+            });
+            return; // Required elements not found, exit function
+        }
+
+        console.log('Profile editor elements found, setting up event listeners');
+
+        // Open profile edit modal when edit button is clicked
+        editProfileBtn.addEventListener('click', function() {
+            console.log('Edit button clicked, opening modal');
+            openProfileModal();
+        });
+
+        // Close modal when clicking the X button
+        if (closeBtn) {
+            closeBtn.addEventListener('click', function() {
+                console.log('Close button clicked');
+                closeProfileModal();
+            });
+        }
+
+        // Close modal when clicking outside the modal content
+        window.addEventListener('click', function(event) {
+            if (event.target === profileModal) {
+                console.log('Clicked outside modal');
+                closeProfileModal();
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' && profileModal.style.display === 'block') {
+                console.log('Escape key pressed');
+                closeProfileModal();
+            }
+        });
+
+        // Handle form submission
+        profileForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            console.log('Form submitted');
+            updateUserProfile(this);
+        });
+    }
+
+    // Function to open profile edit modal
+    function openProfileModal() {
+        const modal = document.getElementById('profileModal');
+        if (!modal) return;
+        
+        console.log('Opening profile modal');
+        modal.style.display = 'block';
+        document.body.style.overflow = 'hidden'; // Prevent scrolling behind modal
+    }
+
+    // Function to close profile edit modal
+    function closeProfileModal() {
+        const modal = document.getElementById('profileModal');
+        if (!modal) return;
+        
+        console.log('Closing profile modal');
+        modal.style.display = 'none';
+        document.body.style.overflow = ''; // Re-enable scrolling
+    }
+
+    // Function to update user profile via AJAX
+    function updateUserProfile(form) {
+        // Show loading state
+        const submitBtn = form.querySelector('[type="submit"]');
+        const originalText = submitBtn.textContent;
+        submitBtn.textContent = 'Saving...';
+        submitBtn.disabled = true;
+        
+        const formData = new FormData(form);
+        
+        fetch('update_profile.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show success message
+                showNotification('Profile updated successfully!', 'success');
+                
+                // Update displayed profile information without refreshing
+                updateProfileDisplay(formData);
+                
+                // Close the modal
+                closeProfileModal();
+            } else {
+                // Show error message
+                showNotification(data.message || 'Error updating profile', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error updating profile:', error);
+            showNotification('An error occurred. Please try again.', 'error');
+        })
+        .finally(() => {
+            // Reset button state
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+        });
+    }
+
+    // Function to update profile display without page refresh
+    function updateProfileDisplay(formData) {
+        // Update user name in profile card
+        const firstname = formData.get('firstname');
+        const lastname = formData.get('lastname');
+        const email = formData.get('email');
+        
+        // Update profile card
+        const profileName = document.querySelector('.user-info h3');
+        const profileEmail = document.querySelector('.user-info p');
+        
+        if (profileName) {
+            profileName.textContent = `${firstname} ${lastname}`;
+        }
+        
+        if (profileEmail) {
+            profileEmail.textContent = email;
+        }
+        
+        // Update details in personal details section
+        const firstNameDetail = document.querySelector('.details-grid [data-field="firstname"]');
+        const lastNameDetail = document.querySelector('.details-grid [data-field="lastname"]');
+        const emailDetail = document.querySelector('.details-grid [data-field="email"]');
+        const phoneDetail = document.querySelector('.details-grid [data-field="mobile_number"]');
+        
+        if (firstNameDetail) firstNameDetail.textContent = firstname;
+        if (lastNameDetail) lastNameDetail.textContent = lastname;
+        if (emailDetail) emailDetail.textContent = email;
+        if (phoneDetail) phoneDetail.textContent = formData.get('mobile_number');
     }
     
     // Function to update the display of table rows
