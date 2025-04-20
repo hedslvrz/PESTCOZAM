@@ -7,47 +7,57 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-$conn = new mysqli("localhost", "root", "", "pestcozam");
+require_once '../database.php';
 
-if ($conn->connect_error) {
-    echo json_encode(['success' => false, 'message' => 'Database connection failed']);
-    exit;
-}
+// Initialize database connection
+$database = new Database();
+$db = $database->getConnection();
 
 $user_id = $_SESSION['user_id'];
 $firstname = $_POST['firstname'];
+$middlename = $_POST['middlename']; // Added middlename
 $lastname = $_POST['lastname'];
 $email = $_POST['email'];
 $mobile_number = $_POST['mobile_number'];
 $dob = $_POST['dob'];
 
 // Check if email already exists for other users
-$check_email = $conn->prepare("SELECT id FROM users WHERE email = ? AND id != ?");
-$check_email->bind_param("si", $email, $user_id);
-$check_email->execute();
-$result = $check_email->get_result();
-
-if ($result->num_rows > 0) {
-    echo json_encode(['success' => false, 'message' => 'Email already exists']);
-    exit;
+try {
+    $stmt = $db->prepare("SELECT id FROM users WHERE email = ? AND id != ?");
+    $stmt->bindParam(1, $email);
+    $stmt->bindParam(2, $user_id, PDO::PARAM_INT);
+    $stmt->execute();
+    
+    if ($stmt->rowCount() > 0) {
+        echo json_encode(['success' => false, 'message' => 'Email already exists']);
+        exit;
+    }
+    
+    // Update user data in the database
+    $sql = "UPDATE users SET 
+            firstname = ?, 
+            middlename = ?,
+            lastname = ?, 
+            email = ?, 
+            mobile_number = ?, 
+            dob = ? 
+            WHERE id = ?";
+    
+    $stmt = $db->prepare($sql);
+    $stmt->bindParam(1, $firstname);
+    $stmt->bindParam(2, $middlename);
+    $stmt->bindParam(3, $lastname);
+    $stmt->bindParam(4, $email);
+    $stmt->bindParam(5, $mobile_number);
+    $stmt->bindParam(6, $dob);
+    $stmt->bindParam(7, $user_id, PDO::PARAM_INT);
+    
+    if ($stmt->execute()) {
+        echo json_encode(['success' => true]);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Update failed']);
+    }
+} catch(PDOException $e) {
+    echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
 }
-
-$sql = "UPDATE users SET 
-        firstname = ?, 
-        lastname = ?, 
-        email = ?, 
-        mobile_number = ?, 
-        dob = ? 
-        WHERE id = ?";
-
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("sssssi", $firstname, $lastname, $email, $mobile_number, $dob, $user_id);
-
-if ($stmt->execute()) {
-    echo json_encode(['success' => true]);
-} else {
-    echo json_encode(['success' => false, 'message' => 'Update failed']);
-}
-
-$conn->close();
 ?>
