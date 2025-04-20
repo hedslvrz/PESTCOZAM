@@ -126,6 +126,9 @@ document.addEventListener('DOMContentLoaded', function() {
             this.classList.add('selected');
         });
     });
+
+    // Initialize follow-ups table functionality
+    initFollowupsTable();
 });
 
 // Report Modal Functions
@@ -889,4 +892,222 @@ function showNotification(message, type = 'info') {
         // Fallback to alert if modal elements don't exist
         alert(message);
     }
+}
+
+// Function to initialize followups table functionality
+function initFollowupsTable() {
+    const searchInput = document.getElementById('followup-search');
+    const filterButtons = document.querySelectorAll('.followups-controls .filter-btn');
+    const followupRows = document.querySelectorAll('.followup-row');
+    const followupsList = document.getElementById('followups-list');
+    
+    if (!searchInput || !followupsList) return; // Exit if elements don't exist
+    
+    // Variables for pagination
+    const rowsPerPage = 10;
+    let currentPage = 1;
+    let filteredRows = [...followupRows]; // Start with all rows
+    
+    // Function to filter rows by search term
+    function filterBySearchTerm(term) {
+        term = term.toLowerCase().trim();
+        
+        filteredRows = [...followupRows].filter(row => {
+            if (!term) return true; // Show all rows if search is empty
+            return row.textContent.toLowerCase().includes(term);
+        });
+        
+        // Apply current filter
+        const activeFilter = document.querySelector('.followups-controls .filter-btn.active');
+        if (activeFilter) {
+            const filterValue = activeFilter.getAttribute('data-filter');
+            if (filterValue !== 'all') {
+                filteredRows = filteredRows.filter(row => {
+                    return filterValue === 'all' || row.getAttribute('data-period') === filterValue;
+                });
+            }
+        }
+        
+        updateTableDisplay();
+    }
+    
+    // Function to filter rows by period
+    function filterByPeriod(period) {
+        // Start with rows that match the search term
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        filteredRows = [...followupRows].filter(row => {
+            if (!searchTerm) return true;
+            return row.textContent.toLowerCase().includes(searchTerm);
+        });
+        
+        // Then filter by period
+        if (period !== 'all') {
+            const today = new Date();
+            
+            // Calculate date ranges for different periods
+            const weekStart = new Date(today);
+            weekStart.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1)); // Start of current week (Monday)
+            
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekStart.getDate() + 6); // End of current week (Sunday)
+            
+            const nextWeekStart = new Date(weekStart);
+            nextWeekStart.setDate(weekStart.getDate() + 7); // Start of next week
+            
+            const nextWeekEnd = new Date(nextWeekStart);
+            nextWeekEnd.setDate(nextWeekStart.getDate() + 6); // End of next week
+            
+            // Calculate next month range
+            const nextMonthStart = new Date(today.getFullYear(), today.getMonth() + 1, 1); // First day of next month
+            const nextMonthEnd = new Date(today.getFullYear(), today.getMonth() + 2, 0); // Last day of next month
+            
+            // Filter based on the period
+            filteredRows = filteredRows.filter(row => {
+                const dateStr = row.getAttribute('data-date');
+                if (!dateStr) return false;
+                
+                const rowDate = new Date(dateStr);
+                
+                switch (period) {
+                    case 'thisweek':
+                        return rowDate >= weekStart && rowDate <= weekEnd;
+                    case 'nextweek':
+                        return rowDate >= nextWeekStart && rowDate <= nextWeekEnd;
+                    case 'nextmonth':
+                        return rowDate >= nextMonthStart && rowDate <= nextMonthEnd;
+                    default:
+                        return true;
+                }
+            });
+        }
+        
+        updateTableDisplay();
+    }
+    
+    // Function to update the display of table rows
+    function updateTableDisplay() {
+        // Reset page to 1 when filters change
+        currentPage = 1;
+        
+        // Hide all rows first
+        followupRows.forEach(row => {
+            row.classList.add('hidden');
+        });
+        
+        // Remove existing "no results" row if it exists
+        const existingNoResults = followupsList.querySelector('.no-results');
+        if (existingNoResults) {
+            existingNoResults.remove();
+        }
+        
+        // Check if there are any results
+        if (filteredRows.length === 0) {
+            // Create and insert "no results" row
+            const noResultsRow = document.createElement('tr');
+            noResultsRow.className = 'no-results visible';
+            noResultsRow.innerHTML = '<td colspan="6">No matching follow-ups found</td>';
+            followupsList.appendChild(noResultsRow);
+        } else {
+            // Show rows for current page
+            const startIndex = (currentPage - 1) * rowsPerPage;
+            const endIndex = Math.min(startIndex + rowsPerPage, filteredRows.length);
+            
+            for (let i = startIndex; i < endIndex; i++) {
+                filteredRows[i].classList.remove('hidden');
+            }
+            
+            // Update pagination
+            updatePagination();
+        }
+    }
+    
+    // Function to create and update pagination controls
+    function updatePagination() {
+        const paginationContainer = document.getElementById('followups-pagination');
+        if (!paginationContainer) return;
+        
+        // Clear existing pagination
+        paginationContainer.innerHTML = '';
+        
+        // Calculate total pages
+        const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
+        if (totalPages <= 1) return; // Don't show pagination if only one page
+        
+        // Create previous button
+        const prevBtn = document.createElement('button');
+        prevBtn.innerHTML = '<i class="bx bx-chevron-left"></i>';
+        prevBtn.disabled = currentPage === 1;
+        prevBtn.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                updateTableDisplay();
+            }
+        });
+        paginationContainer.appendChild(prevBtn);
+        
+        // Create page buttons
+        let startPage = Math.max(1, currentPage - 2);
+        let endPage = Math.min(totalPages, startPage + 4);
+        
+        // Adjust start page if we're showing less than 5 pages
+        if (endPage - startPage < 4) {
+            startPage = Math.max(1, endPage - 4);
+        }
+        
+        // Show page buttons
+        for (let i = startPage; i <= endPage; i++) {
+            const pageBtn = document.createElement('button');
+            pageBtn.textContent = i;
+            pageBtn.classList.toggle('active', i === currentPage);
+            pageBtn.addEventListener('click', () => {
+                currentPage = i;
+                updateTableDisplay();
+            });
+            paginationContainer.appendChild(pageBtn);
+        }
+        
+        // Create next button
+        const nextBtn = document.createElement('button');
+        nextBtn.innerHTML = '<i class="bx bx-chevron-right"></i>';
+        nextBtn.disabled = currentPage === totalPages;
+        nextBtn.addEventListener('click', () => {
+            if (currentPage < totalPages) {
+                currentPage++;
+                updateTableDisplay();
+            }
+        });
+        paginationContainer.appendChild(nextBtn);
+        
+        // Add pagination info
+        const paginationInfo = document.createElement('div');
+        paginationInfo.className = 'pagination-info';
+        paginationInfo.textContent = `Showing ${Math.min(filteredRows.length, (currentPage - 1) * rowsPerPage + 1)}-${Math.min(filteredRows.length, currentPage * rowsPerPage)} of ${filteredRows.length} follow-ups`;
+        paginationContainer.appendChild(paginationInfo);
+    }
+    
+    // Add event listeners
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            filterBySearchTerm(this.value);
+        });
+    }
+    
+    if (filterButtons.length > 0) {
+        filterButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Remove active class from all buttons
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                
+                // Add active class to clicked button
+                this.classList.add('active');
+                
+                // Filter by the selected period
+                const filterValue = this.getAttribute('data-filter');
+                filterByPeriod(filterValue);
+            });
+        });
+    }
+    
+    // Initialize table display
+    updateTableDisplay();
 }
