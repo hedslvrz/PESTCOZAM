@@ -220,25 +220,23 @@ try {
 
             <div class="table-data">
                 <div class="order-list">
-                    <div class="table-header">
-                        <div class="search-filters">
-                            <div class="search-box">
-                                <i class='bx bx-search'></i>
-                                <input type="text" id="searchAppointments" placeholder="Search appointments...">
-                            </div>
-                            <div class="filter-buttons">
-                                <button type="button" class="filter-btn active" data-filter="all">All</button>
-                                <button type="button" class="filter-btn" data-filter="pending">Pending</button>
-                                <button type="button" class="filter-btn" data-filter="confirmed">Confirmed</button>
-                                <button type="button" class="filter-btn" data-filter="completed">Completed</button>
-                            </div>
-                            <div class="date-filter">
-                                <input type="date" id="filterDate">
-                            </div>
+                    <div class="followups-controls">
+                        <div class="search-box">
+                            <i class='bx bx-search'></i>
+                            <input type="text" id="searchAppointments" placeholder="Search appointments...">
+                        </div>
+                        <div class="filter-buttons">
+                            <button type="button" class="filter-btn active" data-filter="all">All</button>
+                            <button type="button" class="filter-btn" data-filter="pending">Pending</button>
+                            <button type="button" class="filter-btn" data-filter="confirmed">Confirmed</button>
+                            <button type="button" class="filter-btn" data-filter="completed">Completed</button>
+                        </div>
+                        <div class="date-filter">
+                            <input type="date" id="filterDate">
                         </div>
                     </div>
 
-                    <div class="table-responsive">
+                    <div class="scrollable-table">
                         <table class="work-orders-table">
                             <thead>
                                 <tr>
@@ -254,7 +252,7 @@ try {
                             <tbody>
                                 <?php if (!empty($appointments)): ?>
                                     <?php foreach ($appointments as $appointment): ?>
-                                        <tr data-status="<?php echo strtolower($appointment['status']); ?>" data-date="<?php echo date('Y-m-d', strtotime($appointment['appointment_date'])); ?>">
+                                        <tr data-status="<?php echo strtolower(trim($appointment['status'])); ?>" data-date="<?php echo date('Y-m-d', strtotime($appointment['appointment_date'])); ?>">
                                             <td>#<?php echo htmlspecialchars($appointment['appointment_id']); ?></td>
                                             <td>
                                                 <div class="schedule-info">
@@ -267,31 +265,15 @@ try {
                                             </td>
                                             <td>
                                                 <div class="customer-info">
-                                                    <i class='bx bx-user'></i>
-                                                    <span><?php echo htmlspecialchars($appointment['client_firstname'] . ' ' . 
-                                                        $appointment['client_lastname']); ?></span>
+                                                    <p><?php echo htmlspecialchars($appointment['client_firstname'] . ' ' . $appointment['client_lastname']); ?></p>
                                                 </div>
                                             </td>
+                                            <td><?php echo htmlspecialchars($appointment['service_name']); ?></td>
                                             <td>
-                                                <div class="service-info">
-                                                    <i class='bx bx-package'></i>
-                                                    <span><?php echo htmlspecialchars($appointment['service_name']); ?></span>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="tech-info">
+                                                <div class="technician-info">
                                                     <?php if (!empty($appointment['all_technicians'])): ?>
-                                                        <i class='bx bx-user-check'></i>
-                                                        <span title="<?php echo htmlspecialchars($appointment['all_technicians']); ?>">
-                                                            <?php 
-                                                            $technicians = $appointment['all_technicians'];
-                                                            $techArray = explode(', ', $technicians);
-                                                            echo '<ul class="tech-list">';
-                                                            foreach ($techArray as $tech) {
-                                                                echo '<li>' . htmlspecialchars($tech) . '</li>';
-                                                            }
-                                                            echo '</ul>';
-                                                            ?>
+                                                        <span class="technician-list">
+                                                            <?php echo htmlspecialchars($appointment['all_technicians']); ?>
                                                         </span>
                                                     <?php else: ?>
                                                         <span class="no-tech">Not Assigned</span>
@@ -305,23 +287,16 @@ try {
                                             </td>
                                             <td>
                                                 <div class="action-buttons">
-                                                    <?php if ($appointment['status'] === 'Pending' || $appointment['status'] === 'Confirmed'): ?>
-                                                        <a href="job-details.php?id=<?php echo $appointment['appointment_id']; ?>" class="view-btn">
-                                                            <i class='bx bx-show'></i> View Details
-                                                        </a>
-                                                        <button type="button" class="feedback-btn" onclick="showFeedbackModal(<?php echo $appointment['appointment_id']; ?>)">
-                                                            <i class='bx bx-message-square-detail'></i> Feedback
-                                                        </button>
-                                                    <?php else: ?>
-                                                        <span class="status-message">Job completed</span>
-                                                    <?php endif; ?>
+                                                    <a href="job-details.php?id=<?php echo $appointment['appointment_id']; ?>" class="view-btn">
+                                                        <i class='bx bx-show'></i> View Details
+                                                    </a>
                                                 </div>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
                                 <?php else: ?>
-                                    <tr>
-                                        <td colspan="7" class="no-records">No appointments found</td>
+                                    <tr class="no-records">
+                                        <td colspan="7">No appointments found</td>
                                     </tr>
                                 <?php endif; ?>
                             </tbody>

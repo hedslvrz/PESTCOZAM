@@ -32,7 +32,7 @@
 }
 
 .status.completed {
-    background: #144578;
+    background:     #144578;
     color: white;
 }
 
@@ -1086,7 +1086,6 @@ select option {
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    font-size: 14px;
 }
 
 .followups-controls .filter-btn:hover {
@@ -1496,4 +1495,35 @@ tr.no-results td {
     .info-row p {
         width: 100%;
     }
+}
+
+/* Date filter active state */
+#filterDate.active-filter {
+    border-color: #144578;
+    background-color: #f0f7ff;
+    box-shadow: 0 0 0 2px rgba(20, 69, 120, 0.2);
+}
+
+.reset-date-filter {
+    background: transparent;
+    border: none;
+    color: #666;
+    transition: color 0.2s;
+}
+
+.reset-date-filter:hover {
+    color: #dc3545;
+}
+
+/* Work Orders Search Box */
+#work-orders .search-box {
+    display: flex;
+    align-items: center;
+    background: #f5f5f5;
+    border-radius: 8px;
+    padding: 10px 16px;
+    flex: 1;
+    max-width: 400px;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
 }
