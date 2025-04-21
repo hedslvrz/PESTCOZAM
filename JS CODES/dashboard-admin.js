@@ -443,14 +443,148 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Updated Report Modal Functions
 function openReportModal(reportId) {
-    const modal = document.getElementById('reportModal');
-    if (!modal) {
-        console.error('Modal element not found');
-        return;
+    console.log('openReportModal called from external JS with ID:', reportId);
+    
+    // Completely remove recursion checks and use a simpler approach
+    // Simply populate the modal directly here
+    
+    // Find the report data
+    if (typeof window.reportsData !== 'undefined') {
+        const report = window.reportsData.find(r => parseInt(r.report_id) === parseInt(reportId));
+        if (!report) {
+            console.error('Report not found for ID:', reportId);
+            alert('Error: Report data not found');
+            return;
+        }
+        
+        console.log('Found report data:', report);
+        
+        try {
+            // Populate the modal fields
+            document.getElementById('reportIdField').value = report.report_id || '';
+            document.getElementById('reportIdDisplay').value = report.report_id ? `REP-${report.report_id.toString().padStart(4, '0')}` : 'N/A';
+            
+            if (report.date_of_treatment) {
+                document.getElementById('reportDateField').value = new Date(report.date_of_treatment).toLocaleDateString('en-US', {
+                    year: 'numeric', month: 'long', day: 'numeric'
+                });
+            } else {
+                document.getElementById('reportDateField').value = 'N/A';
+            }
+            
+            document.getElementById('techNameField').value = report.tech_name || 'N/A';
+            document.getElementById('clientNameField').value = report.account_name || 'N/A';
+            document.getElementById('contactNoField').value = report.contact_no || 'N/A';
+            document.getElementById('locationField').value = report.location || 'N/A';
+            document.getElementById('treatmentTypeField').value = report.treatment_type || 'N/A';
+            document.getElementById('treatmentMethodField').value = report.treatment_method || 'N/A';
+            document.getElementById('timeInField').value = report.time_in || 'N/A';
+            document.getElementById('timeOutField').value = report.time_out || 'N/A';
+            document.getElementById('pestCountField').value = report.pest_count || 'N/A';
+            document.getElementById('deviceInstallationField').value = report.device_installation || 'N/A';
+            document.getElementById('chemicalsField').value = report.consumed_chemicals || 'N/A';
+            document.getElementById('frequencyField').value = report.frequency_of_visits || 'N/A';
+            
+            // Handle approval buttons based on status
+            const approveBtn = document.getElementById('approveBtn');
+            const rejectBtn = document.getElementById('rejectBtn');
+            
+            if (report.status === 'approved') {
+                approveBtn.disabled = true;
+                approveBtn.classList.add('disabled');
+                rejectBtn.disabled = false;
+                rejectBtn.classList.remove('disabled');
+            } else if (report.status === 'rejected') {
+                approveBtn.disabled = false;
+                approveBtn.classList.remove('disabled');
+                rejectBtn.disabled = true;
+                rejectBtn.classList.add('disabled');
+            } else {
+                approveBtn.disabled = false;
+                approveBtn.classList.remove('disabled');
+                rejectBtn.disabled = false;
+                rejectBtn.classList.remove('disabled');
+            }
+            
+            // Handle photos
+            const imageGallery = document.getElementById('imageGallery');
+            imageGallery.innerHTML = ''; // Clear previous images
+            const photosSection = document.getElementById('photosSection');
+            
+            if (report.photos && report.photos !== null && report.photos !== '') {
+                photosSection.style.display = 'block';
+                
+                try {
+                    let photos = report.photos;
+                    console.log('Processing photos data:', photos, 'Type:', typeof photos);
+                    
+                    if (typeof photos === 'string') {
+                        try {
+                            photos = JSON.parse(photos);
+                            console.log('Parsed JSON photos:', photos);
+                        } catch (e) {
+                            console.warn('Error parsing photos JSON, treating as single photo:', e);
+                            photos = [photos]; // Treat as single photo
+                        }
+                    }
+                    
+                    if (Array.isArray(photos) && photos.length > 0) {
+                        console.log('Processing photo array of length:', photos.length);
+                        photos.forEach((photo, index) => {
+                            createPhotoElement(photo, index, imageGallery);
+                        });
+                    } else if (photos && typeof photos === 'string') {
+                        console.log('Processing single photo string:', photos);
+                        createPhotoElement(photos, 0, imageGallery);
+                    } else {
+                        console.warn('No usable photos found');
+                        photosSection.style.display = 'none';
+                    }
+                } catch (e) {
+                    console.error('Error processing photos:', e);
+                    photosSection.style.display = 'none';
+                }
+            } else {
+                console.log('No photos available for report');
+                photosSection.style.display = 'none';
+            }
+            
+            // Show the modal
+            const modal = document.getElementById('reportModal');
+            modal.classList.add('show');
+            modal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        } catch (err) {
+            console.error('Error populating modal fields:', err);
+        }
+    } else {
+        console.error('reportsData is not defined. Modal cannot be populated.');
     }
-    modal.classList.add('show'); // Add show class instead of display:block
-    modal.style.display = 'block';
-    document.body.style.overflow = 'hidden';
+}
+
+// Helper function for creating photo elements (add this if it doesn't exist)
+function createPhotoElement(photo, index, container) {
+    console.log(`Creating photo element for: ${photo} (index: ${index})`);
+    const imgContainer = document.createElement('div');
+    imgContainer.className = 'image-item';
+    
+    const img = document.createElement('img');
+    img.src = `../uploads/${photo}`;
+    img.alt = `Treatment Photo ${index + 1}`;
+    
+    // Add error handling for images
+    img.onerror = function() {
+        console.warn(`Image not found: ${img.src}`);
+        this.src = '../Pictures/image-placeholder.jpg';
+        this.alt = 'Image not found';
+    };
+    
+    const span = document.createElement('span');
+    span.textContent = `Photo ${index + 1}`;
+    
+    imgContainer.appendChild(img);
+    imgContainer.appendChild(span);
+    container.appendChild(imgContainer);
 }
 
 function closeReportModal() {
@@ -462,34 +596,86 @@ function closeReportModal() {
 }
 
 function initializeReportCards() {
+    console.log('initializeReportCards called from external JS');
     const reportCards = document.querySelectorAll('.report-card');
-    reportCards.forEach(card => {
-        card.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            const reportId = this.dataset.reportId;
-            openReportModal(reportId);
+    
+    if (reportCards.length > 0) {
+        console.log(`Found ${reportCards.length} report cards in external JS`);
+        reportCards.forEach(card => {
+            // Remove any existing click listeners to avoid duplicates
+            const newCard = card.cloneNode(true);
+            card.parentNode.replaceChild(newCard, card);
+            
+            newCard.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const reportId = this.getAttribute('data-report-id');
+                console.log('Report card clicked, ID:', reportId);
+                openReportModal(reportId);
+            });
         });
-    });
-}
-
-function approveReport() {
-    // Add approve logic here
-    alert('Report approved successfully!');
-    closeReportModal();
-}
-
-function rejectReport() {
-    // Add reject logic here
-    const reason = prompt('Please enter the reason for rejection:');
-    if (reason) {
-        alert('Report rejected. Reason: ' + reason);
-        closeReportModal();
+    } else {
+        console.log('No report cards found from external JS');
     }
 }
 
-function printReport() {
-    window.print();
+// Function to update report status (add this if it doesn't exist)
+function updateReportStatus(status) {
+    const reportId = document.getElementById('reportIdField').value;
+    if (!reportId) {
+        alert('Report ID not found');
+        return;
+    }
+    
+    fetch('../PHP CODES/update_report_status.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            report_id: reportId,
+            status: status
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(`Report ${status === 'approved' ? 'approved' : 'rejected'} successfully!`);
+            // Refresh the page to show updated status
+            location.reload();
+        } else {
+            alert('Error updating report status: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while updating the report status.');
+    });
+}
+
+// Add function to download report PDF if it doesn't exist
+function downloadReportPDF() {
+    const reportId = document.getElementById('reportIdField').value;
+    const reportForm = document.getElementById('reportForm');
+    
+    // Hide buttons during PDF generation
+    const actionButtons = document.querySelector('.form-actions');
+    actionButtons.style.display = 'none';
+    
+    html2canvas(reportForm).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const imgProps = pdf.getImageProperties(imgData);
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+        
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        pdf.save(`Service_Report_${reportId}.pdf`);
+        
+        // Show buttons again after PDF generation
+        actionButtons.style.display = 'flex';
+    });
 }
 
 // Close modal when clicking outside

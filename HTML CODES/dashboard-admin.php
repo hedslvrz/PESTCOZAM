@@ -780,151 +780,6 @@ try {
     </div>
 </div>
 
-<script>
-    // Store all reports data
-    const reportsData = <?php echo json_encode($serviceReports ?? []); ?>;
-    console.log('Reports data loaded:', reportsData); // Debug log
-    
-    // Open report modal with report details
-    function openReportModal(reportId) {
-        console.log('Opening report modal for ID:', reportId);
-        
-        // Find the report data
-        const report = reportsData.find(r => parseInt(r.report_id) === parseInt(reportId));
-        if (!report) {
-            console.error('Report not found for ID:', reportId, 'Available reports:', reportsData);
-            alert('Error: Report data not found');
-            return;
-        }
-        
-        console.log('Found report:', report); // Debug log to verify report data
-        
-        // Populate modal fields with proper null/undefined checking
-        document.getElementById('reportIdField').value = report.report_id || '';
-        document.getElementById('reportIdDisplay').value = report.report_id ? `REP-${report.report_id.toString().padStart(4, '0')}` : 'N/A';
-        
-        if (report.date_of_treatment) {
-            try {
-                document.getElementById('reportDateField').value = new Date(report.date_of_treatment).toLocaleDateString('en-US', {
-                    year: 'numeric', month: 'long', day: 'numeric'
-                });
-            } catch (e) {
-                console.error('Error formatting date:', e);
-                document.getElementById('reportDateField').value = report.date_of_treatment || 'N/A';
-            }
-        } else {
-            document.getElementById('reportDateField').value = 'N/A';
-        }
-        
-        document.getElementById('techNameField').value = report.tech_name || 'N/A';
-        document.getElementById('clientNameField').value = report.account_name || 'N/A';
-        document.getElementById('contactNoField').value = report.contact_no || 'N/A';
-        document.getElementById('locationField').value = report.location || 'N/A';
-        document.getElementById('treatmentTypeField').value = report.treatment_type || 'N/A';
-        document.getElementById('treatmentMethodField').value = report.treatment_method || 'N/A';
-        document.getElementById('timeInField').value = report.time_in || 'N/A';
-        document.getElementById('timeOutField').value = report.time_out || 'N/A';
-        document.getElementById('pestCountField').value = report.pest_count || 'N/A';
-        document.getElementById('deviceInstallationField').value = report.device_installation || 'N/A';
-        document.getElementById('chemicalsField').value = report.consumed_chemicals || 'N/A';
-        document.getElementById('frequencyField').value = report.frequency_of_visits || 'N/A';
-        
-        // Handle approval buttons based on status
-        const approveBtn = document.getElementById('approveBtn');
-        const rejectBtn = document.getElementById('rejectBtn');
-        
-        if (report.status === 'approved') {
-            approveBtn.disabled = true;
-            approveBtn.classList.add('disabled');
-            rejectBtn.disabled = false;
-            rejectBtn.classList.remove('disabled');
-        } else if (report.status === 'rejected') {
-            approveBtn.disabled = false;
-            approveBtn.classList.remove('disabled');
-            rejectBtn.disabled = true;
-            rejectBtn.classList.add('disabled');
-        } else {
-            approveBtn.disabled = false;
-            approveBtn.classList.remove('disabled');
-            rejectBtn.disabled = false;
-            rejectBtn.classList.remove('disabled');
-        }
-        
-        // Handle photos
-        const imageGallery = document.getElementById('imageGallery');
-        imageGallery.innerHTML = '';
-        const photosSection = document.getElementById('photosSection');
-        
-        if (report.photos && report.photos !== null && report.photos !== '') {
-            photosSection.style.display = 'block';
-            try {
-                let photos = report.photos;
-                console.log('Photos data:', photos, 'Type:', typeof photos);
-                
-                if (typeof photos === 'string') {
-                    try {
-                        photos = JSON.parse(photos);
-                        console.log('Parsed photos:', photos);
-                    } catch (e) {
-                        console.error('Error parsing photos JSON, treating as single photo:', e);
-                        photos = [photos]; // Treat as single photo if JSON parsing fails
-                    }
-                }
-                
-                if (Array.isArray(photos) && photos.length > 0) {
-                    console.log('Processing photo array of length:', photos.length);
-                    photos.forEach((photo, index) => {
-                        createPhotoElement(photo, index, imageGallery);
-                    });
-                } else if (photos && typeof photos === 'string') {
-                    console.log('Processing single photo string');
-                    createPhotoElement(photos, 0, imageGallery);
-                } else {
-                    console.warn('No usable photos found');
-                    photosSection.style.display = 'none';
-                }
-            } catch (e) {
-                console.error('Error processing photos:', e);
-                photosSection.style.display = 'none';
-            }
-        } else {
-            console.log('No photos available');
-            photosSection.style.display = 'none';
-        }
-        
-        // Show the modal
-        const modal = document.getElementById('reportModal');
-        modal.classList.add('show');
-        document.body.style.overflow = 'hidden';
-    }
-    
-    // Helper function to create photo elements
-    function createPhotoElement(photo, index, container) {
-        const imgContainer = document.createElement('div');
-        imgContainer.className = 'image-item';
-        
-        const img = document.createElement('img');
-        img.src = `../uploads/${photo}`;
-        img.alt = `Treatment Photo ${index + 1}`;
-        
-        // Add error handling for images
-        img.onerror = function() {
-            console.warn(`Image not found: ${img.src}`);
-            this.src = '../Pictures/image-placeholder.jpg';
-            this.alt = 'Image not found';
-        };
-        
-        const span = document.createElement('span');
-        span.textContent = `Photo ${index + 1}`;
-        
-        imgContainer.appendChild(img);
-        imgContainer.appendChild(span);
-        container.appendChild(imgContainer);
-        
-        console.log('Created image element for:', photo);
-    }
-</script>
-
 <!-- Manage Technician Report Section -->
 <section id="reports" class="section">
     <main>
@@ -1011,8 +866,7 @@ try {
                          data-tech-name="<?php echo htmlspecialchars($report['tech_name']); ?>"
                          data-location="<?php echo htmlspecialchars($report['location']); ?>"
                          data-account="<?php echo htmlspecialchars($report['account_name']); ?>"
-                         data-treatment="<?php echo htmlspecialchars($report['treatment_type']); ?>"
-                         onclick="openReportModal(<?php echo $report['report_id']; ?>)">
+                         data-treatment="<?php echo htmlspecialchars($report['treatment_type']); ?>">
                         <div class="report-header">
                             <div class="report-status <?php echo $statusClass; ?>"><?php echo $statusText; ?></div>
                             <div class="report-date"><?php echo $formattedDate; ?></div>
@@ -1160,374 +1014,69 @@ try {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
     <script>
-    // Store all reports data
-    const reportsData = <?php echo json_encode($serviceReports ?? []); ?>;
+    // Make the reports data globally available through the window object
+    window.reportsData = <?php echo json_encode($serviceReports ?? []); ?>;
+
+    // Debugging: Log the complete service reports data to check its structure
+    console.log('Complete service reports data:', window.reportsData);
     
     // Filter reports based on search input and filter selections
     document.getElementById('reportSearchInput').addEventListener('input', filterReports);
     document.getElementById('statusFilter').addEventListener('change', filterReports);
     document.getElementById('dateFilter').addEventListener('change', filterReports);
     
+    // Define the filterReports function
     function filterReports() {
-        const searchTerm = document.getElementById('reportSearchInput').value.toLowerCase();
-        const statusFilter = document.getElementById('statusFilter').value;
+        const searchValue = document.getElementById('reportSearchInput').value.toLowerCase();
+        const statusFilter = document.getElementById('statusFilter').value.toLowerCase();
         const dateFilter = document.getElementById('dateFilter').value;
         
+        // ...existing filtering code...
+    }
+    
+    // Initialize report cards with event listeners
+    function initializeReportCards() {
+        console.log('Initializing report cards from inline script');
         const reportCards = document.querySelectorAll('.report-card');
+        console.log(`Found ${reportCards.length} report cards in inline script`);
         
         reportCards.forEach(card => {
-            const techName = card.getAttribute('data-tech-name').toLowerCase();
-            const location = card.getAttribute('data-location').toLowerCase();
-            const account = card.getAttribute('data-account').toLowerCase();
-            const status = card.getAttribute('data-status');
-            const reportDate = new Date(card.getAttribute('data-date'));
+            const reportId = card.getAttribute('data-report-id');
+            console.log(`Setting up click handler for report #${reportId}`);
             
-            // Search filter
-            const matchesSearch = searchTerm === '' || 
-                techName.includes(searchTerm) || 
-                location.includes(searchTerm) || 
-                account.includes(searchTerm);
+            // Remove existing click handlers
+            const newCard = card.cloneNode(true);
+            card.parentNode.replaceChild(newCard, card);
             
-            // Status filter
-            const matchesStatus = statusFilter === '' || status === statusFilter;
-            
-            // Date filter
-            let matchesDate = true;
-            if (dateFilter !== '') {
-                const today = new Date();
-                const oneDay = 24 * 60 * 60 * 1000;
-                
-                if (dateFilter === 'today') {
-                    matchesDate = (today.toDateString() === reportDate.toDateString());
-                } else if (dateFilter === 'week') {
-                    // Calculate days difference
-                    const diffDays = Math.round(Math.abs((today - reportDate) / oneDay));
-                    matchesDate = diffDays <= 7;
-                } else if (dateFilter === 'month') {
-                    matchesDate = today.getMonth() === reportDate.getMonth() && 
-                                 today.getFullYear() === reportDate.getFullYear();
-                }
-            }
-            
-            // Show or hide based on all filters
-            if (matchesSearch && matchesStatus && matchesDate) {
-                card.style.display = '';
-            } else {
-                card.style.display = 'none';
-            }
+            // Add direct event listener
+            newCard.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                // Use the external JS function directly
+                openReportModal(reportId);
+            });
         });
     }
     
-    // Open report modal with report details
-    function openReportModal(reportId) {
-        // Find the report data
-        const report = reportsData.find(r => r.report_id == reportId);
-        if (!report) {
-            console.error('Report not found:', reportId);
-            alert('Error: Report data not found');
-            return;
-        }
+    // Call the initialization function when the document is ready
+    document.addEventListener('DOMContentLoaded', function() {
+        // Don't initialize here, let the external JS handle it
+        // This prevents duplicate initialization
         
-        console.log('Opening report:', report); // Add this for debugging
-        
-        // Populate modal fields
-        document.getElementById('reportIdField').value = report.report_id;
-        document.getElementById('reportIdDisplay').value = `REP-${report.report_id.toString().padStart(4, '0')}`;
-        document.getElementById('reportDateField').value = new Date(report.date_of_treatment).toLocaleDateString('en-US', {
-            year: 'numeric', month: 'long', day: 'numeric'
-        });
-        document.getElementById('techNameField').value = report.tech_name || 'N/A';
-        document.getElementById('clientNameField').value = report.account_name || 'N/A';
-        document.getElementById('contactNoField').value = report.contact_no || 'N/A';
-        document.getElementById('locationField').value = report.location || 'N/A';
-        document.getElementById('treatmentTypeField').value = report.treatment_type || 'N/A';
-        document.getElementById('treatmentMethodField').value = report.treatment_method || 'N/A';
-        document.getElementById('timeInField').value = report.time_in || 'N/A';
-        document.getElementById('timeOutField').value = report.time_out || 'N/A';
-        document.getElementById('pestCountField').value = report.pest_count || 'N/A';
-        document.getElementById('deviceInstallationField').value = report.device_installation || 'N/A';
-        document.getElementById('chemicalsField').value = report.consumed_chemicals || 'N/A';
-        document.getElementById('frequencyField').value = report.frequency_of_visits || 'N/A';
-        
-        // Handle approval buttons based on status
-        const approveBtn = document.getElementById('approveBtn');
-        const rejectBtn = document.getElementById('rejectBtn');
-        
-        if (report.status === 'approved') {
-            approveBtn.disabled = true;
-            approveBtn.classList.add('disabled');
-            rejectBtn.disabled = false;
-            rejectBtn.classList.remove('disabled');
-        } else if (report.status === 'rejected') {
-            approveBtn.disabled = false;
-            approveBtn.classList.remove('disabled');
-            rejectBtn.disabled = true;
-            rejectBtn.classList.add('disabled');
-        } else {
-            approveBtn.disabled = false;
-            approveBtn.classList.remove('disabled');
-            rejectBtn.disabled = false;
-            rejectBtn.classList.remove('disabled');
-        }
-        
-        // Handle photos
-        const imageGallery = document.getElementById('imageGallery');
-        imageGallery.innerHTML = '';
-        const photosSection = document.getElementById('photosSection');
-        
-        if (report.photos && report.photos !== null && report.photos !== '') {
-            photosSection.style.display = 'block';
-            try {
-                let photos = report.photos;
-                if (typeof photos === 'string') {
-                    photos = JSON.parse(photos);
-                }
-                
-                if (Array.isArray(photos) && photos.length > 0) {
-                    photos.forEach((photo, index) => {
-                        const imgContainer = document.createElement('div');
-                        imgContainer.className = 'image-item';
-                        
-                        const img = document.createElement('img');
-                        img.src = `../uploads/${photo}`;
-                        img.alt = `Treatment Photo ${index + 1}`;
-                        img.onerror = function() {
-                            this.src = '../Pictures/image-placeholder.jpg';
-                            this.alt = 'Image not found';
-                        };
-                        
-                        const span = document.createElement('span');
-                        span.textContent = `Photo ${index + 1}`;
-                        
-                        imgContainer.appendChild(img);
-                        imgContainer.appendChild(span);
-                        imageGallery.appendChild(imgContainer);
-                    });
-                } else if (typeof photos === 'string') {
-                    // Single photo as string
-                    const imgContainer = document.createElement('div');
-                    imgContainer.className = 'image-item';
-                    
-                    const img = document.createElement('img');
-                    img.src = `../uploads/${photos}`;
-                    img.alt = 'Treatment Photo';
-                    img.onerror = function() {
-                        this.src = '../Pictures/image-placeholder.jpg';
-                        this.alt = 'Image not found';
-                    };
-                    
-                    const span = document.createElement('span');
-                    span.textContent = 'Treatment Photo';
-                    
-                    imgContainer.appendChild(img);
-                    imgContainer.appendChild(span);
-                    imageGallery.appendChild(imgContainer);
-                } else {
-                    console.warn('No photos found in report');
-                    photosSection.style.display = 'none';
-                }
-            } catch (e) {
-                console.error('Error parsing photos JSON:', e, report.photos);
-                photosSection.style.display = 'none';
-            }
-        } else {
-            console.log('No photos in report');
-            photosSection.style.display = 'none';
-        }
-        
-        // Show the modal
-        const modal = document.getElementById('reportModal');
-        modal.classList.add('show');
-        document.body.style.overflow = 'hidden';
-    }
-    
-    // Close report modal
-    function closeReportModal() {
-        const modal = document.getElementById('reportModal');
-        modal.classList.remove('show');
-        document.body.style.overflow = '';
-    }
-    
-    // Update report status (approve/reject)
-    function updateReportStatus(status) {
-        const reportId = document.getElementById('reportIdField').value;
-        
-        // AJAX request to update status
-        fetch('../PHP CODES/update_report_status.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: `report_id=${reportId}&status=${status}`
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert(`Report has been ${status}.`);
-                
-                // Update status in the UI
-                const reportCard = document.querySelector(`.report-card[data-report-id="${reportId}"]`);
-                if (reportCard) {
-                    const statusDisplay = reportCard.querySelector('.report-status');
-                    statusDisplay.className = `report-status ${status}`;
-                    statusDisplay.textContent = status === 'approved' ? 'Approved' : 'Rejected';
-                    reportCard.setAttribute('data-status', status);
-                }
-                
-                // Close the modal
+        // Close modal when clicking outside
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById('reportModal');
+            if (event.target === modal) {
                 closeReportModal();
-                
-                // Update buttons based on new status
-                if (status === 'approved') {
-                    document.getElementById('approveBtn').disabled = true;
-                    document.getElementById('approveBtn').classList.add('disabled');
-                    document.getElementById('rejectBtn').disabled = false;
-                    document.getElementById('rejectBtn').classList.remove('disabled');
-                } else {
-                    document.getElementById('approveBtn').disabled = false;
-                    document.getElementById('approveBtn').classList.remove('disabled');
-                    document.getElementById('rejectBtn').disabled = true;
-                    document.getElementById('rejectBtn').classList.add('disabled');
-                }
-            } else {
-                alert('Error updating report status: ' + data.message);
             }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred while updating the status.');
         });
-    }
-    
-    // Download report as PDF
-    function downloadReportPDF() {
-        const reportId = document.getElementById('reportIdField').value;
-        const report = reportsData.find(r => r.report_id == reportId);
-        if (!report) return;
         
-        // Get modal content for conversion
-        const modal = document.querySelector('.report-form');
-        
-        // First, create a clone of the modal to avoid modifying the original
-        const clone = modal.cloneNode(true);
-        
-        // Remove buttons from the clone
-        const buttons = clone.querySelector('.form-actions');
-        if (buttons) {
-            buttons.remove();
-        }
-        
-        // Create a wrapper with specific styling for PDF
-        const wrapper = document.createElement('div');
-        wrapper.appendChild(clone);
-        wrapper.style.padding = '20px';
-        wrapper.style.backgroundColor = 'white';
-        wrapper.style.width = '210mm'; // A4 width
-        wrapper.style.minHeight = '297mm'; // A4 height
-        wrapper.style.margin = '0 auto';
-        wrapper.style.position = 'absolute';
-        wrapper.style.left = '-9999px'; // Hide it 
-        
-        // Add header with company logo and name
-        const header = document.createElement('div');
-        header.style.display = 'flex';
-        header.style.alignItems = 'center';
-        header.style.justifyContent = 'space-between';
-        header.style.marginBottom = '20px';
-        header.style.padding = '10px';
-        header.style.borderBottom = '2px solid #4CAF50';
-        
-        const logoDiv = document.createElement('div');
-        const logo = document.createElement('img');
-        logo.src = '../Pictures/pest_logo.png';
-        logo.style.width = '60px';
-        logo.style.height = 'auto';
-        logoDiv.appendChild(logo);
-        
-        const companyInfo = document.createElement('div');
-        companyInfo.style.textAlign = 'right';
-        companyInfo.innerHTML = `
-            <h2 style="margin: 0; color: #4CAF50;">PESTCOZAM</h2>
-            <p style="margin: 5px 0;">Pest Control Services</p>
-            <p style="margin: 5px 0;">Zamboanga City, Philippines</p>
-            <p style="margin: 5px 0;">Contact: +63 123 456 7890</p>
-        `;
-        
-        header.appendChild(logoDiv);
-        header.appendChild(companyInfo);
-        
-        // Add report title
-        const title = document.createElement('div');
-        title.style.textAlign = 'center';
-        title.style.margin = '20px 0';
-        title.innerHTML = `
-            <h1 style="color: #333; margin: 0;">Service Report</h1>
-            <p style="margin: 5px 0; font-size: 14px;">Report ID: REP-${report.report_id.toString().padStart(4, '0')}</p>
-            <p style="margin: 5px 0; font-size: 14px;">Date: ${new Date(report.date_of_treatment).toLocaleDateString('en-US', {
-                year: 'numeric', month: 'long', day: 'numeric'
-            })}</p>
-        `;
-        
-        wrapper.insertBefore(title, wrapper.firstChild);
-        wrapper.insertBefore(header, wrapper.firstChild);
-        
-        // Add footer
-        const footer = document.createElement('div');
-        footer.style.textAlign = 'center';
-        footer.style.padding = '10px';
-        footer.style.borderTop = '1px solid #ddd';
-        footer.style.marginTop = '20px';
-        footer.style.fontSize = '12px';
-        footer.style.color = '#666';
-        footer.innerHTML = `
-            <p>This is an official service report document from PESTCOZAM.</p>
-            <p>Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>
-        `;
-        wrapper.appendChild(footer);
-        
-        // Append to body, take screenshot, then remove
-        document.body.appendChild(wrapper);
-        
-        // Generate PDF
-        const { jsPDF } = window.jspdf;
-        
-        html2canvas(wrapper, {
-            scale: 2, // Higher scale for better quality
-            useCORS: true,
-            logging: false
-        }).then(canvas => {
-            const imgData = canvas.toDataURL('image/png');
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            const imgWidth = 210; // A4 width in mm
-            const pageHeight = 297; // A4 height in mm
-            const imgHeight = canvas.height * imgWidth / canvas.width;
-            let heightLeft = imgHeight;
-            let position = 0;
-            
-            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-            heightLeft -= pageHeight;
-            
-            // Add additional pages if the content is longer than one page
-            while (heightLeft >= 0) {
-                position = heightLeft - imgHeight;
-                pdf.addPage();
-                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                heightLeft -= pageHeight;
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeReportModal();
             }
-            
-            pdf.save(`PESTCOZAM_Service_Report_${report.report_id}.pdf`);
-            
-            // Clean up
-            document.body.removeChild(wrapper);
         });
-    }
-    
-    // Close modal when clicking outside
-    window.addEventListener('click', function(event) {
-        const modal = document.getElementById('reportModal');
-        if (event.target === modal) {
-            closeReportModal();
-        }
     });
     </script>
 </section>

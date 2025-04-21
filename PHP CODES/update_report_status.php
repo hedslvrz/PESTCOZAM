@@ -1,70 +1,53 @@
 <?php
+// Start session
 session_start();
+
+// Include database connection
 require_once '../database.php';
 
-// Check if user is logged in as admin
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
-    header('Content-Type: application/json');
-    echo json_encode(['success' => false, 'message' => 'Unauthorized access']);
-    exit();
+// Check if the request is using POST method
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+    exit;
 }
 
-// Validate input parameters
-if (!isset($_POST['report_id']) || !isset($_POST['status'])) {
-    header('Content-Type: application/json');
+// Get JSON data from the request
+$json = file_get_contents('php://input');
+$data = json_decode($json, true);
+
+// Validate the input data
+if (!isset($data['report_id']) || !isset($data['status'])) {
     echo json_encode(['success' => false, 'message' => 'Missing required parameters']);
-    exit();
+    exit;
 }
 
-$report_id = intval($_POST['report_id']);
-$status = $_POST['status'];
+$reportId = intval($data['report_id']);
+$status = strtolower($data['status']);
 
-// Validate status
-if (!in_array($status, ['approved', 'rejected', 'pending'])) {
-    header('Content-Type: application/json');
+// Valid status values
+$validStatuses = ['pending', 'approved', 'rejected'];
+if (!in_array($status, $validStatuses)) {
     echo json_encode(['success' => false, 'message' => 'Invalid status value']);
-    exit();
+    exit;
 }
 
 try {
-    // Get database connection
+    // Initialize database connection
     $database = new Database();
     $db = $database->getConnection();
     
-    // First, check if the report exists
-    $checkStmt = $db->prepare("SELECT report_id FROM service_reports WHERE report_id = ?");
-    $checkStmt->execute([$report_id]);
-    
-    if ($checkStmt->rowCount() === 0) {
-        header('Content-Type: application/json');
-        echo json_encode(['success' => false, 'message' => 'Report not found']);
-        exit();
-    }
-    
     // Update report status
-    $updateStmt = $db->prepare("UPDATE service_reports SET status = ?, updated_at = NOW() WHERE report_id = ?");
-    $result = $updateStmt->execute([$status, $report_id]);
+    $stmt = $db->prepare("UPDATE service_reports SET status = :status WHERE report_id = :report_id");
+    $stmt->bindParam(':status', $status);
+    $stmt->bindParam(':report_id', $reportId);
     
-    if ($result) {
-        // Log the action
-        $admin_id = $_SESSION['user_id'];
-        $log_message = "Report #$report_id status changed to $status";
-        error_log($log_message . " by admin ID: $admin_id");
-        
-        header('Content-Type: application/json');
-        echo json_encode([
-            'success' => true, 
-            'message' => 'Report status updated successfully',
-            'report_id' => $report_id,
-            'new_status' => $status
-        ]);
+    if ($stmt->execute()) {
+        echo json_encode(['success' => true, 'message' => 'Report status updated successfully']);
     } else {
-        header('Content-Type: application/json');
         echo json_encode(['success' => false, 'message' => 'Failed to update report status']);
     }
 } catch (PDOException $e) {
-    error_log("Database error in update_report_status.php: " . $e->getMessage());
-    header('Content-Type: application/json');
+    error_log("Database error: " . $e->getMessage());
     echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
 }
 ?>
