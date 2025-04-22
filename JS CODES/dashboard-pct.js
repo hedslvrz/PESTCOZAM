@@ -398,7 +398,395 @@ function formatTime(time24h) {
         });
 }
 
-// Initialize when DOM is loaded
+// Function to load customer details when a customer is selected - improved debug and technician handling
+function loadCustomerDetails(appointmentId) {
+    if (!appointmentId) return;
+
+    const selectedOption = document.querySelector(`#customer-select option[value="${appointmentId}"]`);
+    if (!selectedOption) return;
+
+    // Get the service ID and update the service type dropdown
+    const serviceId = selectedOption.getAttribute('data-service');
+    if (serviceId) {
+        document.getElementById('service-type').value = serviceId;
+    }
+
+    // Update customer location
+    const location = selectedOption.getAttribute('data-location');
+    if (location) {
+        document.getElementById('customer-location').value = location;
+    }
+
+    // Get technician information
+    const techSelect = document.getElementById('technician-select');
+    const allTechnicians = selectedOption.getAttribute('data-all-technicians');
+    
+    // Clear any previous selections first
+    Array.from(techSelect.options).forEach(option => {
+        option.selected = false;
+    });
+
+    // If we have technician data, set the selections
+    if (allTechnicians) {
+        const technicianIds = allTechnicians.split(',').map(id => id.trim());
+        
+        // Select each technician in the list
+        technicianIds.forEach(techId => {
+            const option = Array.from(techSelect.options).find(opt => opt.value === techId);
+            if (option) {
+                option.selected = true;
+            }
+        });
+    } else {
+        // Fallback to single technician if no multiple technicians found
+        const technicianId = selectedOption.getAttribute('data-technician');
+        if (technicianId) {
+            const option = Array.from(techSelect.options).find(opt => opt.value === technicianId);
+            if (option) {
+                option.selected = true;
+            }
+        }
+    }
+}
+
+// Function to schedule a follow-up - update to handle multiple technician selection
+function scheduleFollowUp() {
+    const customerId = document.getElementById('customer-select').value;
+    const serviceId = document.getElementById('service-type').value;
+    const technicianSelect = document.getElementById('technician-select');
+    const followupDate = document.getElementById('followup-date').value;
+    const followupTime = document.getElementById('followup-time').value;
+    
+    // Get selected technicians (multiple)
+    const selectedTechnicians = Array.from(technicianSelect.selectedOptions).map(opt => opt.value);
+    
+    // Enhanced validation with more specific messages
+    if (!customerId) {
+        alert('Please select a customer first');
+        return;
+    }
+    
+    if (!serviceId) {
+        alert('Please select a service type');
+        return;
+    }
+    
+    if (selectedTechnicians.length === 0) {
+        alert('Please assign at least one technician');
+        return;
+    }
+    
+    if (!followupDate) {
+        alert('Please select a follow-up date');
+        return;
+    }
+    
+    if (!followupTime) {
+        alert('Please select a follow-up time');
+        return;
+    }
+    
+    // Prepare data for submission
+    const formData = new FormData();
+    formData.append('appointment_id', customerId);
+    formData.append('service_id', serviceId);
+    formData.append('technician_ids', JSON.stringify(selectedTechnicians));
+    formData.append('followup_date', followupDate);
+    formData.append('followup_time', followupTime);
+    
+    // Log the data being sent - helpful for debugging
+    console.log('Sending follow-up data:', {
+        appointment_id: customerId,
+        service_id: serviceId,
+        technician_ids: selectedTechnicians,
+        followup_date: followupDate,
+        followup_time: followupTime
+    });
+    
+    // Show loading indication
+    const scheduleBtn = document.getElementById('schedule-followup-btn');
+    const originalText = scheduleBtn.innerHTML;
+    scheduleBtn.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i> Scheduling...';
+    scheduleBtn.disabled = true;
+    
+    // Submit the form
+    fetch('../HTML CODES/schedule_followup.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Response from server:', data);
+        if (data.success) {
+            alert('Follow-up scheduled successfully!');
+            // Refresh the followups list
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        } else {
+            alert(data.message || 'Error scheduling follow-up');
+            // Reset button state
+            scheduleBtn.innerHTML = originalText;
+            scheduleBtn.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Error scheduling follow-up:', error);
+        alert('An error occurred while scheduling the follow-up');
+        // Reset button state
+        scheduleBtn.innerHTML = originalText;
+        scheduleBtn.disabled = false;
+    });
+}
+
+// Function to initialize followups table functionality
+function initFollowupsTable() {
+    const searchInput = document.getElementById('followup-search');
+    const filterButtons = document.querySelectorAll('.followups-controls .filter-btn');
+    const followupRows = document.querySelectorAll('.followup-row');
+    const followupsList = document.getElementById('followups-list');
+    
+    if (!searchInput || !followupsList) return; // Exit if elements don't exist
+    
+    // Variables for pagination
+    const rowsPerPage = 10;
+    let currentPage = 1;
+    let filteredRows = [...followupRows]; // Start with all rows
+    
+    // Function to filter rows by search term
+    function filterBySearchTerm(term) {
+        term = term.toLowerCase().trim();
+        
+        filteredRows = [...followupRows].filter(row => {
+            if (!term) return true; // Show all rows if search is empty
+            return row.textContent.toLowerCase().includes(term);
+        });
+        
+        // Apply current filter
+        const activeFilter = document.querySelector('.followups-controls .filter-btn.active');
+        if (activeFilter) {
+            const filterValue = activeFilter.getAttribute('data-filter');
+            if (filterValue !== 'all') {
+                filteredRows = filteredRows.filter(row => {
+                    return filterValue === 'all' || row.getAttribute('data-period') === filterValue;
+                });
+            }
+        }
+        
+        updateTableDisplay();
+    }
+    
+    // Function to filter rows by period
+    function filterByPeriod(period) {
+        // Start with rows that match the search term
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        filteredRows = [...followupRows].filter(row => {
+            if (!searchTerm) return true;
+            return row.textContent.toLowerCase().includes(searchTerm);
+        });
+        
+        // Then filter by period
+        if (period !== 'all') {
+            const today = new Date();
+            
+            // Calculate date ranges for different periods
+            const weekStart = new Date(today);
+            weekStart.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1)); // Start of current week (Monday)
+            
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekStart.getDate() + 6); // End of current week (Sunday)
+            
+            const nextWeekStart = new Date(weekStart);
+            nextWeekStart.setDate(weekStart.getDate() + 7); // Start of next week
+            
+            const nextWeekEnd = new Date(nextWeekStart);
+            nextWeekEnd.setDate(nextWeekStart.getDate() + 6); // End of next week
+            
+            // Calculate next month range
+            const nextMonthStart = new Date(today.getFullYear(), today.getMonth() + 1, 1); // First day of next month
+            const nextMonthEnd = new Date(today.getFullYear(), today.getMonth() + 2, 0); // Last day of next month
+            
+            // Filter based on the period
+            filteredRows = filteredRows.filter(row => {
+                const dateStr = row.getAttribute('data-date');
+                if (!dateStr) return false;
+                
+                const rowDate = new Date(dateStr);
+                
+                switch (period) {
+                    case 'thisweek':
+                        return rowDate >= weekStart && rowDate <= weekEnd;
+                    case 'nextweek':
+                        return rowDate >= nextWeekStart && rowDate <= nextWeekEnd;
+                    case 'nextmonth':
+                        return rowDate >= nextMonthStart && rowDate <= nextMonthEnd;
+                    default:
+                        return true;
+                }
+            });
+        }
+        
+        updateTableDisplay();
+    }
+    
+    // Function to update the display of table rows
+    function updateTableDisplay() {
+        // Reset page to 1 when filters change
+        currentPage = 1;
+        
+        // Hide all rows first
+        followupRows.forEach(row => {
+            row.classList.add('hidden');
+        });
+        
+        // Remove existing "no results" row if it exists
+        const existingNoResults = followupsList.querySelector('.no-results');
+        if (existingNoResults) {
+            existingNoResults.remove();
+        }
+        
+        // Check if there are any results
+        if (filteredRows.length === 0) {
+            // Create and insert "no results" row
+            const noResultsRow = document.createElement('tr');
+            noResultsRow.className = 'no-results visible';
+            noResultsRow.innerHTML = '<td colspan="6">No matching follow-ups found</td>';
+            followupsList.appendChild(noResultsRow);
+        } else {
+            // Show rows for current page
+            const startIndex = (currentPage - 1) * rowsPerPage;
+            const endIndex = Math.min(startIndex + rowsPerPage, filteredRows.length);
+            
+            for (let i = startIndex; i < endIndex; i++) {
+                filteredRows[i].classList.remove('hidden');
+            }
+            
+            // Update pagination
+            updatePagination();
+        }
+    }
+    
+    // Function to create and update pagination controls
+    function updatePagination() {
+        const paginationContainer = document.getElementById('followups-pagination');
+        if (!paginationContainer) return;
+        
+        // Clear existing pagination
+        paginationContainer.innerHTML = '';
+        
+        // Calculate total pages
+        const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
+        if (totalPages <= 1) return; // Don't show pagination if only one page
+        
+        // Create previous button
+        const prevBtn = document.createElement('button');
+        prevBtn.innerHTML = '<i class="bx bx-chevron-left"></i>';
+        prevBtn.disabled = currentPage === 1;
+        prevBtn.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                updateTableDisplay();
+            }
+        });
+        paginationContainer.appendChild(prevBtn);
+        
+        // Create page buttons
+        let startPage = Math.max(1, currentPage - 2);
+        let endPage = Math.min(totalPages, startPage + 4);
+        
+        // Adjust start page if we're showing less than 5 pages
+        if (endPage - startPage < 4) {
+            startPage = Math.max(1, endPage - 4);
+        }
+        
+        // Show page buttons
+        for (let i = startPage; i <= endPage; i++) {
+            const pageBtn = document.createElement('button');
+            pageBtn.textContent = i;
+            pageBtn.classList.toggle('active', i === currentPage);
+            pageBtn.addEventListener('click', () => {
+                currentPage = i;
+                updateTableDisplay();
+            });
+            paginationContainer.appendChild(pageBtn);
+        }
+        
+        // Create next button
+        const nextBtn = document.createElement('button');
+        nextBtn.innerHTML = '<i class="bx bx-chevron-right"></i>';
+        nextBtn.disabled = currentPage === totalPages;
+        nextBtn.addEventListener('click', () => {
+            if (currentPage < totalPages) {
+                currentPage++;
+                updateTableDisplay();
+            }
+        });
+        paginationContainer.appendChild(nextBtn);
+        
+        // Add pagination info
+        const paginationInfo = document.createElement('div');
+        paginationInfo.className = 'pagination-info';
+        paginationInfo.textContent = `Showing ${Math.min(filteredRows.length, (currentPage - 1) * rowsPerPage + 1)}-${Math.min(filteredRows.length, currentPage * rowsPerPage)} of ${filteredRows.length} follow-ups`;
+        paginationContainer.appendChild(paginationInfo);
+    }
+    
+    // Add event listeners
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            filterBySearchTerm(this.value);
+        });
+    }
+    
+    if (filterButtons.length > 0) {
+        filterButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Remove active class from all buttons
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                
+                // Add active class to clicked button
+                this.classList.add('active');
+                
+                // Filter by the selected period
+                const filterValue = this.getAttribute('data-filter');
+                filterByPeriod(filterValue);
+            });
+        });
+    }
+    
+    // Initialize table display
+    updateTableDisplay();
+}
+
+// Add event listeners for the followup section when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-    initTimeSlotSelection();
+    // Initialize time slot selection for schedule follow-up
+    if (document.querySelector('.time-option')) {
+        initTimeSlotSelection();
+    }
+
+    // Initialize follow-ups table functionality
+    initFollowupsTable();
+    
+    // Attach event handler to schedule button
+    const scheduleBtn = document.getElementById('schedule-followup-btn');
+    if (scheduleBtn) {
+        scheduleBtn.addEventListener('click', scheduleFollowUp);
+    }
+
+    // Initialize customer select change event if it exists on this page
+    const customerSelect = document.getElementById('customer-select');
+    if (customerSelect) {
+        customerSelect.addEventListener('change', function() {
+            loadCustomerDetails(this.value);
+        });
+    }
+});
+
+let originalTechnicianOptions = '';
+
+document.addEventListener('DOMContentLoaded', function() {
+    const techSelect = document.getElementById('technician-select');
+    if (techSelect) {
+        originalTechnicianOptions = techSelect.innerHTML;
+    }
 });
