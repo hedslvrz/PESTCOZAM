@@ -42,6 +42,29 @@ try {
     $stmt->bindParam(':report_id', $reportId);
     
     if ($stmt->execute()) {
+        // If the report is approved, update the corresponding appointment status to "Completed"
+        if ($status === 'approved') {
+            // First, get the appointment_id from the service report
+            $getAppointmentStmt = $db->prepare("SELECT appointment_id FROM service_reports WHERE report_id = :report_id");
+            $getAppointmentStmt->bindParam(':report_id', $reportId);
+            $getAppointmentStmt->execute();
+            $result = $getAppointmentStmt->fetch(PDO::FETCH_ASSOC);
+            
+            // If there's an associated appointment, update its status
+            if ($result && !empty($result['appointment_id'])) {
+                $appointmentId = $result['appointment_id'];
+                
+                $updateAppointmentStmt = $db->prepare("UPDATE appointments SET status = 'Completed' WHERE id = :id");
+                $updateAppointmentStmt->bindParam(':id', $appointmentId);
+                
+                if ($updateAppointmentStmt->execute()) {
+                    error_log("Updated appointment #$appointmentId status to Completed after report approval");
+                } else {
+                    error_log("Failed to update appointment #$appointmentId status");
+                }
+            }
+        }
+        
         echo json_encode(['success' => true, 'message' => 'Report status updated successfully']);
     } else {
         echo json_encode(['success' => false, 'message' => 'Failed to update report status']);

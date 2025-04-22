@@ -142,15 +142,7 @@ try {
         $report_id = $db->lastInsertId();
         error_log("Report saved successfully, ID: $report_id");
         
-        // If this was related to an appointment, update the appointment status
-        if ($appointment_id) {
-            $updateSql = "UPDATE appointments SET status = 'Completed' WHERE id = :id";
-            $updateStmt = $db->prepare($updateSql);
-            $updateStmt->bindParam(':id', $appointment_id);
-            $updateStmt->execute();
-            error_log("Updated appointment #$appointment_id status to Completed");
-        }
-        
+        // Removed automatic appointment status update
         $_SESSION['report_success'] = "Service report #$report_id submitted successfully! Your report is pending review by admin.";
     } else {
         error_log("Error executing insert statement: " . implode(", ", $stmt->errorInfo()));
