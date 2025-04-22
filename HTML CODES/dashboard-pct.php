@@ -629,7 +629,7 @@ try {
                     <!-- Main Schedule Content -->
                     <div class="calendar-container">
                         <!-- FOLLOW-UP FORM -->
-                        <div class="settings-card no-hover">
+                        <form action="../HTML CODES/schedule_followup-pct.php" method="POST" class="settings-card no-hover">
                             <div class="card-header">
                                 <i class='bx bx-calendar-edit'></i>
                                 <h4>Follow-up Details</h4>
@@ -638,12 +638,11 @@ try {
                                 <!-- Customer Selection -->
                                 <div class="form-group">
                                     <label>Select Customer's Last Appointment:</label>
-                                    <select id="customer-select" required onchange="loadCustomerDetails(this.value)">
+                                    <select id="customer-select" name="appointment_id" required onchange="loadCustomerDetails(this.value)">
                                         <option value="" disabled selected>Select Customer</option>
                                         <?php 
                                         try {
                                             // Improved query with explicit JOIN for appointment_technicians
-                                            // Modified to only show customers assigned to the current technician
                                             $customerQuery = "SELECT 
                                                 a.id as appointment_id, 
                                                 CASE 
@@ -673,17 +672,11 @@ try {
                                             GROUP BY a.id
                                             ORDER BY a.appointment_date DESC";
                                             
-                                            // Add detailed error logging
-                                            error_log("Executing customer query for PCT follow-up: " . $customerQuery);
-                                            
                                             $stmt = $db->prepare($customerQuery);
                                             $stmt->bindParam(':technician_id', $_SESSION['user_id'], PDO::PARAM_INT);
                                             $stmt->execute();
                                             $customers = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                             
-                                            error_log("PCT dashboard: Found " . count($customers) . " customers with completed appointments for technician " . $_SESSION['user_id']);
-                                            
-                                            // Check if any customers were found
                                             if (empty($customers)) {
                                                 echo '<option value="">No completed appointments found for your assignments</option>';
                                             } else {
@@ -712,7 +705,7 @@ try {
                                 <!-- Service Type -->
                                 <div class="form-group">
                                     <label>Service Type:</label>
-                                    <select id="service-type" required>
+                                    <select id="service-type" name="service_id" required>
                                         <option value="">Select Service</option>
                                         <?php 
                                         try {
@@ -738,48 +731,50 @@ try {
                                     <input type="text" id="customer-location" readonly>
                                 </div>
 
-                                <!-- Technician Selection (Update to match AOS dashboard with multiple selection) -->
+                                <!-- Technician Selection -->
                                 <div class="form-group">
                                     <label>Assign Technician:</label>
-                                    <select id="technician-select" required multiple size="6" style="width: 100%; max-width: 300px; min-height: 150px; border: 2px solid #d0e1fd; border-radius: 8px; padding: 5px;">
-                                        <?php 
-                                        try {
-                                            // Get all active technicians
-                                            $techQuery = "SELECT id, firstname, lastname 
-                                                        FROM users 
-                                                        WHERE role = 'technician' 
-                                                        AND status = 'verified'";
-                                            $techStmt = $db->prepare($techQuery);
-                                            $techStmt->execute();
-                                            $technicians = $techStmt->fetchAll(PDO::FETCH_ASSOC);
-                                            
-                                            // Display technicians in dropdown
-                                            if (!empty($technicians)) {
-                                                foreach ($technicians as $tech) {
-                                                    echo '<option value="' . htmlspecialchars($tech['id']) . '">' . 
-                                                        htmlspecialchars($tech['firstname'] . ' ' . $tech['lastname']) . '</option>';
+                                    <div class="tech-selection-wrapper">
+                                        <div class="tech-selection-container">
+                                            <select id="technician-select" name="technician_id" required multiple class="enhanced-select">
+                                                <?php 
+                                                try {
+                                                    $techQuery = "SELECT id, firstname, lastname 
+                                                                FROM users 
+                                                                WHERE role = 'technician' 
+                                                                AND status = 'verified'";
+                                                    $techStmt = $db->prepare($techQuery);
+                                                    $techStmt->execute();
+                                                    $technicians = $techStmt->fetchAll(PDO::FETCH_ASSOC);
+                                                    
+                                                    if (!empty($technicians)) {
+                                                        foreach ($technicians as $tech) {
+                                                            echo '<option value="' . htmlspecialchars($tech['id']) . '">' . 
+                                                                htmlspecialchars($tech['firstname'] . ' ' . $tech['lastname']) . '</option>';
+                                                        }
+                                                    } else {
+                                                        echo '<option value="" disabled>No technicians available</option>';
+                                                    }
+                                                } catch(PDOException $e) {
+                                                    error_log("Error loading technicians: " . $e->getMessage());
+                                                    echo '<option value="" disabled>Error loading technicians</option>';
                                                 }
-                                            } else {
-                                                echo '<option value="" disabled>No technicians available</option>';
-                                            }
-                                        } catch(PDOException $e) {
-                                            error_log("Error loading technicians: " . $e->getMessage());
-                                            echo '<option value="" disabled>Error loading technicians</option>';
-                                        }
-                                        ?>
-                                    </select>
+                                                ?>
+                                            </select>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <!-- Follow-up Date -->
                                 <div class="form-group">
                                     <label>Follow-up Date:</label>
-                                    <input type="date" id="followup-date" required min="<?php echo date('Y-m-d'); ?>">
+                                    <input type="date" id="followup-date" name="followup_date" required min="<?php echo date('Y-m-d'); ?>">
                                 </div>
                                 
                                 <!-- Follow-up Time -->
                                 <div class="form-group">
                                     <label>Follow-up Time:</label>
-                                    <select id="followup-time" required>
+                                    <select id="followup-time" name="followup_time" required>
                                         <option value="">Select Time</option>
                                         <option value="07:00:00">7:00 AM - 9:00 AM</option>
                                         <option value="09:00:00">9:00 AM - 11:00 AM</option>
@@ -790,11 +785,11 @@ try {
                                 </div>
                             </div>
                             <div class="schedule-actions-centered">
-                                <button type="button" class="btn-submit" id="schedule-followup-btn" style="background: linear-gradient(135deg, #144578, #2a6db5); color: white; padding: 15px 30px; border-radius: 12px; font-weight: 600; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: all 0.3s ease; font-size: 16px; border: none; box-shadow: 0 6px 15px rgba(20, 69, 120, 0.2);">
+                                <button type="submit" class="btn-submit" style="background: linear-gradient(135deg, #144578, #2a6db5); color: white; padding: 15px 30px; border-radius: 12px; font-weight: 600; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: all 0.3s ease; font-size: 16px; border: none; box-shadow: 0 6px 15px rgba(20, 69, 120, 0.2);">
                                     <i class='bx bx-calendar-check'></i> Schedule Follow-up
                                 </button>
                             </div>
-                        </div>
+                        </form>
 
                         <!-- Current Appointments Card -->
                         <div class="settings-card no-hover">
@@ -917,7 +912,7 @@ try {
                     <div class="left">
                         <h1>My Profile</h1>
                         <ul class="breadcrumb">
-                            <li>
+                            <li></li>
                                 <a href="#">Profile</a>
                             </li>
                             <li><i class='bx bx-right-arrow-alt'></i></li>
@@ -999,7 +994,6 @@ try {
         </main>
     </section>
 
-    <script src="../JS CODES/dashboard-aos.js"></script>
     <script src="../JS CODES/dashboard-pct.js"></script>
     <script>
         // Function to handle filtering of assignment rows

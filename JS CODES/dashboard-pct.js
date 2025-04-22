@@ -398,58 +398,147 @@ function formatTime(time24h) {
         });
 }
 
-// Function to load customer details when a customer is selected - improved debug and technician handling
+// Enhanced function to load customer details when a customer is selected
 function loadCustomerDetails(appointmentId) {
     if (!appointmentId) return;
-
+    
+    console.log('Appointment ID:', appointmentId);
+    
     const selectedOption = document.querySelector(`#customer-select option[value="${appointmentId}"]`);
-    if (!selectedOption) return;
-
-    // Get the service ID and update the service type dropdown
+    if (!selectedOption) {
+        console.error('Selected option not found');
+        return;
+    }
+    
+    // Get data from data attributes
     const serviceId = selectedOption.getAttribute('data-service');
+    const location = selectedOption.getAttribute('data-location');
+    const allTechnicians = selectedOption.getAttribute('data-all-technicians');
+    const allTechnicianNames = selectedOption.getAttribute('data-all-technician-names');
+    
+    console.log('Service ID:', serviceId);
+    console.log('Location:', location);
+    console.log('All Technicians:', allTechnicians);
+    console.log('All Technician Names:', allTechnicianNames);
+    
+    // Update the form fields
     if (serviceId) {
         document.getElementById('service-type').value = serviceId;
     }
-
-    // Update customer location
-    const location = selectedOption.getAttribute('data-location');
+    
     if (location) {
         document.getElementById('customer-location').value = location;
     }
-
-    // Get technician information
-    const techSelect = document.getElementById('technician-select');
-    const allTechnicians = selectedOption.getAttribute('data-all-technicians');
     
-    // Clear any previous selections first
-    Array.from(techSelect.options).forEach(option => {
-        option.selected = false;
+    // Handle technician selection
+    const technicianSelect = document.getElementById('technician-select');
+    if (!technicianSelect) {
+        console.error('Technician select element not found');
+        return;
+    }
+    
+    // Log current options for debugging
+    console.log('Available technician options:');
+    Array.from(technicianSelect.options).forEach(opt => {
+        console.log(`- Option ${opt.value}: ${opt.text}`);
     });
-
-    // If we have technician data, set the selections
-    if (allTechnicians) {
-        const technicianIds = allTechnicians.split(',').map(id => id.trim());
+    
+    // First, clear all selections
+    for (let i = 0; i < technicianSelect.options.length; i++) {
+        technicianSelect.options[i].selected = false;
+    }
+    
+    // Ensure the select is visible
+    technicianSelect.style.display = 'block';
+    technicianSelect.style.visibility = 'visible';
+    
+    // If we have technician data from all-technicians attribute
+    if (allTechnicians && allTechnicians.trim() !== '' && allTechnicians !== 'null') {
+        const techIds = allTechnicians.split(',').map(id => id.trim());
+        console.log('Setting technicians:', techIds);
         
-        // Select each technician in the list
-        technicianIds.forEach(techId => {
-            const option = Array.from(techSelect.options).find(opt => opt.value === techId);
-            if (option) {
-                option.selected = true;
+        // Create a set of available option values for faster lookup
+        const availableValues = new Set();
+        Array.from(technicianSelect.options).forEach(opt => {
+            availableValues.add(opt.value);
+        });
+        
+        // Log the available values
+        console.log('Available technician values:', Array.from(availableValues));
+        
+        // Loop through each technician ID and select it if available
+        techIds.forEach(techId => {
+            if (availableValues.has(techId)) {
+                console.log(`Selecting technician ID ${techId}`);
+                // Find and select the option
+                for (let i = 0; i < technicianSelect.options.length; i++) {
+                    if (technicianSelect.options[i].value === techId) {
+                        technicianSelect.options[i].selected = true;
+                        break;
+                    }
+                }
+            } else {
+                console.warn(`Technician with ID ${techId} not found in available options`);
+                
+                // Alternative approach - try adding the option if it doesn't exist
+                if (allTechnicianNames) {
+                    const techNamesList = allTechnicianNames.split(',').map(name => name.trim());
+                    const techNames = techNamesList[techIds.indexOf(techId)];
+                    
+                    if (techNames) {
+                        console.log(`Adding missing technician: ${techId} - ${techNames}`);
+                        const newOption = new Option(techNames, techId, false, true);
+                        technicianSelect.add(newOption);
+                    }
+                }
             }
         });
     } else {
         // Fallback to single technician if no multiple technicians found
         const technicianId = selectedOption.getAttribute('data-technician');
-        if (technicianId) {
-            const option = Array.from(techSelect.options).find(opt => opt.value === technicianId);
-            if (option) {
-                option.selected = true;
+        if (technicianId && technicianId !== 'null') {
+            console.log('Selected Technician ID:', technicianId);
+            
+            // Check if this technician exists in the options
+            let found = false;
+            for (let i = 0; i < technicianSelect.options.length; i++) {
+                if (technicianSelect.options[i].value === technicianId) {
+                    technicianSelect.options[i].selected = true;
+                    found = true;
+                    break;
+                }
+            }
+            
+            if (!found) {
+                console.warn(`Technician with ID ${technicianId} not found in options - will try to add it`);
+                const techName = selectedOption.getAttribute('data-technician-name');
+                if (techName) {
+                    const newOption = new Option(techName, technicianId, false, true);
+                    technicianSelect.add(newOption);
+                }
             }
         }
     }
 }
 
-// Function to schedule a follow-up - update to handle multiple technician selection
+// Add event listener for technician select changes - modified to remove display updating
+document.addEventListener('DOMContentLoaded', function() {
+    const techSelect = document.getElementById('technician-select');
+    if (techSelect) {
+        // Initialize the select with a proper height
+        techSelect.style.height = 'auto';
+        techSelect.style.minHeight = '150px';
+        
+        // Make sure the select element is visible
+        setTimeout(() => {
+            techSelect.style.display = 'block';
+            techSelect.style.visibility = 'visible';
+            techSelect.style.opacity = '1';
+        }, 100);
+    }
+});
+
+// Function to schedule a follow-up with improved technician handling
 function scheduleFollowUp() {
     const customerId = document.getElementById('customer-select').value;
     const serviceId = document.getElementById('service-type').value;
@@ -457,10 +546,12 @@ function scheduleFollowUp() {
     const followupDate = document.getElementById('followup-date').value;
     const followupTime = document.getElementById('followup-time').value;
     
-    // Get selected technicians (multiple)
-    const selectedTechnicians = Array.from(technicianSelect.selectedOptions).map(opt => opt.value);
+    // Get all selected technician IDs as a comma-separated string
+    const selectedTechnicianIds = Array.from(technicianSelect.selectedOptions)
+        .map(option => option.value)
+        .join(',');
     
-    // Enhanced validation with more specific messages
+    // Enhanced validation
     if (!customerId) {
         alert('Please select a customer first');
         return;
@@ -471,7 +562,7 @@ function scheduleFollowUp() {
         return;
     }
     
-    if (selectedTechnicians.length === 0) {
+    if (!selectedTechnicianIds) {
         alert('Please assign at least one technician');
         return;
     }
@@ -490,15 +581,15 @@ function scheduleFollowUp() {
     const formData = new FormData();
     formData.append('appointment_id', customerId);
     formData.append('service_id', serviceId);
-    formData.append('technician_ids', JSON.stringify(selectedTechnicians));
+    formData.append('technician_id', selectedTechnicianIds); // Send as comma-separated string
     formData.append('followup_date', followupDate);
     formData.append('followup_time', followupTime);
     
-    // Log the data being sent - helpful for debugging
-    console.log('Sending follow-up data:', {
+    // Log the data being sent
+    console.log('Scheduling follow-up with data:', {
         appointment_id: customerId,
         service_id: serviceId,
-        technician_ids: selectedTechnicians,
+        technician_id: selectedTechnicianIds,
         followup_date: followupDate,
         followup_time: followupTime
     });
@@ -510,7 +601,7 @@ function scheduleFollowUp() {
     scheduleBtn.disabled = true;
     
     // Submit the form
-    fetch('../HTML CODES/schedule_followup.php', {
+    fetch('../HTML CODES/schedule_followup-pct.php', {
         method: 'POST',
         body: formData
     })
@@ -519,7 +610,7 @@ function scheduleFollowUp() {
         console.log('Response from server:', data);
         if (data.success) {
             alert('Follow-up scheduled successfully!');
-            // Refresh the followups list
+            // Refresh the page after a short delay
             setTimeout(() => {
                 window.location.reload();
             }, 1500);
@@ -779,6 +870,23 @@ document.addEventListener('DOMContentLoaded', function() {
         customerSelect.addEventListener('change', function() {
             loadCustomerDetails(this.value);
         });
+        
+        // If a value is already selected on page load, trigger the change event
+        if (customerSelect.value) {
+            loadCustomerDetails(customerSelect.value);
+        }
+    }
+    
+    // Debug technician select
+    const techSelect = document.getElementById('technician-select');
+    if (techSelect) {
+        console.log('DOM loaded - Technician select found with', techSelect.options.length, 'options');
+        // Log each option
+        Array.from(techSelect.options).forEach((opt, index) => {
+            console.log(`Tech option ${index}: value=${opt.value}, text=${opt.textContent}`);
+        });
+    } else {
+        console.warn('DOM loaded - Technician select element not found!');
     }
 });
 
@@ -790,3 +898,57 @@ document.addEventListener('DOMContentLoaded', function() {
         originalTechnicianOptions = techSelect.innerHTML;
     }
 });
+
+// Add a function to initialize select elements when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize technician select if it exists
+    const techSelect = document.getElementById('technician-select');
+    if (techSelect) {
+        console.log('Initializing technician select with', techSelect.options.length, 'options');
+        
+        // Initially, make sure the select is visible
+        techSelect.style.display = 'block';
+        techSelect.style.visibility = 'visible';
+        
+        // Ensure the options are styled properly
+        Array.from(techSelect.options).forEach(opt => {
+            opt.style.padding = '8px';
+            opt.style.margin = '4px 0';
+        });
+        
+        // Store original HTML for reference
+        originalTechnicianOptions = techSelect.innerHTML;
+    }
+    
+    // Check if customer is already selected
+    const customerSelect = document.getElementById('customer-select');
+    if (customerSelect && customerSelect.value) {
+        console.log('Customer already selected, loading details for:', customerSelect.value);
+        loadCustomerDetails(customerSelect.value);
+    }
+});
+
+// Add a debug function that can be called from the browser console
+function debugTechnicianSelect() {
+    const techSelect = document.getElementById('technician-select');
+    if (!techSelect) {
+        console.error('Technician select not found');
+        return;
+    }
+    
+    console.log('Technician select element:', techSelect);
+    console.log('Display style:', techSelect.style.display);
+    console.log('Visibility style:', techSelect.style.visibility);
+    console.log('Total options:', techSelect.options.length);
+    console.log('Selected options:', techSelect.selectedOptions.length);
+    console.log('Selected indices:', Array.from(techSelect).map((opt, idx) => opt.selected ? idx : null).filter(i => i !== null));
+    console.log('CSS computed style:', window.getComputedStyle(techSelect));
+    
+    // Log parent container styles
+    const parent = techSelect.parentElement;
+    if (parent) {
+        console.log('Parent element:', parent);
+        console.log('Parent display style:', window.getComputedStyle(parent).display);
+        console.log('Parent visibility style:', window.getComputedStyle(parent).visibility);
+    }
+}
