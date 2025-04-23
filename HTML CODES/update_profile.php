@@ -1,9 +1,9 @@
 <?php
 session_start();
-header('Content-Type: application/json');
 
+// Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
-    echo json_encode(['success' => false, 'message' => 'Not logged in']);
+    header("Location: Login.php");
     exit;
 }
 
@@ -29,7 +29,8 @@ try {
     $stmt->execute();
     
     if ($stmt->rowCount() > 0) {
-        echo json_encode(['success' => false, 'message' => 'Email already exists']);
+        // Email already exists - redirect with error
+        header("Location: Profile.php?error=email_exists");
         exit;
     }
     
@@ -57,12 +58,17 @@ try {
         $_SESSION['firstname'] = $firstname;
         $_SESSION['lastname'] = $lastname;
         
-        echo json_encode(['success' => true, 'message' => 'Profile updated successfully']);
+        // Redirect back to profile page with success message
+        header("Location: Profile.php?success=profile_updated");
+        exit;
     } else {
-        echo json_encode(['success' => false, 'message' => 'Failed to update profile']);
+        // Database error - redirect with error
+        header("Location: Profile.php?error=update_failed");
+        exit;
     }
 } catch(PDOException $e) {
     error_log("Error updating profile: " . $e->getMessage());
-    echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
+    header("Location: Profile.php?error=database_error");
+    exit;
 }
 ?>
