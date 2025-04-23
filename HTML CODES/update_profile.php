@@ -34,16 +34,16 @@ try {
     }
     
     // Update user data in the database
-    $sql = "UPDATE users SET 
-            firstname = ?, 
-            middlename = ?,
-            lastname = ?, 
-            email = ?, 
-            mobile_number = ?, 
-            dob = ? 
-            WHERE id = ?";
+    $query = "UPDATE users SET 
+              firstname = ?, 
+              middlename = ?,
+              lastname = ?, 
+              email = ?, 
+              mobile_number = ?, 
+              dob = ?
+              WHERE id = ?";
     
-    $stmt = $db->prepare($sql);
+    $stmt = $db->prepare($query);
     $stmt->bindParam(1, $firstname);
     $stmt->bindParam(2, $middlename);
     $stmt->bindParam(3, $lastname);
@@ -53,11 +53,16 @@ try {
     $stmt->bindParam(7, $user_id, PDO::PARAM_INT);
     
     if ($stmt->execute()) {
-        echo json_encode(['success' => true]);
+        // Update session variables
+        $_SESSION['firstname'] = $firstname;
+        $_SESSION['lastname'] = $lastname;
+        
+        echo json_encode(['success' => true, 'message' => 'Profile updated successfully']);
     } else {
-        echo json_encode(['success' => false, 'message' => 'Update failed']);
+        echo json_encode(['success' => false, 'message' => 'Failed to update profile']);
     }
 } catch(PDOException $e) {
+    error_log("Error updating profile: " . $e->getMessage());
     echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
 }
 ?>

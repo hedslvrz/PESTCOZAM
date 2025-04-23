@@ -907,90 +907,112 @@ try {
     <!-- Profile Section -->
     <section id="profile" class="section">
         <main>
-            <form id="profile-form" method="POST" action="process_profile.php" enctype="multipart/form-data">
-                <div class="head-title">
-                    <div class="left">
-                        <h1>My Profile</h1>
-                        <ul class="breadcrumb">
-                            <li></li>
-                                <a href="#">Profile</a>
-                            </li>
-                            <li><i class='bx bx-right-arrow-alt'></i></li>
-                            <li>
-                                <a class="active" href="#">Details</a>
-                            </li>
-                        </ul>
-                    </div>
+            <div class="head-title">
+                <div class="left">
+                    <h1>My Profile</h1>
+                    <ul class="breadcrumb">
+                        <li>
+                            <a href="#">Profile</a>
+                        </li>
+                        <li><i class='bx bx-right-arrow-alt'></i></li>
+                        <li>
+                            <a class="active" href="#">Details</a>
+                        </li>
+                    </ul>
                 </div>
-                <div class="profile-container">
-                    <!-- Profile Card -->
-                    <div class="profile-card">
-                        <div class="profile-avatar">
-                            <input type="file" name="profile_image" id="profile_image" hidden>
-                            <label for="profile_image">
-                                <img src="images/profile-image.png" alt="Profile Picture">
-                            </label>
-                        </div>
-                        <div class="profile-info">
-                            <h3>John Smith</h3>
-                            <p>Pest Control Technician</p>
-                            <p>PCT-001</p>
-                        </div>
+            </div>
+            
+            <!-- Updated profile container with exact AOS styling -->
+            <div class="profile-container">
+                <!-- Profile Card -->
+                <div class="profile-card">
+                    <div class="profile-avatar">
+                        <img src="../Pictures/boy.png" alt="User Avatar" class="avatar" />
                     </div>
-
-                    <!-- Personal Information -->
-                    <div class="info-section">
-                        <div class="section-header">
-                            <h3>Personal Information</h3>
-                            <button class="edit-btn"><i class="bx bx-edit"></i> Edit</button>
-                        </div>
-                        <div class="info-content">
-                            <div class="info-row">
-                                <p><strong>First Name</strong></p>
-                                <p><strong>Last Name</strong></p>
-                                <p><strong>Date of Birth</strong></p>
-                            </div>
-                            <div class="info-row">
-                                <p>John</p>
-                                <p>Smith</p>
-                                <p>03-05-1995</p>
-                            </div>
-                            <div class="info-row">
-                                <p><strong>Email:</strong></p>
-                                <p><strong>Phone Number:</strong></p>
-                                <p><strong>User Role:</strong></p>
-                            </div>
-                            <div class="info-row">
-                                <p>john.smith@pestcozam.com</p>
-                                <p>0953-654-4541</p>
-                                <p>Pest Control Technician</p>
-                            </div>
-                        </div>
+                    <div class="profile-info">
+                        <h3><?php echo htmlspecialchars($technician['firstname'] . ' ' . $technician['lastname']); ?></h3>
+                        <p><?php echo htmlspecialchars($technician['email']); ?></p>
+                        <p><?php echo ucfirst(htmlspecialchars($technician['role'])); ?></p>
                     </div>
+                    <button type="button" class="edit-btn" id="openProfileModalBtn">
+                        <i class='bx bx-edit'></i> Edit Profile
+                    </button>
+                </div>
 
-                    <!-- Address Section -->
-                    <div class="info-section">
-                        <div class="section-header">
-                            <h3>Address</h3>
-                            <button class="edit-btn"><i class="bx bx-edit"></i> Edit</button>
+                <!-- Personal Information -->
+                <div class="info-section">
+                    <div class="section-header">
+                        <h3>Personal Information</h3>
+                    </div>
+                    <div class="info-content">
+                        <div class="info-row">
+                            <p><strong>First Name:</strong> <span data-field="firstname"><?php echo htmlspecialchars($technician['firstname']); ?></span></p>
+                            <p><strong>Middle Name:</strong> <span data-field="middlename"><?php echo htmlspecialchars($technician['middlename'] ?: 'Not set'); ?></span></p>
                         </div>
-                        <div class="info-content">
-                            <div class="info-row">
-                                <p><strong>Country</strong></p>
-                                <p><strong>City:</strong></p>
-                                <p><strong>City Address</strong></p>
-                                <p><strong>Postal Code</strong></p>
-                            </div>
-                            <div class="info-row">
-                                <p>Philippines</p>
-                                <p>Zamboanga City</p>
-                                <p>Tetuan, Zamboanga City</p>
-                                <p>7000</p>
-                            </div>
+                        <div class="info-row">
+                            <p><strong>Last Name:</strong> <span data-field="lastname"><?php echo htmlspecialchars($technician['lastname']); ?></span></p>
+                            <p><strong>Date of Birth:</strong> <span><?php echo $technician['dob'] ? date('m-d-Y', strtotime($technician['dob'])) : 'Not set'; ?></span></p>
+                        </div>
+                        <div class="info-row">
+                            <p><strong>Email:</strong> <span data-field="email"><?php echo htmlspecialchars($technician['email']); ?></span></p>
+                            <p><strong>Phone Number:</strong> <span data-field="mobile_number"><?php echo htmlspecialchars($technician['mobile_number']); ?></span></p>
                         </div>
                     </div>
                 </div>
-            </form>
+
+                <!-- Account Information -->
+                <div class="info-section">
+                    <div class="section-header">
+                        <h3>Account Information</h3>
+                    </div>
+                    <div class="info-content">
+                        <div class="info-row">
+                            <p><strong>Role:</strong> <span><?php echo ucfirst(htmlspecialchars($technician['role'])); ?></span></p>
+                            <p><strong>Status:</strong> <span><?php echo ucfirst(htmlspecialchars($technician['status'])); ?></span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Edit Modal - Updated to exactly match AOS implementation -->
+            <div id="profileModal" class="modal">
+                <div class="modal-content profile-modal-content">
+                    <div class="modal-header">
+                        <h2>Edit Profile</h2>
+                        <span class="close" title="Close">&times;</span>
+                    </div>
+                    <form id="editProfileForm" method="POST" novalidate>
+                        <div class="form-group">
+                            <label for="firstname">First Name</label>
+                            <input type="text" id="firstname" name="firstname" value="<?php echo htmlspecialchars($technician['firstname']); ?>" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="middlename">Middle Name</label>
+                            <input type="text" id="middlename" name="middlename" value="<?php echo htmlspecialchars($technician['middlename']); ?>">
+                        </div>
+                        <div class="form-group">
+                            <label for="lastname">Last Name</label>
+                            <input type="text" id="lastname" name="lastname" value="<?php echo htmlspecialchars($technician['lastname']); ?>" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($technician['email']); ?>" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="mobile_number">Mobile Number</label>
+                            <input type="tel" id="mobile_number" name="mobile_number" value="<?php echo htmlspecialchars($technician['mobile_number']); ?>" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="dob">Date of Birth</label>
+                            <input type="date" id="dob" name="dob" value="<?php echo $technician['dob']; ?>">
+                        </div>
+                        <div class="form-buttons">
+                            <button type="button" class="cancel-btn" id="closeProfileModalBtn">Cancel</button>
+                            <button type="submit" class="save-btn">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </main>
     </section>
 
@@ -1112,6 +1134,130 @@ try {
                 select.dispatchEvent(event);
             }
         }
+
+        // Direct modal event handlers
+        document.addEventListener('DOMContentLoaded', function() {
+            const profileModal = document.getElementById('profileModal');
+            const openBtn = document.getElementById('openProfileModalBtn');
+            const closeBtn = document.querySelector('#profileModal .close');
+            const cancelBtn = document.getElementById('closeProfileModalBtn');
+            const profileForm = document.getElementById('editProfileForm');
+            
+            function openProfileModal() {
+                console.log('Opening modal...');
+                
+                // First set display to flex
+                profileModal.style.display = 'flex';
+                
+                // Force a reflow/repaint before adding the show class
+                void profileModal.offsetWidth;
+                
+                // Add show class to trigger the transition
+                profileModal.classList.add('show');
+                
+                document.body.style.overflow = 'hidden';
+            }
+            
+            function closeProfileModal() {
+                // First remove the show class to trigger the transition
+                profileModal.classList.remove('show');
+                
+                // Wait for the transition to complete before hiding
+                setTimeout(() => {
+                    profileModal.style.display = "none";
+                    document.body.style.overflow = '';
+                }, 300); // Match the transition duration (0.3s)
+            }
+            
+            if (openBtn && profileModal) {
+                // Open modal when clicking the edit button
+                openBtn.addEventListener('click', function() {
+                    console.log('Edit button clicked');
+                    openProfileModal();
+                });
+                
+                // Close modal when clicking the X button
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', closeProfileModal);
+                }
+                
+                // Close modal when clicking the Cancel button
+                if (cancelBtn) {
+                    cancelBtn.addEventListener('click', closeProfileModal);
+                }
+                
+                // Close modal when clicking outside the modal content
+                window.addEventListener('click', function(event) {
+                    if (event.target === profileModal) {
+                        closeProfileModal();
+                    }
+                });
+                
+                // Close modal with Escape key
+                document.addEventListener('keydown', function(event) {
+                    if (event.key === 'Escape' && profileModal.classList.contains('show')) {
+                        closeProfileModal();
+                    }
+                });
+            }
+            
+            // Add form submission handler for profile updates
+            if (profileForm) {
+                profileForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    // Create FormData object from the form
+                    const formData = new FormData(this);
+                    
+                    // Send AJAX request to update profile
+                    fetch('../HTML CODES/update_profile.php', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Update the profile info without page reload
+                            document.querySelector('.profile-info h3').textContent = 
+                                document.getElementById('firstname').value + ' ' + 
+                                document.getElementById('lastname').value;
+                            
+                            document.querySelector('.profile-info p:nth-child(2)').textContent = 
+                                document.getElementById('email').value;
+                            
+                            // Update spans in the personal information section
+                            document.querySelector('span[data-field="firstname"]').textContent = 
+                                document.getElementById('firstname').value;
+                            
+                            document.querySelector('span[data-field="middlename"]').textContent = 
+                                document.getElementById('middlename').value || 'Not set';
+                            
+                            document.querySelector('span[data-field="lastname"]').textContent = 
+                                document.getElementById('lastname').value;
+                            
+                            document.querySelector('span[data-field="email"]').textContent = 
+                                document.getElementById('email').value;
+                            
+                            document.querySelector('span[data-field="mobile_number"]').textContent = 
+                                document.getElementById('mobile_number').value;
+                            
+                            // Close the modal
+                            closeProfileModal();
+                            
+                            // Show success message (you might want to add a toast notification system)
+                            alert('Profile updated successfully!');
+                        } else {
+                            // Show error message
+                            alert(data.message || 'An error occurred while updating your profile.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while updating your profile.');
+                    });
+                });
+            }
+        });
     </script>
 </body>
 </html>
