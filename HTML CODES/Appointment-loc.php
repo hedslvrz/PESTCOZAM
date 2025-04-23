@@ -302,8 +302,8 @@ $locationData = AppointmentSession::getData('location', []);
         <input type="hidden" id="longitude">
 
         <!-- New section for property type -->
-        <div class="property-type-section">
-          <label>Property Type:</label>
+        <div class="form-group property-type-section">
+          <label class="field-label">Property Type:</label>
           <div class="property-type-options">
             <label class="radio-label">
               <input type="radio" name="property_type" value="residential" checked> Residential
@@ -315,16 +315,16 @@ $locationData = AppointmentSession::getData('location', []);
           
           <!-- Conditional field for establishment name -->
           <div id="establishment-name-container" style="display: none;">
-            <input type="text" id="establishment_name" class="specify-addr" 
+            <input type="text" id="establishment_name" class="form-input specify-addr" 
                   placeholder="Establishment Name">
           </div>
         </div>
         
         <!-- Property area -->
-        <div class="property-area-section">
-          <label>Property Area (optional):</label>
+        <div class="form-group property-area-section">
+          <label class="field-label">Property Area (optional):</label>
           <div class="area-input-container">
-            <input type="number" id="property_area" class="specify-addr" 
+            <input type="number" id="property_area" class="form-input specify-addr" 
                   placeholder="Enter the total square meters of your property">
             <span class="area-unit">sq.m</span>
           </div>
@@ -332,9 +332,9 @@ $locationData = AppointmentSession::getData('location', []);
         </div>
         
         <!-- Pest Concern -->
-        <div class="pest-concern-section">
-          <label>Pest Concern:</label>
-          <textarea id="pest_concern" class="pest-concern-textarea" 
+        <div class="form-group pest-concern-section">
+          <label class="field-label">Pest Concern:</label>
+          <textarea id="pest_concern" class="form-input pest-concern-textarea" 
                    placeholder="Please describe your pest concern related to the service you selected"></textarea>
         </div>
 
@@ -486,7 +486,15 @@ $locationData = AppointmentSession::getData('location', []);
     });
 
     // 3) Initialize Leaflet Map (Coordinates for Zamboanga City)
-    var mymap = L.map('leafletMap').setView([6.9214, 122.0790], 13);
+    var mymap = L.map('leafletMap', {
+      dragging: false,      // Disable dragging
+      touchZoom: false,     // Disable touch zoom
+      scrollWheelZoom: false,  // Disable scroll wheel zoom
+      doubleClickZoom: false,  // Disable double click zoom
+      boxZoom: false,        // Disable box zoom
+      keyboard: false,       // Disable keyboard navigation
+      zoomControl: false     // Remove zoom control buttons
+    }).setView([6.9214, 122.0790], 13);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap',

@@ -289,8 +289,12 @@ main {
 
 /* Property Type Section */
 .property-type-section {
-  margin-top: 15px;
-  margin-bottom: 15px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  border-left: 3px solid #144578;
 }
 
 .property-type-options {
@@ -303,10 +307,13 @@ main {
   display: flex;
   align-items: center;
   cursor: pointer;
+  font-size: 15px;
 }
 
 .radio-label input[type="radio"] {
   margin-right: 8px;
+  cursor: pointer;
+  accent-color: #144578;
 }
 
 /* Area input styling */
@@ -314,34 +321,47 @@ main {
   position: relative;
   display: flex;
   align-items: center;
+  margin-bottom: 8px;
 }
 
 .area-unit {
   position: absolute;
-  right: 10px;
+  right: 12px;
   color: #666;
+  font-weight: 500;
 }
 
 /* Pest concern textarea */
 .pest-concern-textarea {
   width: 100%;
-  min-height: 80px;
-  padding: 10px;
-  margin-top: 5px;
-  border: 1px solid #ccc;
+  min-height: 100px;
+  padding: 12px;
+  border: 1px solid #ddd;
   border-radius: 4px;
   resize: vertical;
   font-family: inherit;
+  line-height: 1.5;
+}
+
+.pest-concern-textarea:focus {
+  border-color: #144578;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(20, 69, 120, 0.1);
 }
 
 .pest-concern-section {
-  margin-top: 15px;
-  margin-bottom: 15px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  border-left: 3px solid #144578;
 }
 
 /* Establishment name container */
 #establishment-name-container {
-  margin-top: 10px;
+  margin-top: 12px;
+  transition: all 0.3s ease;
 }
 
 /* Right Side: Map */
@@ -555,7 +575,45 @@ main {
 .help-text {
   display: block;
   color: #666;
-  font-size: 0.85rem;
-  margin-top: 4px;
+  font-size: 12px;
+  margin-top: 5px;
   font-style: italic;
+}
+
+/* Form field styling */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.field-label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #333;
+  font-size: 16px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: border-color 0.3s;
+}
+
+.form-input:focus {
+  border-color: #144578;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(20, 69, 120, 0.1);
+}
+
+/* Property area styling */
+.property-area-section {
+  margin-top: 20px;
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  border-left: 3px solid #144578;
 }

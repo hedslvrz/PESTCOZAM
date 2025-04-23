@@ -53,10 +53,42 @@ try {
     $techStmt = $db->prepare($techQuery);
     $techStmt->execute();
     $technicians = $techStmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Get service reports - Added for supervisor functionality
+    try {
+        $serviceReportsQuery = "SELECT 
+            sr.report_id,
+            sr.date_of_treatment,
+            sr.time_in,
+            sr.time_out,
+            sr.treatment_type,
+            sr.treatment_method,
+            sr.pest_count,
+            sr.device_installation,
+            sr.consumed_chemicals,
+            sr.frequency_of_visits,
+            sr.photos,
+            sr.location,
+            sr.account_name,
+            sr.contact_no,
+            sr.status,
+            CONCAT(u.firstname, ' ', u.lastname) AS tech_name
+        FROM service_reports sr
+        JOIN users u ON sr.technician_id = u.id
+        ORDER BY sr.date_of_treatment DESC";
+
+        $stmt = $db->prepare($serviceReportsQuery);
+        $stmt->execute();
+        $serviceReports = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch(PDOException $e) {
+        error_log("Error fetching service reports: " . $e->getMessage());
+        $serviceReports = [];
+    }
 } catch(PDOException $e) {
     error_log("Error fetching data: " . $e->getMessage());
     $appointments = [];
     $technicians = [];
+    $serviceReports = [];
 }
 
 // Check if user is logged in and has AOS role
@@ -600,80 +632,147 @@ try {
                 </div>
             </div>
 
-            <div class="reports-grid">
-                <!-- Sample Report Card -->
-                <div class="report-card" data-report-id="1" onclick="openReportModal(1)">
-                    <div class="report-header">
-                        <div class="report-status pending">Pending Review</div>
-                        <div class="report-date">March 15, 2024</div>
-                    </div>
-                    <div class="report-body">
-                        <div class="technician-info">
-                            <img src="../Pictures/boy.png" alt="Technician">
-                            <div>
-                                <h3>John Smith</h3>
-                                <span>Senior Technician</span>
-                            </div>
-                        </div>
-                        <div class="report-preview">
-                            <p><i class='bx bx-map'></i> Tetuan, Zamboanga City</p>
-                            <p><i class='bx bx-user'></i> Client: Maria Garcia</p>
-                            <p><i class='bx bx-spray-can'></i> Service: Pest Control</p>
-                        </div>
-                    </div>
+            <!-- Search and Filter Controls -->
+            <div class="report-controls">
+                <div class="search-box">
+                    <input type="text" id="reportSearchInput" placeholder="Search by technician, location or client...">
+                    <i class='bx bx-search'></i>
                 </div>
+                <div class="filter-options">
+                    <select id="statusFilter">
+                        <option value="">All Statuses</option>
+                        <option value="pending">Pending Review</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                    <select id="dateFilter">
+                        <option value="">All Dates</option>
+                        <option value="today">Today</option>
+                        <option value="week">This Week</option>
+                        <option value="month">This Month</option>
+                    </select>
+                </div>
+            </div>
 
-                <!-- More Sample Cards -->
-                <div class="report-card" data-report-id="2" onclick="openReportModal(2)">
-                    <div class="report-header">
-                        <div class="report-status approved">Approved</div>
-                        <div class="report-date">March 14, 2024</div>
-                    </div>
-                    <div class="report-body">
-                        <div class="technician-info">
-                            <img src="../Pictures/boy.png" alt="Technician">
-                            <div>
-                                <h3>Mike Johnson</h3>
-                                <span>Pest Control Specialist</span>
+            <div class="reports-grid">
+                <?php if (!empty($serviceReports)): ?>
+                    <?php foreach ($serviceReports as $report): ?>
+                        <?php
+                        // Determine status class
+                        $statusClass = '';
+                        switch (strtolower($report['status'])) {
+                            case 'pending':
+                                $statusClass = 'pending';
+                                $statusText = 'Pending Review';
+                                break;
+                            case 'approved':
+                                $statusClass = 'approved';
+                                $statusText = 'Approved';
+                                break;
+                            case 'rejected':
+                                $statusClass = 'rejected';
+                                $statusText = 'Rejected';
+                                break;
+                            default:
+                                $statusClass = 'pending';
+                                $statusText = 'Pending Review';
+                        }
+                        
+                        // Format date
+                        $formattedDate = date('F d, Y', strtotime($report['date_of_treatment']));
+                        
+                        // Handle photos (convert from JSON if needed)
+                        $photos = [];
+                        if (!empty($report['photos'])) {
+                            if (is_string($report['photos'])) {
+                                try {
+                                    $photos = json_decode($report['photos'], true);
+                                    if (json_last_error() !== JSON_ERROR_NONE) {
+                                        $photos = [$report['photos']]; // Not JSON, treat as single photo
+                                    }
+                                } catch (Exception $e) {
+                                    $photos = [$report['photos']]; // Error decoding, treat as single photo
+                                }
+                            } else if (is_array($report['photos'])) {
+                                $photos = $report['photos'];
+                            }
+                        }
+                        ?>
+                        <div class="report-card" data-report-id="<?php echo $report['report_id']; ?>" 
+                             data-status="<?php echo strtolower($report['status']); ?>"
+                             data-date="<?php echo $report['date_of_treatment']; ?>"
+                             data-tech-name="<?php echo htmlspecialchars($report['tech_name']); ?>"
+                             data-location="<?php echo htmlspecialchars($report['location']); ?>"
+                             data-account="<?php echo htmlspecialchars($report['account_name']); ?>"
+                             data-treatment="<?php echo htmlspecialchars($report['treatment_type']); ?>">
+                            <div class="report-header">
+                                <div class="report-status <?php echo $statusClass; ?>"><?php echo $statusText; ?></div>
+                                <div class="report-date"><?php echo $formattedDate; ?></div>
+                            </div>
+                            <div class="report-body">
+                                <div class="technician-info">
+                                    <img src="../Pictures/boy.png" alt="Technician">
+                                    <div>
+                                        <h3><?php echo htmlspecialchars($report['tech_name']); ?></h3>
+                                        <span>Technician</span>
+                                    </div>
+                                </div>
+                                <div class="report-preview">
+                                    <p><i class='bx bx-map'></i> <?php echo htmlspecialchars($report['location']); ?></p>
+                                    <p><i class='bx bx-user'></i> Client: <?php echo htmlspecialchars($report['account_name']); ?></p>
+                                    <p><i class='bx bx-spray-can'></i> Service: <?php echo htmlspecialchars($report['treatment_type']); ?></p>
+                                </div>
                             </div>
                         </div>
-                        <div class="report-preview">
-                            <p><i class='bx bx-map'></i> Sta. Maria, Zamboanga City</p>
-                            <p><i class='bx bx-user'></i> Client: John Doe</p>
-                            <p><i class='bx bx-spray-can'></i> Service: Termite Control</p>
-                        </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <div class="no-reports">
+                        <i class='bx bx-file-blank'></i>
+                        <p>No service reports found</p>
+                        <span>When technicians submit reports, they will appear here</span>
                     </div>
-                </div>
+                <?php endif; ?>
             </div>
         </main>
 
-        <!-- Report Details Modal -->
+        <!-- Report Details Modal - Updated to match admin version -->
         <div id="reportModal" class="modal">
             <div class="report-modal-content">
                 <span class="close-modal" onclick="closeReportModal()">&times;</span>
                 <form id="reportForm" class="report-form">
                     <h2>Service Report Details</h2>
+                    <input type="hidden" id="reportIdField" value="">
                     
                     <div class="form-section">
                         <h3>Basic Information</h3>
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Report ID</label>
-                                <input type="text" value="REP-2024-001" readonly>
+                                <input type="text" id="reportIdDisplay" readonly>
                             </div>
                             <div class="form-group">
-                                <label>Date Submitted</label>
-                                <input type="text" value="March 15, 2024" readonly>
+                                <label>Date of Treatment</label>
+                                <input type="text" id="reportDateField" readonly>
                             </div>
                         </div>
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Technician Name</label>
-                                <input type="text" value="John Smith" readonly>
+                                <input type="text" id="techNameField" readonly>
                             </div>
                             <div class="form-group">
                                 <label>Client Name</label>
-                                <input type="text" value="Maria Garcia" readonly>
+                                <input type="text" id="clientNameField" readonly>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Contact No.</label>
+                                <input type="text" id="contactNoField" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Location</label>
+                                <input type="text" id="locationField" readonly>
                             </div>
                         </div>
                     </div>
@@ -682,83 +781,422 @@ try {
                         <h3>Service Details</h3>
                         <div class="form-row">
                             <div class="form-group">
-                                <label>Service Type</label>
-                                <input type="text" value="Pest Control" readonly>
+                                <label>Treatment Type</label>
+                                <input type="text" id="treatmentTypeField" readonly>
                             </div>
                             <div class="form-group">
-                                <label>Location</label>
-                                <input type="text" value="Tetuan, Zamboanga City" readonly>
+                                <label>Treatment Method</label>
+                                <input type="text" id="treatmentMethodField" readonly>
                             </div>
                         </div>
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Time In</label>
-                                <input type="time" value="09:00" readonly>
+                                <input type="text" id="timeInField" readonly>
                             </div>
                             <div class="form-group">
                                 <label>Time Out</label>
-                                <input type="time" value="11:30" readonly>
+                                <input type="text" id="timeOutField" readonly>
                             </div>
                         </div>
                     </div>
 
                     <div class="form-section">
                         <h3>Treatment Information</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Pest Count</label>
+                                <input type="text" id="pestCountField" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Device Installation</label>
+                                <input type="text" id="deviceInstallationField" readonly>
+                            </div>
+                        </div>
                         <div class="form-group full-width">
-                            <label>Treatment Method</label>
-                            <textarea readonly>Spray treatment and bait installation for comprehensive pest control</textarea>
+                            <label>Chemicals Consumed</label>
+                            <textarea id="chemicalsField" readonly></textarea>
                         </div>
                         <div class="form-row">
                             <div class="form-group">
-                                <label>Chemicals Used</label>
-                                <input type="text" value="PestAway Pro, RoachGuard" readonly>
-                            </div>
-                            <div class="form-group">
-                                <label>Quantity Used</label>
-                                <input type="text" value="2L, 500g" readonly>
+                                <label>Frequency of Visits</label>
+                                <input type="text" id="frequencyField" readonly>
                             </div>
                         </div>
                     </div>
 
-                    <div class="form-section">
+                    <div class="form-section" id="photosSection">
                         <h3>Documentation</h3>
-                        <div class="image-gallery">
-                            <div class="image-item">
-                                <img src="../Pictures/sample-report-1.jpg" alt="Before Treatment">
-                                <span>Before Treatment</span>
-                            </div>
-                            <div class="image-item">
-                                <img src="../Pictures/sample-report-2.jpg" alt="After Treatment">
-                                <span>After Treatment</span>
-                            </div>
-                            <div class="image-item">
-                                <img src="../Pictures/sample-report-3.jpg" alt="Area Treated">
-                                <span>Area Treated</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-section">
-                        <h3>Additional Notes</h3>
-                        <div class="form-group full-width">
-                            <textarea readonly>Client requested follow-up treatment in 3 months. Areas treated: kitchen, bathroom, and garden perimeter. Recommended preventive measures explained to client.</textarea>
+                        <div class="image-gallery" id="imageGallery">
+                            <!-- Images will be loaded dynamically via JavaScript -->
                         </div>
                     </div>
 
                     <div class="form-actions">
-                        <button type="button" class="btn-approve" onclick="approveReport()">
+                        <button type="button" class="btn-approve" id="approveBtn" onclick="updateReportStatus('approved')">
                             <i class='bx bx-check'></i> Approve Report
                         </button>
-                        <button type="button" class="btn-reject" onclick="rejectReport()">
+                        <button type="button" class="btn-reject" id="rejectBtn" onclick="updateReportStatus('rejected')">
                             <i class='bx bx-x'></i> Reject Report
                         </button>
-                        <button type="button" class="btn-print" onclick="printReport()">
-                            <i class='bx bx-printer'></i> Print Report
+                        <button type="button" class="btn-download" onclick="downloadReportPDF()">
+                            <i class='bx bx-download'></i> Download PDF
                         </button>
                     </div>
                 </form>
             </div>
         </div>
+
+        <!-- Add JavaScript functions for report modal and PDF download -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+        
+        <script>
+        // Make the reports data globally available through the window object
+        window.reportsData = <?php echo json_encode($serviceReports ?? []); ?>;
+
+        // Debugging: Log the complete service reports data to check its structure
+        console.log('Complete service reports data:', window.reportsData);
+        
+        // Filter reports based on search input and filter selections
+        document.getElementById('reportSearchInput').addEventListener('input', filterReports);
+        document.getElementById('statusFilter').addEventListener('change', filterReports);
+        document.getElementById('dateFilter').addEventListener('change', filterReports);
+        
+        // Define the filterReports function
+        function filterReports() {
+            const searchValue = document.getElementById('reportSearchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value.toLowerCase();
+            const dateFilter = document.getElementById('dateFilter').value;
+            
+            const reportCards = document.querySelectorAll('.report-card');
+            
+            reportCards.forEach(card => {
+                let showCard = true;
+                
+                // Filter by search text
+                if (searchValue) {
+                    const techName = card.getAttribute('data-tech-name').toLowerCase();
+                    const location = card.getAttribute('data-location').toLowerCase();
+                    const account = card.getAttribute('data-account').toLowerCase();
+                    const treatment = card.getAttribute('data-treatment').toLowerCase();
+                    
+                    if (!techName.includes(searchValue) && 
+                        !location.includes(searchValue) && 
+                        !account.includes(searchValue) && 
+                        !treatment.includes(searchValue)) {
+                        showCard = false;
+                    }
+                }
+                
+                // Filter by status
+                if (statusFilter && card.getAttribute('data-status') !== statusFilter) {
+                    showCard = false;
+                }
+                
+                // Filter by date
+                if (dateFilter) {
+                    const reportDate = new Date(card.getAttribute('data-date'));
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    
+                    const weekStart = new Date(today);
+                    weekStart.setDate(today.getDate() - today.getDay());
+                    
+                    const monthStart = new Date(today);
+                    monthStart.setDate(1);
+                    
+                    if (dateFilter === 'today' && reportDate.toDateString() !== today.toDateString()) {
+                        showCard = false;
+                    } else if (dateFilter === 'week' && (reportDate < weekStart || reportDate > today)) {
+                        showCard = false;
+                    } else if (dateFilter === 'month' && (reportDate < monthStart || reportDate > today)) {
+                        showCard = false;
+                    }
+                }
+                
+                // Show or hide card based on filters
+                card.style.display = showCard ? 'flex' : 'none';
+            });
+        }
+        
+        // Function to open the report modal with specific report data
+        function openReportModal(reportId) {
+            console.log('Opening report modal for ID:', reportId);
+            
+            // Find the report in the global data
+            const report = window.reportsData.find(r => r.report_id == reportId);
+            
+            if (!report) {
+                console.error('Report not found with ID:', reportId);
+                return;
+            }
+            
+            console.log('Found report:', report);
+            
+            // Populate the modal fields with report data
+            document.getElementById('reportIdField').value = report.report_id;
+            document.getElementById('reportIdDisplay').value = report.report_id;
+            document.getElementById('reportDateField').value = new Date(report.date_of_treatment).toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            document.getElementById('techNameField').value = report.tech_name;
+            document.getElementById('clientNameField').value = report.account_name;
+            document.getElementById('contactNoField').value = report.contact_no;
+            document.getElementById('locationField').value = report.location;
+            document.getElementById('treatmentTypeField').value = report.treatment_type;
+            document.getElementById('treatmentMethodField').value = report.treatment_method;
+            document.getElementById('timeInField').value = report.time_in;
+            document.getElementById('timeOutField').value = report.time_out;
+            document.getElementById('pestCountField').value = report.pest_count;
+            document.getElementById('deviceInstallationField').value = report.device_installation;
+            document.getElementById('chemicalsField').value = report.consumed_chemicals;
+            document.getElementById('frequencyField').value = report.frequency_of_visits;
+            
+            // Handle photos (if available)
+            const imageGallery = document.getElementById('imageGallery');
+            imageGallery.innerHTML = ''; // Clear existing images
+            
+            if (report.photos) {
+                let photos = [];
+                
+                // Parse photos if it's a JSON string
+                if (typeof report.photos === 'string') {
+                    try {
+                        photos = JSON.parse(report.photos);
+                        if (!Array.isArray(photos)) {
+                            photos = [report.photos];
+                        }
+                    } catch (e) {
+                        photos = [report.photos];
+                    }
+                } else if (Array.isArray(report.photos)) {
+                    photos = report.photos;
+                }
+                
+                // Add photos to the gallery
+                photos.forEach(photo => {
+                    const imgContainer = document.createElement('div');
+                    imgContainer.className = 'image-container';
+                    
+                    const img = document.createElement('img');
+                    img.src = photo.startsWith('http') ? photo : `../uploads/reports/${photo}`;
+                    img.alt = 'Service Report Photo';
+                    img.onerror = function() {
+                        this.src = '../Pictures/image_placeholder.png';
+                        this.alt = 'Image not available';
+                    };
+                    
+                    imgContainer.appendChild(img);
+                    imageGallery.appendChild(imgContainer);
+                });
+            } else {
+                imageGallery.innerHTML = '<p class="no-images">No images available</p>';
+            }
+            
+            // Update action buttons based on report status
+            updateActionButtons(report.status.toLowerCase());
+            
+            // Show the modal
+            const modal = document.getElementById('reportModal');
+            modal.style.display = 'flex';
+            
+            // Add a class to fade in the modal (if using CSS transitions)
+            setTimeout(() => {
+                modal.classList.add('show');
+            }, 10);
+        }
+        
+        // Function to close the report modal
+        function closeReportModal() {
+            const modal = document.getElementById('reportModal');
+            modal.classList.remove('show');
+            
+            // Wait for the transition to complete before hiding
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
+        }
+        
+        // Function to update the report status (approve/reject)
+        function updateReportStatus(status) {
+            const reportId = document.getElementById('reportIdField').value;
+            
+            if (!reportId) {
+                alert('Report ID not found');
+                return;
+            }
+            
+            // Confirm before changing status
+            if (!confirm(`Are you sure you want to ${status} this report?`)) {
+                return;
+            }
+            
+            // Prepare data for AJAX request
+            const formData = new FormData();
+            formData.append('report_id', reportId);
+            formData.append('status', status);
+            formData.append('action', 'update_status');
+            formData.append('role', 'supervisor'); // Identify that a supervisor is making the change
+            
+            // Send AJAX request to update status
+            fetch('../PHP CODES/update_report_status.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update UI to reflect the change
+                    alert(`Report has been ${status} successfully.`);
+                    
+                    // Update the report's status in the global data
+                    const reportIndex = window.reportsData.findIndex(r => r.report_id == reportId);
+                    if (reportIndex !== -1) {
+                        window.reportsData[reportIndex].status = status;
+                    }
+                    
+                    // Update the report card's status
+                    const reportCard = document.querySelector(`.report-card[data-report-id="${reportId}"]`);
+                    if (reportCard) {
+                        reportCard.setAttribute('data-status', status);
+                        const statusElement = reportCard.querySelector('.report-status');
+                        if (statusElement) {
+                            statusElement.className = `report-status ${status}`;
+                            statusElement.textContent = status === 'approved' ? 'Approved' : 'Rejected';
+                        }
+                    }
+                    
+                    // Update action buttons
+                    updateActionButtons(status);
+                    
+                    // Close the modal after a short delay
+                    setTimeout(() => {
+                        closeReportModal();
+                    }, 1500);
+                    
+                } else {
+                    alert(`Error: ${data.message || 'Failed to update report status'}`);
+                }
+            })
+            .catch(error => {
+                console.error('Error updating report status:', error);
+                alert('An error occurred while updating the report status. Please try again.');
+            });
+        }
+        
+        // Function to update action buttons based on report status
+        function updateActionButtons(status) {
+            const approveBtn = document.getElementById('approveBtn');
+            const rejectBtn = document.getElementById('rejectBtn');
+            
+            if (status === 'approved') {
+                approveBtn.disabled = true;
+                approveBtn.classList.add('disabled');
+                rejectBtn.disabled = false;
+                rejectBtn.classList.remove('disabled');
+            } else if (status === 'rejected') {
+                approveBtn.disabled = false;
+                approveBtn.classList.remove('disabled');
+                rejectBtn.disabled = true;
+                rejectBtn.classList.add('disabled');
+            } else {
+                // Status is pending
+                approveBtn.disabled = false;
+                approveBtn.classList.remove('disabled');
+                rejectBtn.disabled = false;
+                rejectBtn.classList.remove('disabled');
+            }
+        }
+        
+        // Function to download the report as PDF
+        function downloadReportPDF() {
+            const reportId = document.getElementById('reportIdField').value;
+            const techName = document.getElementById('techNameField').value;
+            const reportDate = document.getElementById('reportDateField').value;
+            
+            // Create a filename for the PDF
+            const filename = `Report_${reportId}_${techName.replace(/\s/g, '_')}.pdf`;
+            
+            // Use HTML2Canvas and jsPDF to create and download the PDF
+            const { jsPDF } = window.jspdf;
+            const reportForm = document.getElementById('reportForm');
+            
+            // Create a clone of the form for PDF generation (to prevent layout issues)
+            const clone = reportForm.cloneNode(true);
+            clone.style.background = 'white';
+            clone.style.padding = '20px';
+            clone.style.position = 'absolute';
+            clone.style.top = '-9999px';
+            clone.style.left = '-9999px';
+            document.body.appendChild(clone);
+            
+            // Remove buttons from the clone
+            const buttons = clone.querySelectorAll('.form-actions');
+            buttons.forEach(btn => btn.remove());
+            
+            // Generate the PDF
+            html2canvas(clone, {
+                scale: 2,
+                useCORS: true,
+                logging: false
+            }).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = pdf.internal.pageSize.getHeight();
+                const imgWidth = canvas.width;
+                const imgHeight = canvas.height;
+                const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+                const imgX = (pdfWidth - imgWidth * ratio) / 2;
+                const imgY = 30;
+                
+                // Add a header
+                pdf.setFontSize(18);
+                pdf.text('PESTCOZAM Service Report', pdfWidth / 2, 15, { align: 'center' });
+                
+                // Add the image of the form
+                pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
+                
+                // Download the PDF
+                pdf.save(filename);
+                
+                // Remove the clone from the document
+                document.body.removeChild(clone);
+            });
+        }
+        
+        // Initialize report cards with event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            const reportCards = document.querySelectorAll('.report-card');
+            console.log(`Found ${reportCards.length} report cards to initialize`);
+            
+            reportCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    const reportId = this.getAttribute('data-report-id');
+                    openReportModal(reportId);
+                });
+            });
+            
+            // Close modal when clicking outside
+            window.addEventListener('click', function(event) {
+                const modal = document.getElementById('reportModal');
+                if (event.target === modal) {
+                    closeReportModal();
+                }
+            });
+            
+            // Close modal with Escape key
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape') {
+                    closeReportModal();
+                }
+            });
+        });
+        </script>
     </section>
 
     <!-- Profile Section -->
