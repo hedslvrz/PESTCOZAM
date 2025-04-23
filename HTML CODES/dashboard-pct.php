@@ -126,7 +126,7 @@ try {
             <li>
                 <a href="#submit-report" onclick="showSection('submit-report')">
                     <i class='bx bx-file'></i>
-                    <span class="text">Submit Report</span>
+                    <span class="text">Submit Service Report</span>
                 </a>
             </li>
             <li>
@@ -229,6 +229,10 @@ try {
 
                 <div class="table-container">
                     <div class="filters">
+                        <div class="search-wrapper">
+                            <i class='bx bx-search'></i>
+                            <input type="text" id="assignment-search" placeholder="Search assignments...">
+                        </div>
                         <div class="tabs">
                             <button type="button" class="filter-btn active" data-filter="all">All</button>
                             <button type="button" class="filter-btn" data-filter="pending">Pending</button>
@@ -242,6 +246,7 @@ try {
                             <tr>
                                 <th>Schedule</th>
                                 <th>Customer</th>
+                                <th>Contact</th>
                                 <th>Service</th>
                                 <th>Location</th>
                                 <th>Status</th>
@@ -272,6 +277,12 @@ try {
                                             </div>
                                         </td>
                                         <td>
+                                            <div class="contact-info">
+                                                <i class='bx bx-phone'></i>
+                                                <span><?php echo htmlspecialchars($assignment['client_mobile']); ?></span>
+                                            </div>
+                                        </td>
+                                        <td>
                                             <div class="service-info">
                                                 <i class='bx bx-package'></i>
                                                 <span><?php echo htmlspecialchars($assignment['service_name']); ?></span>
@@ -291,15 +302,20 @@ try {
                                             </div>
                                         </td>
                                         <td>
-                                            <span class="status <?php echo strtolower($assignment['status']); ?>">
-                                                <?php echo htmlspecialchars($assignment['status']); ?>
-                                            </span>
+                                            <div class="status-view-container">
+                                                <span class="status <?php echo strtolower($assignment['status']); ?>">
+                                                    <?php echo htmlspecialchars($assignment['status']); ?>
+                                                </span>
+                                                <a href="view_job_details-pct.php?id=<?php echo $assignment['appointment_id']; ?>" class="view-btn">
+                                                    <i class='bx bx-show'></i> View Details
+                                                </a>
+                                            </div>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
                             <?php else: ?>
                                 <tr>
-                                    <td colspan="5" class="no-records">No assignments found</td>
+                                    <td colspan="6" class="no-records">No assignments found</td>
                                 </tr>
                             <?php endif; ?>
                         </tbody>
@@ -1023,6 +1039,47 @@ try {
             const filterButtons = document.querySelectorAll('.filter-btn');
             const assignmentRows = document.querySelectorAll('tr[data-status]');
             
+            // Check if there's an appointment_id in the URL fragment
+            function checkForAppointmentId() {
+                // Get the URL fragment
+                const hash = window.location.hash;
+                
+                // Check if we're in the submit-report section and have a parameter
+                if (hash.includes('#submit-report')) {
+                    // Show the submit-report section
+                    showSection('submit-report');
+                    
+                    // Extract appointment_id from URL if present
+                    const urlParams = new URLSearchParams(hash.split('?')[1]);
+                    const appointmentId = urlParams.get('appointment_id');
+                    
+                    if (appointmentId) {
+                        // Find and select the appointment in the dropdown
+                        const appointmentSelect = document.getElementById('appointment');
+                        if (appointmentSelect) {
+                            // Check if the option exists
+                            const option = Array.from(appointmentSelect.options).find(
+                                opt => opt.value === appointmentId
+                            );
+                            
+                            if (option) {
+                                appointmentSelect.value = appointmentId;
+                                // Trigger the change event to populate the form
+                                const event = new Event('change');
+                                appointmentSelect.dispatchEvent(event);
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Run on page load
+            checkForAppointmentId();
+            
+            // Also check when hash changes
+            window.addEventListener('hashchange', checkForAppointmentId);
+            
+            // Existing code for filter buttons
             filterButtons.forEach(button => {
                 button.addEventListener('click', function() {
                     // Remove active class from all buttons
@@ -1043,220 +1100,6 @@ try {
                     });
                 });
             });
-            
-            // Completely replace the customer select event handler with a more effective version
-            const customerSelect = document.getElementById('customer-select');
-            if (customerSelect) {
-                customerSelect.addEventListener('change', function() {
-                    if (!this.value) return;
-                    
-                    console.log('Loading customer details for ID:', this.value);
-                    
-                    // Get the selected option element
-                    const selectedOption = this.options[this.selectedIndex];
-                    if (!selectedOption) {
-                        console.error('Selected option not found');
-                        return;
-                    }
-                    
-                    // Extract data from data attributes
-                    const serviceId = selectedOption.getAttribute('data-service');
-                    const location = selectedOption.getAttribute('data-location');
-                    const allTechnicians = selectedOption.getAttribute('data-all-technicians');
-                    const allTechnicianNames = selectedOption.getAttribute('data-all-technician-names');
-                    
-                    console.log('Customer details found:', { 
-                        serviceId, 
-                        location, 
-                        allTechnicians,
-                        allTechnicianNames
-                    });
-                    
-                    // Set service type and customer location if available
-                    if (serviceId) document.getElementById('service-type').value = serviceId;
-                    if (location) document.getElementById('customer-location').value = location;
-                    
-                    const technicianSelect = document.getElementById('technician-select');
-                    if (technicianSelect) {
-                        // Clear previous selections first
-                        Array.from(technicianSelect.options).forEach(opt => {
-                            opt.selected = false;
-                        });
-                        
-                        // Process technician IDs from all_technicians attribute
-                        if (allTechnicians && allTechnicians.trim() !== "" && allTechnicians.toLowerCase() !== "null") {
-                            const techIds = allTechnicians.split(',').map(id => id.trim());
-                            console.log('Setting technicians:', techIds);
-                            
-                            // Select each matching technician in the dropdown
-                            techIds.forEach(id => {
-                                for (let i = 0; i < technicianSelect.options.length; i++) {
-                                    if (technicianSelect.options[i].value === id) {
-                                        console.log(`Selecting technician ID ${id}`);
-                                        technicianSelect.options[i].selected = true;
-                                        break;
-                                    }
-                                }
-                            });
-                        } else {
-                            // Fallback to main technician if no multi-technician data
-                            const mainTechId = selectedOption.getAttribute('data-technician');
-                            if (mainTechId && mainTechId !== 'null') {
-                                console.log('Setting main technician:', mainTechId);
-                                
-                                // Find and select the matching option
-                                for (let i = 0; i < technicianSelect.options.length; i++) {
-                                    if (technicianSelect.options[i].value === mainTechId) {
-                                        technicianSelect.options[i].selected = true;
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                });
-                
-                // Trigger change event if a value is already selected (e.g., on page reload)
-                if (customerSelect.value) {
-                    console.log('Triggering change event for preselected customer:', customerSelect.value);
-                    const event = new Event('change');
-                    customerSelect.dispatchEvent(event);
-                }
-            }
-        });
-        
-        // Add this function to enable manual debugging from console
-        function debugTechnicianSelection(appointmentId) {
-            const select = document.getElementById('customer-select');
-            if (select) {
-                select.value = appointmentId;
-                const event = new Event('change');
-                select.dispatchEvent(event);
-            }
-        }
-
-        // Direct modal event handlers
-        document.addEventListener('DOMContentLoaded', function() {
-            const profileModal = document.getElementById('profileModal');
-            const openBtn = document.getElementById('openProfileModalBtn');
-            const closeBtn = document.querySelector('#profileModal .close');
-            const cancelBtn = document.getElementById('closeProfileModalBtn');
-            const profileForm = document.getElementById('editProfileForm');
-            
-            function openProfileModal() {
-                console.log('Opening modal...');
-                
-                // First set display to flex
-                profileModal.style.display = 'flex';
-                
-                // Force a reflow/repaint before adding the show class
-                void profileModal.offsetWidth;
-                
-                // Add show class to trigger the transition
-                profileModal.classList.add('show');
-                
-                document.body.style.overflow = 'hidden';
-            }
-            
-            function closeProfileModal() {
-                // First remove the show class to trigger the transition
-                profileModal.classList.remove('show');
-                
-                // Wait for the transition to complete before hiding
-                setTimeout(() => {
-                    profileModal.style.display = "none";
-                    document.body.style.overflow = '';
-                }, 300); // Match the transition duration (0.3s)
-            }
-            
-            if (openBtn && profileModal) {
-                // Open modal when clicking the edit button
-                openBtn.addEventListener('click', function() {
-                    console.log('Edit button clicked');
-                    openProfileModal();
-                });
-                
-                // Close modal when clicking the X button
-                if (closeBtn) {
-                    closeBtn.addEventListener('click', closeProfileModal);
-                }
-                
-                // Close modal when clicking the Cancel button
-                if (cancelBtn) {
-                    cancelBtn.addEventListener('click', closeProfileModal);
-                }
-                
-                // Close modal when clicking outside the modal content
-                window.addEventListener('click', function(event) {
-                    if (event.target === profileModal) {
-                        closeProfileModal();
-                    }
-                });
-                
-                // Close modal with Escape key
-                document.addEventListener('keydown', function(event) {
-                    if (event.key === 'Escape' && profileModal.classList.contains('show')) {
-                        closeProfileModal();
-                    }
-                });
-            }
-            
-            // Add form submission handler for profile updates
-            if (profileForm) {
-                profileForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    
-                    // Create FormData object from the form
-                    const formData = new FormData(this);
-                    
-                    // Send AJAX request to update profile
-                    fetch('../HTML CODES/update_profile.php', {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            // Update the profile info without page reload
-                            document.querySelector('.profile-info h3').textContent = 
-                                document.getElementById('firstname').value + ' ' + 
-                                document.getElementById('lastname').value;
-                            
-                            document.querySelector('.profile-info p:nth-child(2)').textContent = 
-                                document.getElementById('email').value;
-                            
-                            // Update spans in the personal information section
-                            document.querySelector('span[data-field="firstname"]').textContent = 
-                                document.getElementById('firstname').value;
-                            
-                            document.querySelector('span[data-field="middlename"]').textContent = 
-                                document.getElementById('middlename').value || 'Not set';
-                            
-                            document.querySelector('span[data-field="lastname"]').textContent = 
-                                document.getElementById('lastname').value;
-                            
-                            document.querySelector('span[data-field="email"]').textContent = 
-                                document.getElementById('email').value;
-                            
-                            document.querySelector('span[data-field="mobile_number"]').textContent = 
-                                document.getElementById('mobile_number').value;
-                            
-                            // Close the modal
-                            closeProfileModal();
-                            
-                            // Show success message (you might want to add a toast notification system)
-                            alert('Profile updated successfully!');
-                        } else {
-                            // Show error message
-                            alert(data.message || 'An error occurred while updating your profile.');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('An error occurred while updating your profile.');
-                    });
-                });
-            }
         });
     </script>
 </body>

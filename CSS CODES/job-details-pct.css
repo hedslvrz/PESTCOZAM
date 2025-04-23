@@ -1,0 +1,806 @@
+.job-details-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 10px 20px;
+    font-family: 'Roboto', sans-serif;
+}
+
+/* Header and Breadcrumb */
+
+.back-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: #f0f2f5;
+    border-radius: 8px;
+    color: #344767;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.back-btn:hover {
+    background: #e0e4e9;
+}
+
+.back-btn i {
+    font-size: 18px;
+}
+
+/* Card Container - Force exact spacing */
+.card-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0 !important; /* Remove gap property */
+    margin-bottom: 20px;
+}
+
+/* Detail Section Styles - Apply to all sections consistently */
+.detail-section {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease;
+    margin: 0 0 12px 0 !important; /* Force 12px bottom margin on all sections */
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Last section should not have bottom margin */
+.card-container > .detail-section:last-child {
+    margin-bottom: 0 !important;
+}
+
+.detail-section:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+/* Standardize all section headers */
+.section-header {
+    padding: 12px 20px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #f8fafc;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.section-header h3 {
+    color: #344767;
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.section-header h3 i {
+    font-size: 20px;
+    color: #144578;
+}
+
+/* Standardize all section content padding */
+.section-content {
+    padding: 12px 14px !important;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Remove specific styling for nth-child elements that create inconsistency */
+.detail-section:nth-of-type(4),
+.detail-section:nth-of-type(5) {
+    /* Remove this entire block that was removing margins */
+}
+
+/* Time section consistency fixes */
+.time-section .section-content,
+.property-section .section-content {
+    padding: 12px 14px; /* Match other sections */
+}
+
+/* Treatment section consistency fixes */
+.detail-section:nth-of-type(4) .section-content {
+    padding: 12px 14px !important; /* Force consistency with other sections */
+    display: block;
+}
+
+/* Ensure proper spacing in all detail sections including treatment details and technician sections */
+.card-container > .detail-section {
+    margin-bottom: 12px !important;
+}
+
+/* Time content padding fix */
+.time-content {
+    padding: 0 !important; /* Remove additional padding */
+}
+
+/* Ensure time display container has proper spacing */
+.time-display-container {
+    padding: 0;
+    margin: 0;
+}
+
+/* Ensure all info grids use the same spacing */
+.info-grid {
+    gap: 12px; /* Consistent gap */
+}
+
+/* Fix for Treatment Details section to match other sections */
+.treatment-method-section, .chemicals-section {
+    margin-bottom: 12px;
+}
+
+/* Last child margin fix */
+.treatment-method-section:last-child, 
+.chemicals-section:last-child,
+.method-options:last-child,
+.chemical-list:last-child {
+    margin-bottom: 0;
+}
+
+/* Top Sections Container for Two Column Layout */
+.top-sections-container {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+    align-items: stretch; /* Force children to stretch to full height */
+    margin-bottom: 12px !important;
+}
+
+.customer-section,
+.service-section {
+    flex: 1;
+    min-width: 0; /* Prevents flex items from overflowing */
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* Ensure full height */
+}
+
+.customer-section .section-content,
+.service-section .section-content {
+    flex: 1; /* Makes content areas expand to fill space */
+    display: flex;
+    flex-direction: column;
+}
+
+/* Make sure info-grid divs fill the available space */
+.customer-section .info-grid,
+.service-section .info-grid {
+    flex: 1;
+    display: grid;
+    height: 100%;
+}
+
+/* Fix for the status badge positioning if needed */
+.service-section .status {
+    align-self: flex-start;
+}
+
+/* Information Grid */
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); /* Smaller minimum width */
+    gap: 12px; /* Consistent gap */
+}
+
+.info-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px; /* Reduced gap */
+}
+
+.info-group label {
+    font-weight: 500;
+    color: #666;
+    font-size: 14px;
+}
+
+.info-group p {
+    margin: 0;
+    color: #344767;
+    font-size: 15px;
+}
+
+.form-input {
+    padding: 10px 14px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 15px;
+    outline: none;
+    transition: all 0.2s;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.form-input:focus {
+    border-color: #144578;
+    box-shadow: 0 0 0 2px rgba(20, 69, 120, 0.1);
+}
+
+select.form-input {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23444' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 36px;
+}
+
+/* Treatment Options Layout */
+.treatment-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 8px; /* Reduced from 12px */
+    margin-bottom: 8px; /* Reduced from 12px */
+}
+
+.method-section,
+.chemicals-section {
+    background: #f8f9fa;
+    padding: 10px; /* Reduced from 16px */
+    border-radius: 8px;
+}
+
+.method-section h4,
+.chemicals-section h4 {
+    font-size: 15px; /* Slightly smaller */
+    margin-top: 0;
+    margin-bottom: 8px; /* Reduced from 16px */
+    color: #344767;
+    font-weight: 600;
+}
+
+/* Checkbox Group Styling */
+.checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px; /* Reduced from 12px */
+}
+
+.checkbox-group label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    color: #444;
+    cursor: pointer;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.checkbox-group input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #144578;
+    cursor: pointer;
+    margin: 0;
+}
+
+.checkbox-group label:last-of-type {
+    margin-bottom: 0;
+}
+
+/* Chemical Item Styling */
+.chemical-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 6px; /* Reduced from 10px */
+    height: auto;
+    min-height: 0;
+}
+
+.chemical-item:last-of-type {
+    margin-bottom: 0;
+}
+
+.quantity-input {
+    width: 80px;
+    padding: 6px 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    outline: none;
+}
+
+.quantity-input:focus {
+    border-color: #144578;
+    box-shadow: 0 0 0 2px rgba(20, 69, 120, 0.1);
+}
+
+.add-method-btn,
+.add-chemical-btn {
+    margin-top: 6px; /* Reduced from 8px */
+    padding: 6px 10px; /* Reduced from 8px 14px */
+    background: none;
+    border: 1px dashed #144578;
+    color: #144578;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    width: 100%;
+}
+
+.add-method-btn:hover,
+.add-chemical-btn:hover {
+    background: #e6f3ff;
+}
+
+/* Additional Info Grid */
+.additional-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 8px; /* Reduced from 12px */
+    margin-top: 8px; /* Reduced from 12px */
+    background: #f8f9fa;
+    padding: 10px; /* Reduced from 16px */
+    border-radius: 8px;
+}
+
+/* Technician Assignment Section */
+.current-techs {
+    margin-bottom: 10px; /* Reduced from 16px */
+}
+
+.current-techs h4 {
+    font-size: 15px; /* Slightly smaller */
+    color: #344767;
+    margin-bottom: 8px; /* Reduced from 12px */
+    font-weight: 600;
+}
+
+.assigned-techs-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px; /* Reduced from 12px */
+}
+
+.assigned-tech {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px; /* Reduced from 10px 16px */
+    background: #e6f3ff;
+    color: #144578;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.assigned-tech i {
+    font-size: 18px;
+}
+
+.tech-assignments h4 {
+    font-size: 15px; /* Slightly smaller */
+    color: #344767;
+    margin-bottom: 8px; /* Reduced from 16px */
+    font-weight: 600;
+}
+
+.tech-selection {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); /* Smaller column size */
+    gap: 6px; /* Reduced from 8px */
+}
+
+.tech-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 8px; /* Reduced from 8px 12px */
+    background: #f8f9fa;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.tech-option:hover {
+    background: #e6f3ff;
+}
+
+.tech-option input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #144578;
+    margin: 0;
+}
+
+.tech-option label {
+    font-size: 14px;
+    color: #444;
+    cursor: pointer;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.tech-option:last-of-type {
+    margin-bottom: 0;
+}
+
+/* Action Buttons Section */
+.action-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px; /* Reduced gap */
+    margin-top: 12px !important;
+}
+
+.save-btn {
+    padding: 12px 24px;
+    background: #144578;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.save-btn:hover {
+    background: #0d3057;
+    transform: translateY(-2px);
+}
+
+.save-btn:disabled {
+    background: #a0b1c5;
+    cursor: not-allowed;
+}
+
+.save-btn i {
+    font-size: 18px;
+}
+
+/* Status Badge Styles */
+.status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    min-width: 100px;
+}
+
+.status.pending {
+    background-color: #fff8e1;
+    color: #ffa000;
+}
+
+.status.confirmed {
+    background-color: #e3f2fd;
+    color: #1976d2;
+}
+
+.status.completed {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+}
+
+.status.canceled {
+    background-color: #ffebee;
+    color: #c62828;
+}
+
+/* Success Message */
+.success-message {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px;
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-weight: 500;
+    animation: fadeIn 0.3s ease;
+}
+
+.success-message i {
+    font-size: 20px;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Time slots section */
+.time-slots-container {
+    margin-top: 16px;
+}
+
+.time-slots {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.time-slot {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: white;
+    padding: 12px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* Time Information Section */
+.time-section {
+    width: 100%;
+    margin-bottom: 12px !important;
+}
+
+.time-content {
+    padding: 0 !important; /* Remove additional padding */
+}
+
+.time-display-container {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 20px;
+    width: 100%;
+    text-align: center;
+    padding: 0;
+    margin: 0;
+}
+
+.time-field {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    min-width: 120px;
+    max-width: 200px;
+    margin: 0 auto;
+}
+
+.time-field label {
+    font-size: 13px;
+    color: #666;
+    font-weight: 500;
+}
+
+.time-display {
+    padding: 10px 14px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    font-size: 15px;
+    color: #344767;
+    margin: 0;
+    border: 1px solid #e0e4e9;
+    width: 100%;
+    text-align: center;
+}
+
+/* Feedback Button Styling */
+.feedback-btn {
+    padding: 7px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+    background-color: #e6f3ff;
+    color: #144578;
+    width: 100%;
+}
+
+.feedback-btn:hover {
+    background-color: #144578;
+    color: white;
+    transform: translateY(-1px);
+}
+
+/* Enhanced modal styling */
+#feedbackModal {
+    display: none; /* Start hidden */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+#feedbackModal.show {
+    display: flex !important; /* Force display when show class is added */
+}
+
+/* Modal content styles */
+.modal-content {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    width: 90%;
+    max-width: 600px;
+    padding: 20px;
+    position: relative;
+    animation: modalFadeIn 0.3s;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Form styling */
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #333;
+}
+
+.form-group input, 
+.form-group select, 
+.form-group textarea {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.form-group textarea {
+    height: 100px;
+    resize: vertical;
+}
+
+/* Modal buttons */
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.submit-btn, .cancel-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.submit-btn {
+    background-color: #144578;
+    color: white;
+}
+
+.submit-btn:hover {
+    background-color: #0d3057;
+}
+
+.cancel-btn {
+    background-color: #e4e6eb;
+    color: #333;
+}
+
+.cancel-btn:hover {
+    background-color: #d8dadf;
+}
+
+.close-modal {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    font-size: 24px;
+    color: #999;
+    cursor: pointer;
+    background: none;
+    border: none;
+}
+
+.close-modal:hover {
+    color: #333;
+}
+
+/* Responsive Adjustments */
+@media screen and (max-width: 768px) {
+    .info-grid,
+    .treatment-options,
+    .additional-info,
+    .tech-selection {
+        grid-template-columns: 1fr;
+    }
+    
+    .head-title {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .action-buttons {
+        justify-content: center;
+    }
+
+    .top-sections-container {
+        flex-direction: column;
+    }
+}
+
+/* Ensure proper spacing in all sections */
+* {
+    box-sizing: border-box;
+}
+
+/* Property Details Section Styling */
+.property-section {
+    width: 100%;
+    margin-bottom: 12px !important;
+}
+
+.property-section .info-grid {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+
+/* Make the pest concern take full width */
+.info-group.pest-concern {
+    grid-column: 1 / -1;
+}
+
+.info-group.pest-concern p {
+    white-space: pre-line;
+    padding: 8px 12px;
+    background-color: #f8f9fa;
+    border-left: 3px solid #144578;
+    border-radius: 4px;
+    line-height: 1.5;
+}
+
+/* Ensure nested elements in treatment details don't add extra space */
+.detail-section:nth-of-type(4) .treatment-method-section,
+.detail-section:nth-of-type(4) .chemicals-section,
+.detail-section:nth-of-type(4) .additional-info {
+    margin-bottom: 12px !important;
+}
+
+.detail-section:nth-of-type(4) .treatment-method-section:last-child,
+.detail-section:nth-of-type(4) .chemicals-section:last-child,
+.detail-section:nth-of-type(4) .additional-info:last-child {
+    margin-bottom: 0 !important;
+}

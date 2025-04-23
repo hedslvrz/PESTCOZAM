@@ -952,3 +952,201 @@ function debugTechnicianSelect() {
         console.log('Parent visibility style:', window.getComputedStyle(parent).visibility);
     }
 }
+
+// Function to handle view job details
+function viewJobDetails(assignmentId) {
+    if (assignmentId) {
+        window.location.href = `view_job_details-pct.php?id=${assignmentId}`;
+    }
+}
+
+// Function to handle assignment search
+function initAssignmentSearch() {
+    const searchInput = document.getElementById('assignment-search');
+    if (!searchInput) return;
+    
+    const assignmentRows = document.querySelectorAll('tr[data-status]');
+    const noResultsRow = document.createElement('tr');
+    noResultsRow.className = 'no-results';
+    noResultsRow.innerHTML = '<td colspan="7" style="text-align:center; padding: 20px;">No matching assignments found</td>';
+    noResultsRow.style.display = 'none';
+    
+    if (assignmentRows.length > 0) {
+        assignmentRows[0].parentNode.appendChild(noResultsRow);
+    }
+    
+    searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase().trim();
+        let visibleCount = 0;
+        
+        // Get currently active filter
+        const activeFilter = document.querySelector('.filter-btn.active');
+        const filterValue = activeFilter ? activeFilter.getAttribute('data-filter') : 'all';
+        
+        // First apply the status filter, then apply the search filter
+        assignmentRows.forEach(row => {
+            // Reset the row visibility based on the active filter
+            if (filterValue === 'all' || row.getAttribute('data-status') === filterValue) {
+                row.classList.remove('hidden-by-filter');
+            } else {
+                row.classList.add('hidden-by-filter');
+            }
+            
+            // Now apply search filter on top of that
+            const rowText = row.textContent.toLowerCase();
+            if (searchTerm === '' || rowText.includes(searchTerm)) {
+                row.classList.remove('hidden-by-search');
+                if (!row.classList.contains('hidden-by-filter')) {
+                    visibleCount++;
+                }
+            } else {
+                row.classList.add('hidden-by-search');
+            }
+        });
+        
+        // Show/hide the "no results" message
+        if (visibleCount === 0) {
+            noResultsRow.style.display = 'table-row';
+        } else {
+            noResultsRow.style.display = 'none';
+        }
+    });
+}
+
+// Updated filter button handling to work with search
+document.addEventListener('DOMContentLoaded', function() {
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const assignmentRows = document.querySelectorAll('tr[data-status]');
+    const searchInput = document.getElementById('assignment-search');
+    
+    // Initialize assignment search
+    initAssignmentSearch();
+    
+    filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Remove active class from all buttons
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            
+            // Add active class to clicked button
+            this.classList.add('active');
+            
+            const filterValue = this.getAttribute('data-filter');
+            const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
+            let visibleCount = 0;
+            
+            // Apply both the filter and search term
+            assignmentRows.forEach(row => {
+                const rowText = row.textContent.toLowerCase();
+                const matchesSearch = searchTerm === '' || rowText.includes(searchTerm);
+                
+                if ((filterValue === 'all' || row.getAttribute('data-status') === filterValue) && matchesSearch) {
+                    row.classList.remove('hidden-by-filter');
+                    row.classList.remove('hidden-by-search');
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    if (filterValue !== 'all' && row.getAttribute('data-status') !== filterValue) {
+                        row.classList.add('hidden-by-filter');
+                    } else {
+                        row.classList.remove('hidden-by-filter');
+                    }
+                    
+                    if (!matchesSearch) {
+                        row.classList.add('hidden-by-search');
+                    } else {
+                        row.classList.remove('hidden-by-search');
+                    }
+                    
+                    row.style.display = 'none';
+                }
+            });
+            
+            // Show/hide no results message
+            const noResultsRow = document.querySelector('tr.no-results');
+            if (noResultsRow) {
+                if (visibleCount === 0) {
+                    noResultsRow.style.display = 'table-row';
+                } else {
+                    noResultsRow.style.display = 'none';
+                }
+            }
+        });
+    });
+});
+
+// Profile Modal Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Get modal and buttons
+    const profileModal = document.getElementById('profileModal');
+    const openProfileModalBtn = document.getElementById('openProfileModalBtn');
+    const closeProfileModalBtn = document.getElementById('closeProfileModalBtn');
+    const closeBtn = document.querySelector('#profileModal .close');
+    const editProfileForm = document.getElementById('editProfileForm');
+    
+    // Function to open modal
+    function openProfileModal() {
+        if (profileModal) {
+            profileModal.style.display = 'flex';
+            setTimeout(() => {
+                profileModal.classList.add('show');
+            }, 10);
+        }
+    }
+    
+    // Function to close modal
+    function closeProfileModal() {
+        if (profileModal) {
+            profileModal.classList.remove('show');
+            setTimeout(() => {
+                profileModal.style.display = 'none';
+            }, 300); // Match transition duration
+        }
+    }
+    
+    // Event listeners
+    if (openProfileModalBtn) {
+        openProfileModalBtn.addEventListener('click', openProfileModal);
+    }
+    
+    if (closeProfileModalBtn) {
+        closeProfileModalBtn.addEventListener('click', closeProfileModal);
+    }
+    
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeProfileModal);
+    }
+    
+    // Close the modal when clicking outside the content
+    window.addEventListener('click', function(event) {
+        if (event.target === profileModal) {
+            closeProfileModal();
+        }
+    });
+    
+    // Handle profile form submission
+    if (editProfileForm) {
+        editProfileForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Here you would typically send form data with AJAX
+            // For now, let's mock a successful update
+            const formData = new FormData(editProfileForm);
+            
+            // Simulate AJAX request (you'd replace this with an actual fetch call)
+            setTimeout(() => {
+                // Update user info in the profile view
+                for (const [name, value] of formData.entries()) {
+                    const displayElement = document.querySelector(`.info-content span[data-field="${name}"]`);
+                    if (displayElement) {
+                        displayElement.textContent = value;
+                    }
+                }
+                
+                // Close the modal
+                closeProfileModal();
+                
+                // Success alert removed as requested
+            }, 500);
+        });
+    }
+});
