@@ -281,6 +281,10 @@ try {
             'display_lastname' => $isForSelf ? ($user['lastname'] ?? '') : ($personalInfo['lastname'] ?? ''),
             'display_email' => $isForSelf ? ($user['email'] ?? '') : ($personalInfo['email'] ?? ''),
             'display_mobile_number' => $isForSelf ? ($user['mobile_number'] ?? '') : ($personalInfo['mobile_number'] ?? ''),
+            'property_type' => $locationData['property_type'] ?? 'Residential',
+            'establishment_name' => $locationData['establishment_name'] ?? '',
+            'property_area' => $locationData['property_area'] ?? '',
+            'pest_concern' => $locationData['pest_concern'] ?? '',
         ];
     }
 
@@ -407,6 +411,32 @@ try {
                         ?>
                     </span>
                 </div>
+                
+                <!-- New fields -->
+                <div class="receipt-row">
+                    <span class="label">Property Type:</span>
+                    <span class="value">
+                        <?php echo ucfirst(htmlspecialchars($appointment['property_type'] ?? 'Residential')); ?>
+                        <?php if(isset($appointment['establishment_name']) && !empty($appointment['establishment_name'])): ?>
+                            (<?php echo htmlspecialchars($appointment['establishment_name']); ?>)
+                        <?php endif; ?>
+                    </span>
+                </div>
+                
+                <?php if(isset($appointment['property_area']) && !empty($appointment['property_area'])): ?>
+                <div class="receipt-row">
+                    <span class="label">Property Area:</span>
+                    <span class="value"><?php echo htmlspecialchars($appointment['property_area']); ?> sq.m</span>
+                </div>
+                <?php endif; ?>
+                
+                <?php if(isset($appointment['pest_concern']) && !empty($appointment['pest_concern'])): ?>
+                <div class="receipt-row">
+                    <span class="label">Pest Concern:</span>
+                    <span class="value"><?php echo nl2br(htmlspecialchars($appointment['pest_concern'])); ?></span>
+                </div>
+                <?php endif; ?>
+                
                 <div class="receipt-row">
                     <span class="label">Client Name:</span>
                     <span class="value">

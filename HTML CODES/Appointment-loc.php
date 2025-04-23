@@ -44,7 +44,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             'barangay' => $data['barangay'],
             'street_address' => $data['street_address'],
             'latitude' => $data['latitude'],
-            'longitude' => $data['longitude']
+            'longitude' => $data['longitude'],
+            'property_type' => $data['property_type'] ?? 'residential',
+            'establishment_name' => $data['establishment_name'] ?? null,
+            'property_area' => $data['property_area'] ?? null,
+            'pest_concern' => $data['pest_concern'] ?? null
         ]);
         
         // Update database
@@ -55,7 +59,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                   barangay = :barangay, 
                   street_address = :street_address,
                   latitude = :latitude,
-                  longitude = :longitude
+                  longitude = :longitude,
+                  property_type = :property_type,
+                  establishment_name = :establishment_name,
+                  property_area = :property_area,
+                  pest_concern = :pest_concern
                   WHERE user_id = :user_id AND service_id = :service_id
                   ORDER BY created_at DESC
                   LIMIT 1";
@@ -69,6 +77,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             ':street_address' => $data['street_address'],
             ':latitude' => $data['latitude'],
             ':longitude' => $data['longitude'],
+            ':property_type' => $data['property_type'] ?? 'residential',
+            ':establishment_name' => $data['establishment_name'] ?? null,
+            ':property_area' => $data['property_area'] ? floatval($data['property_area']) : null,
+            ':pest_concern' => $data['pest_concern'] ?? null,
             ':user_id' => $user_id,
             ':service_id' => $service_id
         ]);
@@ -289,6 +301,43 @@ $locationData = AppointmentSession::getData('location', []);
         <input type="hidden" id="latitude">
         <input type="hidden" id="longitude">
 
+        <!-- New section for property type -->
+        <div class="property-type-section">
+          <label>Property Type:</label>
+          <div class="property-type-options">
+            <label class="radio-label">
+              <input type="radio" name="property_type" value="residential" checked> Residential
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="property_type" value="establishment"> Establishment
+            </label>
+          </div>
+          
+          <!-- Conditional field for establishment name -->
+          <div id="establishment-name-container" style="display: none;">
+            <input type="text" id="establishment_name" class="specify-addr" 
+                  placeholder="Establishment Name">
+          </div>
+        </div>
+        
+        <!-- Property area -->
+        <div class="property-area-section">
+          <label>Property Area (optional):</label>
+          <div class="area-input-container">
+            <input type="number" id="property_area" class="specify-addr" 
+                  placeholder="Enter the total square meters of your property">
+            <span class="area-unit">sq.m</span>
+          </div>
+          <small class="help-text">Please provide the approximate total area of your property in square meters (length × width)</small>
+        </div>
+        
+        <!-- Pest Concern -->
+        <div class="pest-concern-section">
+          <label>Pest Concern:</label>
+          <textarea id="pest_concern" class="pest-concern-textarea" 
+                   placeholder="Please describe your pest concern related to the service you selected"></textarea>
+        </div>
+
         <div class="navigation-buttons">
             <button onclick="window.location.href='Appointment-service.php'">Back</button>
             <button id="nextButton">Next</button>
@@ -339,7 +388,11 @@ $locationData = AppointmentSession::getData('location', []);
         barangay: document.getElementById("barangay").value,
         street_address: document.getElementById("street_address").value,
         latitude: document.getElementById("latitude").value,
-        longitude: document.getElementById("longitude").value
+        longitude: document.getElementById("longitude").value,
+        property_type: document.querySelector('input[name="property_type"]:checked').value,
+        establishment_name: document.getElementById("establishment_name").value,
+        property_area: document.getElementById("property_area").value,
+        pest_concern: document.getElementById("pest_concern").value
       };
 
       fetch("Appointment-loc.php", {  
@@ -390,6 +443,15 @@ $locationData = AppointmentSession::getData('location', []);
         document.getElementById('longitude').value = "<?php echo addslashes($locationData['longitude'] ?? ''); ?>";
       }
 
+      // Prepopulate property details fields if they exist
+      if ("<?php echo $locationData['property_type'] ?? ''; ?>" === "establishment") {
+        document.querySelector('input[name="property_type"][value="establishment"]').checked = true;
+        document.getElementById('establishment-name-container').style.display = 'block';
+        document.getElementById('establishment_name').value = "<?php echo addslashes($locationData['establishment_name'] ?? ''); ?>";
+      }
+      document.getElementById('property_area').value = "<?php echo $locationData['property_area'] ?? ''; ?>";
+      document.getElementById('pest_concern').value = "<?php echo addslashes($locationData['pest_concern'] ?? ''); ?>";
+
       // If we have coordinates, set the marker on the map after it's loaded
       const latitude = <?php echo !empty($locationData['latitude']) ? $locationData['latitude'] : 'null'; ?>;
       const longitude = <?php echo !empty($locationData['longitude']) ? $locationData['longitude'] : 'null'; ?>;
@@ -407,6 +469,20 @@ $locationData = AppointmentSession::getData('location', []);
         }, 500); // Short delay to ensure map is loaded
       }
       <?php endif; ?>
+
+      // Show/hide establishment name field based on property type selection
+      const propertyTypeRadios = document.querySelectorAll('input[name="property_type"]');
+      const establishmentContainer = document.getElementById('establishment-name-container');
+      
+      propertyTypeRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+          if (this.value === 'establishment') {
+            establishmentContainer.style.display = 'block';
+          } else {
+            establishmentContainer.style.display = 'none';
+          }
+        });
+      });
     });
 
     // 3) Initialize Leaflet Map (Coordinates for Zamboanga City)
@@ -474,6 +550,6 @@ $locationData = AppointmentSession::getData('location', []);
       })
       .catch(err => console.log('Barangay geocode error:', err));
     });
-</script>
+  </script>
 </body>
 </html>

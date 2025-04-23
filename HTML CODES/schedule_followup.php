@@ -72,7 +72,8 @@ try {
     // Get original appointment details to copy
     $query = "SELECT 
         user_id, region, province, city, barangay, street_address, 
-        is_for_self, firstname, lastname, email, mobile_number
+        is_for_self, firstname, lastname, email, mobile_number,
+        property_type, establishment_name, property_area, pest_concern
     FROM appointments 
     WHERE id = :appointment_id";
     
@@ -96,11 +97,13 @@ try {
     $insertQuery = "INSERT INTO appointments (
         user_id, service_id, region, province, city, barangay, street_address,
         appointment_date, appointment_time, status, technician_id, is_for_self,
-        firstname, lastname, email, mobile_number
+        firstname, lastname, email, mobile_number,
+        property_type, establishment_name, property_area, pest_concern
     ) VALUES (
         :user_id, :service_id, :region, :province, :city, :barangay, :street_address,
         :appointment_date, :appointment_time, 'Confirmed', :technician_id, :is_for_self,
-        :firstname, :lastname, :email, :mobile_number
+        :firstname, :lastname, :email, :mobile_number,
+        :property_type, :establishment_name, :property_area, :pest_concern
     )";
     
     $insertStmt = $db->prepare($insertQuery);
@@ -121,6 +124,10 @@ try {
     $insertStmt->bindParam(':lastname', $originalAppointment['lastname']);
     $insertStmt->bindParam(':email', $originalAppointment['email']);
     $insertStmt->bindParam(':mobile_number', $originalAppointment['mobile_number']);
+    $insertStmt->bindParam(':property_type', $originalAppointment['property_type']);
+    $insertStmt->bindParam(':establishment_name', $originalAppointment['establishment_name']);
+    $insertStmt->bindParam(':property_area', $originalAppointment['property_area']);
+    $insertStmt->bindParam(':pest_concern', $originalAppointment['pest_concern']);
     
     $insertResult = $insertStmt->execute();
     if (!$insertResult) {

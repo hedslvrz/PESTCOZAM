@@ -33,7 +33,13 @@ try {
             WHEN a.is_for_self = 1 THEN CONCAT(u.firstname, ' ', u.lastname)
             ELSE CONCAT(a.firstname, ' ', a.lastname)
         END as client_name,
-        CONCAT(t.firstname, ' ', t.lastname) as technician_name
+        CONCAT(t.firstname, ' ', t.lastname) as technician_name,
+        a.property_type, 
+        a.establishment_name,
+        a.property_area,
+        a.pest_concern,
+        a.email,
+        a.mobile_number
     FROM appointments a
     JOIN services s ON a.service_id = s.service_id
     JOIN users u ON a.user_id = u.id

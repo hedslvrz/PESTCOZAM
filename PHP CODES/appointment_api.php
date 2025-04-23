@@ -51,9 +51,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             // Insert appointment
             $stmt = $pdo->prepare("INSERT INTO appointments 
-                (user_id, service_id, region, province, city, barangay, street_address, appointment_date, appointment_time, is_for_self, firstname, lastname, email, mobile_number) 
+                (user_id, service_id, region, province, city, barangay, street_address, 
+                appointment_date, appointment_time, is_for_self, firstname, lastname, email, mobile_number,
+                property_type, establishment_name, property_area, pest_concern) 
                 VALUES 
-                (:user_id, :service_id, :region, :province, :city, :barangay, :street_address, :appointment_date, :appointment_time, :is_for_self, :firstname, :lastname, :email, :mobile_number)");
+                (:user_id, :service_id, :region, :province, :city, :barangay, :street_address, 
+                :appointment_date, :appointment_time, :is_for_self, :firstname, :lastname, :email, :mobile_number,
+                :property_type, :establishment_name, :property_area, :pest_concern)");
 
             $stmt->execute([
                 ':user_id' => $data['user_id'],
@@ -69,7 +73,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ':firstname' => $firstname,
                 ':lastname' => $lastname,
                 ':email' => $email,
-                ':mobile_number' => $mobile_number
+                ':mobile_number' => $mobile_number,
+                ':property_type' => $data['property_type'] ?? 'residential',
+                ':establishment_name' => $data['establishment_name'] ?? null,
+                ':property_area' => $data['property_area'] ?? null,
+                ':pest_concern' => $data['pest_concern'] ?? null
             ]);
 
             $pdo->commit();

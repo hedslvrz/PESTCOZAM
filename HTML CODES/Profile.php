@@ -197,6 +197,24 @@ $recent_appointment = $stmt->get_result()->fetch_assoc();
             <p><strong>Date:</strong> <?php echo date('F d, Y', strtotime($recent_appointment['appointment_date'])); ?></p>
             <p><strong>Time:</strong> <?php echo date('h:i A', strtotime($recent_appointment['appointment_time'])); ?></p>
             <p><strong>Location:</strong> <?php echo htmlspecialchars($recent_appointment['street_address']); ?></p>
+            
+            <p><strong>Property Type:</strong> <?php echo ucfirst(htmlspecialchars($recent_appointment['property_type'] ?? 'residential')); ?>
+              <?php if(isset($recent_appointment['establishment_name']) && !empty($recent_appointment['establishment_name'])): ?>
+                (<?php echo htmlspecialchars($recent_appointment['establishment_name']); ?>)
+              <?php endif; ?>
+            </p>
+            
+            <?php if(isset($recent_appointment['property_area']) && !empty($recent_appointment['property_area'])): ?>
+            <p><strong>Property Area:</strong> <?php echo htmlspecialchars($recent_appointment['property_area']); ?> sq.m</p>
+            <?php endif; ?>
+            
+            <?php if(isset($recent_appointment['pest_concern']) && !empty($recent_appointment['pest_concern'])): ?>
+            <p><strong>Pest Concern:</strong> <?php echo nl2br(htmlspecialchars($recent_appointment['pest_concern'])); ?></p>
+            <?php endif; ?>
+            
+            <p><strong>Email:</strong> <?php echo htmlspecialchars($recent_appointment['is_for_self'] == 1 ? $user['email'] : ($recent_appointment['email'] ?? 'N/A')); ?></p>
+            <p><strong>Phone:</strong> <?php echo htmlspecialchars($recent_appointment['is_for_self'] == 1 ? $user['mobile_number'] : ($recent_appointment['mobile_number'] ?? 'N/A')); ?></p>
+            
             <p><strong>Technician:</strong> <?php echo $recent_appointment['technician_name'] ? htmlspecialchars($recent_appointment['technician_name']) : 'Not yet assigned'; ?></p>
             <p>
               <strong>Status:</strong> 
@@ -420,13 +438,24 @@ $recent_appointment = $stmt->get_result()->fetch_assoc();
                 <p><strong>Date:</strong> ${details.appointment_date}</p>
                 <p><strong>Time:</strong> ${details.appointment_time}</p>
                 <p><strong>Location:</strong> ${details.street_address}</p>
+                
+                <p><strong>Property Type:</strong> ${details.property_type ? details.property_type.charAt(0).toUpperCase() + details.property_type.slice(1) : 'Residential'}
+                  ${details.establishment_name ? `(${details.establishment_name})` : ''}
+                </p>
+                
+                ${details.property_area ? `<p><strong>Property Area:</strong> ${details.property_area} sq.m</p>` : ''}
+                
+                ${details.pest_concern ? `<p><strong>Pest Concern:</strong> ${details.pest_concern}</p>` : ''}
+                
+                <p><strong>Email:</strong> ${details.email || 'N/A'}</p>
+                <p><strong>Phone:</strong> ${details.mobile_number || 'N/A'}</p>
+                
                 <p><strong>Technician:</strong> ${details.technician_name || 'Not yet assigned'}</p>
                 <p>
                   <strong>Status:</strong> 
                   <span class="appointment-status ${details.status.toLowerCase()}">${details.status}</span>
                 </p>`;
                 
-              // Add Send Feedback button when status is Completed
               if (details.status === 'Completed') {
                 detailsHtml += `
                   <div class="feedback-section">
@@ -467,7 +496,6 @@ $recent_appointment = $stmt->get_result()->fetch_assoc();
       
       const formData = new FormData(this);
       
-      // Show loading state
       const submitBtn = this.querySelector('.submit-btn');
       const originalText = submitBtn.textContent;
       submitBtn.textContent = 'Submitting...';
@@ -497,7 +525,6 @@ $recent_appointment = $stmt->get_result()->fetch_assoc();
         alert('An error occurred while submitting your feedback. Please try again later.');
       })
       .finally(() => {
-        // Reset button state
         submitBtn.textContent = originalText;
         submitBtn.disabled = false;
       });
@@ -512,21 +539,17 @@ $recent_appointment = $stmt->get_result()->fetch_assoc();
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
 
-      // Add header
       doc.setFont("helvetica", "bold");
       doc.setFontSize(16);
       doc.text("PESTCOZAM Appointment Receipt", 105, 20, { align: "center" });
 
-      // Add subheader
       doc.setFont("helvetica", "normal");
       doc.setFontSize(12);
       doc.text("Estrada St, Zamboanga City, Zamboanga Del Sur, 7000", 105, 30, { align: "center" });
       doc.text("Contact: 0905-177-5662 | Email: pestcozam@yahoo.com", 105, 36, { align: "center" });
 
-      // Add a horizontal line
       doc.line(10, 40, 200, 40);
 
-      // Add appointment details
       doc.setFontSize(12);
       doc.text(`Appointment #: ${currentAppointment.id}`, 10, 50);
       doc.text(`Client: ${currentAppointment.client_name} ${currentAppointment.is_for_self == 1 ? '(Self)' : '(Other)'}`, 10, 60);
@@ -534,10 +557,42 @@ $recent_appointment = $stmt->get_result()->fetch_assoc();
       doc.text(`Date: ${currentAppointment.appointment_date}`, 10, 80);
       doc.text(`Time: ${currentAppointment.appointment_time}`, 10, 90);
       doc.text(`Location: ${currentAppointment.street_address}`, 10, 100);
-      doc.text(`Technician: ${currentAppointment.technician_name || 'Not yet assigned'}`, 10, 110);
-      doc.text(`Status: ${currentAppointment.status}`, 10, 120);
+      
+      let yPos = 110;
+      
+      const propertyTypeText = `Property Type: ${currentAppointment.property_type ? currentAppointment.property_type.charAt(0).toUpperCase() + currentAppointment.property_type.slice(1) : 'Residential'}`;
+      const establishmentText = currentAppointment.establishment_name ? ` (${currentAppointment.establishment_name})` : '';
+      doc.text(propertyTypeText + establishmentText, 10, yPos);
+      yPos += 10;
+      
+      if (currentAppointment.property_area) {
+        doc.text(`Property Area: ${currentAppointment.property_area} sq.m`, 10, yPos);
+        yPos += 10;
+      }
+      
+      if (currentAppointment.pest_concern) {
+        const concernText = `Pest Concern: ${currentAppointment.pest_concern}`;
+        if (concernText.length > 80) {
+          doc.text(`Pest Concern:`, 10, yPos);
+          yPos += 6;
+          const wrappedText = doc.splitTextToSize(currentAppointment.pest_concern, 180);
+          doc.text(wrappedText, 15, yPos);
+          yPos += (wrappedText.length * 6);
+        } else {
+          doc.text(concernText, 10, yPos);
+          yPos += 10;
+        }
+      }
+      
+      doc.text(`Email: ${currentAppointment.email || 'N/A'}`, 10, yPos);
+      yPos += 10;
+      doc.text(`Phone: ${currentAppointment.mobile_number || 'N/A'}`, 10, yPos);
+      yPos += 10;
+      
+      doc.text(`Technician: ${currentAppointment.technician_name || 'Not yet assigned'}`, 10, yPos);
+      yPos += 10;
+      doc.text(`Status: ${currentAppointment.status}`, 10, yPos);
 
-      // Add footer
       doc.setFontSize(10);
       doc.text("Thank you for choosing PESTCOZAM!", 105, 280, { align: "center" });
 

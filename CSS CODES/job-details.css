@@ -1210,3 +1210,26 @@ select.form-input {
         justify-content: center;
     }
 }
+
+/* Property Details Section Styling */
+.property-section {
+    width: 100%;
+}
+
+.property-section .info-grid {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+
+/* Make the pest concern take full width */
+.info-group.pest-concern {
+    grid-column: 1 / -1;
+}
+
+.info-group.pest-concern p {
+    white-space: pre-line;
+    padding: 8px 12px;
+    background-color: #f8f9fa;
+    border-left: 3px solid #144578;
+    border-radius: 4px;
+    line-height: 1.5;
+}

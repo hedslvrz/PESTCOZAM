@@ -281,6 +281,39 @@ $treatmentTypes = [
                 </div>
             </div>
 
+            <!-- Property Details Section -->
+            <div class="detail-section property-section">
+                <div class="section-header">
+                    <h3><i class='bx bx-building-house'></i> Property Details</h3>
+                </div>
+                <div class="section-content">
+                    <div class="info-grid">
+                        <div class="info-group">
+                            <label>Property Type</label>
+                            <p><?php echo ucfirst(htmlspecialchars($appointment['property_type'] ?? 'Residential')); ?>
+                            <?php if(isset($appointment['establishment_name']) && !empty($appointment['establishment_name'])): ?>
+                                (<?php echo htmlspecialchars($appointment['establishment_name']); ?>)
+                            <?php endif; ?>
+                            </p>
+                        </div>
+                        
+                        <?php if(isset($appointment['property_area']) && !empty($appointment['property_area'])): ?>
+                        <div class="info-group">
+                            <label>Property Area</label>
+                            <p><?php echo htmlspecialchars($appointment['property_area']); ?> sq.m</p>
+                        </div>
+                        <?php endif; ?>
+                        
+                        <?php if(isset($appointment['pest_concern']) && !empty($appointment['pest_concern'])): ?>
+                        <div class="info-group pest-concern">
+                            <label>Pest Concern</label>
+                            <p><?php echo nl2br(htmlspecialchars($appointment['pest_concern'])); ?></p>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+
             <!-- Treatment Details Section -->
             <div class="detail-section">
                 <div class="section-header">
