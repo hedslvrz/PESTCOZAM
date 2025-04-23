@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 20, 2025 at 10:07 AM
+-- Generation Time: Apr 23, 2025 at 03:34 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -57,23 +57,29 @@ CREATE TABLE `appointments` (
   `chemical_consumables` text DEFAULT NULL,
   `visit_frequency` varchar(50) DEFAULT NULL,
   `time_in` time DEFAULT NULL,
-  `time_out` time DEFAULT NULL
+  `time_out` time DEFAULT NULL,
+  `property_type` varchar(20) DEFAULT 'residential',
+  `establishment_name` varchar(255) DEFAULT NULL,
+  `property_area` decimal(10,2) DEFAULT NULL,
+  `pest_concern` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `appointments`
 --
 
-INSERT INTO `appointments` (`id`, `user_id`, `service_id`, `region`, `province`, `city`, `barangay`, `street_address`, `appointment_date`, `appointment_time`, `status`, `created_at`, `is_for_self`, `firstname`, `lastname`, `email`, `mobile_number`, `technician_id`, `latitude`, `longitude`, `updated_at`, `treatment_methods`, `chemicals`, `chemical_quantities`, `pct`, `device_installation`, `chemical_consumables`, `visit_frequency`, `time_in`, `time_out`) VALUES
-(15, 2, 8, '', '', '', '', 'Tumaga', '2025-03-15', '11:00:00', 'Confirmed', '2025-03-08 08:23:14', 1, NULL, NULL, NULL, NULL, 6, NULL, NULL, '2025-04-16 16:22:42', '[]', '[]', '[]', '', '', '', 'weekly', '00:00:00', '00:00:00'),
-(16, 2, 6, '', '', '', '', '', '2025-03-20', '03:00:00', 'Confirmed', '2025-03-08 08:32:49', 0, 'Hannah', 'Alvarez', 'hannah1@gmail.com', '09759500345', 8, NULL, NULL, '2025-03-30 17:24:08', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(22, 5, 6, 'Region IX', 'Zamboanga Del Sur', 'Zamboanga City', 'Calarian', 'Ruby Drive', '2025-03-21', '01:00:00', 'Confirmed', '2025-03-10 14:51:10', 1, NULL, NULL, NULL, NULL, 6, 6.928694, 122.025373, '2025-03-19 02:27:37', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(23, 5, 3, 'Region IX', 'Zamboanga Del Sur', 'Zamboanga City', 'San Roque', 'Carmen Drive', '2025-03-29', '11:00:00', 'Confirmed', '2025-03-10 14:51:59', 1, NULL, NULL, NULL, NULL, 6, 6.927831, 122.044193, '2025-04-16 14:28:17', '[]', '[\"Demand CS\",\"Fendona\"]', '[\"1\",\"2\"]', '', '', '', 'weekly', '00:00:00', '00:00:00'),
-(70, 5, 3, 'Region IX', 'Zamboanga Del Sur', 'Zamboanga City', 'Calarian', 'Ruby Drive', '2025-04-23', '07:00:00', 'Confirmed', '2025-04-15 13:47:54', 1, NULL, NULL, NULL, NULL, 6, 6.928591, 122.025378, '2025-04-15 19:17:54', '[]', '[]', '[]', '', '', '', 'weekly', '00:00:00', '00:00:00'),
-(83, 45, 6, 'Region IX', 'Zamboanga Del Sur', 'Zamboanga City', '', 'San Jose Street', '2025-04-30', '15:00:00', 'Pending', '2025-04-18 19:25:42', 0, 'Francine', 'Delos Reyes', 'francinemarchelle@gmail.com', '09759500123', NULL, 6.922505, 122.024724, '2025-04-18 19:27:11', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(85, 45, 4, 'Region IX', 'Zamboanga Del Sur', 'Zamboanga City', 'Pasonanca', 'Villa Rio Drive', '2025-04-30', '15:00:00', 'Pending', '2025-04-18 19:37:58', 1, NULL, NULL, NULL, NULL, NULL, 6.946032, 122.073967, '2025-04-18 19:38:51', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(86, 45, 5, 'Region IX', 'Zamboanga Del Sur', 'Zamboanga City', 'Divisoria', 'Divisoria Health center', '2025-04-30', '11:00:00', 'Pending', '2025-04-18 19:39:19', 0, 'Hedrian Dunn', 'Alvarez', 'dunnlvrz13@gmail.com', '09759500123', NULL, 6.945291, 122.100965, '2025-04-18 19:40:44', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(87, 2, 6, 'Region IX', 'Zamboanga Del Sur', 'Zamboanga City', 'Guiwan', 'Unity Drive', '2025-04-30', '07:00:00', 'Pending', '2025-04-19 13:17:12', 0, 'Francine', 'Delos Reyes', 'francinemarchelle@gmail.com', '09874563812', NULL, 6.922320, 122.088889, '2025-04-19 13:20:18', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `appointments` (`id`, `user_id`, `service_id`, `region`, `province`, `city`, `barangay`, `street_address`, `appointment_date`, `appointment_time`, `status`, `created_at`, `is_for_self`, `firstname`, `lastname`, `email`, `mobile_number`, `technician_id`, `latitude`, `longitude`, `updated_at`, `treatment_methods`, `chemicals`, `chemical_quantities`, `pct`, `device_installation`, `chemical_consumables`, `visit_frequency`, `time_in`, `time_out`, `property_type`, `establishment_name`, `property_area`, `pest_concern`) VALUES
+(15, 2, 8, '', '', '', '', 'Tumaga', '2025-03-15', '11:00:00', 'Completed', '2025-03-08 08:23:14', 1, NULL, NULL, NULL, NULL, 6, NULL, NULL, '2025-04-20 16:26:00', '[]', '[]', '[]', '', '', '', 'weekly', '00:00:00', '00:00:00', 'residential', NULL, NULL, NULL),
+(16, 2, 6, '', '', '', '', '', '2025-03-20', '03:00:00', 'Completed', '2025-03-08 08:32:49', 0, 'Hannah', 'Alvarez', 'hannah1@gmail.com', '09759500345', 8, NULL, NULL, '2025-04-22 01:33:50', '[]', '[]', '[]', '', '', '', 'weekly', '00:00:00', '00:00:00', 'residential', NULL, NULL, NULL),
+(22, 5, 6, 'Region IX', 'Zamboanga Del Sur', 'Zamboanga City', 'Calarian', 'Ruby Drive', '2025-03-21', '01:00:00', 'Confirmed', '2025-03-10 14:51:10', 1, NULL, NULL, NULL, NULL, 6, 6.928694, 122.025373, '2025-03-19 02:27:37', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'residential', NULL, NULL, NULL),
+(23, 5, 3, 'Region IX', 'Zamboanga Del Sur', 'Zamboanga City', 'San Roque', 'Carmen Drive', '2025-03-29', '11:00:00', 'Confirmed', '2025-03-10 14:51:59', 1, NULL, NULL, NULL, NULL, 6, 6.927831, 122.044193, '2025-04-16 14:28:17', '[]', '[\"Demand CS\",\"Fendona\"]', '[\"1\",\"2\"]', '', '', '', 'weekly', '00:00:00', '00:00:00', 'residential', NULL, NULL, NULL),
+(70, 5, 3, 'Region IX', 'Zamboanga Del Sur', 'Zamboanga City', 'Calarian', 'Ruby Drive', '2025-04-23', '07:00:00', 'Completed', '2025-04-15 13:47:54', 1, NULL, NULL, NULL, NULL, 6, 6.928591, 122.025378, '2025-04-20 08:29:26', '[]', '[]', '[]', '', '', '', 'weekly', '00:00:00', '00:00:00', 'residential', NULL, NULL, NULL),
+(83, 45, 6, 'Region IX', 'Zamboanga Del Sur', 'Zamboanga City', '', 'San Jose Street', '2025-04-30', '15:00:00', 'Pending', '2025-04-18 19:25:42', 0, 'Francine', 'Delos Reyes', 'francinemarchelle@gmail.com', '09759500123', NULL, 6.922505, 122.024724, '2025-04-18 19:27:11', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'residential', NULL, NULL, NULL),
+(85, 45, 4, 'Region IX', 'Zamboanga Del Sur', 'Zamboanga City', 'Pasonanca', 'Villa Rio Drive', '2025-04-30', '15:00:00', 'Completed', '2025-04-18 19:37:58', 1, NULL, NULL, NULL, NULL, 6, 6.946032, 122.073967, '2025-04-20 23:51:21', '[\"spraying\",\"misting\",\"fogging\"]', '[]', '[]', '', '', '', 'weekly', '23:00:00', '00:00:00', 'residential', NULL, NULL, NULL),
+(86, 45, 5, 'Region IX', 'Zamboanga Del Sur', 'Zamboanga City', 'Divisoria', 'Divisoria Health center', '2025-04-30', '11:00:00', 'Pending', '2025-04-18 19:39:19', 0, 'Hedrian Dunn', 'Alvarez', 'dunnlvrz13@gmail.com', '09759500123', NULL, 6.945291, 122.100965, '2025-04-18 19:40:44', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'residential', NULL, NULL, NULL),
+(87, 2, 6, 'Region IX', 'Zamboanga Del Sur', 'Zamboanga City', 'Guiwan', 'Unity Drive', '2025-04-30', '07:00:00', 'Pending', '2025-04-19 13:17:12', 0, 'Francine', 'Delos Reyes', 'francinemarchelle@gmail.com', '09874563812', NULL, 6.922320, 122.088889, '2025-04-19 13:20:18', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'residential', NULL, NULL, NULL),
+(88, 2, 3, 'Region IX', 'Zamboanga Del Sur', 'Zamboanga City', '', '', '2025-04-30', '11:00:00', 'Pending', '2025-04-23 00:52:04', 1, NULL, NULL, NULL, NULL, NULL, 0.000000, 0.000000, '2025-04-23 00:53:11', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'residential', '', 200.00, ''),
+(89, 2, 2, 'Region IX', 'Zamboanga Del Sur', 'Zamboanga City', 'Santa Maria', 'Mayor Vitaliano D. Agan Avenue', '2025-04-30', '13:00:00', 'Pending', '2025-04-23 01:18:32', 0, 'Ma Cristina', 'Alvarez', 'hannzcelvrz13@gmail.com', '09925028930', NULL, 6.929426, 122.073486, '2025-04-23 01:20:01', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'establishment', 'Tom n Tom\'s Cafe', 120.00, 'Infested by Ants');
 
 -- --------------------------------------------------------
 
@@ -97,7 +103,10 @@ INSERT INTO `appointment_technicians` (`id`, `appointment_id`, `technician_id`, 
 (9, 23, 6, '2025-04-16 14:28:17'),
 (10, 23, 8, '2025-04-16 14:28:17'),
 (12, 15, 6, '2025-04-16 16:22:42'),
-(13, 15, 8, '2025-04-16 16:22:42');
+(13, 15, 8, '2025-04-16 16:22:42'),
+(16, 85, 6, '2025-04-20 15:08:12'),
+(17, 85, 8, '2025-04-20 15:08:12'),
+(18, 16, 8, '2025-04-22 01:08:40');
 
 -- --------------------------------------------------------
 
@@ -168,7 +177,8 @@ INSERT INTO `reviews` (`id`, `user_id`, `service_id`, `appointment_id`, `rating`
 (2, 5, 6, 22, 4, 'Great rat control service. The team was prompt and efficient. My home has been rodent-free since their visit. Took off one star because they were a bit late, but the service itself was excellent.', 4, 5, 'The service was great, just wished they were on time.', 'The team was about 20 minutes late.', 'approved', '2025-04-02 15:45:10', '2025-04-03 09:22:15'),
 (3, 44, 3, NULL, 5, 'The termite control service was outstanding. Not only did they eliminate the termites, but they also provided helpful tips on preventing future infestations. Very knowledgeable staff!', 5, 5, 'Very informative and helpful advice provided.', NULL, 'approved', '2025-04-05 08:12:30', '2025-04-05 13:40:00'),
 (4, 2, 4, 16, 3, 'The general pest control was okay. It took care of most of the issues but I still noticed some insects after a week. Customer service was responsive when I called about this.', 3, 4, 'Good service but not fully effective.', 'Some insects still present after treatment.', 'pending', '2025-04-07 11:20:45', '2025-04-07 11:20:45'),
-(5, 5, 3, 23, 2, 'I was not entirely satisfied with the termite treatment. The technicians were friendly, but the problem returned within two weeks. Currently working with them on a follow-up appointment.', 2, 4, 'Technicians were professional but service wasn\'t effective.', 'Termites returned within two weeks.', 'rejected', '2025-04-09 16:05:22', '2025-04-10 09:30:15');
+(5, 5, 3, 23, 2, 'I was not entirely satisfied with the termite treatment. The technicians were friendly, but the problem returned within two weeks. Currently working with them on a follow-up appointment.', 2, 4, 'Technicians were professional but service wasn\'t effective.', 'Termites returned within two weeks.', 'rejected', '2025-04-09 16:05:22', '2025-04-10 09:30:15'),
+(6, 45, 4, 85, 5, 'Can I book for another inspection', 3, 4, 'The process is thorouguh', 'I have some broken appliances found after the treatment', 'pending', '2025-04-20 23:53:54', '2025-04-20 23:53:54');
 
 -- --------------------------------------------------------
 
@@ -228,6 +238,16 @@ CREATE TABLE `service_reports` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `service_reports`
+--
+
+INSERT INTO `service_reports` (`report_id`, `technician_id`, `appointment_id`, `date_of_treatment`, `time_in`, `time_out`, `treatment_type`, `treatment_method`, `pest_count`, `device_installation`, `consumed_chemicals`, `frequency_of_visits`, `photos`, `location`, `account_name`, `contact_no`, `status`, `created_at`, `updated_at`) VALUES
+(1, 6, 70, '2025-04-20', '16:24:00', '18:24:00', 'Termite Control', 'N/A', '15 roaches, 5 rats, 3 snakes', 'N/A', 'N/A', NULL, '[\"report_1745137766_0_general pest control.jpg\",\"report_1745137766_1_General-pest.jpg\",\"report_1745137766_2_gpc pic.jpg\"]', 'Ruby Drive, Calarian, Zamboanga City', 'Aldwin Suarez', '09929508778', 'pending', '2025-04-20 08:29:26', '2025-04-20 08:29:26'),
+(2, 6, 15, '2025-04-20', '23:08:00', '01:08:00', 'Extraction', 'N/A', NULL, 'N/A', 'N/A', NULL, NULL, 'Tumaga', 'Hedrian Alvarez', '09925028930', 'approved', '2025-04-20 16:26:00', '2025-04-22 01:04:55'),
+(3, 6, 85, '2025-04-20', '15:00:00', '17:00:00', 'General Pest Control', 'N/A', '10 roaches, 5 Flies', 'N/A', 'N/A', 'Annually', NULL, 'Villa Rio Drive, Pasonanca, Zamboanga City', 'Robert Downey', '09827182837', 'pending', '2025-04-20 23:51:21', '2025-04-20 23:51:21'),
+(6, 8, 16, '2025-04-22', '09:33:00', '11:33:00', 'Rat Control', 'dasdsad', NULL, 'dsadsa', 'dsada', NULL, NULL, 'Paraiso Homes Tumaga', 'Hannah Alvarez', '09759500345', 'approved', '2025-04-22 01:33:30', '2025-04-22 01:33:50');
 
 -- --------------------------------------------------------
 
@@ -304,7 +324,7 @@ INSERT INTO `users` (`id`, `firstname`, `middlename`, `lastname`, `email`, `mobi
 (23, 'Diz', NULL, 'Nuts', 'DizNutz@gmail.com', '09359472304', '$2y$10$wuGNS/gSlT.dE3K1/no/WeeJbtOA/DxMgNikntsIztDHEihZBLfZq', '2025-03-10 13:07:29', 'supervisor', 'active', '2025-03-21', 'EMP-0005', '5566778899', '9988776655', '3344556677'),
 (43, 'Francine', NULL, 'Delos Reyes', 'francine@gmail.com', '09726374892', '$2y$10$PA4m0oqFjStb/I//StISk.LdNlnqB.9fod0RWde38Nh4ZTz79VgIG', '2025-03-10 19:18:49', 'admin', 'active', '2004-03-22', 'EMP-0006', '6677889900', '0099887766', '4455667788'),
 (44, 'Hannah', 'Marie', 'Alvarez', 'hannahlvrz13@gmail.com', '09827182739', '$2y$10$AsWSNGgeI06Tb.yXa6FfsuT2Nu9Q6XDX1w9L.grfPc505me0VHHui', '2025-03-29 04:01:32', 'user', 'active', '1994-06-26', NULL, NULL, NULL, NULL),
-(45, 'Robert', NULL, 'Downey', 'robertdowney@gmail.com', '09827182837', '$2y$10$4H8vXmg0MfVYH6b4cAKSCOwRRIamEpeuNtLsLoVhFAQjiFZL4NhPe', '2025-03-29 04:04:42', 'supervisor', 'active', '2043-09-12', 'EMP-0007', '7788990011', '1100998877', '5566778899'),
+(45, 'Robert', NULL, 'Downey', 'robertdowney@gmail.com', '09827182837', '$2y$10$4H8vXmg0MfVYH6b4cAKSCOwRRIamEpeuNtLsLoVhFAQjiFZL4NhPe', '2025-03-29 04:04:42', 'user', 'active', '2043-09-12', 'EMP-0007', '7788990011', '1100998877', '5566778899'),
 (46, 'testing', '', 'testing', 'testing@gmail.com', '09831341345', '$2y$10$Dyy9BcO6tW3dF..9yTZAV.ZKgsfYVDDDBwdR7oJCD4F1VHkcwD2a6', '2025-04-13 13:44:08', 'supervisor', 'inactive', '1995-06-21', NULL, '', '', ''),
 (47, 'dwqdq', NULL, 'qwdqw', 'dwqdwqd@gmail.com', '09382831921', '$2y$10$6XSEqVKEp403moWydxa5peyiKoPwFyFY2SfECtDLL2oRFfVXgNAFi', '2025-04-15 14:49:25', 'supervisor', 'active', '2025-04-15', 'EMP-0008', '2312312312', '231312312312', '123131231231');
 
@@ -392,13 +412,13 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `appointments`
 --
 ALTER TABLE `appointments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=88;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=90;
 
 --
 -- AUTO_INCREMENT for table `appointment_technicians`
 --
 ALTER TABLE `appointment_technicians`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT for table `followup_plan`
@@ -416,7 +436,7 @@ ALTER TABLE `followup_visits`
 -- AUTO_INCREMENT for table `reviews`
 --
 ALTER TABLE `reviews`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `services`
@@ -428,7 +448,7 @@ ALTER TABLE `services`
 -- AUTO_INCREMENT for table `service_reports`
 --
 ALTER TABLE `service_reports`
-  MODIFY `report_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `report_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `time_slots`
