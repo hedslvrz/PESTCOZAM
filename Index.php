@@ -171,27 +171,27 @@ foreach ($services as $service) {
           <h4>WHO WE ARE</h4>
           <h2>The pest control expert you can trust.</h2>
           <p>
-            Nec consectetur lacinia in enim dapibus ullamcorper. Mi donec maecenas
-            ad potenti elementum dignissim lectus. Ridiculus parturient sed aenean
-            potenti ex amet adipiscing imperdiet sem.
+          PESTCOZAM Pest Control Service provides safe and reliable solutions to 
+          keep homes and businesses pest-free. We handle termites, cockroaches, 
+          rodents, and more using eco-friendly methods.
           </p>
           <p>
-            Nec consectetur lacinia in enim dapibus ullamcorper. Mi donec maecenas
-            ad potenti elementum dignissim lectus. Ridiculus parturient sed aenean
-            potenti ex amet adipiscing imperdiet sem.
+          With trained experts and tailored plans, we ensure fast, effective service. 
+          PESTCOZAM is committed to protecting your space and peace of mind.
           </p>
         </div>
         <div class="who-video">
-          <video class="analytics-video" autoplay muted loop onclick="this.paused ? this.play() : this.pause()">
+          <video class="analytics-video" autoplay onclick="this.paused ? this.play() : this.pause()">
             <source src="./Videos/who-we-are.mp4" type="video/mp4" />
             Your browser does not support the video tag.
           </video>
           <div class="testimonial-box">
             <p>
-              "Eget mi ridiculus dictum urna sed sodales venenatis eleifend mollis
-              fermentum sapien euismod sit quisque."
+              "As the owner of PESTCOZAM, I started this service to give families 
+              and businesses a safer, cleaner environment. Every job we take on is 
+              personal—we treat your space like our own."
             </p>
-            <span>-Hedrian Dunn Alvarez</span>
+            <span>- Viktor Kim Bue</span>
           </div>
         </div>
       </div>
@@ -218,24 +218,26 @@ foreach ($services as $service) {
     <section class="expert-section">
       <div class="expert-container">
           <div class="expert-image">
-              <img src="./Pictures/Expert pic.jpg" alt="Pest Control Expert">
+              <img src="./Pictures/Expert pic.png" alt="Pest Control Expert">
           </div>
           <div class="expert-content">
               <h2>The pest control expert<br>you can trust.</h2>
               <div class="expert-cards">
                   <div class="card white-card">
                       <h3>Pest Control</h3>
-                      <p>Les convails felis habitasse libra<br>
-                      Lec convails felis habitasse libra<br>
-                      torquent augue.Natoque possiere libra</p>
+                      <p>Keeping your home and business safe, clean, and 
+                        pest-free—because peace of mind starts with effective 
+                        pest control.</p>
                       <div class="button-group">
                           <button class="learn-btn" onclick="window.location.href='./HTML CODES/Pest_Control_Info.php'">Learn More</button>
                       </div>
                   </div>
                   <div class="card blue-card">
                       <h3>Inspections</h3>
-                      <p>elementum non sociosqu.Vulputate enim<br>
-                      plates non convails aenean laculis.</p>
+                      <p>ChatGPT said:
+                      Thorough inspections are the first step to a pest-free 
+                      environment—spotting the problem before it grows, so 
+                      you can act with confidence and clarity.</p>
                       <div class="button-group">
                           <button class="learn-btn" onclick="window.location.href='./HTML CODES/Inspection_Info.php'">Learn More</button>
                       </div>
@@ -249,8 +251,8 @@ foreach ($services as $service) {
   <section class="analytics-section">
   <div class="analytics-container">
     <div class="analytics-video-container">
-      <video class="analytics-video" autoplay muted loop onclick="this.paused ? this.play() : this.pause()">
-        <source src="./Videos/analytics-vid.mp4" type="video/mp4">
+      <video class="analytics-video" autoplay onclick="this.paused ? this.play() : this.pause()">
+        <source src="./Videos/pestcozam-video.mp4" type="video/mp4">
       </video>
     </div>
 
@@ -267,7 +269,7 @@ foreach ($services as $service) {
       </div>
 
       <div class="stat-box">
-        <h3>70</3>
+        <h3>20</3>
         <p>Professional Expert</p>
       </div>
 
@@ -356,11 +358,11 @@ foreach ($services as $service) {
     <div class="vision-mission-blocks">
       <div class="vision-block">
         <div class="block-title">Vision</div>
-        <p>A Pest Control service provider registered with the Department of Trade & Industry that offers a high quality of service to protect your properties from unwanted/disastrous pests.</p>
+        <p>Committed to do our best to provide a high quality standard and customer-oriented pest control services to our clients.</p>
       </div>
       <div class="mission-block">
         <div class="block-title">Mission</div>
-        <p>"We promote the safe and responsible use of pesticides to protect human health, preserve the environment, and support sustainable agriculture. Through education and innovation, we minimize risks and advocate for eco-friendly pest control solutions."</p>
+        <p>To be recognized as a top pest control services provider in the country by giving a safe and pest-free home and facility using science and technology in the field of pest control management.</p>
       </div>
     </div>
   </div>
