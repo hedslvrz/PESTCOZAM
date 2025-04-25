@@ -276,6 +276,46 @@ try {
     </a>
 </nav>
 
+<!-- Profile Modal - Add this if it doesn't exist -->
+<div id="profileModal" class="modal">
+    <div class="profile-modal-content">
+        <div class="modal-header">
+            <h2>Edit Profile</h2>
+            <span class="close">&times;</span>
+        </div>
+        <form id="editProfileForm" method="POST" action="../PHP CODES/update_admin_profile.php" novalidate>
+            <div class="form-group">
+                <label for="firstname">First Name</label>
+                <input type="text" id="firstname" name="firstname" value="<?php echo $admin['firstname'] ?? ''; ?>" required>
+            </div>
+            <div class="form-group">
+                <label for="middlename">Middle Name (Optional)</label>
+                <input type="text" id="middlename" name="middlename" value="<?php echo $admin['middlename'] ?? ''; ?>">
+            </div>
+            <div class="form-group">
+                <label for="lastname">Last Name</label>
+                <input type="text" id="lastname" name="lastname" value="<?php echo $admin['lastname'] ?? ''; ?>" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" value="<?php echo $admin['email'] ?? ''; ?>" required>
+            </div>
+            <div class="form-group">
+                <label for="mobile_number">Mobile Number</label>
+                <input type="tel" id="mobile_number" name="mobile_number" value="<?php echo $admin['mobile_number'] ?? ''; ?>" required>
+            </div>
+            <div class="form-group">
+                <label for="dob">Date of Birth (Optional)</label>
+                <input type="date" id="dob" name="dob" value="<?php echo $admin['dob'] ?? ''; ?>">
+            </div>
+            <div class="form-buttons">
+                <button type="button" id="closeProfileModalBtn" class="cancel-btn">Cancel</button>
+                <button type="submit" class="save-btn">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <!--DASHBOARD CONTENT -->
 <section id="content" class="section active">
     <main>
@@ -1707,90 +1747,264 @@ try {
 <!-- Profile Section -->
 <section id="profile" class="section">
     <main>
-        <form id="profile-form" method="POST" action="process_profile.php" enctype="multipart/form-data">
-            <div class="head-title">
-                <div class="left">
-                    <h1>My Profile</h1>
-                    <ul class="breadcrumb">
-                        <li>
-                            <a href="#">Profile</a>
-                        </li>
-                        <li><i class='bx bx-right-arrow-alt'></i></li>
-                        <li>
-                            <a class="active" href="#">Details</a>
-                        </li>
-                    </ul>
-                </div>
+        <div class="head-title">
+            <div class="left">
+                <h1>My Profile</h1>
+                <ul class="breadcrumb">
+                    <li>
+                        <a href="#">Profile</a>
+                    </li>
+                    <li><i class='bx bx-right-arrow-alt'></i></li>
+                    <li>
+                        <a class="active" href="#">Details</a>
+                    </li>
+                </ul>
             </div>
-            <div class="profile-container">
-                <!-- Profile Card -->
-                <div class="profile-card">
-                    <div class="profile-avatar">
-                        <input type="file" name="profile_image" id="profile_image" hidden>
-                        <label for="profile_image">
-                            <img src="images/profile-image.png" alt="Profile Picture">
-                        </label>
-                    </div>
-                    <div class="profile-info">
-                        <h3>Daniel Patilla</h3>
-                        <p>Admin</p>
-                        <p>Tetuan, Zamboanga City</p>
-                    </div>
+        </div>
+        
+        <!-- Updated profile container to match admin style -->
+        <div class="profile-container">
+            <!-- Profile Card -->
+            <div class="profile-card">
+                <div class="profile-avatar">
+                    <img src="../Pictures/boy.png" alt="User Avatar" class="avatar" />
                 </div>
-
-                <!-- Personal Information -->
-                <div class="info-section">
-                    <div class="section-header">
-                        <h3>Personal Information</h3>
-                        <button class="edit-btn"><i class="bx bx-edit"></i> Edit</button>
-                    </div>
-                    <div class="info-content">
-                        <div class="info-row">
-                            <p><strong>First Name</strong></p>
-                            <p><strong>Last Name</strong></p>
-                            <p><strong>Date of Birth</strong></p>
-                        </div>
-                        <div class="info-row">
-                            <p>Daniel</p>
-                            <p>Patilla</p>
-                            <p>03-05-2003</p>
-                        </div>
-                        <div class="info-row">
-                            <p><strong>Email:</strong></p>
-                            <p><strong>Phone Number:</strong></p>
-                            <p><strong>User Role:</strong></p>
-                        </div>
-                        <div class="info-row">
-                            <p>Daniel.Patilla@gmail.com</p>
-                            <p>0953-654-4541</p>
-                            <p>Admin</p>
-                        </div>
-                    </div>
+                <div class="profile-info">
+                    <h3><?php echo htmlspecialchars($admin['firstname'] . ' ' . $admin['lastname']); ?></h3>
+                    <p><?php echo htmlspecialchars($admin['email']); ?></p>
+                    <p><?php echo ucfirst(htmlspecialchars($admin['role'])); ?></p>
                 </div>
+                <button type="button" class="edit-btn" id="openProfileModalBtn">
+                    <i class='bx bx-edit'></i> Edit Profile
+                </button>
+            </div>
 
-                <!-- Address Section -->
-                <div class="info-section">
-                    <div class="section-header">
-                        <h3>Address</h3>
-                        <button class="edit-btn"><i class="bx bx-edit"></i> Edit</button>
+            <!-- Personal Information -->
+            <div class="info-section">
+                <div class="section-header">
+                    <h3>Personal Information</h3>
+                </div>
+                <div class="info-content">
+                    <div class="info-row">
+                        <p><strong>First Name:</strong> <span data-field="firstname"><?php echo htmlspecialchars($admin['firstname']); ?></span></p>
+                        <p><strong>Middle Name:</strong> <span data-field="middlename"><?php echo htmlspecialchars($admin['middlename'] ?: 'Not set'); ?></span></p>
                     </div>
-                    <div class="info-content">
-                        <div class="info-row">
-                            <p><strong>Country</strong></p>
-                            <p><strong>City:</strong></p>
-                            <p><strong>City Address</strong></p>
-                            <p><strong>Postal Code</strong></p>
-                        </div>
-                        <div class="info-row">
-                            <p>Philippines</p>
-                            <p>Zamboanga City</p>
-                            <p>Tetuan, Hotdog Drive</p>
-                            <p>7000</p>
-                        </div>
+                    <div class="info-row">
+                        <p><strong>Last Name:</strong> <span data-field="lastname"><?php echo htmlspecialchars($admin['lastname']); ?></span></p>
+                        <p><strong>Date of Birth:</strong> <?php echo $admin['dob'] ? date('m-d-Y', strtotime($admin['dob'])) : 'Not set'; ?></p>
+                    </div>
+                    <div class="info-row">
+                        <p><strong>Email:</strong> <span data-field="email"><?php echo htmlspecialchars($admin['email']); ?></span></p>
+                        <p><strong>Phone Number:</strong> <span data-field="mobile_number"><?php echo htmlspecialchars($admin['mobile_number']); ?></span></p>
                     </div>
                 </div>
             </div>
-        </form>
+
+            <!-- Account Information -->
+            <div class="info-section">
+                <div class="section-header">
+                    <h3>Account Information</h3>
+                </div>
+                <div class="info-content">
+                    <div class="info-row">
+                        <p><strong>Role:</strong> <?php echo ucfirst(htmlspecialchars($admin['role'])); ?></p>
+                        <p><strong>Status:</strong> <?php echo ucfirst(htmlspecialchars($admin['status'])); ?></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Edit Modal -->
+        <div id="profileModal" class="modal">
+            <div class="modal-content profile-modal-content">
+                <div class="modal-header">
+                    <h2>Edit Profile</h2>
+                    <span class="close" title="Close">&times;</span>
+                </div>
+                <form id="editProfileForm" method="POST" action="update_profile.php" novalidate>
+                    <div class="form-group">
+                        <label for="firstname">First Name</label>
+                        <input type="text" id="firstname" name="firstname" value="<?php echo htmlspecialchars($admin['firstname']); ?>" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="middlename">Middle Name</label>
+                        <input type="text" id="middlename" name="middlename" value="<?php echo htmlspecialchars($admin['middlename']); ?>">
+                    </div>
+                    <div class="form-group">
+                        <label for="lastname">Last Name</label>
+                        <input type="text" id="lastname" name="lastname" value="<?php echo htmlspecialchars($admin['lastname']); ?>" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($admin['email']); ?>" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="mobile_number">Mobile Number</label>
+                        <input type="tel" id="mobile_number" name="mobile_number" value="<?php echo htmlspecialchars($admin['mobile_number']); ?>" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="dob">Date of Birth</label>
+                        <input type="date" id="dob" name="dob" value="<?php echo $admin['dob']; ?>">
+                    </div>
+                    <div class="form-buttons">
+                        <button type="button" class="cancel-btn" id="closeProfileModalBtn">Cancel</button>
+                        <button type="submit" class="save-btn">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Add inline script for profile modal functionality to match dashboard-aos.php -->
+        <script>
+            // Direct modal event handlers
+            document.addEventListener('DOMContentLoaded', function() {
+                const profileModal = document.getElementById('profileModal');
+                const openBtn = document.getElementById('openProfileModalBtn');
+                const closeBtn = document.querySelector('#profileModal .close');
+                const cancelBtn = document.getElementById('closeProfileModalBtn');
+                const profileForm = document.getElementById('editProfileForm');
+                
+                function openProfileModal() {
+                    // First set display to flex
+                    profileModal.style.display = 'flex';
+                    
+                    // Force a reflow/repaint before adding the show class
+                    void profileModal.offsetWidth;
+                    
+                    // Add show class to trigger the transition
+                    profileModal.classList.add('show');
+                    
+                    document.body.style.overflow = 'hidden';
+                }
+                
+                function closeProfileModal() {
+                    // First remove the show class to trigger the transition
+                    profileModal.classList.remove('show');
+                    
+                    // Wait for the transition to complete before hiding
+                    setTimeout(() => {
+                        profileModal.style.display = "none";
+                        document.body.style.overflow = '';
+                    }, 300); // Match the transition duration (0.3s)
+                }
+                
+                if (openBtn && profileModal) {
+                    // Open modal when clicking the edit button
+                    openBtn.addEventListener('click', function() {
+                        openProfileModal();
+                    });
+                    
+                    // Close modal when clicking the X button
+                    if (closeBtn) {
+                        closeBtn.addEventListener('click', closeProfileModal);
+                    }
+                    
+                    // Close modal when clicking the Cancel button
+                    if (cancelBtn) {
+                        cancelBtn.addEventListener('click', closeProfileModal);
+                    }
+                    
+                    // Close modal when clicking outside the modal content
+                    window.addEventListener('click', function(event) {
+                        if (event.target === profileModal) {
+                            closeProfileModal();
+                        }
+                    });
+                    
+                    // Close modal with Escape key
+                    document.addEventListener('keydown', function(event) {
+                        if (event.key === 'Escape' && profileModal.classList.contains('show')) {
+                            closeProfileModal();
+                        }
+                    });
+                    
+                    // Handle form submission via AJAX
+                    if (profileForm) {
+                        profileForm.addEventListener('submit', function(e) {
+                            e.preventDefault();
+                            updateUserProfile(this);
+                        });
+                    }
+                }
+                
+                // Function to handle profile form submission
+                function updateUserProfile(form) {
+                    const submitBtn = form.querySelector('[type="submit"]');
+                    const originalText = submitBtn.textContent;
+                    submitBtn.textContent = 'Saving...';
+                    submitBtn.disabled = true;
+
+                    const formData = new FormData(form);
+
+                    fetch('update_profile.php', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.text())
+                    .then(text => {
+                        console.log('Raw server response:', text);
+                        let data = null;
+                        try {
+                            // Try to parse as JSON only if it looks like JSON
+                            if (text.trim().startsWith('{') || text.trim().startsWith('[')) {
+                                data = JSON.parse(text);
+                            } else if (text.toLowerCase().includes('success')) {
+                                data = { success: true, message: 'Profile updated successfully' };
+                            } else {
+                                throw new Error('Response is not valid JSON');
+                            }
+                        } catch (e) {
+                            console.error('JSON parse error:', e, 'Response text:', text);
+                            alert('Error updating profile. Invalid response from server.');
+                            submitBtn.textContent = originalText;
+                            submitBtn.disabled = false;
+                            return;
+                        }
+                        if (data && data.success) {
+                            alert('Profile updated successfully!');
+                            updateProfileDisplay(formData);
+                            closeProfileModal();
+                            history.replaceState(null, null, location.pathname);
+                        } else {
+                            alert('Error: ' + (data && data.message ? data.message : 'Update failed'));
+                        }
+                        submitBtn.textContent = originalText;
+                        submitBtn.disabled = false;
+                    })
+                    .catch(error => {
+                        console.error('Error updating profile:', error);
+                        alert('An error occurred while updating profile: ' + error.message);
+                        submitBtn.textContent = originalText;
+                        submitBtn.disabled = false;
+                    });
+                }
+                
+                // Function to update the profile display after successful update
+                function updateProfileDisplay(formData) {
+                    const firstname = formData.get('firstname');
+                    const lastname = formData.get('lastname');
+                    const email = formData.get('email');
+                    
+                    // Update Profile Card (using .profile-info)
+                    const profileName = document.querySelector('.profile-info h3');
+                    const profileEmail = document.querySelector('.profile-info p');
+                    if (profileName) profileName.textContent = `${firstname} ${lastname}`;
+                    if (profileEmail) profileEmail.textContent = email;
+                    
+                    // Update details in personal information section
+                    const fnameDetail = document.querySelector('[data-field="firstname"]');
+                    const middlenameDetail = document.querySelector('[data-field="middlename"]');
+                    const lnameDetail = document.querySelector('[data-field="lastname"]');
+                    const emailDetail = document.querySelector('[data-field="email"]');
+                    const phoneDetail = document.querySelector('[data-field="mobile_number"]');
+                    if (fnameDetail) fnameDetail.textContent = firstname;
+                    if (middlenameDetail) middlenameDetail.textContent = formData.get('middlename') || 'Not set';
+                    if (lnameDetail) lnameDetail.textContent = lastname;
+                    if (emailDetail) emailDetail.textContent = email;
+                    if (phoneDetail) phoneDetail.textContent = formData.get('mobile_number');
+                }
+            });
+        </script>
     </main>
 </section>
 
@@ -1810,19 +2024,26 @@ try {
             </div>
             <div class="table-data">
                 <div class="settings-list">
-                    <!-- Settings specific content -->
+                    <!-- Settings specific content will be added here -->
                 </div>
             </div>
         </form>
     </main>
 </section>
 
-<!-- MODAL FOR LOGOUT -->
-    <!-- Logout Confirmation Modal -->
-    <div id="logoutModal" class="modal">
-        <div class="modal-content">
+<!-- Logout Confirmation Modal - Fixed structure -->
+<div id="logoutModal" class="modal">
+    <div class="modal-content">
+        <h2>Confirm Logout</h2>
+        <p>Are you sure you want to logout?</p>
+        <div class="modal-buttons">
+            <button type="button" id="cancelLogout" class="cancel-btn">Cancel</button>
+            <button type="button" id="confirmLogout" class="logout-btn">Logout</button>
+        </div>
     </div>
-    <script src="../JS CODES/dashboard-admin.js"></script>
-    <script src="../JS CODES/work-orders.js"></script>
+</div>
+
+<script src="../JS CODES/dashboard-admin.js"></script>
+<script src="../JS CODES/work-orders.js"></script>
 </body>
 </html>

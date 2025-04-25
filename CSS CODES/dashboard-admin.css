@@ -17,6 +17,45 @@ ul {
     margin: 0;
 }
 
+/* Fix for unwanted horizontal scrolling */
+html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+.section {
+    overflow-x: hidden; /* Prevent horizontal scrolling in sections */
+}
+
+/* Ensure proper width constraints for all containers */
+.section main {
+    width: calc(100% - 60px);  /* Adjusted width to prevent overflow */
+    max-width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
+}
+
+/* Fix for reports section */
+#reports .reports-grid {
+    width: auto; /* Remove fixed width which can cause overflow */
+    max-width: 100%;
+    box-sizing: border-box;
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+/* Ensure tables don't cause overflow */
+.table-responsive {
+    overflow-x: auto;
+    max-width: 100%;
+}
+
+/* Make modal positioning fixed to prevent scrolling issues */
+.modal {
+    position: fixed;
+    z-index: 2000; /* Ensure it's above other elements */
+}
+
 /* ===== SIDEBAR STYLES ===== */
 #sidebar {
     position: fixed;
@@ -186,20 +225,21 @@ ul {
 /* Add styles to ensure consistent padding and margin for all sections */
 .section {
     display: none;
-    position: relative;
+    position: absolute; /* Changed from relative to absolute */
     width: calc(100% - 280px);
     left: 280px;
+    top: 0; /* Ensure it starts at the top */
     transition: .3s ease;
     min-height: 100vh;
-    padding: 60px 0 24px 0; /* Add top padding to account for navbar */
+    padding: 60px 0 24px 0;
+    overflow-y: auto; /* Allow scrolling within the section */
+    background: whitesmoke; /* Add background to prevent transparency */
+    z-index: 1; /* Base z-index for sections */
 }
 
 .section.active {
     display: block;
-}
-
-#content.active {
-    display: block;
+    z-index: 2; /* Active section appears above inactive ones */
 }
 
 #sidebar.hide ~ .section {
@@ -967,72 +1007,61 @@ ul {
 
 /* Profile Section Styles */
 .profile-container {
-    padding: 30px;
-    background-color: #f5f5f5;
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 0;
 }
 
 .profile-card {
     display: flex;
     align-items: center;
     background: white;
-    padding: 20px;
+    padding: 24px;
     border-radius: 10px;
-    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     margin-bottom: 20px;
+}
+
+.profile-avatar {
+    margin-right: 20px;
 }
 
 .profile-avatar img {
     width: 80px;
     height: 80px;
     border-radius: 50%;
-    margin-right: 15px;
+    object-fit: cover;
+}
+
+.profile-info {
+    flex-grow: 1;
 }
 
 .profile-info h3 {
     margin: 0;
-    font-size: 20px;
+    font-size: 1.4rem;
     color: #144578;
+    font-weight: 600;
 }
 
 .profile-info p {
-    margin: 3px 0;
-    font-size: 14px;
-    color: #555;
-}
-
-.info-section {
-    background: white;
-    padding: 15px;
-    margin-top: 15px;
-    border-radius: 10px;
-    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-}
-
-.section-header h3 {
-    font-size: 18px;
-    margin: 0;
-    color: #144578;
+    margin: 5px 0;
+    font-size: 1rem;
+    color: #666;
 }
 
 .edit-btn {
     background: #007bff;
     color: white;
     border: none;
-    padding: 6px 12px;
-    border-radius: 8px;
+    padding: 8px 16px;
+    border-radius: 6px;
     cursor: pointer;
     font-size: 14px;
     display: flex;
     align-items: center;
-    gap: 5px;
-    transition: background-color 0.3s ease;
+    gap: 6px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .edit-btn i {
@@ -1041,30 +1070,216 @@ ul {
 
 .edit-btn:hover {
     background-color: #0056b3;
+    transform: translateY(-2px);
+}
+
+.info-section {
+    background: white;
+    padding: 20px;
+    margin-bottom: 20px;
+    margin-top: 20px; /* Match top and bottom margins */
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .info-content {
-    border-top: 1px solid #ddd;
-    padding-top: 10px;
+    padding: 5px 5px 0 5px; /* Remove bottom padding */
 }
 
 .info-row {
     display: flex;
-    justify-content: space-between;
     flex-wrap: wrap;
-    gap: 15px;
+    gap: 20px;
+    margin-bottom: 15px;
+}
+
+/* Remove margin from last info-row to prevent extra space */
+.info-row:last-child {
+    margin-bottom: 0;
 }
 
 .info-row p {
+    /* Reduced spacing for closer elements */
+    margin: 2px 0;
+    padding: 2px 5px;
     flex: 1;
     min-width: 200px;
-    margin: 5px 0;
-    font-size: 14px;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    color: #333;
+    background: transparent;
 }
 
-.info-content .info-row:nth-child(2) p,
-.info-content .info-row:nth-child(4) p {
-    color: black;
+/* Reduce gap between label and value */
+.info-row p strong {
+    margin-right: 5px;
+}
+
+/* Fix profile modal display issues */
+#profileModal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    overflow: hidden;
+    padding: 0;
+    box-sizing: border-box;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+#profileModal.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+#profileModal .profile-modal-content {
+    background-color: #fff;
+    margin: auto;
+    padding: 35px 30px;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 550px;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    animation: modalFadeIn 0.3s ease forwards;
+}
+
+#profileModal .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+#profileModal .modal-header h2 {
+    font-size: 1.8rem;
+    margin: 0;
+    color: #144578;
+}
+
+#profileModal .close {
+    font-size: 28px;
+    font-weight: bold;
+    color: #666;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+#profileModal .close:hover {
+    color: #333;
+}
+
+#profileModal .form-group {
+    margin-bottom: 20px;
+}
+
+#profileModal label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #333;
+}
+
+#profileModal input[type="text"],
+#profileModal input[type="email"],
+#profileModal input[type="tel"],
+#profileModal input[type="date"],
+#profileModal input[type="password"] {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+}
+
+#profileModal input:focus {
+    border-color: #144578;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(20, 69, 120, 0.1);
+}
+
+#profileModal .form-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    margin-top: 30px;
+}
+
+#profileModal .cancel-btn, 
+#profileModal .save-btn {
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+}
+
+#profileModal .cancel-btn {
+    background-color: #e0e0e0;
+    color: #333;
+}
+
+#profileModal .save-btn {
+    background-color: #144578;
+    color: white;
+}
+
+#profileModal .cancel-btn:hover {
+    background-color: #d0d0d0;
+}
+
+#profileModal .save-btn:hover {
+    background-color: #0d3057;
+}
+
+/* Modal Animation */
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .profile-card {
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
+    }
+    
+    .profile-avatar {
+        margin-right: 0;
+    }
+    
+    .edit-btn {
+        margin-top: 10px;
+    }
+    
+    .info-row {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .info-row p {
+        width: 100%;
+    }
 }
 
 /* Billing Section Styles */
