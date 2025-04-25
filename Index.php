@@ -92,7 +92,7 @@ foreach ($services as $service) {
           </div>
           <nav>
             <ul>
-              <li><a href="Index.php">Home</a></li>
+              <li><a href="index.php">Home</a></li>
               <li><a href="#offer-section">Services</a></li>
               <li><a href="#about-us-section">About Us</a></li>
               <li><a href="./HTML CODES/Appointment-service.php" class="btn-appointment">Book Appointment</a></li>

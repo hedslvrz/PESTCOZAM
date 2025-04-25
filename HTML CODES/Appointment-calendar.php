@@ -82,7 +82,7 @@ $calendarData = AppointmentSession::getData('calendar', []);
     </div>
     <nav>
         <ul>
-            <li><a href="../Index.php">Home</a></li>
+            <li><a href="../index.php">Home</a></li>
             <li><a href="../HTML CODES/About_us.html">About Us</a></li>
             <li><a href="../HTML CODES/Services.html" class="services">Services</a></li>
             <li><a href="../HTML CODES/Appointment-service.php" class="btn-appointment">Appointment</a></li>
