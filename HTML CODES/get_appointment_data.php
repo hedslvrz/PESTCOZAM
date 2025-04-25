@@ -16,7 +16,7 @@ if (!isset($_GET['id'])) {
 }
 
 // Database connection
-$conn = new mysqli("localhost", "root", "", "pestcozam");
+$conn = new mysqli("localhost", "u302876046_root", "Pestcozam@2025", "u302876046_pestcozam");
 
 if ($conn->connect_error) {
     header('Content-Type: application/json');

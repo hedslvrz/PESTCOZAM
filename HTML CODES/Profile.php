@@ -8,7 +8,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 // Database connection
-$conn = new mysqli("localhost", "root", "", "pestcozam");
+$conn = new mysqli("localhost", "u302876046_root", "Pestcozam@2025", "u302876046_pestcozam");
 
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
@@ -112,9 +112,9 @@ if (isset($_SESSION['current_appointment'])) {
       </div>
       <nav>
         <ul>
-          <li><a href="../Index.php">Home</a></li>
-          <li><a href="../Index.php#offer-section">Services</a></li>
-          <li><a href="../Index.php#about-us-section">About Us</a></li>
+          <li><a href="../index.php">Home</a></li>
+          <li><a href="../index.php#offer-section">Services</a></li>
+          <li><a href="../index.php#about-us-section">About Us</a></li>
           <li><a href="Appointment-service.php" class="btn-appointment">Book Appointment</a></li>
           <?php if (isset($_SESSION['user_id'])): ?>
             <li class="user-profile">
