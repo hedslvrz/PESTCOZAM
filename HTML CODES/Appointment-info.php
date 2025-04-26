@@ -168,11 +168,28 @@
 <!-- APPOINTMENT FILL UP SECTION -->
     <main>
         <div class="appointment-fillup">
-            <label>Fill out personal information:</label>
-            <input id="firstname" type="text" placeholder="First name">
-            <input id="lastname" type="text" placeholder="Last name">
-            <input id="email" type="email" placeholder="Email">
-            <input id="mobile_number" type="text" placeholder="Mobile number">
+            <div class="form-header">
+                <div class="form-header-logo">
+                    <img src="../Pictures/pest_logo.png" alt="Logo">
+                    <span>PESTCOZAM</span>
+                </div>
+                <h3>Personal Information</h3>
+            </div>
+            
+            <div class="form-title">Recipient Details</div>
+            <div class="form-description">Please provide information about the person receiving the service</div>
+            
+            <label>First Name</label>
+            <input id="firstname" type="text" placeholder="Enter first name">
+            
+            <label>Last Name</label>
+            <input id="lastname" type="text" placeholder="Enter last name">
+            
+            <label>Email Address</label>
+            <input id="email" type="email" placeholder="Enter email address">
+            
+            <label>Mobile Number</label>
+            <input id="mobile_number" type="text" placeholder="Enter mobile number">
             
             <div class="checkbox-container">
                 <input type="checkbox" id="agreement">
@@ -229,9 +246,15 @@ document.getElementById("nextButton").addEventListener("click", function(event) 
     const lastname = document.getElementById("lastname").value;
     const email = document.getElementById("email").value;
     const mobile_number = document.getElementById("mobile_number").value;
+    const agreement = document.getElementById("agreement").checked;
     
     if (!firstname || !lastname || !email || !mobile_number) {
         alert("Please fill in all required fields");
+        return;
+    }
+    
+    if (!agreement) {
+        alert("Please agree to the data privacy policy to continue");
         return;
     }
 

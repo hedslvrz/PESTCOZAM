@@ -196,158 +196,169 @@ $locationData = AppointmentSession::getData('location', []);
   <main>
     <div class="appointment-container">
       
-      <!-- LEFT COLUMN: LOCATION DETAILS -->
-      <div class="location-details">
-        <label>Location Details:</label>
-        <select id="region" name="region">
-            <option value="">Select Region</option>
-        </select>
-        <select id="province" name="province">
-            <option value="">Select Province</option>
-        </select>
-        <select id="city" name="city">
-            <option value="">Select City</option>
-        </select>
-        <select id="barangay" name="barangay">
-            <option value="">Select Barangay</option>
-            <!-- FULL LIST of barangays from citypopulation.de -->
-            <option value="Arena Blanco">Arena Blanco</option>
-            <option value="Ayala">Ayala</option>
-            <option value="Baliwasan">Baliwasan</option>
-            <option value="Baluno">Baluno</option>
-            <option value="Boalan">Boalan</option>
-            <option value="Bolong">Bolong</option>
-            <option value="Buenavista">Buenavista</option>
-            <option value="Bunguiao">Bunguiao</option>
-            <option value="Busay">Busay</option>
-            <option value="Cabaluay">Cabaluay</option>
-            <option value="Cabatangan">Cabatangan</option>
-            <option value="Calarian">Calarian</option>
-            <option value="Camino Nuevo">Camino Nuevo</option>
-            <option value="Campo Islam">Campo Islam</option>
-            <option value="Canelar">Canelar</option>
-            <option value="Capisan">Capisan</option>
-            <option value="Cawit">Cawit</option>
-            <option value="Culianan">Culianan</option>
-            <option value="Curuan">Curuan</option>
-            <option value="Dita">Dita</option>
-            <option value="Divisoria">Divisoria</option>
-            <option value="Dulian (Upper Pasonanca)">Dulian (Upper Pasonanca)</option>
-            <option value="Guisao">Guisao</option>
-            <option value="Guiwan">Guiwan</option>
-            <option value="Kabasalan">Kabasalan</option>
-            <option value="La Paz">La Paz</option>
-            <option value="Labuan">Labuan</option>
-            <option value="Lamisahan">Lamisahan</option>
-            <option value="Landang Gua">Landang Gua</option>
-            <option value="Landang Laum">Landang Laum</option>
-            <option value="Lapakan">Lapakan</option>
-            <option value="Latuan">Latuan</option>
-            <option value="Licomo">Licomo</option>
-            <option value="Limpapa">Limpapa</option>
-            <option value="Lubigan">Lubigan</option>
-            <option value="Lumbangan">Lumbangan</option>
-            <option value="Lunzuran">Lunzuran</option>
-            <option value="Maasin">Maasin</option>
-            <option value="Malagutay">Malagutay</option>
-            <option value="Mampang">Mampang</option>
-            <option value="Manalipa">Manalipa</option>
-            <option value="Mangusu">Mangusu</option>
-            <option value="Mariki">Mariki</option>
-            <option value="Mercedes">Mercedes</option>
-            <option value="Muti">Muti</option>
-            <option value="Pasonanca">Pasonanca</option>
-            <option value="Pasobolong">Pasobolong</option>
-            <option value="Pasilmanta">Pasilmanta</option>
-            <option value="Patalon">Patalon</option>
-            <option value="Pilar">Pilar</option>
-            <option value="Quiniput">Quiniput</option>
-            <option value="Recodo">Recodo</option>
-            <option value="Rio Hondo">Rio Hondo</option>
-            <option value="Sangali">Sangali</option>
-            <option value="San Jose Cawa-Cawa">San Jose Cawa-Cawa</option>
-            <option value="San Jose Gusu">San Jose Gusu</option>
-            <option value="San Roque">San Roque</option>
-            <option value="Santa Barbara">Santa Barbara</option>
-            <option value="Santa Catalina">Santa Catalina</option>
-            <option value="Santa Maria">Santa Maria</option>
-            <option value="Sibulao">Sibulao</option>
-            <option value="Sinubong">Sinubong</option>
-            <option value="Tagasilay">Tagasilay</option>
-            <option value="Talabaan">Talabaan</option>
-            <option value="Talisayan">Talisayan</option>
-            <option value="Talon-Talon">Talon-Talon</option>
-            <option value="Taluksangay">Taluksangay</option>
-            <option value="Taytay Manubo">Taytay Manubo</option>
-            <option value="Tictapul">Tictapul</option>
-            <option value="Tigbalabag">Tigbalabag</option>
-            <option value="Tolosa">Tolosa</option>
-            <option value="Tugbungan">Tugbungan</option>
-            <option value="Tulungatung">Tulungatung</option>
-            <option value="Tumaga">Tumaga</option>
-            <option value="Victoria">Victoria</option>
-            <option value="Zambowood">Zambowood</option>
-            <option value="Zamboanga Port Area">Zamboanga Port Area</option>
-            <option value="Zone I (Pob.)">Zone I (Pob.)</option>
-            <option value="Zone II (Pob.)">Zone II (Pob.)</option>
-            <option value="Zone III (Pob.)">Zone III (Pob.)</option>
-            <option value="Zone IV (Pob.)">Zone IV (Pob.)</option>
-        </select>
-        
-        <input type="text" id="street_address" class="specify-addr" 
-               placeholder="Street Name & House/Building No.">
-        
-        <!-- Hidden fields for lat/lng to save in DB -->
-        <input type="hidden" id="latitude">
-        <input type="hidden" id="longitude">
+      <!-- Top section with location form and map side by side -->
+      <div class="top-section">
+        <!-- LEFT COLUMN: LOCATION DETAILS -->
+        <div class="location-details">
+          <label>Location Details:</label>
+          <select id="region" name="region">
+              <option value="">Select Region</option>
+          </select>
+          <select id="province" name="province">
+              <option value="">Select Province</option>
+          </select>
+          <select id="city" name="city">
+              <option value="">Select City</option>
+          </select>
+          <select id="barangay" name="barangay">
+              <option value="">Select Barangay</option>
+              <!-- FULL LIST of barangays from citypopulation.de -->
+              <option value="Arena Blanco">Arena Blanco</option>
+              <option value="Ayala">Ayala</option>
+              <option value="Baliwasan">Baliwasan</option>
+              <option value="Baluno">Baluno</option>
+              <option value="Boalan">Boalan</option>
+              <option value="Bolong">Bolong</option>
+              <option value="Buenavista">Buenavista</option>
+              <option value="Bunguiao">Bunguiao</option>
+              <option value="Busay">Busay</option>
+              <option value="Cabaluay">Cabaluay</option>
+              <option value="Cabatangan">Cabatangan</option>
+              <option value="Calarian">Calarian</option>
+              <option value="Camino Nuevo">Camino Nuevo</option>
+              <option value="Campo Islam">Campo Islam</option>
+              <option value="Canelar">Canelar</option>
+              <option value="Capisan">Capisan</option>
+              <option value="Cawit">Cawit</option>
+              <option value="Culianan">Culianan</option>
+              <option value="Curuan">Curuan</option>
+              <option value="Dita">Dita</option>
+              <option value="Divisoria">Divisoria</option>
+              <option value="Dulian (Upper Pasonanca)">Dulian (Upper Pasonanca)</option>
+              <option value="Guisao">Guisao</option>
+              <option value="Guiwan">Guiwan</option>
+              <option value="Kabasalan">Kabasalan</option>
+              <option value="La Paz">La Paz</option>
+              <option value="Labuan">Labuan</option>
+              <option value="Lamisahan">Lamisahan</option>
+              <option value="Landang Gua">Landang Gua</option>
+              <option value="Landang Laum">Landang Laum</option>
+              <option value="Lapakan">Lapakan</option>
+              <option value="Latuan">Latuan</option>
+              <option value="Licomo">Licomo</option>
+              <option value="Limpapa">Limpapa</option>
+              <option value="Lubigan">Lubigan</option>
+              <option value="Lumbangan">Lumbangan</option>
+              <option value="Lunzuran">Lunzuran</option>
+              <option value="Maasin">Maasin</option>
+              <option value="Malagutay">Malagutay</option>
+              <option value="Mampang">Mampang</option>
+              <option value="Manalipa">Manalipa</option>
+              <option value="Mangusu">Mangusu</option>
+              <option value="Mariki">Mariki</option>
+              <option value="Mercedes">Mercedes</option>
+              <option value="Muti">Muti</option>
+              <option value="Pasonanca">Pasonanca</option>
+              <option value="Pasobolong">Pasobolong</option>
+              <option value="Pasilmanta">Pasilmanta</option>
+              <option value="Patalon">Patalon</option>
+              <option value="Pilar">Pilar</option>
+              <option value="Quiniput">Quiniput</option>
+              <option value="Recodo">Recodo</option>
+              <option value="Rio Hondo">Rio Hondo</option>
+              <option value="Sangali">Sangali</option>
+              <option value="San Jose Cawa-Cawa">San Jose Cawa-Cawa</option>
+              <option value="San Jose Gusu">San Jose Gusu</option>
+              <option value="San Roque">San Roque</option>
+              <option value="Santa Barbara">Santa Barbara</option>
+              <option value="Santa Catalina">Santa Catalina</option>
+              <option value="Santa Maria">Santa Maria</option>
+              <option value="Sibulao">Sibulao</option>
+              <option value="Sinubong">Sinubong</option>
+              <option value="Tagasilay">Tagasilay</option>
+              <option value="Talabaan">Talabaan</option>
+              <option value="Talisayan">Talisayan</option>
+              <option value="Talon-Talon">Talon-Talon</option>
+              <option value="Taluksangay">Taluksangay</option>
+              <option value="Taytay Manubo">Taytay Manubo</option>
+              <option value="Tictapul">Tictapul</option>
+              <option value="Tigbalabag">Tigbalabag</option>
+              <option value="Tolosa">Tolosa</option>
+              <option value="Tugbungan">Tugbungan</option>
+              <option value="Tulungatung">Tulungatung</option>
+              <option value="Tumaga">Tumaga</option>
+              <option value="Victoria">Victoria</option>
+              <option value="Zambowood">Zambowood</option>
+              <option value="Zamboanga Port Area">Zamboanga Port Area</option>
+              <option value="Zone I (Pob.)">Zone I (Pob.)</option>
+              <option value="Zone II (Pob.)">Zone II (Pob.)</option>
+              <option value="Zone III (Pob.)">Zone III (Pob.)</option>
+              <option value="Zone IV (Pob.)">Zone IV (Pob.)</option>
+          </select>
+          
+          <input type="text" id="street_address" class="specify-addr" 
+                placeholder="Street Name & House/Building No.">
+          
+          <!-- Hidden fields for lat/lng to save in DB -->
+          <input type="hidden" id="latitude">
+          <input type="hidden" id="longitude">
+        </div> <!-- .location-details -->
 
-        <!-- New section for property type -->
-        <div class="form-group property-type-section">
-          <label class="field-label">Property Type:</label>
-          <div class="property-type-options">
-            <label class="radio-label">
-              <input type="radio" name="property_type" value="residential" checked> Residential
-            </label>
-            <label class="radio-label">
-              <input type="radio" name="property_type" value="establishment"> Establishment
-            </label>
+        <!-- RIGHT COLUMN: MAP -->
+        <div class="map-container">
+          <p>Please click on the map to mark the exact location for your pest treatment.</p>
+          <div id="leafletMap"></div>
+        </div>
+      </div> <!-- .top-section -->
+      
+      <!-- Property details section (below map and form) -->
+      <div class="property-details-section">
+        <!-- LEFT SIDE: Property Type and Area -->
+        <div class="property-left-container">
+          <!-- Property Type -->
+          <div class="form-group property-type-section">
+            <label class="field-label">Property Type:</label>
+            <div class="property-type-options">
+              <label class="radio-label">
+                <input type="radio" name="property_type" value="residential" checked> Residential
+              </label>
+              <label class="radio-label">
+                <input type="radio" name="property_type" value="establishment"> Establishment
+              </label>
+            </div>
+            
+            <!-- Conditional field for establishment name -->
+            <div id="establishment-name-container" style="display: none;">
+              <input type="text" id="establishment_name" class="form-input specify-addr" 
+                    placeholder="Establishment Name">
+            </div>
           </div>
           
-          <!-- Conditional field for establishment name -->
-          <div id="establishment-name-container" style="display: none;">
-            <input type="text" id="establishment_name" class="form-input specify-addr" 
-                  placeholder="Establishment Name">
+          <!-- Property area -->
+          <div class="form-group property-area-section">
+            <label class="field-label">Property Area (optional):</label>
+            <div class="area-input-container">
+              <input type="text" id="property_area" class="form-input specify-addr" 
+                    placeholder="Enter the total square meters of your property">
+              <span class="area-unit">sq.m</span>
+            </div>
+            <small class="help-text">Please provide the approximate total area of your property in square meters (length × width)</small>
           </div>
         </div>
         
-        <!-- Property area -->
-        <div class="form-group property-area-section">
-          <label class="field-label">Property Area (optional):</label>
-          <div class="area-input-container">
-            <input type="number" id="property_area" class="form-input specify-addr" 
-                  placeholder="Enter the total square meters of your property">
-            <span class="area-unit">sq.m</span>
+        <!-- RIGHT SIDE: Pest Concern -->
+        <div class="pest-concern-container">
+          <div class="form-group pest-concern-section">
+            <label class="field-label">Pest Concern:</label>
+            <textarea id="pest_concern" class="form-input pest-concern-textarea" 
+                    placeholder="Please describe your pest concern related to the service you selected"></textarea>
           </div>
-          <small class="help-text">Please provide the approximate total area of your property in square meters (length × width)</small>
         </div>
-        
-        <!-- Pest Concern -->
-        <div class="form-group pest-concern-section">
-          <label class="field-label">Pest Concern:</label>
-          <textarea id="pest_concern" class="form-input pest-concern-textarea" 
-                   placeholder="Please describe your pest concern related to the service you selected"></textarea>
-        </div>
+      </div> <!-- .property-details-section -->
 
-        <div class="navigation-buttons">
-            <button onclick="window.location.href='Appointment-service.php'">Back</button>
-            <button id="nextButton">Next</button>
-        </div>
-      </div> <!-- .location-details -->
-
-      <!-- RIGHT COLUMN: MAP -->
-      <div class="map-container">
-        <p>Please click on the map to mark the exact location for your pest treatment.</p>
-        <div id="leafletMap"></div>
+      <div class="navigation-buttons">
+          <button onclick="window.location.href='Appointment-service.php'">Back</button>
+          <button id="nextButton">Next</button>
       </div>
     </div> <!-- .appointment-container -->
   </main>
@@ -487,13 +498,13 @@ $locationData = AppointmentSession::getData('location', []);
 
     // 3) Initialize Leaflet Map (Coordinates for Zamboanga City)
     var mymap = L.map('leafletMap', {
-      dragging: false,      // Disable dragging
-      touchZoom: false,     // Disable touch zoom
-      scrollWheelZoom: false,  // Disable scroll wheel zoom
-      doubleClickZoom: false,  // Disable double click zoom
-      boxZoom: false,        // Disable box zoom
-      keyboard: false,       // Disable keyboard navigation
-      zoomControl: false     // Remove zoom control buttons
+      dragging: true,       // Enable dragging
+      touchZoom: true,      // Enable touch zoom 
+      scrollWheelZoom: true,  // Enable scroll wheel zoom
+      doubleClickZoom: true,  // Enable double click zoom
+      boxZoom: true,        // Enable box zoom
+      keyboard: true,       // Enable keyboard navigation
+      zoomControl: true     // Add zoom control buttons
     }).setView([6.9214, 122.0790], 13);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
