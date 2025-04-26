@@ -263,9 +263,10 @@ try {
 <nav id="main-navbar" class="standard-nav">
     <i class='bx bx-menu'></i>
     <a href="#" class="nav-link">Categories</a>
-    <form action="#">
+    <form id="globalSearchForm" action="#" method="GET">
         <div class="form-input">
-            <input type="search" placeholder="Search">
+            <input type="search" id="globalSearchInput" name="global_search" placeholder="Search across dashboard..." 
+                   value="<?php echo isset($_GET['global_search']) ? htmlspecialchars($_GET['global_search']) : ''; ?>">
             <button type="submit" class="search"><i class='bx bx-search'></i></button>
         </div>
     </form>
@@ -2469,5 +2470,540 @@ try {
 
 <script src="../JS CODES/dashboard-admin.js"></script>
 <script src="../JS CODES/work-orders.js"></script>
+
+<script>
+// Global search functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Global search form handler
+    const globalSearchForm = document.getElementById('globalSearchForm');
+    const globalSearchInput = document.getElementById('globalSearchInput');
+    
+    if (globalSearchForm) {
+        globalSearchForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const searchTerm = globalSearchInput.value.trim().toLowerCase();
+            
+            if (searchTerm.length < 2) {
+                alert('Please enter at least 2 characters to search');
+                return;
+            }
+            
+            // Store the search term in session storage
+            sessionStorage.setItem('globalSearchTerm', searchTerm);
+            
+            // Apply search across all sections
+            performGlobalSearch(searchTerm);
+        });
+    }
+    
+    // Check if there's a stored search term and apply it
+    const storedSearchTerm = sessionStorage.getItem('globalSearchTerm');
+    if (storedSearchTerm && globalSearchInput) {
+        globalSearchInput.value = storedSearchTerm;
+        performGlobalSearch(storedSearchTerm);
+    }
+    
+    // Handle section-specific search boxes
+    initializeSectionSearches();
+});
+
+// Perform global search across all dashboard sections
+function performGlobalSearch(searchTerm) {
+    // Find active section first
+    const activeSection = document.querySelector('.section.active');
+    let resultsFound = false;
+    
+    // Count total results found
+    let totalResults = 0;
+    
+    // Reset previous highlights
+    document.querySelectorAll('.search-highlight').forEach(el => {
+        el.outerHTML = el.innerHTML;
+    });
+    
+    // 1. Search work orders
+    totalResults += searchWorkOrders(searchTerm);
+    
+    // 2. Search employees 
+    totalResults += searchEmployees(searchTerm);
+    
+    // 3. Search services
+    totalResults += searchServices(searchTerm);
+    
+    // 4. Search customers
+    totalResults += searchCustomers(searchTerm);
+    
+    // 5. Search reports
+    totalResults += searchReports(searchTerm);
+    
+    // Show search results notification
+    showSearchResults(totalResults, searchTerm);
+}
+
+// Function to highlight text matches
+function highlightText(element, searchTerm) {
+    if (!element || !element.innerHTML) return false;
+    
+    const content = element.innerHTML;
+    const regex = new RegExp('(' + escapeRegExp(searchTerm) + ')', 'gi');
+    
+    if (regex.test(content)) {
+        element.innerHTML = content.replace(regex, '<span class="search-highlight">$1</span>');
+        return true;
+    }
+    return false;
+}
+
+// Helper function to escape regex special characters
+function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// Search functions for each section
+function searchWorkOrders(searchTerm) {
+    const workOrdersTable = document.querySelector('#work-orders .work-orders-table tbody');
+    if (!workOrdersTable) return 0;
+    
+    let count = 0;
+    const rows = workOrdersTable.querySelectorAll('tr');
+    
+    rows.forEach(row => {
+        let rowMatch = false;
+        const textCells = row.querySelectorAll('td:not(:last-child)');
+        
+        textCells.forEach(cell => {
+            if (highlightText(cell, searchTerm)) {
+                rowMatch = true;
+            }
+        });
+        
+        // Show/hide rows based on match
+        if (rowMatch) {
+            row.style.display = '';
+            count++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    
+    // Update the section heading to show search results
+    const heading = document.querySelector('#work-orders .head-title h1');
+    if (heading) {
+        heading.innerHTML = `Work Orders Management ${count > 0 ? `<span class="search-count">(${count} results)</span>` : ''}`;
+    }
+    
+    return count;
+}
+
+function searchEmployees(searchTerm) {
+    const employeeTable = document.querySelector('#employees #employeeTable tbody');
+    if (!employeeTable) return 0;
+    
+    let count = 0;
+    const rows = employeeTable.querySelectorAll('tr');
+    
+    rows.forEach(row => {
+        let rowMatch = false;
+        const textCells = row.querySelectorAll('td:not(:first-child):not(:last-child)');
+        
+        textCells.forEach(cell => {
+            if (highlightText(cell, searchTerm)) {
+                rowMatch = true;
+            }
+        });
+        
+        if (rowMatch) {
+            row.style.display = '';
+            count++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    
+    // Update the section heading
+    const heading = document.querySelector('#employees .head-title h1');
+    if (heading) {
+        heading.innerHTML = `Employee Management ${count > 0 ? `<span class="search-count">(${count} results)</span>` : ''}`;
+    }
+    
+    return count;
+}
+
+function searchServices(searchTerm) {
+    const serviceCards = document.querySelectorAll('#services .service-card');
+    if (serviceCards.length === 0) return 0;
+    
+    let count = 0;
+    
+    serviceCards.forEach(card => {
+        const serviceName = card.querySelector('h4');
+        const serviceDesc = card.querySelector('.description');
+        
+        let cardMatch = false;
+        
+        if (serviceName && highlightText(serviceName, searchTerm)) {
+            cardMatch = true;
+        }
+        
+        if (serviceDesc && highlightText(serviceDesc, searchTerm)) {
+            cardMatch = true;
+        }
+        
+        if (cardMatch) {
+            card.style.display = '';
+            count++;
+        } else {
+            card.style.display = 'none';
+        }
+    });
+    
+    // Update the section heading
+    const heading = document.querySelector('#services .head-title h1');
+    if (heading) {
+        heading.innerHTML = `Services Management ${count > 0 ? `<span class="search-count">(${count} results)</span>` : ''}`;
+    }
+    
+    return count;
+}
+
+function searchCustomers(searchTerm) {
+    const customerTable = document.querySelector('#customers .customer-table tbody');
+    if (!customerTable) return 0;
+    
+    let count = 0;
+    const rows = customerTable.querySelectorAll('tr');
+    
+    rows.forEach(row => {
+        if (row.querySelector('.no-data')) return; // Skip "no data" row
+        
+        let rowMatch = false;
+        const textCells = row.querySelectorAll('td:not(:last-child)');
+        
+        textCells.forEach(cell => {
+            if (highlightText(cell, searchTerm)) {
+                rowMatch = true;
+            }
+        });
+        
+        if (rowMatch) {
+            row.style.display = '';
+            count++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    
+    // Update the section heading
+    const heading = document.querySelector('#customers .head-title h1');
+    if (heading) {
+        heading.innerHTML = `Customer Management ${count > 0 ? `<span class="search-count">(${count} results)</span>` : ''}`;
+    }
+    
+    return count;
+}
+
+function searchReports(searchTerm) {
+    const reportCards = document.querySelectorAll('#reports .report-card');
+    if (reportCards.length === 0) return 0;
+    
+    let count = 0;
+    
+    reportCards.forEach(card => {
+        const techName = card.querySelector('.technician-info h3');
+        const location = card.querySelector('.report-preview p:nth-child(1)');
+        const client = card.querySelector('.report-preview p:nth-child(2)');
+        const service = card.querySelector('.report-preview p:nth-child(3)');
+        
+        let cardMatch = false;
+        
+        if (techName && highlightText(techName, searchTerm)) {
+            cardMatch = true;
+        }
+        
+        if (location && highlightText(location, searchTerm)) {
+            cardMatch = true;
+        }
+        
+        if (client && highlightText(client, searchTerm)) {
+            cardMatch = true;
+        }
+        
+        if (service && highlightText(service, searchTerm)) {
+            cardMatch = true;
+        }
+        
+        if (cardMatch) {
+            card.style.display = '';
+            count++;
+        } else {
+            card.style.display = 'none';
+        }
+    });
+    
+    // Update the section heading
+    const heading = document.querySelector('#reports .head-title h1');
+    if (heading) {
+        heading.innerHTML = `Manage Technicians Reports ${count > 0 ? `<span class="search-count">(${count} results)</span>` : ''}`;
+    }
+    
+    return count;
+}
+
+// Initialize all section-specific search boxes
+function initializeSectionSearches() {
+    // Work orders search
+    const workOrdersSearch = document.getElementById('searchAppointments');
+    if (workOrdersSearch) {
+        workOrdersSearch.addEventListener('input', function() {
+            const searchTerm = this.value.trim().toLowerCase();
+            if (searchTerm.length > 0) {
+                searchWorkOrders(searchTerm);
+            } else {
+                // Reset display when search is cleared
+                document.querySelectorAll('#work-orders .work-orders-table tbody tr').forEach(row => {
+                    row.style.display = '';
+                });
+                document.querySelectorAll('#work-orders .search-highlight').forEach(el => {
+                    el.outerHTML = el.innerHTML;
+                });
+                const heading = document.querySelector('#work-orders .head-title h1');
+                if (heading) {
+                    heading.innerHTML = 'Work Orders Management';
+                }
+            }
+        });
+    }
+    
+    // Employees search is already handled by existing jQuery code
+    
+    // Reports search
+    const reportsSearch = document.getElementById('reportSearchInput');
+    if (reportsSearch) {
+        reportsSearch.addEventListener('input', function() {
+            const searchTerm = this.value.trim().toLowerCase();
+            if (searchTerm.length > 0) {
+                searchReports(searchTerm);
+            } else {
+                // Reset display when search is cleared
+                document.querySelectorAll('#reports .report-card').forEach(card => {
+                    card.style.display = '';
+                });
+                document.querySelectorAll('#reports .search-highlight').forEach(el => {
+                    el.outerHTML = el.innerHTML;
+                });
+                const heading = document.querySelector('#reports .head-title h1');
+                if (heading) {
+                    heading.innerHTML = 'Manage Technicians Reports';
+                }
+            }
+        });
+    }
+}
+
+// Display search results notification
+function showSearchResults(count, searchTerm) {
+    // Remove any existing notifications
+    const existingNotification = document.getElementById('searchResultsNotification');
+    if (existingNotification) {
+        document.body.removeChild(existingNotification);
+    }
+    
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.id = 'searchResultsNotification';
+    notification.className = 'search-results-notification';
+    
+    if (count > 0) {
+        notification.innerHTML = `
+            <i class='bx bx-search'></i>
+            <span>Found <strong>${count}</strong> results for "<strong>${searchTerm}</strong>"</span>
+            <button class="clear-search" onclick="clearGlobalSearch()">Clear</button>
+        `;
+        notification.className += ' success';
+    } else {
+        notification.innerHTML = `
+            <i class='bx bx-error-circle'></i>
+            <span>No results found for "<strong>${searchTerm}</strong>"</span>
+            <button class="clear-search" onclick="clearGlobalSearch()">Clear</button>
+        `;
+        notification.className += ' warning';
+    }
+    
+    // Add to body
+    document.body.appendChild(notification);
+    
+    // Show with animation
+    setTimeout(() => {
+        notification.style.transform = 'translateY(0)';
+        notification.style.opacity = '1';
+    }, 10);
+    
+    // Auto-hide after 5 seconds
+    setTimeout(() => {
+        notification.style.transform = 'translateY(-100%)';
+        notification.style.opacity = '0';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }, 5000);
+}
+
+// Function to clear global search
+function clearGlobalSearch() {
+    // Remove stored search term
+    sessionStorage.removeItem('globalSearchTerm');
+    
+    // Clear search input
+    const globalSearchInput = document.getElementById('globalSearchInput');
+    if (globalSearchInput) {
+        globalSearchInput.value = '';
+    }
+    
+    // Reset all sections
+    document.querySelectorAll('.section').forEach(section => {
+        // Reset employee table
+        section.querySelectorAll('table tbody tr').forEach(row => {
+            row.style.display = '';
+        });
+        
+        // Reset service cards
+        section.querySelectorAll('.service-card').forEach(card => {
+            card.style.display = '';
+        });
+        
+        // Reset report cards
+        section.querySelectorAll('.report-card').forEach(card => {
+            card.style.display = '';
+        });
+        
+        // Remove highlights
+        section.querySelectorAll('.search-highlight').forEach(el => {
+            el.outerHTML = el.innerHTML;
+        });
+        
+        // Reset headings
+        const heading = section.querySelector('.head-title h1');
+        if (heading) {
+            heading.innerHTML = heading.innerHTML.replace(/<span class="search-count">.*?<\/span>/, '');
+        }
+    });
+    
+    // Remove notification
+    const notification = document.getElementById('searchResultsNotification');
+    if (notification) {
+        notification.style.transform = 'translateY(-100%)';
+        notification.style.opacity = '0';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }
+}
+</script>
+
+<!-- Add search notification styling -->
+<style>
+.search-highlight {
+    background-color: #ffec8b;
+    padding: 2px 0;
+    border-radius: 2px;
+    font-weight: bold;
+}
+
+.search-count {
+    font-size: 0.8em;
+    background-color: #144578;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 20px;
+    margin-left: 10px;
+    font-weight: normal;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.search-results-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 1000;
+    transform: translateY(-100%);
+    opacity: 0;
+    transition: all 0.3s ease;
+    max-width: 400px;
+}
+
+.search-results-notification.success i {
+    color: #144578;
+    font-size: 24px;
+}
+
+.search-results-notification.warning i {
+    color: #ff9800;
+    font-size: 24px;
+}
+
+.search-results-notification span {
+    flex: 1;
+}
+
+.clear-search {
+    background-color: #f0f0f0;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background-color 0.2s;
+}
+
+.clear-search:hover {
+    background-color: #e0e0e0;
+}
+
+/* Make global search more prominent */
+#globalSearchForm .form-input {
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+#globalSearchForm .form-input input {
+    width: 250px;
+    transition: width 0.3s ease;
+}
+
+#globalSearchForm .form-input input:focus {
+    width: 300px;
+    border-color: #144578;
+    box-shadow: 0 0 0 2px rgba(20, 69, 120, 0.2);
+}
+
+#globalSearchForm .form-input::before {
+    content: "🔍";
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #ccc;
+    font-size: 14px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+#globalSearchForm .form-input input:not(:focus):placeholder-shown::before {
+    opacity: 1;
+}
+</style>
 </body>
 </html>
