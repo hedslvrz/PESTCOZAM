@@ -187,6 +187,7 @@ nav ul li a:hover {
     height: 40px;
     border-radius: 50%;
     cursor: pointer;
+    border: 2px solid #1E3A8A;
 }
 
 .dropdown-content {
@@ -209,7 +210,8 @@ nav ul li a:hover {
 }
 
 .dropdown-content a:hover {
-    background-color: #f1f1f1;
+    background-color: #1E3A8A;
+    color: white;
     border-radius: 8px;
 }
 
@@ -229,30 +231,75 @@ nav ul li a:hover {
 }
 
 .thank-you-box {
-    background-color: #E6F1FF;
-    width: 500px;
-    border-radius: 10px;
+    background-color: white;
+    max-width: 600px;
+    width: 100%;
+    border-radius: 8px;
     text-align: center;
-    padding: 60px 20px;
-    border: 1px solid #ccc;
-    margin-bottom: 40px;
+    padding: 40px 30px;
+    border: 1px solid #e0e0e0;
+    margin-bottom: 20px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    animation: subtle-glow 3s infinite alternate;
+}
+
+.thank-you-box:before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: #0C3B6F;
+    border-radius: 5px 5px 0 0;
 }
 
 .check-icon {
     width: 80px;
     height: 80px;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.1));
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .thank-you-box h2 {
-    font-size: 24px;
-    margin-bottom: 10px;
-    color: #333;
+    font-size: 28px;
+    margin-bottom: 15px;
+    color: #0C3B6F;
+    font-weight: 600;
+    position: relative;
+    display: inline-block;
+}
+
+.thank-you-box h2:after {
+    content: "";
+    position: absolute;
+    bottom: -8px;
+    left: 10%;
+    right: 10%;
+    height: 2px;
+    background-color: rgba(20, 69, 120, 0.2);
 }
 
 .thank-you-box p {
-    font-size: 16px;
-    color: #555;
+    font-size: 17px;
+    color: #444;
+    line-height: 1.6;
+    margin-top: 15px;
+}
+
+/* Add a subtle success glow effect */
+@keyframes subtle-glow {
+    0% { box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15); }
+    50% { box-shadow: 0 5px 20px rgba(12, 59, 111, 0.25); }
+    100% { box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15); }
 }
 
 .thank-you-nav {
@@ -267,12 +314,22 @@ nav ul li a:hover {
     border: 1px solid #000;
     border-radius: 5px;
     background-color: #fff;
+    color: #000;
     cursor: pointer;
     font-size: 14px;
 }
 
 .thank-you-nav button:hover {
-    background-color: #eee;
+    background-color: white;
+}
+
+.thank-you-nav form {
+    display: flex;
+    gap: 20px;
+    width: 100%;
+    justify-content: space-between;
+    max-width: 450px;
+    margin: 0 auto;
 }
 
 .appointment-receipt {
@@ -281,7 +338,103 @@ nav ul li a:hover {
     padding: 30px;
     margin: 20px auto;
     max-width: 600px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+    border: 1px solid #e0e0e0;
+    position: relative;
+}
+
+.receipt-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #0C3B6F;
+    margin-bottom: 20px;
+}
+
+.receipt-logo-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.receipt-logo {
+    width: 40px;
+    height: 40px;
+    margin-right: 10px;
+}
+
+.receipt-brand-name {
+    font-size: 24px;
+    font-weight: bold;
+    color: #0C3B6F;
+    font-family: 'Shrikhand', cursive;
+    letter-spacing: 1px;
+}
+
+.receipt-header h3 {
+    color: #144578;
+    margin: 0;
+    padding: 0;
+    font-size: 20px;
+    border-bottom: none;
+    text-align: right;
+}
+
+.receipt-content {
+    margin: 20px 0;
+    padding: 0 5px;
+}
+
+.receipt-row {
+    display: flex;
+    justify-content: space-between;
+    margin: 12px 0;
+    padding: 8px 0;
+    border-bottom: 1px dashed #e0e0e0;
+}
+
+.receipt-row .label {
+    font-weight: 600;
+    color: #444;
+    flex: 0 0 150px;
+}
+
+.receipt-row .value {
+    color: #333;
+    text-align: right;
+    flex: 1;
+}
+
+.receipt-note {
+    margin-top: 25px;
+    padding-top: 15px;
+    border-top: 2px solid #0C3B6F;
+    font-size: 0.9em;
+    color: #666;
+    text-align: center;
+}
+
+.receipt-note p {
+    margin: 5px 0;
+    font-style: italic;
+}
+
+/* Add a subtle "receipt" effect with a jagged bottom edge */
+.appointment-receipt:after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -8px;
+    height: 8px;
+    width: 100%;
+    background: repeating-linear-gradient(
+        45deg,
+        #ffffff,
+        #ffffff 10px,
+        transparent 10px,
+        transparent 20px
+    );
 }
 
 .appointment-receipt h3 {
@@ -290,30 +443,6 @@ nav ul li a:hover {
     margin-bottom: 20px;
     padding-bottom: 10px;
     border-bottom: 2px solid #eee;
-}
-
-.receipt-content {
-    margin: 20px 0;
-}
-
-.receipt-row {
-    display: flex;
-    justify-content: space-between;
-    margin: 12px 0;
-    padding: 8px 0;
-    border-bottom: 1px dashed #eee;
-}
-
-.receipt-row .label {
-    font-weight: 600;
-    color: #555;
-    flex: 0 0 150px;
-}
-
-.receipt-row .value {
-    color: #333;
-    text-align: right;
-    flex: 1;
 }
 
 .receipt-note {
@@ -400,17 +529,52 @@ nav ul li a:hover {
 /* Add these styles to your existing CSS */
 
 .review-box {
-  background-color: #f9f9f9;
-  padding: 30px;
-  border-radius: 10px;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  background-color: white;
+  padding: 30px 40px;
+  border-radius: 8px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
   text-align: center;
   margin-bottom: 30px;
+  border: 1px solid #e0e0e0;
+  max-width: 600px;
+  position: relative;
+}
+
+.review-box:before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: #0C3B6F;
+  border-radius: 5px 5px 0 0;
 }
 
 .review-box h2 {
-  color: #3a7bd5;
+  color: #0C3B6F;
   margin-bottom: 15px;
+  font-size: 24px;
+  font-weight: 600;
+  position: relative;
+  display: inline-block;
+}
+
+.review-box h2:after {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: 10%;
+  right: 10%;
+  height: 2px;
+  background-color: rgba(20, 69, 120, 0.2);
+}
+
+.review-box p {
+  color: #555;
+  font-size: 16px;
+  line-height: 1.5;
+  margin-top: 15px;
 }
 
 .error-message {
@@ -447,4 +611,63 @@ form {
 .service-badge.treatment {
     background-color: #e8f5e9;
     color: #2e7d32;
+}
+
+.back-btn, .next-btn {
+    padding: 12px 24px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: none;
+    min-width: 120px;
+    max-width: 200px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.back-btn {
+    background: #6c757d;
+    color: black;
+}
+
+.back-btn:hover {
+    background: #5a6268;
+}
+
+.next-btn {
+    background: #0C3B6F;
+    color: black;
+    padding: 12px 20px;
+    line-height: 1.2;
+    white-space: normal;
+    height: auto;
+    width: 120px;
+    text-align: center;
+}
+
+.next-btn:hover {
+    background: #1E3A8A;
+}
+
+.done-btn {
+    padding: 12px 40px;
+    background-color: #0C3B6F;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    margin: 0 auto;
+    display: inline-block;
+}
+
+.done-btn:hover {
+    background-color: #1E3A8A;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }

@@ -236,11 +236,23 @@ try {
         $stmt = $db->prepare($query);
         $stmt->execute([':user_id' => $_SESSION['user_id']]);
         $appointment = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        // Check if appointment data was found
+        if (!$appointment) {
+            throw new Exception("Appointment data not found in database.");
+        }
     } else {
         // Get appointment details from session steps
         // Get service data
         $serviceData = AppointmentSession::getData('service', []);
+        if (!$serviceData) {
+            throw new Exception("Service data not found in session.");
+        }
+        
         $service_id = $serviceData['service_id'] ?? null;
+        if (!$service_id) {
+            throw new Exception("Service ID not found in session data.");
+        }
         
         // Get service details from database
         $query = "SELECT service_name, starting_price FROM services WHERE service_id = :service_id";
@@ -248,20 +260,40 @@ try {
         $stmt->execute([':service_id' => $service_id]);
         $service = $stmt->fetch(PDO::FETCH_ASSOC);
         
+        if (!$service) {
+            throw new Exception("Service details not found for ID: " . $service_id);
+        }
+        
         // Get location data
         $locationData = AppointmentSession::getData('location', []);
+        if (!$locationData) {
+            throw new Exception("Location data not found in session.");
+        }
         
         // Get calendar data (appointment date and time)
         $calendarData = AppointmentSession::getData('calendar', []);
+        if (!$calendarData) {
+            throw new Exception("Calendar data not found in session.");
+        }
         
         // Get personal info data if appointment is not for self
-        $personalInfo = AppointmentSession::getData('personal_info', []);
+        $personalInfo = [];
+        if (isset($serviceData['is_for_self']) && $serviceData['is_for_self'] == 0) {
+            $personalInfo = AppointmentSession::getData('personal_info', []);
+            if (!$personalInfo) {
+                throw new Exception("Personal info data not found in session for someone else appointment.");
+            }
+        }
         
         // Get user details for self-appointments
         $query = "SELECT * FROM users WHERE id = :user_id";
         $stmt = $db->prepare($query);
         $stmt->execute([':user_id' => $_SESSION['user_id']]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if (!$user) {
+            throw new Exception("User details not found for ID: " . $_SESSION['user_id']);
+        }
         
         // Check if appointment is for self or someone else
         $isForSelf = $serviceData['is_for_self'] ?? 1;
@@ -291,13 +323,34 @@ try {
 
     // Format the date and time
     $appointmentDate = date('F d, Y', strtotime($appointment['appointment_date']));
-    $appointmentTime = $appointment['appointment_time'];
+    $appointmentTime = date('h:i A', strtotime($appointment['appointment_time']));
 
-} catch (PDOException $e) {
-    error_log("Database Error: " . $e->getMessage());
-    $_SESSION['error'] = "An error occurred while retrieving appointment details.";
-    header("Location: Appointment-service.php");
-    exit();
+} catch (Exception $e) {
+    error_log("Error retrieving appointment details: " . $e->getMessage());
+    $_SESSION['error'] = "An error occurred while retrieving appointment details: " . $e->getMessage();
+    // Set a default empty appointment array to prevent errors in the template
+    $appointment = [
+        'service_name' => 'Not available',
+        'starting_price' => 0,
+        'appointment_date' => date('Y-m-d'),
+        'appointment_time' => '12:00:00',
+        'street_address' => '',
+        'barangay' => '',
+        'city' => 'Zamboanga City',
+        'province' => 'Zamboanga Del Sur',
+        'region' => 'Region IX',
+        'display_firstname' => '',
+        'display_lastname' => '',
+        'display_email' => '',
+        'display_mobile_number' => '',
+        'property_type' => 'Residential',
+        'establishment_name' => '',
+        'property_area' => '',
+        'pest_concern' => '',
+        'service_id' => 0
+    ];
+    $appointmentDate = date('F d, Y');
+    $appointmentTime = '12:00 PM';
 }
 ?>
 
@@ -384,91 +437,103 @@ try {
         <?php else: ?>
         <div class="review-box">
             <h2>Review Your Appointment</h2>
-            <p>Please confirm your appointment details below:</p>
+            <p>Please review the details below to confirm your appointment with PESTCOZAM.</p>
         </div>
         <?php endif; ?>
 
         <!-- Appointment Receipt Section -->
         <div class="appointment-receipt">
-            <h3>Appointment Details</h3>
+            <div class="receipt-header">
+                <div class="receipt-logo-container">
+                    <img src="../Pictures/pest_logo.png" alt="Flower Logo" class="receipt-logo">
+                    <span class="receipt-brand-name">PESTCOZAM</span>
+                </div>
+                <h3>Appointment Details</h3>
+            </div>
             <div class="receipt-content">
-                <div class="receipt-row">
-                    <span class="label">Service Type:</span>
-                    <span class="value"><?php echo htmlspecialchars($appointment['service_name']); ?></span>
-                </div>
-                <div class="receipt-row">
-                    <span class="label">Appointment Type:</span>
-                    <span class="value">
-                        <?php 
-                        // Check if this is an ocular inspection (service ID 17)
-                        if ($appointment['service_id'] == 17) {
-                            echo '<span class="service-badge ocular">Ocular Inspection</span>';
-                        } else {
-                            echo '<span class="service-badge treatment">Treatment</span>';
-                        }
-                        ?>
-                    </span>
-                </div>
-                <div class="receipt-row">
-                    <span class="label">Date & Time:</span>
-                    <span class="value"><?php echo $appointmentDate . ' at ' . $appointmentTime; ?></span>
-                </div>
-                <div class="receipt-row">
-                    <span class="label">Location:</span>
-                    <span class="value">
-                        <?php 
-                        echo htmlspecialchars($appointment['street_address']) . ', ' . 
-                             htmlspecialchars($appointment['barangay']) . ', ' . 
-                             htmlspecialchars($appointment['city']) . ', ' . 
-                             htmlspecialchars($appointment['province']) . ', ' . 
-                             htmlspecialchars($appointment['region']); 
-                        ?>
-                    </span>
-                </div>
-                
-                <!-- New fields -->
-                <div class="receipt-row">
-                    <span class="label">Property Type:</span>
-                    <span class="value">
-                        <?php echo ucfirst(htmlspecialchars($appointment['property_type'] ?? 'Residential')); ?>
-                        <?php if(isset($appointment['establishment_name']) && !empty($appointment['establishment_name'])): ?>
-                            (<?php echo htmlspecialchars($appointment['establishment_name']); ?>)
-                        <?php endif; ?>
-                    </span>
-                </div>
-                
-                <?php if(isset($appointment['property_area']) && !empty($appointment['property_area'])): ?>
-                <div class="receipt-row">
-                    <span class="label">Property Area:</span>
-                    <span class="value"><?php echo htmlspecialchars($appointment['property_area']); ?> sq.m</span>
-                </div>
+                <?php if (isset($_SESSION['error']) && strpos($_SESSION['error'], 'retrieving appointment details') !== false): ?>
+                    <div style="text-align: center; padding: 20px; color: #721c24; background-color: #f8d7da; border-radius: 5px;">
+                        <p>Could not load appointment details. Please go back to the appointment page.</p>
+                    </div>
+                <?php else: ?>
+                    <div class="receipt-row">
+                        <span class="label">Service Type:</span>
+                        <span class="value"><?php echo htmlspecialchars($appointment['service_name']); ?></span>
+                    </div>
+                    <div class="receipt-row">
+                        <span class="label">Appointment Type:</span>
+                        <span class="value">
+                            <?php 
+                            // Check if this is an ocular inspection (service ID 17)
+                            if (isset($appointment['service_id']) && $appointment['service_id'] == 17) {
+                                echo '<span class="service-badge ocular">Ocular Inspection</span>';
+                            } else {
+                                echo '<span class="service-badge treatment">Treatment</span>';
+                            }
+                            ?>
+                        </span>
+                    </div>
+                    <div class="receipt-row">
+                        <span class="label">Date & Time:</span>
+                        <span class="value"><?php echo $appointmentDate . ' at ' . $appointmentTime; ?></span>
+                    </div>
+                    <div class="receipt-row">
+                        <span class="label">Location:</span>
+                        <span class="value">
+                            <?php 
+                            echo htmlspecialchars($appointment['street_address']) . ', ' . 
+                                 htmlspecialchars($appointment['barangay']) . ', ' . 
+                                 htmlspecialchars($appointment['city']) . ', ' . 
+                                 htmlspecialchars($appointment['province']) . ', ' . 
+                                 htmlspecialchars($appointment['region']); 
+                            ?>
+                        </span>
+                    </div>
+                    
+                    <!-- New fields -->
+                    <div class="receipt-row">
+                        <span class="label">Property Type:</span>
+                        <span class="value">
+                            <?php echo ucfirst(htmlspecialchars($appointment['property_type'] ?? 'Residential')); ?>
+                            <?php if(isset($appointment['establishment_name']) && !empty($appointment['establishment_name'])): ?>
+                                (<?php echo htmlspecialchars($appointment['establishment_name']); ?>)
+                            <?php endif; ?>
+                        </span>
+                    </div>
+                    
+                    <?php if(isset($appointment['property_area']) && !empty($appointment['property_area'])): ?>
+                    <div class="receipt-row">
+                        <span class="label">Property Area:</span>
+                        <span class="value"><?php echo htmlspecialchars($appointment['property_area']); ?> sq.m</span>
+                    </div>
+                    <?php endif; ?>
+                    
+                    <?php if(isset($appointment['pest_concern']) && !empty($appointment['pest_concern'])): ?>
+                    <div class="receipt-row">
+                        <span class="label">Pest Concern:</span>
+                        <span class="value"><?php echo nl2br(htmlspecialchars($appointment['pest_concern'])); ?></span>
+                    </div>
+                    <?php endif; ?>
+                    
+                    <div class="receipt-row">
+                        <span class="label">Client Name:</span>
+                        <span class="value">
+                            <?php echo htmlspecialchars($appointment['display_firstname'] . ' ' . $appointment['display_lastname']); ?>
+                        </span>
+                    </div>
+                    <div class="receipt-row">
+                        <span class="label">Email:</span>
+                        <span class="value"><?php echo htmlspecialchars($appointment['display_email']); ?></span>
+                    </div>
+                    <div class="receipt-row">
+                        <span class="label">Phone:</span>
+                        <span class="value"><?php echo htmlspecialchars($appointment['display_mobile_number']); ?></span>
+                    </div>
+                    <div class="receipt-row">
+                        <span class="label">Starting Price:</span>
+                        <span class="value">₱<?php echo number_format($appointment['starting_price'], 2); ?></span>
+                    </div>
                 <?php endif; ?>
-                
-                <?php if(isset($appointment['pest_concern']) && !empty($appointment['pest_concern'])): ?>
-                <div class="receipt-row">
-                    <span class="label">Pest Concern:</span>
-                    <span class="value"><?php echo nl2br(htmlspecialchars($appointment['pest_concern'])); ?></span>
-                </div>
-                <?php endif; ?>
-                
-                <div class="receipt-row">
-                    <span class="label">Client Name:</span>
-                    <span class="value">
-                        <?php echo htmlspecialchars($appointment['display_firstname'] . ' ' . $appointment['display_lastname']); ?>
-                    </span>
-                </div>
-                <div class="receipt-row">
-                    <span class="label">Email:</span>
-                    <span class="value"><?php echo htmlspecialchars($appointment['display_email']); ?></span>
-                </div>
-                <div class="receipt-row">
-                    <span class="label">Phone:</span>
-                    <span class="value"><?php echo htmlspecialchars($appointment['display_mobile_number']); ?></span>
-                </div>
-                <div class="receipt-row">
-                    <span class="label">Starting Price:</span>
-                    <span class="value">₱<?php echo number_format($appointment['starting_price'], 2); ?></span>
-                </div>
             </div>
             <div class="receipt-note">
                 <p>*Final price will be determined after ocular inspection</p>
@@ -478,13 +543,13 @@ try {
 
         <div class="thank-you-nav">
             <?php if (isset($_SESSION['appointment_confirmed']) && $_SESSION['appointment_confirmed']): ?>
-                <form method="post" style="width: 100%; text-align: right;">
-                    <button type="submit" name="done" class="next-btn">Done</button>
+                <form method="post" style="width: 100%; text-align: center;">
+                    <button type="submit" name="done" class="done-btn">Done</button>
                 </form>
             <?php else: ?>
-                <form method="post" style="display: flex; gap: 15px; width: 100%; justify-content: space-between;">
+                <form method="post">
                     <button type="submit" name="cancel" class="back-btn">Cancel</button>
-                    <button type="submit" name="confirm" class="next-btn">Confirm Appointment</button>
+                    <button type="submit" name="confirm" class="next-btn">Confirm<br>Appointment</button>
                 </form>
             <?php endif; ?>
         </div>
