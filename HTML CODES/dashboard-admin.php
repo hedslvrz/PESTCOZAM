@@ -717,98 +717,13 @@ try {
         </div>
         <!-- End Time Slot Management Section -->
 
-        <!-- Start new form for the table data section -->
-        <form id="table-form" method="POST" action="process_dashboard.php">
-            <div class="table-data">
-                <div class="recent-appointments">
-                    <div class="head">
-                        <h3>Recent Appointments</h3>
-                        <input type="text" name="search" placeholder="Search appointments...">
-                        <button type="submit" name="filter_appointments"><i class="bx bx-filter"></i></button>
-                    </div>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>User</th>
-                                <th>Date Order</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>
-                                    <img src="../Pictures/boy.png" class="user-img">
-                                    <p>John Doe</p>
-                                </td>
-                                <td>01-10-2025</td>
-                                <td><span class="status-completed">Completed</span></td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <img src="../Pictures/boy.png" class="user-img">
-                                    <p>John Doe</p>
-                                </td>
-                                <td>01-10-2025</td>
-                                <td><span class="status-completed">Completed</span></td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <img src="../Pictures/boy.png" class="user-img">
-                                    <p>John Doe</p>
-                                </td>
-                                <td>01-10-2025</td>
-                                <td><span class="status-completed">Completed</span></td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <img src="../Pictures/boy.png" class="user-img">
-                                    <p>John Doe</p>
-                                </td>
-                                <td>01-10-2025</td>
-                                <td><span class="status-completed">Completed</span></td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <img src="../Pictures/boy.png" class="user-img">
-                                    <p>John Doe</p>
-                                </td>
-                                <td>01-10-2025</td>
-                                <td><span class="status-completed">Completed</span></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="todo">
-                    <div class="head">
-                        <h3>Recent Appointments</h3>
-                        <input type="text" name="todo_search" placeholder="Search todos...">
-                        <button type="submit" name="filter_todos"><i class="bx bx-filter"></i></button>
-                    </div>
-                    <ul class="todo-list">
-                        <li>
-                            <p>Todo List</p>
-                            <i class='bx bx-dots-vertical-rounded'></i>
-                        </li>
-                        <li class="completed">
-                            <p>Todo List</p>
-                            <i class='bx bx-dots-vertical-rounded'></i>
-                        </li>
-                        <li class="not-completed">
-                            <p>Todo List</p>
-                            <i class='bx bx-dots-vertical-rounded'></i>
-                        </li>
-                        <li class="completed">
-                            <p>Todo List</p>
-                            <i class='bx bx-dots-vertical-rounded'></i>
-                        </li>
-                        <li class="not-completed">
-                            <p>Todo List</p>
-                            <i class='bx bx-dots-vertical-rounded'></i>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </form>
+        <!-- Add JavaScript functions for report modal and PDF download -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+        
+        <script>
+        // ...existing code...
+        </script>
     </main>
 
     <!-- Chart.js library and initialization -->
