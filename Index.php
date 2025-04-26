@@ -25,16 +25,15 @@ $stmt = $db->prepare($query);
 $stmt->execute();
 $services = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Fetch approved reviews with user information
+// Fetch approved reviews with user information - remove LIMIT to get ALL approved reviews
 $reviews = [];
 try {
     $query = "SELECT r.*, u.firstname, u.lastname, 
-              './Pictures/boy.png' AS profile_pic 
+              IFNULL(u.profile_pic, './Pictures/boy.png') AS profile_pic 
               FROM reviews r 
               JOIN users u ON r.user_id = u.id 
               WHERE r.status = 'approved' 
-              ORDER BY r.created_at DESC 
-              LIMIT 10";
+              ORDER BY r.created_at DESC";
     $stmt = $db->prepare($query);
     $stmt->execute();
     $reviews = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -436,46 +435,50 @@ foreach ($services as $service) {
 <section id="reviews-section">
   <div class="reviews-container">
     <div class="reviews-header">
-      <div class="customer-title">What Our Customer are saying</div>
+      <div class="customer-title">What Our Customers Are Saying</div>
       <p>See what our happy customers are saying about their experiences with us!</p>
     </div>
-    <div class="reviews-slider">
-      <?php if (count($reviews) > 0): ?>
-        <?php foreach ($reviews as $review): ?>
-          <div class="review-slide">
-            <div class="review-card">
-              <img src="<?= htmlspecialchars($review['profile_pic']) ?>" 
-                   alt="<?= htmlspecialchars($review['firstname'] . ' ' . $review['lastname']) ?>" 
-                   class="review-image">
-              <div class="review-content">
-                <h3 class="review-name"><?= htmlspecialchars($review['firstname'] . ' ' . $review['lastname']) ?></h3>
-                <div class="review-stars">
-                  <?php 
-                    $rating = (int)$review['rating'];
-                    echo str_repeat('★', $rating) . str_repeat('☆', 5 - $rating); 
-                  ?>
+    <div class="reviews-slider-container">
+      <div class="reviews-slider" id="reviewsSlider">
+        <?php if (count($reviews) > 0): ?>
+          <?php foreach ($reviews as $index => $review): ?>
+            <div class="review-slide" data-index="<?= $index ?>">
+              <div class="review-card">
+                <img src="<?= htmlspecialchars($review['profile_pic']) ?>" 
+                     alt="<?= htmlspecialchars($review['firstname'] . ' ' . $review['lastname']) ?>" 
+                     class="review-image">
+                <div class="review-content">
+                  <h3 class="review-name"><?= htmlspecialchars($review['firstname'] . ' ' . $review['lastname']) ?></h3>
+                  <div class="review-stars">
+                    <?php 
+                      $rating = (int)$review['rating'];
+                      echo str_repeat('★', $rating) . str_repeat('☆', 5 - $rating); 
+                    ?>
+                  </div>
+                  <p><?= htmlspecialchars($review['review_text']) ?></p>
                 </div>
-                <p>"<?= htmlspecialchars($review['review_text']) ?>"</p>
+              </div>
+            </div>
+          <?php endforeach; ?>
+        <?php else: ?>
+          <div class="review-slide" data-index="0">
+            <div class="review-card">
+              <div class="review-content">
+                <h3 class="review-name">No Reviews Yet</h3>
+                <div class="review-stars">☆☆☆☆☆</div>
+                <p>Be the first to leave a review after experiencing our service!</p>
               </div>
             </div>
           </div>
-        <?php endforeach; ?>
-      <?php else: ?>
-        <div class="review-slide">
-          <div class="review-card">
-            <div class="review-content">
-              <h3 class="review-name">No Reviews Yet</h3>
-              <p>Be the first to leave a review after experiencing our service!</p>
-            </div>
-          </div>
-        </div>
-      <?php endif; ?>
+        <?php endif; ?>
+      </div>
+      
+      <div class="slider-controls">
+        <button class="prev-button" id="prevReview">←</button>
+        <button class="next-button" id="nextReview">→</button>
+      </div>
     </div>
-    <div class="slider-controls">
-      <button class="prev-button">←</button>
-      <button class="next-button">→</button>
-    </div>
-    <a href="./HTML CODES/Appointment-service.php" class="book-now-button">BOOK NOW!</a>
+    <a href="./HTML CODES/Appointment-service.php" class="book-now-button">BOOK AN APPOINTMENT NOW</a>
   </div>
 </section>
 
@@ -493,7 +496,7 @@ foreach ($services as $service) {
         </p>
       </div>
       <div class="footer-right">
-        <p class="follow-us-text">Follow us</p>
+        <p class="follow-us-text">Follow us on:</p>
         <div class="social-icons">
           <a href="https://www.facebook.com/PESTCOZAM" target="_blank"><img src="./Pictures/facebook.png" alt="Facebook" ></a>
           <a href="https://www.instagram.com/pestcozam" target="_blank"><img src="./Pictures/instagram.png" alt="Instagram" /></a>
@@ -553,10 +556,122 @@ foreach ($services as $service) {
     });
     </script> 
     <script src="./JS CODES/sessionHandler.js"></script>
-    <style>
+  <script>
+    // Enhanced Review Slider with Fixed Positioning
+    document.addEventListener('DOMContentLoaded', function() {
+      const reviewSlider = document.getElementById('reviewsSlider');
+      const prevButton = document.getElementById('prevReview');
+      const nextButton = document.getElementById('nextReview');
+      const slides = document.querySelectorAll('.review-slide');
+      const totalSlides = slides.length;
+      let currentIndex = 0;
+      let autoScrollInterval;
+      let isHovering = false;
+      let isAnimating = false;
+      
+      if(!reviewSlider || totalSlides <= 1) return;
+      
+      // Set initial positions
+      function initializeSlider() {
+        slides.forEach((slide, index) => {
+          // Initially hide all slides except the first three
+          if (index > 2) {
+            slide.style.display = 'none';
+          }
+        });
+        
+        // Set up the initial three visible slides
+        updateSlidePositions();
+      }
+      
+      // Update slide positions based on current index
+      function updateSlidePositions() {
+        // Hide all slides first
+        slides.forEach((slide) => {
+          slide.style.display = 'none';
+          slide.classList.remove('active', 'prev', 'next');
+        });
+        
+        // Calculate indices for active, prev, and next slides
+        const prevIndex = (currentIndex - 1 + totalSlides) % totalSlides;
+        const nextIndex = (currentIndex + 1) % totalSlides;
+        
+        // Show and position the three slides
+        slides[prevIndex].style.display = 'block';
+        slides[currentIndex].style.display = 'block';
+        slides[nextIndex].style.display = 'block';
+        
+        // Apply appropriate classes
+        slides[prevIndex].classList.add('prev');
+        slides[currentIndex].classList.add('active');
+        slides[nextIndex].classList.add('next');
+      }
+      
+      // Go to a specific slide with proper animation
+      function goToSlide(index) {
+        if (isAnimating) return;
+        isAnimating = true;
+        
+        if (index < 0) index = totalSlides - 1;
+        if (index >= totalSlides) index = 0;
+        
+        currentIndex = index;
+        updateSlidePositions();
+        
+        // Re-enable slide transitions after a brief delay
+        setTimeout(() => {
+          isAnimating = false;
+        }, 500); // Match this to CSS transition time
+      }
+      
+      // Start auto-scrolling
+      function startAutoScroll() {
+        autoScrollInterval = setInterval(() => {
+          if (!isHovering && !isAnimating) {
+            goToSlide(currentIndex + 1);
+          }
+        }, 5000); // Change slide every 5 seconds
+      }
+      
+      // Event listeners
+      prevButton.addEventListener('click', () => {
+        goToSlide(currentIndex - 1);
+      });
+      
+      nextButton.addEventListener('click', () => {
+        goToSlide(currentIndex + 1);
+      });
+      
+      // Handle hover states
+      reviewSlider.addEventListener('mouseenter', () => {
+        isHovering = true;
+      });
+      
+      reviewSlider.addEventListener('mouseleave', () => {
+        isHovering = false;
+      });
+      
+      // Allow clicking on the prev/next slides to navigate
+      slides.forEach((slide, index) => {
+        slide.addEventListener('click', () => {
+          const slideClasses = slide.classList;
+          if (slideClasses.contains('prev')) {
+            goToSlide(currentIndex - 1);
+          } else if (slideClasses.contains('next')) {
+            goToSlide(currentIndex + 1);
+          }
+        });
+      });
+      
+      // Initialize the slider
+      initializeSlider();
+      startAutoScroll();
+    });
+  </script>
+  <style>
   html {
     scroll-behavior: smooth;
   }
-</style>
+  </style>
 </body>
 </html>
