@@ -26,7 +26,9 @@ try {
 // Get dashboard statistics
 try {
     $stats = $db->query("SELECT 
+        (SELECT COUNT(*) FROM appointments) as total_appointments,
         (SELECT COUNT(*) FROM appointments WHERE status = 'pending') as pending_jobs,
+        (SELECT COUNT(*) FROM appointments WHERE status = 'completed') as completed_treatments,
         (SELECT COUNT(*) FROM users WHERE role = 'technician' AND status = 'active') as active_technicians,
         (SELECT COUNT(*) FROM service_reports) as total_reports"
     )->fetch(PDO::FETCH_ASSOC);
@@ -340,37 +342,29 @@ try {
                 <li>
                     <i class='bx bxs-calendar-check' ></i>
                     <span class="text">
+                        <h3><?php echo htmlspecialchars($stats['total_appointments'] ?? '0'); ?></h3>
+                        <p>Total Appointments</p>
+                    </span>
+                </li>
+                <li>
+                    <i class='bx bxs-hourglass' ></i>
+                    <span class="text">
                         <h3><?php echo htmlspecialchars($stats['pending_jobs'] ?? '0'); ?></h3>
-                        <p>Appointments</p>
+                        <p>Pending Job Orders</p>
+                    </span>
+                </li>
+                <li>
+                    <i class='bx bxs-check-circle' ></i>
+                    <span class="text">
+                        <h3><?php echo htmlspecialchars($stats['completed_treatments'] ?? '0'); ?></h3>
+                        <p>Completed Treatments</p>
                     </span>
                 </li>
                 <li>
                     <i class='bx bxs-group' ></i>
                     <span class="text">
-                        <h3>6</h3>
-                        <p>Available</p>
-                    </span>
-                </li>
-                <li>
-                    <i class='bx bxs-dollar-circle' ></i>
-                    <span class="text">
-                        <h3>₱2025</h3>
-                        <p>Total Sales</p>
-                        <p>Appointments</p>
-                    </span>
-                </li>
-                <li>
-                    <i class='bx bxs-group' ></i>
-                    <span class="text">
-                        <h3>6</h3>
-                        <p>Available</p>
-                    </span>
-                </li>
-                <li>
-                    <i class='bx bxs-dollar-circle' ></i>
-                    <span class="text">
-                        <h3>₱2025</h3>
-                        <p>Total Sales</p>
+                        <h3><?php echo htmlspecialchars($stats['active_technicians'] ?? '0'); ?></h3>
+                        <p>Active Technicians</p>
                     </span>
                 </li>
             </ul>
