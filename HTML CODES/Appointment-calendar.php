@@ -213,12 +213,29 @@ $calendarData = AppointmentSession::getData('calendar', []);
         $backUrl = $is_for_self == 1 ? 'Appointment-loc.php' : 'Appointment-info.php';
         ?>
         <button class="back-btn" onclick="window.location.href='<?php echo $backUrl; ?>'">Back</button>
-        <button class="next-btn" disabled id="nextButton" onclick="saveDateTime()">Next</button>
+        <button class="next-btn" id="nextButton" onclick="saveDateTime()" disabled>Next</button>
       </div>
     </div>
   </main>
 
-  
+  <!-- Treatment Confirmation Modal -->
+  <div id="treatmentModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Confirmation</h2>
+        <span class="close-modal">&times;</span>
+      </div>
+      <div class="modal-body">
+        <div class="warning-icon">⚠️</div>
+        <p>Are you sure you want to skip Ocular Inspection? A technician may still perform an inspection if additional pest issues are found.</p>
+      </div>
+      <div class="modal-footer">
+        <button id="cancelTreatment" class="modal-btn cancel-btn">Cancel</button>
+        <button id="confirmTreatment" class="modal-btn confirm-btn">Proceed with Treatment</button>
+      </div>
+    </div>
+  </div>
+
  <!-- FOOTER SECTION -->
  <footer class="footer-section">
   <div class="footer-container">
@@ -433,37 +450,88 @@ $calendarData = AppointmentSession::getData('calendar', []);
       });
     }
 
-    // Initialize with pre-selected service
+    // Initialize service type radios with event listeners
     document.addEventListener('DOMContentLoaded', function() {
-        <?php if (!empty($calendarData['service_id'])): ?>
-        const serviceId = <?php echo $calendarData['service_id']; ?>;
-        const serviceRadio = document.querySelector(`input[name="service_id"][value="${serviceId}"]`);
-        if (serviceRadio) {
-            serviceRadio.checked = true;
+      // Treatment selection confirmation
+      const treatmentRadio = document.getElementById('treatment');
+      const ocularRadio = document.getElementById('ocular');
+      const modal = document.getElementById('treatmentModal');
+      const closeBtn = document.querySelector('.close-modal');
+      const cancelBtn = document.getElementById('cancelTreatment');
+      const confirmBtn = document.getElementById('confirmTreatment');
+      let serviceWasChanged = false;
+
+      // Show modal when treatment is selected
+      treatmentRadio.addEventListener('change', function(e) {
+        if (this.checked) {
+          modal.style.display = 'block';
+          serviceWasChanged = true;
         }
-        <?php endif; ?>
-        
-        // If date is pre-selected
-        <?php if (!empty($calendarData['appointment_date'])): ?>
-        const dateParts = selectedDate.split('-');
-        const year = parseInt(dateParts[0]);
-        const month = parseInt(dateParts[1]) - 1;
-        const day = parseInt(dateParts[2]);
-        
-        monthSelect.value = month;
-        yearSelect.value = year;
-        renderCalendar();
-        
-        // Select the date in calendar
-        setTimeout(() => {
-            const dayElements = document.querySelectorAll('.day');
-            dayElements.forEach(dayElement => {
-                if (parseInt(dayElement.textContent) === day && !dayElement.classList.contains('disabled')) {
-                    dayElement.click();
-                }
-            });
-        }, 100);
-        <?php endif; ?>
+      });
+
+      // Close modal handlers
+      closeBtn.onclick = function() {
+        modal.style.display = 'none';
+        if (serviceWasChanged) {
+          ocularRadio.checked = true;
+          serviceWasChanged = false;
+        }
+      }
+
+      // Cancel treatment selection
+      cancelBtn.onclick = function() {
+        modal.style.display = 'none';
+        ocularRadio.checked = true;
+        serviceWasChanged = false;
+      }
+
+      // Confirm treatment selection
+      confirmBtn.onclick = function() {
+        modal.style.display = 'none';
+        serviceWasChanged = false;
+        // Treatment radio stays selected
+      }
+
+      // Close modal if clicked outside
+      window.onclick = function(event) {
+        if (event.target == modal) {
+          modal.style.display = 'none';
+          if (serviceWasChanged) {
+            ocularRadio.checked = true;
+            serviceWasChanged = false;
+          }
+        }
+      }
+
+      <?php if (!empty($calendarData['service_id'])): ?>
+      const serviceId = <?php echo $calendarData['service_id']; ?>;
+      const serviceRadio = document.querySelector(`input[name="service_id"][value="${serviceId}"]`);
+      if (serviceRadio) {
+          serviceRadio.checked = true;
+      }
+      <?php endif; ?>
+      
+      // If date is pre-selected
+      <?php if (!empty($calendarData['appointment_date'])): ?>
+      const dateParts = selectedDate.split('-');
+      const year = parseInt(dateParts[0]);
+      const month = parseInt(dateParts[1]) - 1;
+      const day = parseInt(dateParts[2]);
+      
+      monthSelect.value = month;
+      yearSelect.value = year;
+      renderCalendar();
+      
+      // Select the date in calendar
+      setTimeout(() => {
+          const dayElements = document.querySelectorAll('.day');
+          dayElements.forEach(dayElement => {
+              if (parseInt(dayElement.textContent) === day && !dayElement.classList.contains('disabled')) {
+                  dayElement.click();
+              }
+          });
+      }, 100);
+      <?php endif; ?>
     });
 
     function saveDateTime() {

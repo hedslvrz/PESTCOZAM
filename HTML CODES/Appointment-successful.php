@@ -285,6 +285,7 @@ try {
             'establishment_name' => $locationData['establishment_name'] ?? '',
             'property_area' => $locationData['property_area'] ?? '',
             'pest_concern' => $locationData['pest_concern'] ?? '',
+            'service_id' => $service_id
         ];
     }
 
@@ -394,6 +395,19 @@ try {
                 <div class="receipt-row">
                     <span class="label">Service Type:</span>
                     <span class="value"><?php echo htmlspecialchars($appointment['service_name']); ?></span>
+                </div>
+                <div class="receipt-row">
+                    <span class="label">Appointment Type:</span>
+                    <span class="value">
+                        <?php 
+                        // Check if this is an ocular inspection (service ID 17)
+                        if ($appointment['service_id'] == 17) {
+                            echo '<span class="service-badge ocular">Ocular Inspection</span>';
+                        } else {
+                            echo '<span class="service-badge treatment">Treatment</span>';
+                        }
+                        ?>
+                    </span>
                 </div>
                 <div class="receipt-row">
                     <span class="label">Date & Time:</span>
