@@ -322,6 +322,9 @@ try {
                                                     <a href="job-details.php?id=<?php echo $appointment['appointment_id']; ?>" class="view-btn">
                                                         <i class='bx bx-show'></i> View Details
                                                     </a>
+                                                    <a href="check-review.php?id=<?php echo $appointment['appointment_id']; ?>" class="review-btn">
+                                                        <i class='bx bx-star'></i> Check Review
+                                                    </a>
                                                 </div>
                                             </td>
                                         </tr>
@@ -585,6 +588,8 @@ try {
                                                         $dateClass = 'nextweek';
                                                     } elseif ($appointmentDate >= $monthStart && $appointmentDate <= $monthEnd) {
                                                         $dateClass = 'thismonth';
+                                                    } elseif ($appointmentDate > $monthEnd) {
+                                                        $dateClass = 'nextmonth'; // Add class for next month
                                                     }
                                                     
                                                     echo '<tr class="followup-row" data-date="'.date('Y-m-d', $appointmentDate).'" data-period="'.$dateClass.'">';
@@ -599,10 +604,10 @@ try {
                                                     echo '</tr>';
                                                 }
                                             } else {
-                                                echo '<tr><td colspan="6">No follow-ups scheduled</td></tr>';
+                                                echo '<tr class="no-results"><td colspan="6">No follow-ups scheduled</td></tr>';
                                             }
                                         } catch(PDOException $e) {
-                                            echo '<tr><td colspan="6">Error loading follow-ups</td></tr>';
+                                            echo '<tr class="no-results"><td colspan="6">Error loading follow-ups: ' . $e->getMessage() . '</td></tr>';
                                         }
                                         ?>
                                     </tbody>
@@ -833,10 +838,10 @@ try {
                     </div>
 
                     <div class="form-actions">
-                        <button type="button" class="btn-approve" id="approveBtn" onclick="updateReportStatus('approved')">
+                        <button type="button" class="btn-approve" id="approveBtn">
                             <i class='bx bx-check'></i> Approve Report
                         </button>
-                        <button type="button" class="btn-reject" id="rejectBtn" onclick="updateReportStatus('rejected')">
+                        <button type="button" class="btn-reject" id="rejectBtn">
                             <i class='bx bx-x'></i> Reject Report
                         </button>
                         <button type="button" class="btn-download" onclick="downloadReportPDF()">
@@ -1383,6 +1388,14 @@ try {
                     }
                 });
             }
+
+            // Add form submission handler
+            if (profileForm) {
+                profileForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    updateUserProfile(this);
+                });
+            }
         });
     </script>
     
@@ -1399,128 +1412,217 @@ try {
         </div>
     </div>
     
+    <!-- Review Modal with Box Design Layout -->
+    <div id="reviewModal" class="modal">
+        <div class="review-modal-content">
+            <span class="close-modal" onclick="closeReviewModal()">&times;</span>
+            <div class="modal-header">
+                <h3>Customer Review Details</h3>
+            </div>
+            <div class="review-content">
+                <div class="review-grid">
+                    <!-- Left Side - Ratings -->
+                    <div class="review-left">
+                        <div class="overall-rating">
+                            <h4>Overall Rating</h4>
+                            <div class="rating-stars">
+                                <div class="rating-number">
+                                    <span id="overall-rating-value">0</span><span>/5</span>
+                                </div>
+                                <div id="overall-stars" class="stars-container"></div>
+                            </div>
+                        </div>
+                        <div class="rating-details">
+                            <div class="rating-detail">
+                                <span>Service Quality:</span>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div class="stars-container" id="service-stars"></div>
+                                    <div class="rating-number">
+                                        <span id="service-rating-value">0</span><span>/5</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="rating-detail">
+                                <span>Technician Performance:</span>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div class="stars-container" id="technician-stars"></div>
+                                    <div class="rating-number">
+                                        <span id="technician-rating-value">0</span><span>/5</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="date-info">
+                            <p><i class='bx bx-calendar'></i> <strong>Review Date:</strong> <span id="review-date">--/--/----</span></p>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Side - Comments -->
+                    <div class="review-right">
+                        <div class="review-body">
+                            <h4><i class='bx bx-message-detail'></i> Customer Comments</h4>
+                            <p id="review-text">Loading review information...</p>
+                        </div>
+                        
+                        <div class="review-feedback">
+                            <h4><i class='bx bx-comment-check'></i> Service Feedback</h4>
+                            <p id="service-feedback">Loading feedback information...</p>
+                        </div>
+                        
+                        <div class="review-issues" id="issues-container">
+                            <h4><i class='bx bx-error-circle'></i> Reported Issues</h4>
+                            <p id="reported-issues">Loading issues information...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <script src="../JS CODES/modal.js"></script>
     <script src="../JS CODES/dashboard-aos.js"></script>
     <script src="../JS CODES/followup.js"></script>
     <script src="../JS CODES/work-orders.js"></script>
     <script>
-        function loadCustomerDetails(selectedValue) {
-            if (!selectedValue || selectedValue === "") {
-                // Clear form fields if no appointment is selected
-                document.getElementById('service-type').value = '';
-                document.getElementById('customer-location').value = '';
-                // For multi-select, clear all selections
-                const techSelect = document.getElementById('technician-select');
-                if (techSelect) {
-                    for (let i = 0; i < techSelect.options.length; i++) {
-                        techSelect.options[i].selected = false;
-                    }
-                }
-                return;
-            }
+        // ...existing script code...
+
+        // New function to load and display review data
+        function loadReviewData(appointmentId) {
+            // Show loading state
+            document.getElementById('review-text').textContent = 'Loading...';
+            document.getElementById('service-feedback').textContent = 'Loading...';
+            document.getElementById('reported-issues').textContent = 'Loading...';
             
-            console.log('Loading details for appointment ID:', selectedValue);
+            // Clear star ratings
+            document.getElementById('overall-stars').innerHTML = '';
+            document.getElementById('service-stars').innerHTML = '';
+            document.getElementById('technician-stars').innerHTML = '';
             
-            // Get the selected option element
-            const selectedOption = document.querySelector(`#customer-select option[value="${selectedValue}"]`);
-            if (!selectedOption) {
-                console.error('Selected option not found for appointment ID:', selectedValue);
-                return;
-            }
+            // Show the modal first for better UX
+            const modal = document.getElementById('reviewModal');
+            modal.style.display = 'flex';
+            setTimeout(() => {
+                modal.classList.add('show');
+            }, 10);
             
-            // Extract data from data attributes
-            const serviceId = selectedOption.getAttribute('data-service');
-            const location = selectedOption.getAttribute('data-location');
-            const allTechnicians = selectedOption.getAttribute('data-all-technicians');
-            const allTechnicianNames = selectedOption.getAttribute('data-all-technician-names');
-            
-            console.log('Appointment details found:', { serviceId, location, allTechnicians });
-            
-            // Set service type and customer location if available
-            if (serviceId) document.getElementById('service-type').value = serviceId;
-            if (location) document.getElementById('customer-location').value = location;
-            
-            const technicianSelect = document.getElementById('technician-select');
-            if (technicianSelect) {
-                // Clear previous selections
-                for (let i = 0; i < technicianSelect.options.length; i++) {
-                    technicianSelect.options[i].selected = false;
-                }
-                
-                // Process technician IDs from all_technicians attribute
-                if (allTechnicians && allTechnicians.trim() !== "" && allTechnicians.toLowerCase() !== "null") {
-                    const techIds = allTechnicians.split(',').map(id => id.trim());
-                    const techNames = allTechnicianNames ? 
-                        allTechnicianNames.split(',').map(name => name.trim()) : 
-                        techIds.map(id => `Technician ${id}`);
-                    
-                    console.log('Setting technicians:', techIds);
-                    
-                    // Select technicians that exist in the dropdown
-                    for (let i = 0; i < technicianSelect.options.length; i++) {
-                        if (techIds.includes(technicianSelect.options[i].value)) {
-                            technicianSelect.options[i].selected = true;
-                        }
-                    }
-                    
-                    // Add any missing technicians to the dropdown
-                    techIds.forEach((id, index) => {
-                        const exists = Array.from(technicianSelect.options)
-                            .some(opt => opt.value === id);
+            // Fetch review data
+            fetch(`../PHP CODES/get_review.php?appointment_id=${appointmentId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const review = data.review;
                         
-                        if (!exists && id) {
-                            const name = techNames[index] || `Technician ${id}`;
-                            const opt = document.createElement('option');
-                            opt.value = id;
-                            opt.text = name;
-                            technicianSelect.appendChild(opt);
-                            opt.selected = true;
-                        }
-                    });
-                } else {
-                    // Fallback to main technician if no multi-technician data
-                    const mainTechId = selectedOption.getAttribute('data-technician');
-                    if (mainTechId && mainTechId !== 'null') {
-                        const mainTechName = selectedOption.getAttribute('data-technician-name');
-                        console.log('Setting main technician:', mainTechId, mainTechName);
+                        // Update overall rating
+                        document.getElementById('overall-rating-value').textContent = review.rating;
+                        document.getElementById('overall-stars').innerHTML = generateStars(review.rating);
                         
-                        // Check if the technician exists in the dropdown
-                        let techExists = false;
-                        for (let i = 0; i < technicianSelect.options.length; i++) {
-                            if (technicianSelect.options[i].value === mainTechId) {
-                                technicianSelect.options[i].selected = true;
-                                techExists = true;
-                                break;
-                            }
+                        // Update service rating
+                        document.getElementById('service-rating-value').textContent = review.service_rating || 'N/A';
+                        document.getElementById('service-stars').innerHTML = review.service_rating ? 
+                            generateStars(review.service_rating) : '';
+                        
+                        // Update technician rating
+                        document.getElementById('technician-rating-value').textContent = review.technician_rating || 'N/A';
+                        document.getElementById('technician-stars').innerHTML = review.technician_rating ? 
+                            generateStars(review.technician_rating) : '';
+                        
+                        // Update review text and feedback
+                        document.getElementById('review-text').textContent = review.review_text || 'No review provided';
+                        document.getElementById('service-feedback').textContent = review.service_feedback || 'No feedback provided';
+                        
+                        // Update reported issues (hide container if none)
+                        const issuesContainer = document.getElementById('issues-container');
+                        if (review.reported_issues) {
+                            document.getElementById('reported-issues').textContent = review.reported_issues;
+                            issuesContainer.style.display = 'block';
+                        } else {
+                            issuesContainer.style.display = 'none';
                         }
                         
-                        // If not found, add it
-                        if (!techExists && mainTechId) {
-                            const opt = document.createElement('option');
-                            opt.value = mainTechId;
-                            opt.text = mainTechName || `Technician ${mainTechId}`;
-                            technicianSelect.appendChild(opt);
-                            opt.selected = true;
-                        }
+                        // Update meta information
+                        document.getElementById('review-date').textContent = new Date(review.created_at).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        });
+                    } else {
+                        // No review found
+                        document.getElementById('review-text').textContent = 'No review found for this appointment.';
+                        document.getElementById('service-feedback').textContent = 'N/A';
+                        document.getElementById('reported-issues').textContent = 'N/A';
+                        
+                        // Clear ratings
+                        document.getElementById('overall-rating-value').textContent = 'N/A';
+                        document.getElementById('service-rating-value').textContent = 'N/A';
+                        document.getElementById('technician-rating-value').textContent = 'N/A';
+                        
+                        // Hide issues container
+                        document.getElementById('issues-container').style.display = 'none';
+                        
+                        // Clear meta info
+                        document.getElementById('review-date').textContent = 'N/A';
                     }
-                }
-            }
+                })
+                .catch(error => {
+                    console.error('Error fetching review:', error);
+                    document.getElementById('review-text').textContent = 'Error loading review data. Please try again.';
+                });
         }
         
-        // When the page loads, attach event handler to the schedule button
-        document.addEventListener('DOMContentLoaded', function() {
-            const scheduleBtn = document.getElementById('schedule-followup-btn');
-            if (scheduleBtn) {
-                scheduleBtn.addEventListener('click', scheduleFollowUp);
+        // Helper function to generate star icons based on rating
+        function generateStars(rating) {
+            let stars = '';
+            // Convert to number and ensure it's between 1-5
+            const numRating = Math.min(Math.max(parseInt(rating) || 0, 0), 5);
+            
+            // Generate filled stars
+            for (let i = 0; i < numRating; i++) {
+                stars += '<i class="bx bxs-star filled"></i>';
             }
             
-            // Initialize customer select change event if it exists on this page
-            const customerSelect = document.getElementById('customer-select');
-            if (customerSelect) {
-                customerSelect.addEventListener('change', function() {
-                    loadCustomerDetails(this.value);
-                });
+            // Generate empty stars
+            for (let i = numRating; i < 5; i++) {
+                stars += '<i class="bx bxs-star"></i>';
             }
+            
+            return stars;
+        }
+        
+        // Function to close review modal
+        function closeReviewModal() {
+            const modal = document.getElementById('reviewModal');
+            modal.classList.remove('show');
+            
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
+        }
+        
+        // Add event listener to "Check Review" buttons
+        document.addEventListener('DOMContentLoaded', function() {
+            const reviewButtons = document.querySelectorAll('.review-btn');
+            reviewButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const appointmentId = this.getAttribute('href').split('=')[1];
+                    loadReviewData(appointmentId);
+                });
+            });
+            
+            // Close modal when clicking outside
+            window.addEventListener('click', function(event) {
+                const modal = document.getElementById('reviewModal');
+                if (event.target === modal) {
+                    closeReviewModal();
+                }
+            });
+            
+            // Close modal with Escape key
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape') {
+                    closeReviewModal();
+                }
+            });
         });
     </script>
 </body>
