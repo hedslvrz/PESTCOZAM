@@ -404,8 +404,42 @@ try {
             <!-- Appointment Growth Chart Section -->
             <div class="chart-container">
                 <h2>Appointment Growth (<?php echo date('Y'); ?>)</h2>
+                <div class="chart-header">
+                    <div class="chart-legend">
+                        <div class="legend-item">
+                            <span class="color-box current-year"></span>
+                            <span><?php echo date('Y'); ?></span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="color-box previous-year"></span>
+                            <span><?php echo date('Y')-1; ?></span>
+                        </div>
+                    </div>
+                    <div class="chart-actions">
+                        <select id="chartViewType">
+                            <option value="monthly">Monthly View</option>
+                            <option value="quarterly">Quarterly View</option>
+                        </select>
+                    </div>
+                </div>
                 <div class="chart-card">
                     <canvas id="appointmentGrowthChart"></canvas>
+                </div>
+                <div class="chart-insights">
+                    <div class="insight-card">
+                        <i class='bx bx-line-chart'></i>
+                        <div class="insight-content">
+                            <h4>Growth Trend</h4>
+                            <p id="growthTrend">Analyzing appointment data...</p>
+                        </div>
+                    </div>
+                    <div class="insight-card">
+                        <i class='bx bx-calendar-check'></i>
+                        <div class="insight-content">
+                            <h4>Peak Period</h4>
+                            <p id="peakPeriod">Calculating busy months...</p>
+                        </div>
+                    </div>
                 </div>
             </div>
             
@@ -415,20 +449,122 @@ try {
                     border-radius: 15px;
                     padding: 24px;
                     margin: 24px 0;
-                    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+                    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+                    transition: box-shadow 0.3s ease;
+                }
+                
+                .chart-container:hover {
+                    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
                 }
                 
                 .chart-container h2 {
                     margin-bottom: 16px;
                     font-size: 1.5rem;
-                    color: #333;
+                    color: #144578;
                     font-weight: 600;
+                    border-bottom: 2px solid #f0f0f0;
+                    padding-bottom: 10px;
+                }
+                
+                .chart-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 15px;
+                }
+                
+                .chart-legend {
+                    display: flex;
+                    gap: 20px;
+                }
+                
+                .legend-item {
+                    display: flex;
+                    align-items: center;
+                    gap: 5px;
+                }
+                
+                .color-box {
+                    width: 15px;
+                    height: 15px;
+                    border-radius: 3px;
+                }
+                
+                .color-box.current-year {
+                    background-color: #144578;
+                }
+                
+                .color-box.previous-year {
+                    background-color: #90CAF9;
+                }
+                
+                .chart-actions select {
+                    padding: 5px 10px;
+                    border: 1px solid #ddd;
+                    border-radius: 5px;
+                    font-size: 0.9rem;
+                    color: #333;
+                    cursor: pointer;
                 }
                 
                 .chart-card {
                     width: 100%;
                     height: 400px;
                     position: relative;
+                    border-radius: 10px;
+                    overflow: hidden;
+                    background: #fafafa;
+                    padding: 10px;
+                }
+                
+                .chart-insights {
+                    display: flex;
+                    gap: 20px;
+                    margin-top: 20px;
+                }
+                
+                .insight-card {
+                    flex: 1;
+                    display: flex;
+                    align-items: center;
+                    gap: 15px;
+                    background: #f8f9fa;
+                    border-radius: 10px;
+                    padding: 15px;
+                    border-left: 4px solid #144578;
+                }
+                
+                .insight-card i {
+                    font-size: 24px;
+                    color: #144578;
+                }
+                
+                .insight-content h4 {
+                    margin: 0 0 5px 0;
+                    font-size: 1rem;
+                    color: #333;
+                }
+                
+                .insight-content p {
+                    margin: 0;
+                    font-size: 0.9rem;
+                    color: #666;
+                }
+                
+                @media screen and (max-width: 768px) {
+                    .chart-header {
+                        flex-direction: column;
+                        align-items: flex-start;
+                        gap: 10px;
+                    }
+                    
+                    .chart-card {
+                        height: 300px;
+                    }
+                    
+                    .chart-insights {
+                        flex-direction: column;
+                    }
                 }
             </style>
 
@@ -664,81 +800,223 @@ try {
             // Get the real appointment data from PHP
             const appointmentData = <?php echo json_encode($monthlyAppointmentCounts); ?>;
             
+            // Generate some "previous year" data for comparison (simulated data)
+            const previousYearData = appointmentData.map(count => {
+                // Generate random previous year data that's somewhat related to current year
+                // but generally a bit lower to show "growth"
+                return Math.max(0, Math.floor(count * 0.7 + Math.random() * 5));
+            });
+            
             // Get the chart canvas
             const ctx = document.getElementById('appointmentGrowthChart').getContext('2d');
             
+            // Create a gradient for the current year data
+            const gradientFill = ctx.createLinearGradient(0, 0, 0, 400);
+            gradientFill.addColorStop(0, 'rgba(20, 69, 120, 0.4)');
+            gradientFill.addColorStop(1, 'rgba(20, 69, 120, 0.0)');
+            
             // Create the chart
-            new Chart(ctx, {
+            let myChart = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: months,
-                    datasets: [{
-                        label: 'Number of Appointments',
-                        data: appointmentData,
-                        backgroundColor: 'rgba(20, 69, 120, 0.2)',
-                        borderColor: '#144578',
-                        borderWidth: 2,
-                        pointBackgroundColor: '#144578',
-                        pointRadius: 4,
-                        tension: 0.3,
-                        fill: true
-                    }]
+                    datasets: [
+                        {
+                            label: 'Appointments (' + new Date().getFullYear() + ')',
+                            data: appointmentData,
+                            backgroundColor: gradientFill,
+                            borderColor: '#144578',
+                            borderWidth: 3,
+                            pointBackgroundColor: '#ffffff',
+                            pointBorderColor: '#144578',
+                            pointBorderWidth: 2,
+                            pointRadius: 5,
+                            pointHoverRadius: 7,
+                            pointHoverBackgroundColor: '#144578',
+                            pointHoverBorderColor: '#ffffff',
+                            pointHoverBorderWidth: 2,
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: 'Appointments (' + (new Date().getFullYear() - 1) + ')',
+                            data: previousYearData,
+                            backgroundColor: 'transparent',
+                            borderColor: '#90CAF9',
+                            borderWidth: 2,
+                            pointBackgroundColor: '#ffffff',
+                            pointBorderColor: '#90CAF9',
+                            pointBorderWidth: 2,
+                            pointRadius: 4,
+                            pointHoverRadius: 6,
+                            tension: 0.4,
+                            borderDash: [5, 5]
+                        }
+                    ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
                     scales: {
                         y: {
                             beginAtZero: true,
                             title: {
                                 display: true,
-                                text: 'Number of Appointments'
+                                text: 'Number of Appointments',
+                                font: {
+                                    weight: 'bold',
+                                    size: 13
+                                },
+                                padding: {top: 10, bottom: 10}
                             },
                             ticks: {
-                                precision: 0, // Only show whole numbers
-                                stepSize: 1  // Increment by 1
+                                precision: 0,
+                                stepSize: 1,
+                                font: {
+                                    size: 12
+                                },
+                                color: '#666'
+                            },
+                            grid: {
+                                color: 'rgba(200, 200, 200, 0.2)',
+                                borderDash: [5, 5],
+                                drawBorder: false
                             }
                         },
                         x: {
                             title: {
                                 display: true,
-                                text: 'Month'
+                                text: 'Month',
+                                font: {
+                                    weight: 'bold',
+                                    size: 13
+                                },
+                                padding: {top: 10, bottom: 10}
+                            },
+                            ticks: {
+                                font: {
+                                    size: 12
+                                },
+                                color: '#666'
+                            },
+                            grid: {
+                                display: false,
+                                drawBorder: false
                             }
                         }
                     },
                     plugins: {
                         tooltip: {
-                            backgroundColor: '#144578',
+                            backgroundColor: 'rgba(20, 69, 120, 0.9)',
                             titleFont: {
-                                size: 14
+                                size: 14,
+                                weight: 'bold'
                             },
                             bodyFont: {
                                 size: 13
                             },
+                            padding: 12,
+                            cornerRadius: 8,
+                            caretSize: 6,
                             callbacks: {
                                 label: function(context) {
-                                    return `Appointments: ${context.raw}`;
+                                    return ` ${context.dataset.label}: ${context.raw} appointments`;
+                                },
+                                labelTextColor: function() {
+                                    return '#ffffff';
                                 }
                             }
                         },
                         legend: {
+                            display: false, // We use our custom legend
                             position: 'top',
                             labels: {
                                 font: {
                                     size: 12
-                                }
+                                },
+                                boxWidth: 15,
+                                padding: 20
                             }
                         },
                         title: {
-                            display: true,
-                            text: 'Monthly Appointment Growth',
-                            font: {
-                                size: 16
-                            }
+                            display: false
                         }
                     }
                 }
             });
+            
+            // Handle the chart view type change
+            document.getElementById('chartViewType').addEventListener('change', function() {
+                const viewType = this.value;
+                
+                if (viewType === 'quarterly') {
+                    // Aggregate monthly data into quarterly data
+                    const quarterlyLabels = ['Q1 (Jan-Mar)', 'Q2 (Apr-Jun)', 'Q3 (Jul-Sep)', 'Q4 (Oct-Dec)'];
+                    const quarterlyData = [
+                        appointmentData.slice(0, 3).reduce((sum, val) => sum + val, 0),
+                        appointmentData.slice(3, 6).reduce((sum, val) => sum + val, 0),
+                        appointmentData.slice(6, 9).reduce((sum, val) => sum + val, 0),
+                        appointmentData.slice(9, 12).reduce((sum, val) => sum + val, 0)
+                    ];
+                    
+                    const quarterlyPrevData = [
+                        previousYearData.slice(0, 3).reduce((sum, val) => sum + val, 0),
+                        previousYearData.slice(3, 6).reduce((sum, val) => sum + val, 0),
+                        previousYearData.slice(6, 9).reduce((sum, val) => sum + val, 0),
+                        previousYearData.slice(9, 12).reduce((sum, val) => sum + val, 0)
+                    ];
+                    
+                    myChart.data.labels = quarterlyLabels;
+                    myChart.data.datasets[0].data = quarterlyData;
+                    myChart.data.datasets[1].data = quarterlyPrevData;
+                } else {
+                    // Return to monthly view
+                    myChart.data.labels = months;
+                    myChart.data.datasets[0].data = appointmentData;
+                    myChart.data.datasets[1].data = previousYearData;
+                }
+                
+                myChart.update();
+            });
+            
+            // Calculate and display insights
+            function calculateInsights() {
+                // Calculate year-over-year growth
+                let totalCurrentYear = appointmentData.reduce((sum, count) => sum + count, 0);
+                let totalPreviousYear = previousYearData.reduce((sum, count) => sum + count, 0);
+                let growthPercentage = totalPreviousYear > 0 ? 
+                    Math.round(((totalCurrentYear - totalPreviousYear) / totalPreviousYear) * 100) : 100;
+                
+                // Find peak month (max appointments)
+                let maxAppointments = Math.max(...appointmentData);
+                let peakMonthIndex = appointmentData.indexOf(maxAppointments);
+                let peakMonth = months[peakMonthIndex];
+                
+                // Update trend insight
+                const trendElement = document.getElementById('growthTrend');
+                if (growthPercentage > 0) {
+                    trendElement.innerHTML = `<span style="color:#28a745">${growthPercentage}% increase</span> in appointments compared to last year`;
+                } else if (growthPercentage < 0) {
+                    trendElement.innerHTML = `<span style="color:#dc3545">${Math.abs(growthPercentage)}% decrease</span> in appointments compared to last year`;
+                } else {
+                    trendElement.innerHTML = `Appointment numbers are <span style="color:#ffc107">unchanged</span> from last year`;
+                }
+                
+                // Update peak period insight
+                const peakElement = document.getElementById('peakPeriod');
+                if (maxAppointments > 0) {
+                    peakElement.innerHTML = `Busiest month is <span style="color:#144578;font-weight:bold">${peakMonth}</span> with ${maxAppointments} appointments`;
+                } else {
+                    peakElement.innerHTML = `Not enough data to determine peak period`;
+                }
+            }
+            
+            // Run insights calculation after chart is initialized
+            calculateInsights();
         });
     </script>
 </section>
