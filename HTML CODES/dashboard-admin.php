@@ -163,6 +163,24 @@ try {
     $serviceReports = [];
 }
 
+// Get service popularity data (appointment counts by service)
+try {
+    $servicePopularityQuery = "SELECT 
+        s.service_name,
+        COUNT(a.id) as appointment_count
+        FROM services s
+        LEFT JOIN appointments a ON s.service_id = a.service_id
+        GROUP BY s.service_id, s.service_name
+        ORDER BY appointment_count DESC";
+    
+    $stmt = $db->prepare($servicePopularityQuery);
+    $stmt->execute();
+    $servicePopularity = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch(PDOException $e) {
+    error_log("Error fetching service popularity data: " . $e->getMessage());
+    $servicePopularity = [];
+}
+
 // Fetch services data from database including starting prices
 try {
     $servicesQuery = "SELECT * FROM services ORDER BY service_id";
@@ -562,6 +580,14 @@ try {
                     }
                 }
             </style>
+
+            <!-- Service Popularity Chart Section -->
+            <div class="chart-container">
+                <h2>Service Popularity</h2>
+                <div class="chart-card">
+                    <canvas id="servicePopularityChart"></canvas>
+                </div>
+            </div>
 
         </form><!-- End dashboard form BEFORE time slot management section -->
         
@@ -1012,6 +1038,115 @@ try {
             
             // Run insights calculation after chart is initialized
             calculateInsights();
+
+            // Service Popularity Chart
+            const servicePopularityData = <?php echo json_encode($servicePopularity); ?>;
+            const serviceNames = servicePopularityData.map(item => item.service_name);
+            const appointmentCounts = servicePopularityData.map(item => item.appointment_count);
+
+            const serviceCtx = document.getElementById('servicePopularityChart').getContext('2d');
+            new Chart(serviceCtx, {
+                type: 'bar',
+                data: {
+                    labels: serviceNames,
+                    datasets: [{
+                        label: 'Number of Appointments',
+                        data: appointmentCounts,
+                        backgroundColor: '#144578',
+                        borderColor: '#144578',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Number of Appointments',
+                                font: {
+                                    weight: 'bold',
+                                    size: 13
+                                },
+                                padding: {top: 10, bottom: 10}
+                            },
+                            ticks: {
+                                precision: 0,
+                                stepSize: 1,
+                                font: {
+                                    size: 12
+                                },
+                                color: '#666'
+                            },
+                            grid: {
+                                color: 'rgba(200, 200, 200, 0.2)',
+                                borderDash: [5, 5],
+                                drawBorder: false
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Service Name',
+                                font: {
+                                    weight: 'bold',
+                                    size: 13
+                                },
+                                padding: {top: 10, bottom: 10}
+                            },
+                            ticks: {
+                                font: {
+                                    size: 12
+                                },
+                                color: '#666'
+                            },
+                            grid: {
+                                display: false,
+                                drawBorder: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            backgroundColor: 'rgba(20, 69, 120, 0.9)',
+                            titleFont: {
+                                size: 14,
+                                weight: 'bold'
+                            },
+                            bodyFont: {
+                                size: 13
+                            },
+                            padding: 12,
+                            cornerRadius: 8,
+                            caretSize: 6,
+                            callbacks: {
+                                label: function(context) {
+                                    return ` ${context.dataset.label}: ${context.raw} appointments`;
+                                },
+                                labelTextColor: function() {
+                                    return '#ffffff';
+                                }
+                            }
+                        },
+                        legend: {
+                            display: false,
+                            position: 'top',
+                            labels: {
+                                font: {
+                                    size: 12
+                                },
+                                boxWidth: 15,
+                                padding: 20
+                            }
+                        },
+                        title: {
+                            display: false
+                        }
+                    }
+                }
+            });
         });
     </script>
 </section>
