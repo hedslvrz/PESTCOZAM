@@ -368,6 +368,70 @@ try {
                     </span>
                 </li>
             </ul>
+
+            <?php
+            // Get appointment counts by month for the current year
+            try {
+                $currentYear = date('Y');
+                $appointmentsByMonthQuery = "SELECT 
+                    MONTH(appointment_date) as month, 
+                    COUNT(*) as count 
+                FROM appointments 
+                WHERE YEAR(appointment_date) = ? 
+                GROUP BY MONTH(appointment_date) 
+                ORDER BY month";
+                
+                $stmt = $db->prepare($appointmentsByMonthQuery);
+                $stmt->execute([$currentYear]);
+                $appointmentsByMonth = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                
+                // Initialize counts for all months (1-12)
+                $monthlyAppointmentCounts = array_fill(0, 12, 0);
+                
+                // Fill in the actual counts
+                foreach ($appointmentsByMonth as $item) {
+                    // Month is 1-based, array is 0-based
+                    $monthIndex = (int)$item['month'] - 1;
+                    $monthlyAppointmentCounts[$monthIndex] = (int)$item['count'];
+                }
+                
+            } catch(PDOException $e) {
+                error_log("Error fetching appointment counts by month: " . $e->getMessage());
+                $monthlyAppointmentCounts = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]; // Default to zeros
+            }
+            ?>
+
+            <!-- Appointment Growth Chart Section -->
+            <div class="chart-container">
+                <h2>Appointment Growth (<?php echo date('Y'); ?>)</h2>
+                <div class="chart-card">
+                    <canvas id="appointmentGrowthChart"></canvas>
+                </div>
+            </div>
+            
+            <style>
+                .chart-container {
+                    background: white;
+                    border-radius: 15px;
+                    padding: 24px;
+                    margin: 24px 0;
+                    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+                }
+                
+                .chart-container h2 {
+                    margin-bottom: 16px;
+                    font-size: 1.5rem;
+                    color: #333;
+                    font-weight: 600;
+                }
+                
+                .chart-card {
+                    width: 100%;
+                    height: 400px;
+                    position: relative;
+                }
+            </style>
+
         </form><!-- End dashboard form BEFORE time slot management section -->
         
         <!-- Time Slot Management Section - Now outside the dashboard form -->
@@ -589,6 +653,94 @@ try {
             </div>
         </form>
     </main>
+
+    <!-- Chart.js library and initialization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Months array for labels
+            const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+            
+            // Get the real appointment data from PHP
+            const appointmentData = <?php echo json_encode($monthlyAppointmentCounts); ?>;
+            
+            // Get the chart canvas
+            const ctx = document.getElementById('appointmentGrowthChart').getContext('2d');
+            
+            // Create the chart
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [{
+                        label: 'Number of Appointments',
+                        data: appointmentData,
+                        backgroundColor: 'rgba(20, 69, 120, 0.2)',
+                        borderColor: '#144578',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#144578',
+                        pointRadius: 4,
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Number of Appointments'
+                            },
+                            ticks: {
+                                precision: 0, // Only show whole numbers
+                                stepSize: 1  // Increment by 1
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Month'
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            backgroundColor: '#144578',
+                            titleFont: {
+                                size: 14
+                            },
+                            bodyFont: {
+                                size: 13
+                            },
+                            callbacks: {
+                                label: function(context) {
+                                    return `Appointments: ${context.raw}`;
+                                }
+                            }
+                        },
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Monthly Appointment Growth',
+                            font: {
+                                size: 16
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
 </section>
 <!--DASHBOARD CONTENT -->
 
