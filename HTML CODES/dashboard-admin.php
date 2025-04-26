@@ -584,6 +584,20 @@ try {
             <!-- Service Popularity Chart Section -->
             <div class="chart-container">
                 <h2>Service Popularity</h2>
+                <div class="chart-header">
+                    <div class="chart-legend">
+                        <div class="legend-item">
+                            <span class="color-box service-chart"></span>
+                            <span>Appointment Count</span>
+                        </div>
+                    </div>
+                    <div class="chart-actions">
+                        <select id="serviceChartType">
+                            <option value="bar">Vertical View</option>
+                            <option value="horizontalBar">Horizontal View</option>
+                        </select>
+                    </div>
+                </div>
                 <div class="chart-card">
                     <canvas id="servicePopularityChart"></canvas>
                 </div>
@@ -960,21 +974,41 @@ try {
             const appointmentCounts = servicePopularityData.map(item => item.appointment_count);
 
             const serviceCtx = document.getElementById('servicePopularityChart').getContext('2d');
-            new Chart(serviceCtx, {
+            
+            // Create gradients for the bars
+            const barGradient = serviceCtx.createLinearGradient(0, 0, 0, 400);
+            barGradient.addColorStop(0, 'rgba(20, 69, 120, 0.8)');
+            barGradient.addColorStop(1, 'rgba(20, 69, 120, 0.2)');
+            
+            const horizontalBarGradient = serviceCtx.createLinearGradient(0, 0, 400, 0);
+            horizontalBarGradient.addColorStop(0, 'rgba(20, 69, 120, 0.8)');
+            horizontalBarGradient.addColorStop(1, 'rgba(20, 69, 120, 0.2)');
+
+            // Create the chart with improved design
+            let serviceChart = new Chart(serviceCtx, {
                 type: 'bar',
                 data: {
                     labels: serviceNames,
                     datasets: [{
                         label: 'Number of Appointments',
                         data: appointmentCounts,
-                        backgroundColor: '#144578',
+                        backgroundColor: barGradient,
                         borderColor: '#144578',
-                        borderWidth: 1
+                        borderWidth: 1,
+                        borderRadius: 6,
+                        barPercentage: 0.7,
+                        categoryPercentage: 0.8,
+                        hoverBackgroundColor: '#2a6db5'
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    indexAxis: 'x',
+                    animation: {
+                        duration: 2000,
+                        easing: 'easeOutQuart'
+                    },
                     scales: {
                         y: {
                             beginAtZero: true,
@@ -1015,7 +1049,9 @@ try {
                                 font: {
                                     size: 12
                                 },
-                                color: '#666'
+                                color: '#666',
+                                maxRotation: 45,
+                                minRotation: 45
                             },
                             grid: {
                                 display: false,
@@ -1024,6 +1060,9 @@ try {
                         }
                     },
                     plugins: {
+                        legend: {
+                            display: false
+                        },
                         tooltip: {
                             backgroundColor: 'rgba(20, 69, 120, 0.9)',
                             titleFont: {
@@ -1036,32 +1075,201 @@ try {
                             padding: 12,
                             cornerRadius: 8,
                             caretSize: 6,
+                            displayColors: false,
                             callbacks: {
                                 label: function(context) {
-                                    return ` ${context.dataset.label}: ${context.raw} appointments`;
-                                },
-                                labelTextColor: function() {
-                                    return '#ffffff';
+                                    return `Appointments: ${context.raw}`;
                                 }
                             }
                         },
-                        legend: {
-                            display: false,
-                            position: 'top',
-                            labels: {
-                                font: {
-                                    size: 12
-                                },
-                                boxWidth: 15,
-                                padding: 20
+                        datalabels: {
+                            display: function(context) {
+                                return context.dataset.data[context.dataIndex] > 0;
+                            },
+                            color: '#fff',
+                            anchor: 'center',
+                            align: 'center',
+                            font: {
+                                weight: 'bold'
+                            },
+                            formatter: function(value) {
+                                return value;
                             }
-                        },
-                        title: {
-                            display: false
                         }
                     }
-                }
+                },
+                plugins: [{
+                    afterDraw: chart => {
+                        if (chart.data.datasets[0].data.every(item => item === 0)) {
+                            // Display "No data available" if all values are 0
+                            const ctx = chart.ctx;
+                            const width = chart.width;
+                            const height = chart.height;
+                            
+                            chart.clear();
+                            ctx.save();
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'middle';
+                            ctx.font = '16px sans-serif';
+                            ctx.fillStyle = '#666';
+                            ctx.fillText('No appointment data available', width / 2, height / 2);
+                            ctx.restore();
+                        }
+                    }
+                }]
             });
+
+            // Handle chart type change (vertical vs horizontal)
+            document.getElementById('serviceChartType').addEventListener('change', function() {
+                const chartType = this.value;
+                
+                // Destroy current chart
+                serviceChart.destroy();
+                
+                // Setup configuration for the new chart
+                const isHorizontal = chartType === 'horizontalBar';
+                
+                // Create new chart with updated configuration
+                serviceChart = new Chart(serviceCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: serviceNames,
+                        datasets: [{
+                            label: 'Number of Appointments',
+                            data: appointmentCounts,
+                            backgroundColor: isHorizontal ? horizontalBarGradient : barGradient,
+                            borderColor: '#144578',
+                            borderWidth: 1,
+                            borderRadius: 6,
+                            barPercentage: 0.7,
+                            categoryPercentage: 0.8,
+                            hoverBackgroundColor: '#2a6db5'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        indexAxis: isHorizontal ? 'y' : 'x',
+                        animation: {
+                            duration: 1000,
+                            easing: 'easeOutQuart'
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: isHorizontal ? 'Number of Appointments' : 'Service Name',
+                                    font: {
+                                        weight: 'bold',
+                                        size: 13
+                                    },
+                                    padding: {top: 10, bottom: 10}
+                                },
+                                ticks: {
+                                    precision: 0,
+                                    stepSize: isHorizontal ? 1 : null,
+                                    font: {
+                                        size: 12
+                                    },
+                                    color: '#666',
+                                    maxRotation: isHorizontal ? 0 : 45,
+                                    minRotation: isHorizontal ? 0 : 45
+                                },
+                                grid: {
+                                    color: isHorizontal ? 'rgba(200, 200, 200, 0.2)' : 'transparent',
+                                    borderDash: isHorizontal ? [5, 5] : [],
+                                    drawBorder: false
+                                }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: isHorizontal ? 'Service Name' : 'Number of Appointments',
+                                    font: {
+                                        weight: 'bold',
+                                        size: 13
+                                    },
+                                    padding: {top: 10, bottom: 10}
+                                },
+                                ticks: {
+                                    precision: 0,
+                                    stepSize: isHorizontal ? null : 1,
+                                    font: {
+                                        size: 12
+                                    },
+                                    color: '#666'
+                                },
+                                grid: {
+                                    color: isHorizontal ? 'transparent' : 'rgba(200, 200, 200, 0.2)',
+                                    borderDash: isHorizontal ? [] : [5, 5],
+                                    drawBorder: false
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(20, 69, 120, 0.9)',
+                                titleFont: {
+                                    size: 14,
+                                    weight: 'bold'
+                                },
+                                bodyFont: {
+                                    size: 13
+                                },
+                                padding: 12,
+                                cornerRadius: 8,
+                                caretSize: 6,
+                                displayColors: false,
+                                callbacks: {
+                                    label: function(context) {
+                                        return `Appointments: ${context.raw}`;
+                                    }
+                                }
+                            },
+                            datalabels: {
+                                display: function(context) {
+                                    return context.dataset.data[context.dataIndex] > 0;
+                                },
+                                color: '#fff',
+                                anchor: 'center',
+                                align: 'center',
+                                font: {
+                                    weight: 'bold'
+                                },
+                                formatter: function(value) {
+                                    return value;
+                                }
+                            }
+                        }
+                    },
+                    plugins: [{
+                        afterDraw: chart => {
+                            if (chart.data.datasets[0].data.every(item => item === 0)) {
+                                // Display "No data available" if all values are 0
+                                const ctx = chart.ctx;
+                                const width = chart.width;
+                                const height = chart.height;
+                                
+                                chart.clear();
+                                ctx.save();
+                                ctx.textAlign = 'center';
+                                ctx.textBaseline = 'middle';
+                                ctx.font = '16px sans-serif';
+                                ctx.fillStyle = '#666';
+                                ctx.fillText('No appointment data available', width / 2, height / 2);
+                                ctx.restore();
+                            }
+                        }
+                    }]
+                });
+            });
+            
+            // ...existing code...
         });
     </script>
 </section>
