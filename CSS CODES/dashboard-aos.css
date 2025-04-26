@@ -36,6 +36,11 @@
     color: white;
 }
 
+.status.rejected {
+    background: #dc3545;
+    color: white;
+}
+
 /* Service Reports Styles */
 #reports-form table {
     width: 100%;
@@ -328,6 +333,330 @@
   box-shadow: 0 0 0 3px rgba(20, 69, 120, 0.1);
 }
 
+/* Enhanced Review Modal Styles with Box Design */
+#reviewModal.modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+#reviewModal.modal.show {
+    display: flex !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+.review-modal-content {
+    background-color: #fefefe;
+    margin: auto;
+    padding: 0;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 55%;
+    position: relative;
+    transform: translateY(-50px);
+    animation: modalDrop 0.3s forwards;
+    overflow: hidden;
+    border-top: 5px solid #144578;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+}
+
+@keyframes modalDrop {
+    to {
+        transform: translateY(0);
+    }
+}
+
+/* Review content styles */
+.review-content {
+    padding: 25px 30px 30px;
+    max-height: 70vh;
+    overflow-y: auto;
+    background-color: #fff;
+}
+
+/* New grid layout for side-by-side design */
+.review-grid {
+    display: grid;
+    grid-template-columns: 320px 1fr; /* Fixed width for ratings section, fluid for comments */
+    gap: 30px;
+}
+
+/* Left side - Ratings */
+.review-left {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.overall-rating {
+    text-align: center;
+    padding: 25px 20px;
+    background: linear-gradient(to bottom, #f8faff, #eef5ff);
+    border-radius: 4px; /* More box-like corners */
+    border: 1px solid #d0e1fd;
+    box-shadow: 0 4px 15px rgba(20, 69, 120, 0.08);
+}
+
+.overall-rating h4 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #144578;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.rating-stars {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    font-weight: 600;
+    color: #144578;
+    gap: 10px;
+}
+
+/* Rating number styling for consistent display */
+.rating-number {
+    display: flex;
+    font-size: 22px;
+    font-weight: 600;
+    color: #144578;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 5px;
+}
+
+/* Adjust the rating stars container */
+.rating-stars {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+/* Adjust the rating detail display */
+.rating-detail > div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 8px;
+}
+
+.rating-detail .rating-number {
+    font-size: 18px; /* Slightly smaller than the overall rating */
+}
+
+/* Service and technician star containers should be left-aligned */
+.rating-detail .stars-container {
+    margin-right: auto;
+}
+
+/* Remove previously added margin from CSS override */
+.rating-stars #overall-rating-value, 
+.rating-detail #service-rating-value,
+.rating-detail #technician-rating-value {
+    margin-right: 0;
+}
+
+.stars-container {
+    display: flex;
+    gap: 5px;
+}
+
+.stars-container i {
+    color: #d0e1fd; /* Lighter dashboard color for empty stars */
+    font-size: 24px;
+}
+
+.stars-container i.filled {
+    color: #ffc107; /* Keep yellow for filled stars */
+}
+
+.rating-details {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.rating-detail {
+    padding: 15px;
+    background-color: #f8faff;
+    border-radius: 4px; /* More box-like corners */
+    border: 1px solid #e6effd;
+}
+
+.date-info {
+    padding: 15px;
+    background-color: #f8faff;
+    border-radius: 4px;
+    border: 1px solid #e6effd;
+}
+
+.date-info p {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #144578;
+    font-size: 14px;
+}
+
+/* Right side - Comments */
+.review-right {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.review-body, .review-feedback, .review-issues {
+    padding: 20px;
+    background-color: #f8faff;
+    border-radius: 4px; /* More box-like corners */
+    border: 1px solid #e6effd;
+    box-shadow: 0 3px 10px rgba(20, 69, 120, 0.05);
+}
+
+.review-body h4, .review-feedback h4, .review-issues h4 {
+    color: #144578;
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-weight: 600;
+    font-size: 17px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.review-body p, .review-feedback p, .review-issues p {
+    line-height: 1.7;
+    color: #444;
+    margin: 0;
+    font-size: 15px;
+    word-wrap: break-word;
+}
+
+/* Custom scrollbar for review modal */
+.review-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.review-content::-webkit-scrollbar-track {
+    background: #f8faff;
+    border-radius: 10px;
+}
+
+.review-content::-webkit-scrollbar-thumb {
+    background-color: #d0e1fd;
+    border-radius: 10px;
+    border: 2px solid #f8faff;
+}
+
+.review-content::-webkit-scrollbar-thumb:hover {
+    background-color: #144578;
+}
+
+/* Close button for review modal */
+#reviewModal .close-modal {
+    position: absolute;
+    right: 20px;
+    top: 15px;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+    transition: color 0.2s;
+    z-index: 10;
+}
+
+#reviewModal .close-modal:hover {
+    color: #144578;
+}
+
+/* Modal header for review modal */
+#reviewModal .modal-header {
+    margin-bottom: 0;
+    position: relative;
+    text-align: left;
+    padding: 20px 30px;
+    background: linear-gradient(to right, #f5f9ff, #eef5ff);
+    border-bottom: 1px solid #d0e1fd;
+}
+
+#reviewModal .modal-header h3 {
+    color: #144578;
+    margin: 0;
+    font-size: 1.5rem;
+    text-align: left;
+    padding-right: 40px; /* Space for close button */
+    font-weight: 600;
+}
+
+/* Responsive adjustments for review modal */
+@media (max-width: 800px) {
+    .review-grid {
+        grid-template-columns: 1fr; /* Stack columns on small screens */
+        gap: 20px;
+    }
+    
+    .review-left {
+        order: 1; /* Ratings section comes first on mobile */
+    }
+    
+    .review-right {
+        order: 2;
+    }
+    
+    .overall-rating {
+        padding: 20px 15px;
+    }
+    
+    .rating-detail, .review-meta {
+        padding: 12px;
+    }
+    
+    .review-modal-content {
+        width: 95%;
+        max-width: 95%;
+    }
+}
+
+/* Responsive adjustments for review modal */
+@media (max-width: 800px) {
+    .review-grid {
+        grid-template-columns: 1fr; /* Stack columns on small screens */
+        gap: 20px;
+    }
+    
+    .review-left {
+        order: 1; /* Ratings section comes first on mobile */
+    }
+    
+    .review-right {
+        order: 2;
+    }
+    
+    .overall-rating {
+        padding: 20px 15px;
+    }
+    
+    .rating-detail, .review-meta {
+        padding: 12px;
+    }
+}
+
 /* Responsive styles */
 @media (max-width: 768px) {
   .modal-content {
@@ -452,6 +781,11 @@
 .report-status.approved {
     background: #e8f5e9;
     color: #2e7d32;
+}
+
+.report-status.rejected {
+    background: #ffebee;
+    color: #c62828;
 }
 
 .report-id {
@@ -1425,17 +1759,32 @@ tr.no-results td {
 }
 
 #profileModal .profile-modal-content {
-    background-color: #fff;
+    max-height: 75vh; /* Reduced from 80vh to 75vh */
     margin: auto;
-    padding: 35px 30px;
-    border-radius: 15px;
-    width: 90%;
-    max-width: 550px;
-    max-height: 80vh;
+    padding: 25px 30px; /* Reduced from 35px to 25px top/bottom padding */
+    border-radius: 16px; /* Ensure consistent border-radius */
     overflow-y: auto;
-    position: relative;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-    animation: modalFadeIn 0.3s ease forwards;
+}
+
+#profileModal .modal-header {
+    padding: 0 0 15px 0; /* Adjusted padding */
+    margin-bottom: 15px; /* Reduced margin */
+    border-bottom: 1px solid #e0e0e0;
+}
+
+#profileModal .modal-header h2 {
+    font-size: 1.5rem; /* Slightly smaller header */
+    margin: 0;
+    color: #144578;
+}
+
+#profileModal .form-group {
+    margin-bottom: 15px; /* Reduced from 20px */
+}
+
+#profileModal .form-buttons {
+    margin-top: 20px; /* Reduced top margin */
+    padding-top: 15px; /* Reduced padding */
 }
 
 /* Modal header style similar to profile section */
@@ -1469,6 +1818,61 @@ tr.no-results td {
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+/* Enhanced section separators for profile page */
+.section-separator {
+    height: 1px;
+    background: linear-gradient(to right, rgba(20, 69, 120, 0.1), rgba(20, 69, 120, 0.3), rgba(20, 69, 120, 0.1));
+    margin: 25px 0;
+    position: relative;
+}
+
+.section-separator::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px;
+    height: 40px;
+    background-color: white;
+    border-radius: 50%;
+    border: 1px solid rgba(20, 69, 120, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(20, 69, 120, 0.1);
+}
+
+.section-separator.personal::after {
+    content: '\f007';
+    font-family: 'boxicons';
+    color: #144578;
+    font-size: 22px;
+    padding-top: 1px;
+}
+
+.section-separator.account::after {
+    content: '\f084';
+    font-family: 'boxicons';
+    color: #144578;
+    font-size: 22px;
+    padding-top: 1px;
+}
+
+/* Make section headers more prominent */
+.section-header {
+    border-bottom: 2px solid rgba(20, 69, 120, 0.1);
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.section-header h3 {
+    color: #144578;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
 }
 
 /* Responsive adjustments */
@@ -1527,3 +1931,85 @@ tr.no-results td {
     transition: all 0.3s ease;
     border: 1px solid transparent;
 }
+
+/* Action buttons for job orders */
+.action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.view-btn, .review-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.view-btn {
+    background-color: #144578;
+    color: white;
+}
+
+.review-btn {
+    background-color: #ffc107;
+    color: #333;
+    border: 1px solid #e6a800;
+}
+
+.view-btn:hover {
+    background-color: #0d2f4f;
+    transform: translateY(-2px);
+}
+
+.review-btn:hover {
+    background-color: #e6a800;
+    transform: translateY(-2px);
+}
+
+.view-btn i, .review-btn i {
+    font-size: 16px;
+}
+
+/* Override styles for review button - higher specificity */
+#work-orders .review-btn,
+.order-list .review-btn,
+body .review-btn {
+    background-color: #ffc107 !important; /* Force yellow background */
+    color: #333 !important;
+    border: 1px solid #e6a800 !important;
+}
+
+#work-orders .review-btn:hover,
+.order-list .review-btn:hover,
+body .review-btn:hover {
+    background-color: #ffce3a !important; /* Lighter yellow on hover */
+    transform: translateY(-2px);
+}
+
+/* Make sure the rating values show correctly with space before /5 */
+.rating-stars #overall-rating-value, 
+.rating-detail #service-rating-value,
+.rating-detail #technician-rating-value {
+    margin-right: 3px; /* Add space between number and /5 */
+}
+
+/* Responsive styling for action buttons */
+@media (max-width: 768px) {
+    .action-buttons {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .view-btn, .review-btn {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+    }
+}
+

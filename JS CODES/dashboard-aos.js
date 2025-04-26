@@ -77,6 +77,14 @@ function openProfileModal() {
 function closeProfileModal() {
     const modal = document.getElementById('profileModal');
     if (!modal) return;
+    
+    // Reset any save button that might be in "Saving..." state
+    const submitBtn = modal.querySelector('[type="submit"]');
+    if (submitBtn && submitBtn.disabled) {
+        submitBtn.textContent = 'Save Changes';
+        submitBtn.disabled = false;
+    }
+    
     modal.classList.remove('show');
     setTimeout(() => {
         modal.style.display = 'none';
@@ -84,6 +92,7 @@ function closeProfileModal() {
     }, 300);
 }
 
+// Updated function to make profile updates work
 function updateUserProfile(form) {
     const submitBtn = form.querySelector('[type="submit"]');
     const originalText = submitBtn.textContent;
@@ -92,30 +101,74 @@ function updateUserProfile(form) {
     
     const formData = new FormData(form);
     
-    fetch('update_profile.php', {
+    fetch('../PHP CODES/update_profile.php', {
         method: 'POST',
         body: formData
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            alert('Profile updated successfully!');
+            // Create a custom modal or alert to show success
+            showModal('Success', 'Profile updated successfully!');
             updateProfileDisplay(formData);
+            
+            // Ensure button is reset before closing modal
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+            
             closeProfileModal();
             // Clear POST data by replacing state if needed
             history.replaceState(null, null, location.pathname);
         } else {
-            alert('Error: ' + (data.message || 'Update failed'));
+            showModal('Error', data.message || 'Update failed');
+            // Reset button state on error
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
         }
     })
     .catch(error => {
         console.error('Error updating profile:', error);
-        alert('An error occurred while updating profile');
-    })
-    .finally(() => {
+        showModal('Error', 'An error occurred while updating profile');
+        // Reset button state on error
         submitBtn.textContent = originalText;
         submitBtn.disabled = false;
     });
+}
+
+// Helper function to display modal messages
+function showModal(title, message) {
+    const modal = document.getElementById('customModal');
+    if (!modal) return;
+    
+    const modalTitle = document.getElementById('modalTitle');
+    const modalMessage = document.getElementById('modalMessage');
+    const modalOkBtn = document.getElementById('modalOkBtn');
+    
+    if (modalTitle) modalTitle.textContent = title;
+    if (modalMessage) modalMessage.textContent = message;
+    
+    modal.classList.add('show');
+    modal.style.display = 'flex';
+    
+    // Handle OK button click
+    if (modalOkBtn) {
+        modalOkBtn.onclick = function() {
+            modal.classList.remove('show');
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
+        }
+    }
+    
+    // Close when clicking outside
+    window.onclick = function(event) {
+        if (event.target === modal) {
+            modal.classList.remove('show');
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
+        }
+    }
 }
 
 function updateProfileDisplay(formData) {
@@ -178,6 +231,41 @@ function initProfileEditor() {
             e.preventDefault();
             updateUserProfile(this);
         });
+    }
+}
+
+// Add a function to initialize the review modal
+function initReviewModal() {
+    console.log('Initializing review modal');
+    
+    // Attach click handlers to review buttons
+    const reviewButtons = document.querySelectorAll('.review-btn');
+    reviewButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const appointmentId = this.getAttribute('href').split('=')[1];
+            console.log('Review button clicked for appointment ID:', appointmentId);
+            loadReviewData(appointmentId);
+        });
+    });
+    
+    // Close modal when clicking outside
+    const reviewModal = document.getElementById('reviewModal');
+    if (reviewModal) {
+        window.addEventListener('click', function(event) {
+            if (event.target === reviewModal) {
+                closeReviewModal();
+            }
+        });
+        
+        // Close with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' && reviewModal.classList.contains('show')) {
+                closeReviewModal();
+            }
+        });
+    } else {
+        console.error('Review modal element not found in the DOM');
     }
 }
 
@@ -251,6 +339,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize profile editor functionality
     initProfileEditor();
+
+    // Initialize the review modal
+    initReviewModal();
 });
 
 // Updated Report Modal Functions
@@ -299,21 +390,34 @@ function openReportModal(reportId) {
             const rejectBtn = document.getElementById('rejectBtn');
             
             if (approveBtn && rejectBtn) {
-                if (report.status === 'approved') {
-                    approveBtn.disabled = true;
-                    approveBtn.classList.add('disabled');
-                    rejectBtn.disabled = false;
-                    rejectBtn.classList.remove('disabled');
-                } else if (report.status === 'rejected') {
-                    approveBtn.disabled = false;
-                    approveBtn.classList.remove('disabled');
-                    rejectBtn.disabled = true;
-                    rejectBtn.classList.add('disabled');
-                } else {
-                    approveBtn.disabled = false;
-                    approveBtn.classList.remove('disabled');
-                    rejectBtn.disabled = false;
-                    rejectBtn.classList.remove('disabled');
+                // Reset any disabled state and event listeners
+                approveBtn.disabled = false;
+                rejectBtn.disabled = false;
+                approveBtn.classList.remove('disabled');
+                rejectBtn.classList.remove('disabled');
+                
+                // Remove existing event listeners by cloning
+                const newApproveBtn = approveBtn.cloneNode(true);
+                const newRejectBtn = rejectBtn.cloneNode(true);
+                approveBtn.parentNode.replaceChild(newApproveBtn, approveBtn);
+                rejectBtn.parentNode.replaceChild(newRejectBtn, rejectBtn);
+                
+                // Add new event listeners
+                newApproveBtn.addEventListener('click', function() {
+                    updateReportStatus('approved');
+                });
+                
+                newRejectBtn.addEventListener('click', function() {
+                    updateReportStatus('rejected');
+                });
+                
+                // Update disabled state based on current status
+                if (report.status.toLowerCase() === 'approved') {
+                    newApproveBtn.disabled = true;
+                    newApproveBtn.classList.add('disabled');
+                } else if (report.status.toLowerCase() === 'rejected') {
+                    newRejectBtn.disabled = true;
+                    newRejectBtn.classList.add('disabled');
                 }
             }
             
@@ -409,6 +513,11 @@ function updateReportStatus(status) {
         return;
     }
     
+    // Confirm before proceeding
+    if (!confirm(`Are you sure you want to ${status} this report?`)) {
+        return;
+    }
+    
     fetch('../PHP CODES/update_report_status.php', {
         method: 'POST',
         headers: {
@@ -416,7 +525,8 @@ function updateReportStatus(status) {
         },
         body: JSON.stringify({
             report_id: reportId,
-            status: status
+            status: status,
+            role: 'supervisor' // Add role identifier
         })
     })
     .then(response => response.json())
@@ -426,7 +536,7 @@ function updateReportStatus(status) {
             // Refresh the page to show updated status
             location.reload();
         } else {
-            alert('Error updating report status: ' + data.message);
+            alert('Error updating report status: ' + (data.message || 'Unknown error'));
         }
     })
     .catch(error => {
@@ -472,7 +582,7 @@ function downloadReportPDF() {
     });
 }
 
-// Replace the existing initializeReportCards function with this enhanced version
+// Updated initializeReportCards function with proper event handling
 function initializeReportCards() {
     console.log('Initializing report cards');
     const reportCards = document.querySelectorAll('.report-card');
@@ -503,4 +613,324 @@ function closeReportModal() {
     modal.classList.remove('show');
     modal.style.display = 'none';
     document.body.style.overflow = '';
+}
+
+// Initialize follow-ups table functionality
+function initFollowupsTable() {
+    console.log('Initializing followups table');
+    
+    // Get the filter buttons and followup rows
+    const filterButtons = document.querySelectorAll('.followups-controls .filter-btn');
+    const followupRows = document.querySelectorAll('#followups-list tr.followup-row');
+    const searchInput = document.getElementById('followup-search');
+    
+    // Skip if elements don't exist on the current page
+    if (!filterButtons.length || !followupRows.length) {
+        console.log('Follow-ups table elements not found on this page');
+        return;
+    }
+    
+    console.log(`Found ${filterButtons.length} filter buttons and ${followupRows.length} follow-up rows`);
+    
+    // Add click event listeners to filter buttons
+    filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Remove active class from all buttons
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            
+            // Add active class to the clicked button
+            this.classList.add('active');
+            
+            // Get the filter value
+            const filterValue = this.getAttribute('data-filter');
+            console.log(`Filter button clicked: ${filterValue}`);
+            
+            // Apply the filter
+            filterFollowups(filterValue, searchInput ? searchInput.value : '');
+        });
+    });
+    
+    // Add search functionality
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            // Get the current active filter
+            const activeFilter = document.querySelector('.followups-controls .filter-btn.active');
+            const filterValue = activeFilter ? activeFilter.getAttribute('data-filter') : 'all';
+            
+            // Apply the filter with search
+            filterFollowups(filterValue, this.value);
+        });
+    }
+    
+    // Initialize pagination if needed
+    initPagination(followupRows);
+}
+
+// Function to filter followups based on period and search term
+function filterFollowups(period, searchTerm = '') {
+    console.log(`Filtering followups: period=${period}, search=${searchTerm}`);
+    
+    const followupRows = document.querySelectorAll('#followups-list tr.followup-row');
+    let visibleCount = 0;
+    
+    // Get date boundaries for filtering
+    const today = new Date();
+    const thisWeekStart = new Date(today);
+    thisWeekStart.setDate(today.getDate() - today.getDay()); // First day of this week (Sunday)
+    
+    const nextWeekStart = new Date(thisWeekStart);
+    nextWeekStart.setDate(thisWeekStart.getDate() + 7);
+    
+    const nextWeekEnd = new Date(nextWeekStart);
+    nextWeekEnd.setDate(nextWeekStart.getDate() + 6);
+    
+    const nextMonthStart = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+    const nextMonthEnd = new Date(today.getFullYear(), today.getMonth() + 2, 0);
+    
+    console.log(`Date ranges:
+        This Week: ${thisWeekStart.toDateString()} - ${new Date(thisWeekStart).setDate(thisWeekStart.getDate() + 6)}
+        Next Week: ${nextWeekStart.toDateString()} - ${nextWeekEnd.toDateString()}
+        Next Month: ${nextMonthStart.toDateString()} - ${nextMonthEnd.toDateString()}`);
+    
+    followupRows.forEach(row => {
+        let showRow = true;
+        
+        // Apply period filter
+        if (period !== 'all') {
+            const dateStr = row.getAttribute('data-date');
+            if (!dateStr) {
+                showRow = false;
+            } else {
+                const rowDate = new Date(dateStr);
+                
+                switch(period) {
+                    case 'thisweek':
+                        // Check if date is within this week
+                        showRow = rowDate >= thisWeekStart && rowDate <= new Date(thisWeekStart).setDate(thisWeekStart.getDate() + 6);
+                        break;
+                    case 'nextweek':
+                        // Check if date is within next week
+                        showRow = rowDate >= nextWeekStart && rowDate <= nextWeekEnd;
+                        break;
+                    case 'nextmonth':
+                        // Check if date is within next month
+                        showRow = rowDate >= nextMonthStart && rowDate <= nextMonthEnd;
+                        break;
+                }
+            }
+        }
+        
+        // Apply search filter if there's a search term
+        if (showRow && searchTerm) {
+            const rowText = row.textContent.toLowerCase();
+            showRow = rowText.includes(searchTerm.toLowerCase());
+        }
+        
+        // Show or hide the row
+        if (showRow) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    
+    // Handle no results message
+    const noResultsRow = document.querySelector('#followups-list tr.no-results');
+    if (noResultsRow) {
+        if (visibleCount === 0) {
+            noResultsRow.style.display = 'table-row';
+        } else {
+            noResultsRow.style.display = 'none';
+        }
+    } else if (visibleCount === 0) {
+        // Create a no results row if it doesn't exist
+        const tbody = document.querySelector('#followups-list');
+        if (tbody) {
+            const newRow = document.createElement('tr');
+            newRow.className = 'no-results';
+            newRow.innerHTML = '<td colspan="6">No follow-ups match your criteria</td>';
+            tbody.appendChild(newRow);
+        }
+    }
+    
+    console.log(`Filtering complete. ${visibleCount} rows visible.`);
+    
+    // Update pagination if it exists
+    updatePagination();
+}
+
+// Initialize pagination for follow-ups table
+function initPagination(rows, rowsPerPage = 10) {
+    // Implementation for pagination if needed
+    console.log('Pagination initialized');
+}
+
+// Update pagination after filtering
+function updatePagination() {
+    // Implementation to update pagination after filtering
+    console.log('Pagination updated');
+}
+
+// Function to load customer details for follow-up scheduling
+function loadCustomerDetails(appointmentId) {
+    if (!appointmentId) return;
+    
+    console.log('Loading customer details for appointment ID:', appointmentId);
+    
+    const option = document.querySelector(`#customer-select option[value="${appointmentId}"]`);
+    if (!option) {
+        console.error('Selected option not found');
+        return;
+    }
+    
+    // Get data from the option attributes
+    const serviceId = option.getAttribute('data-service');
+    const location = option.getAttribute('data-location');
+    const technicianId = option.getAttribute('data-technician');
+    const technicianName = option.getAttribute('data-technician-name');
+    const allTechnicianIds = option.getAttribute('data-all-technicians');
+    
+    console.log('Retrieved data:', { serviceId, location, technicianId, technicianName, allTechnicianIds });
+    
+    // Set the service type
+    const serviceSelect = document.getElementById('service-type');
+    if (serviceSelect && serviceId) {
+        serviceSelect.value = serviceId;
+    }
+    
+    // Set the customer location
+    const locationInput = document.getElementById('customer-location');
+    if (locationInput && location) {
+        locationInput.value = location;
+    }
+    
+    // Set the technician(s)
+    const techSelect = document.getElementById('technician-select');
+    if (techSelect && allTechnicianIds) {
+        // Clear previous selections
+        Array.from(techSelect.options).forEach(opt => {
+            opt.selected = false;
+        });
+        
+        // Select all assigned technicians
+        const techIds = allTechnicianIds.split(',');
+        techIds.forEach(id => {
+            const option = techSelect.querySelector(`option[value="${id}"]`);
+            if (option) {
+                option.selected = true;
+            }
+        });
+    } else if (techSelect && technicianId) {
+        // Fall back to single technician if all technicians not available
+        const option = techSelect.querySelector(`option[value="${technicianId}"]`);
+        if (option) {
+            option.selected = true;
+        }
+    }
+}
+
+// Initialize work orders filters
+function initWorkOrdersFilters() {
+    const searchInput = document.getElementById('searchAppointments');
+    const filterButtons = document.querySelectorAll('#work-orders .filter-btn');
+    const dateFilterInput = document.getElementById('filterDate');
+    const appointments = document.querySelectorAll('#work-orders tbody tr:not(.no-records)');
+    
+    if (!appointments.length) {
+        console.log('No appointment rows found');
+        return;
+    }
+    
+    // Add search functionality
+    if (searchInput) {
+        searchInput.addEventListener('input', filterWorkOrders);
+    }
+    
+    // Add status filter functionality
+    if (filterButtons.length) {
+        filterButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Remove active class from all buttons
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                // Add active class to clicked button
+                this.classList.add('active');
+                // Apply filters
+                filterWorkOrders();
+            });
+        });
+    }
+    
+    // Add date filter functionality
+    if (dateFilterInput) {
+        dateFilterInput.addEventListener('change', function() {
+            // Add visual indicator if date filter is active
+            if (this.value) {
+                this.classList.add('active-filter');
+            } else {
+                this.classList.remove('active-filter');
+            }
+            filterWorkOrders();
+        });
+    }
+    
+    // Function to filter work orders
+    function filterWorkOrders() {
+        const searchValue = searchInput ? searchInput.value.toLowerCase() : '';
+        const activeFilter = document.querySelector('#work-orders .filter-btn.active');
+        const statusFilter = activeFilter ? activeFilter.getAttribute('data-filter') : 'all';
+        const dateFilter = dateFilterInput ? dateFilterInput.value : '';
+        
+        console.log(`Filtering work orders: search=${searchValue}, status=${statusFilter}, date=${dateFilter}`);
+        
+        let visibleCount = 0;
+        
+        appointments.forEach(row => {
+            let visible = true;
+            
+            // Apply status filter
+            if (statusFilter !== 'all') {
+                const rowStatus = row.getAttribute('data-status');
+                if (rowStatus !== statusFilter) {
+                    visible = false;
+                }
+            }
+            
+            // Apply date filter
+            if (visible && dateFilter) {
+                const rowDate = row.getAttribute('data-date');
+                if (rowDate !== dateFilter) {
+                    visible = false;
+                }
+            }
+            
+            // Apply search filter
+            if (visible && searchValue) {
+                const rowText = row.textContent.toLowerCase();
+                if (!rowText.includes(searchValue)) {
+                    visible = false;
+                }
+            }
+            
+            // Show or hide row
+            row.style.display = visible ? '' : 'none';
+            
+            if (visible) visibleCount++;
+        });
+        
+        // Show no results message if needed
+        const noResultsRow = document.querySelector('#work-orders tbody tr.no-results');
+        if (noResultsRow) {
+            noResultsRow.style.display = visibleCount === 0 ? '' : 'none';
+        } else if (visibleCount === 0) {
+            // Create a no results row if it doesn't exist
+            const tbody = document.querySelector('#work-orders tbody');
+            if (tbody) {
+                const newRow = document.createElement('tr');
+                newRow.className = 'no-results';
+                newRow.innerHTML = '<td colspan="7">No appointments match your criteria</td>';
+                tbody.appendChild(newRow);
+            }
+        }
+    }
 }
