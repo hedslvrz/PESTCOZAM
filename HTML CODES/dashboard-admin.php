@@ -163,6 +163,24 @@ try {
     $serviceReports = [];
 }
 
+// Get service popularity data (appointment counts by service)
+try {
+    $servicePopularityQuery = "SELECT 
+        s.service_name,
+        COUNT(a.id) as appointment_count
+        FROM services s
+        LEFT JOIN appointments a ON s.service_id = a.service_id
+        GROUP BY s.service_id, s.service_name
+        ORDER BY appointment_count DESC";
+    
+    $stmt = $db->prepare($servicePopularityQuery);
+    $stmt->execute();
+    $servicePopularity = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch(PDOException $e) {
+    error_log("Error fetching service popularity data: " . $e->getMessage());
+    $servicePopularity = [];
+}
+
 // Fetch services data from database including starting prices
 try {
     $servicesQuery = "SELECT * FROM services ORDER BY service_id";
@@ -563,6 +581,28 @@ try {
                 }
             </style>
 
+            <!-- Service Popularity Chart Section -->
+            <div class="chart-container">
+                <h2>Service Popularity</h2>
+                <div class="chart-header">
+                    <div class="chart-legend">
+                        <div class="legend-item">
+                            <span class="color-box service-chart"></span>
+                            <span>Appointment Count</span>
+                        </div>
+                    </div>
+                    <div class="chart-actions">
+                        <select id="serviceChartType">
+                            <option value="bar">Vertical View</option>
+                            <option value="horizontalBar">Horizontal View</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <canvas id="servicePopularityChart"></canvas>
+                </div>
+            </div>
+
         </form><!-- End dashboard form BEFORE time slot management section -->
         
         <!-- Time Slot Management Section - Now outside the dashboard form -->
@@ -691,98 +731,13 @@ try {
         </div>
         <!-- End Time Slot Management Section -->
 
-        <!-- Start new form for the table data section -->
-        <form id="table-form" method="POST" action="process_dashboard.php">
-            <div class="table-data">
-                <div class="recent-appointments">
-                    <div class="head">
-                        <h3>Recent Appointments</h3>
-                        <input type="text" name="search" placeholder="Search appointments...">
-                        <button type="submit" name="filter_appointments"><i class="bx bx-filter"></i></button>
-                    </div>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>User</th>
-                                <th>Date Order</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>
-                                    <img src="../Pictures/boy.png" class="user-img">
-                                    <p>John Doe</p>
-                                </td>
-                                <td>01-10-2025</td>
-                                <td><span class="status-completed">Completed</span></td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <img src="../Pictures/boy.png" class="user-img">
-                                    <p>John Doe</p>
-                                </td>
-                                <td>01-10-2025</td>
-                                <td><span class="status-completed">Completed</span></td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <img src="../Pictures/boy.png" class="user-img">
-                                    <p>John Doe</p>
-                                </td>
-                                <td>01-10-2025</td>
-                                <td><span class="status-completed">Completed</span></td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <img src="../Pictures/boy.png" class="user-img">
-                                    <p>John Doe</p>
-                                </td>
-                                <td>01-10-2025</td>
-                                <td><span class="status-completed">Completed</span></td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <img src="../Pictures/boy.png" class="user-img">
-                                    <p>John Doe</p>
-                                </td>
-                                <td>01-10-2025</td>
-                                <td><span class="status-completed">Completed</span></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="todo">
-                    <div class="head">
-                        <h3>Recent Appointments</h3>
-                        <input type="text" name="todo_search" placeholder="Search todos...">
-                        <button type="submit" name="filter_todos"><i class="bx bx-filter"></i></button>
-                    </div>
-                    <ul class="todo-list">
-                        <li>
-                            <p>Todo List</p>
-                            <i class='bx bx-dots-vertical-rounded'></i>
-                        </li>
-                        <li class="completed">
-                            <p>Todo List</p>
-                            <i class='bx bx-dots-vertical-rounded'></i>
-                        </li>
-                        <li class="not-completed">
-                            <p>Todo List</p>
-                            <i class='bx bx-dots-vertical-rounded'></i>
-                        </li>
-                        <li class="completed">
-                            <p>Todo List</p>
-                            <i class='bx bx-dots-vertical-rounded'></i>
-                        </li>
-                        <li class="not-completed">
-                            <p>Todo List</p>
-                            <i class='bx bx-dots-vertical-rounded'></i>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </form>
+        <!-- Add JavaScript functions for report modal and PDF download -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+        
+        <script>
+        // ...existing code...
+        </script>
     </main>
 
     <!-- Chart.js library and initialization -->
@@ -1012,6 +967,309 @@ try {
             
             // Run insights calculation after chart is initialized
             calculateInsights();
+
+            // Service Popularity Chart
+            const servicePopularityData = <?php echo json_encode($servicePopularity); ?>;
+            const serviceNames = servicePopularityData.map(item => item.service_name);
+            const appointmentCounts = servicePopularityData.map(item => item.appointment_count);
+
+            const serviceCtx = document.getElementById('servicePopularityChart').getContext('2d');
+            
+            // Create gradients for the bars
+            const barGradient = serviceCtx.createLinearGradient(0, 0, 0, 400);
+            barGradient.addColorStop(0, 'rgba(20, 69, 120, 0.8)');
+            barGradient.addColorStop(1, 'rgba(20, 69, 120, 0.2)');
+            
+            const horizontalBarGradient = serviceCtx.createLinearGradient(0, 0, 400, 0);
+            horizontalBarGradient.addColorStop(0, 'rgba(20, 69, 120, 0.8)');
+            horizontalBarGradient.addColorStop(1, 'rgba(20, 69, 120, 0.2)');
+
+            // Create the chart with improved design
+            let serviceChart = new Chart(serviceCtx, {
+                type: 'bar',
+                data: {
+                    labels: serviceNames,
+                    datasets: [{
+                        label: 'Number of Appointments',
+                        data: appointmentCounts,
+                        backgroundColor: barGradient,
+                        borderColor: '#144578',
+                        borderWidth: 1,
+                        borderRadius: 6,
+                        barPercentage: 0.7,
+                        categoryPercentage: 0.8,
+                        hoverBackgroundColor: '#2a6db5'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'x',
+                    animation: {
+                        duration: 2000,
+                        easing: 'easeOutQuart'
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Number of Appointments',
+                                font: {
+                                    weight: 'bold',
+                                    size: 13
+                                },
+                                padding: {top: 10, bottom: 10}
+                            },
+                            ticks: {
+                                precision: 0,
+                                stepSize: 1,
+                                font: {
+                                    size: 12
+                                },
+                                color: '#666'
+                            },
+                            grid: {
+                                color: 'rgba(200, 200, 200, 0.2)',
+                                borderDash: [5, 5],
+                                drawBorder: false
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Service Name',
+                                font: {
+                                    weight: 'bold',
+                                    size: 13
+                                },
+                                padding: {top: 10, bottom: 10}
+                            },
+                            ticks: {
+                                font: {
+                                    size: 12
+                                },
+                                color: '#666',
+                                maxRotation: 45,
+                                minRotation: 45
+                            },
+                            grid: {
+                                display: false,
+                                drawBorder: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(20, 69, 120, 0.9)',
+                            titleFont: {
+                                size: 14,
+                                weight: 'bold'
+                            },
+                            bodyFont: {
+                                size: 13
+                            },
+                            padding: 12,
+                            cornerRadius: 8,
+                            caretSize: 6,
+                            displayColors: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return `Appointments: ${context.raw}`;
+                                }
+                            }
+                        },
+                        datalabels: {
+                            display: function(context) {
+                                return context.dataset.data[context.dataIndex] > 0;
+                            },
+                            color: '#fff',
+                            anchor: 'center',
+                            align: 'center',
+                            font: {
+                                weight: 'bold'
+                            },
+                            formatter: function(value) {
+                                return value;
+                            }
+                        }
+                    }
+                },
+                plugins: [{
+                    afterDraw: chart => {
+                        if (chart.data.datasets[0].data.every(item => item === 0)) {
+                            // Display "No data available" if all values are 0
+                            const ctx = chart.ctx;
+                            const width = chart.width;
+                            const height = chart.height;
+                            
+                            chart.clear();
+                            ctx.save();
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'middle';
+                            ctx.font = '16px sans-serif';
+                            ctx.fillStyle = '#666';
+                            ctx.fillText('No appointment data available', width / 2, height / 2);
+                            ctx.restore();
+                        }
+                    }
+                }]
+            });
+
+            // Handle chart type change (vertical vs horizontal)
+            document.getElementById('serviceChartType').addEventListener('change', function() {
+                const chartType = this.value;
+                
+                // Destroy current chart
+                serviceChart.destroy();
+                
+                // Setup configuration for the new chart
+                const isHorizontal = chartType === 'horizontalBar';
+                
+                // Create new chart with updated configuration
+                serviceChart = new Chart(serviceCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: serviceNames,
+                        datasets: [{
+                            label: 'Number of Appointments',
+                            data: appointmentCounts,
+                            backgroundColor: isHorizontal ? horizontalBarGradient : barGradient,
+                            borderColor: '#144578',
+                            borderWidth: 1,
+                            borderRadius: 6,
+                            barPercentage: 0.7,
+                            categoryPercentage: 0.8,
+                            hoverBackgroundColor: '#2a6db5'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        indexAxis: isHorizontal ? 'y' : 'x',
+                        animation: {
+                            duration: 1000,
+                            easing: 'easeOutQuart'
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: isHorizontal ? 'Number of Appointments' : 'Service Name',
+                                    font: {
+                                        weight: 'bold',
+                                        size: 13
+                                    },
+                                    padding: {top: 10, bottom: 10}
+                                },
+                                ticks: {
+                                    precision: 0,
+                                    stepSize: isHorizontal ? 1 : null,
+                                    font: {
+                                        size: 12
+                                    },
+                                    color: '#666',
+                                    maxRotation: isHorizontal ? 0 : 45,
+                                    minRotation: isHorizontal ? 0 : 45
+                                },
+                                grid: {
+                                    color: isHorizontal ? 'rgba(200, 200, 200, 0.2)' : 'transparent',
+                                    borderDash: isHorizontal ? [5, 5] : [],
+                                    drawBorder: false
+                                }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: isHorizontal ? 'Service Name' : 'Number of Appointments',
+                                    font: {
+                                        weight: 'bold',
+                                        size: 13
+                                    },
+                                    padding: {top: 10, bottom: 10}
+                                },
+                                ticks: {
+                                    precision: 0,
+                                    stepSize: isHorizontal ? null : 1,
+                                    font: {
+                                        size: 12
+                                    },
+                                    color: '#666'
+                                },
+                                grid: {
+                                    color: isHorizontal ? 'transparent' : 'rgba(200, 200, 200, 0.2)',
+                                    borderDash: isHorizontal ? [] : [5, 5],
+                                    drawBorder: false
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(20, 69, 120, 0.9)',
+                                titleFont: {
+                                    size: 14,
+                                    weight: 'bold'
+                                },
+                                bodyFont: {
+                                    size: 13
+                                },
+                                padding: 12,
+                                cornerRadius: 8,
+                                caretSize: 6,
+                                displayColors: false,
+                                callbacks: {
+                                    label: function(context) {
+                                        return `Appointments: ${context.raw}`;
+                                    }
+                                }
+                            },
+                            datalabels: {
+                                display: function(context) {
+                                    return context.dataset.data[context.dataIndex] > 0;
+                                },
+                                color: '#fff',
+                                anchor: 'center',
+                                align: 'center',
+                                font: {
+                                    weight: 'bold'
+                                },
+                                formatter: function(value) {
+                                    return value;
+                                }
+                            }
+                        }
+                    },
+                    plugins: [{
+                        afterDraw: chart => {
+                            if (chart.data.datasets[0].data.every(item => item === 0)) {
+                                // Display "No data available" if all values are 0
+                                const ctx = chart.ctx;
+                                const width = chart.width;
+                                const height = chart.height;
+                                
+                                chart.clear();
+                                ctx.save();
+                                ctx.textAlign = 'center';
+                                ctx.textBaseline = 'middle';
+                                ctx.font = '16px sans-serif';
+                                ctx.fillStyle = '#666';
+                                ctx.fillText('No appointment data available', width / 2, height / 2);
+                                ctx.restore();
+                            }
+                        }
+                    }]
+                });
+            });
+            
+            // ...existing code...
         });
     </script>
 </section>
