@@ -143,7 +143,7 @@ foreach ($services as $service) {
             </div>
         </div>
         
-        <a href="./HTML CODES/Location_page.html" class="info-box">
+        <a href="./HTML CODES/Location_page.php" class="info-box">
             <div class="info-icon">
                 <img src="./Pictures/location.png" alt="Location Icon">
             </div>
@@ -234,8 +234,7 @@ foreach ($services as $service) {
                   </div>
                   <div class="card blue-card">
                       <h3>Inspections</h3>
-                      <p>ChatGPT said:
-                      Thorough inspections are the first step to a pest-free 
+                      <p>Thorough inspections are the first step to a pest-free 
                       environment—spotting the problem before it grows, so 
                       you can act with confidence and clarity.</p>
                       <div class="button-group">
@@ -306,7 +305,7 @@ foreach ($services as $service) {
           </div>
           <div class="button-group">
             <button class="book-now-btn" onclick="window.location.href='./HTML CODES/Appointment-service.php'">Book Now</button>
-            <button class="learn-more-btn" onclick="window.location.href='./HTML CODES/Lrn_more_sp.php?service_id=<?= $ocularService['service_id'] ?>'">Learn More</button>
+            <button class="learn-more-btn" onclick="window.location.href='./HTML CODES/Lrn_more_ocular.php?service_id=<?= $ocularService['service_id'] ?>'">Learn More</button>
           </div>
         </div>
       </div>
@@ -328,7 +327,41 @@ foreach ($services as $service) {
             </div>
             <div class="button-group">
               <button class="book-now-btn" onclick="window.location.href='./HTML CODES/Appointment-service.php'">Book Now</button>
-              <button class="learn-more-btn" onclick="window.location.href='./HTML CODES/Lrn_more_sp.php?service_id=<?= $service['service_id'] ?>'">Learn More</button>
+              <?php
+              $learnMorePage = '';
+              switch(strtolower($service['service_name'])) {
+                case 'soil poisoning':
+                  $learnMorePage = 'Lrn_more_sp.php';
+                  break;
+                case 'mound demolition':
+                  $learnMorePage = 'Lrn_more_md.php';
+                  break;
+                case 'termite control':
+                  $learnMorePage = 'Lrn_more_tc.php';
+                  break;
+                case 'general pest control':
+                  $learnMorePage = 'Lrn_more_gpc.php';
+                  break;
+                case 'mosquito control':
+                  $learnMorePage = 'Lrn_more_mc.php';
+                  break;
+                case 'rat control':
+                  $learnMorePage = 'Lrn_more_rat.php';
+                  break;
+                case 'other flying insects':
+                case 'other flying and crawling insects':
+                  $learnMorePage = 'Lrn_more_other.php';
+                  break;
+                case 'extraction':
+                  $learnMorePage = 'Lrn_more_extraction.php';
+                  break;
+                default:
+                  // For debugging purposes, you can see which service name doesn't match
+                  error_log('Service name not matched in switch: ' . $service['service_name']);
+                  $learnMorePage = 'Lrn_more_sp.php'; // Default case
+              }
+              ?>
+              <button class="learn-more-btn" onclick="window.location.href='./HTML CODES/<?= $learnMorePage ?>?service_id=<?= $service['service_id'] ?>'">Learn More</button>
             </div>
           </div>
         </div>
@@ -374,7 +407,6 @@ foreach ($services as $service) {
       <div class="why-pestcozam-content">
         <div class="section-title">Why choose PESTCOZAM?</div>
         <div class="main-title">Committed<br>to Your<br>Comfort</div>
-        <a href="#" class="discover-button">Discover more</a>
       </div>
       <div class="why-pestcozam-grid">
         <div class="grid-item" style="background-image: url('./Pictures/Exp-Prof.jpg');">
@@ -464,7 +496,6 @@ foreach ($services as $service) {
         <p class="follow-us-text">Follow us</p>
         <div class="social-icons">
           <a href="https://www.facebook.com/PESTCOZAM" target="_blank"><img src="./Pictures/facebook.png" alt="Facebook" ></a>
-          <a href=""><img src="../Pictures/telegram.png" alt="Telegram" /></a>
           <a href="https://www.instagram.com/pestcozam" target="_blank"><img src="./Pictures/instagram.png" alt="Instagram" /></a>
         </div>
       </div>
