@@ -142,7 +142,7 @@ try {
                 </a>
             </li>
             <li>
-                <a href="login.php" class="logout">
+                <a href="logout.php" class="logout">
                     <i class='bx bx-log-out'></i>
                     <span class="text">Log out</span>
                 </a>

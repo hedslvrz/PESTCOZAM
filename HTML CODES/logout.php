@@ -21,7 +21,7 @@ if (ini_get("session.use_cookies")) {
 
 // Redirect based on role
 if ($userRole == 'admin' || $userRole == 'technician' || $userRole == 'supervisor') {
-    header("Location: login.php");
+    header("Location: Login.php");
 } else {
     header("Location: ../Index.php");
 }
