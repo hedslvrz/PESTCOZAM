@@ -257,12 +257,6 @@ try {
                 </a>
             </li>
             <li>
-                <a href="#settings" onclick="showSection('settings')">
-                    <i class='bx bx-cog' ></i>
-                    <span class="text">Settings</span>
-                </a>
-            </li>
-            <li>
                 <a href="Login.php" class="logout">
                     <i class='bx bx-log-out' ></i>
                     <span class="text">Log out</span>
@@ -2552,29 +2546,6 @@ try {
                 }
             });
         </script>
-    </main>
-</section>
-
-<!-- Settings Section -->
-<section id="settings" class="section">
-    <main>
-        <form id="settings-form" method="POST" action="process_settings.php">
-            <div class="head-title">
-                <div class="left">
-                    <h1>Settings Management</h1>
-                    <ul class="breadcrumb">
-                        <li><a href="#">Settings</a></li>
-                        <li><i class='bx bx-right-arrow-alt'></i></li>
-                        <li><a class="active" href="#">System Settings</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="table-data">
-                <div class="settings-list">
-                    <!-- Settings specific content will be added here -->
-                </div>
-            </div>
-        </form>
     </main>
 </section>
 
