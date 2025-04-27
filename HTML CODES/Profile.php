@@ -8,37 +8,40 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 // Database connection
-$conn = new mysqli("localhost", "u302876046_root", "Pestcozam@2025", "u302876046_pestcozam");
-
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+require_once '../database.php';
+$database = new Database();
+$db = $database->getConnection();
 
 // Get user data
 $user_id = $_SESSION['user_id'];
-$sql = "SELECT * FROM users WHERE id = ?";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $user_id);
+$stmt = $db->prepare("SELECT * FROM users WHERE id = ?");
+$stmt->bindParam(1, $user_id);
 $stmt->execute();
-$result = $stmt->get_result();
-$user = $result->fetch_assoc();
+$user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+// Set profile picture path - default if not set
+$profile_pic = isset($user['profile_pic']) && !empty($user['profile_pic']) 
+    ? "../uploads/profile_pictures/" . $user['profile_pic'] 
+    : "../Pictures/boy.png";
+
+// Store profile pic in session for use across site
+$_SESSION['profile_pic'] = $profile_pic;
 
 // Get user appointments
-$sql_appointments = "SELECT a.*, s.service_name,
-            CASE 
-                WHEN a.is_for_self = 1 THEN CONCAT(u.firstname, ' ', u.lastname)
-                ELSE CONCAT(a.firstname, ' ', a.lastname)
-            END as client_name
-            FROM appointments a 
-            JOIN services s ON a.service_id = s.service_id 
-            JOIN users u ON a.user_id = u.id
-            WHERE a.user_id = ? 
-            ORDER BY a.appointment_date DESC 
-            LIMIT 10"; // Increased limit to show more appointments
-$stmt = $conn->prepare($sql_appointments);
-$stmt->bind_param("i", $user_id);
+$stmt = $db->prepare("SELECT a.*, s.service_name,
+        CASE 
+            WHEN a.is_for_self = 1 THEN CONCAT(u.firstname, ' ', u.lastname)
+            ELSE CONCAT(a.firstname, ' ', a.lastname)
+        END as client_name
+        FROM appointments a 
+        JOIN services s ON a.service_id = s.service_id 
+        JOIN users u ON a.user_id = u.id
+        WHERE a.user_id = ? 
+        ORDER BY a.appointment_date DESC 
+        LIMIT 10");
+$stmt->bindParam(1, $user_id);
 $stmt->execute();
-$appointments = $stmt->get_result();
+$appointments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Check if there's a current appointment in the session
 $current_appointment = null;
@@ -46,24 +49,23 @@ if (isset($_SESSION['current_appointment'])) {
     $current_appointment = $_SESSION['current_appointment'];
 } else {
     // Get user's most recent appointment
-    $sql_recent_appointment = "SELECT a.*, s.service_name,
-                CASE 
-                    WHEN a.is_for_self = 1 THEN CONCAT(u.firstname, ' ', u.lastname)
-                    ELSE CONCAT(a.firstname, ' ', a.lastname)
-                END as client_name,
-                CONCAT(t.firstname, ' ', t.lastname) as technician_name,
-                a.is_for_self
-                FROM appointments a 
-                JOIN services s ON a.service_id = s.service_id 
-                JOIN users u ON a.user_id = u.id
-                LEFT JOIN users t ON a.technician_id = t.id
-                WHERE a.user_id = ? 
-                ORDER BY a.appointment_date DESC, a.appointment_time DESC 
-                LIMIT 1";
-    $stmt = $conn->prepare($sql_recent_appointment);
-    $stmt->bind_param("i", $user_id);
+    $stmt = $db->prepare("SELECT a.*, s.service_name,
+            CASE 
+                WHEN a.is_for_self = 1 THEN CONCAT(u.firstname, ' ', u.lastname)
+                ELSE CONCAT(a.firstname, ' ', a.lastname)
+            END as client_name,
+            CONCAT(t.firstname, ' ', t.lastname) as technician_name,
+            a.is_for_self
+            FROM appointments a 
+            JOIN services s ON a.service_id = s.service_id 
+            JOIN users u ON a.user_id = u.id
+            LEFT JOIN users t ON a.technician_id = t.id
+            WHERE a.user_id = ? 
+            ORDER BY a.appointment_date DESC, a.appointment_time DESC 
+            LIMIT 1");
+    $stmt->bindParam(1, $user_id);
     $stmt->execute();
-    $current_appointment = $stmt->get_result()->fetch_assoc();
+    $current_appointment = $stmt->fetch(PDO::FETCH_ASSOC);
     
     if ($current_appointment) {
         // Format dates and times for display
@@ -119,7 +121,7 @@ if (isset($_SESSION['current_appointment'])) {
           <?php if (isset($_SESSION['user_id'])): ?>
             <li class="user-profile">
               <div class="profile-dropdown">
-                <img src="../Pictures/boy.png" alt="Profile" class="profile-pic">
+                <img src="<?php echo $profile_pic; ?>" alt="Profile" class="profile-pic">
                 <div class="dropdown-content">
                   <a href="Profile.php"><i class='bx bx-user'></i> Profile</a>
                   <a href="logout.php"><i class='bx bx-log-out'></i> Logout</a>
@@ -140,7 +142,13 @@ if (isset($_SESSION['current_appointment'])) {
       <!-- PROFILE & PERSONAL DETAILS -->
       <div class="profile-section">
         <div class="profile-card">
-          <img src="../Pictures/boy.png" alt="User Avatar" class="avatar" />
+          <div class="profile-pic-container">
+            <img src="<?php echo $profile_pic; ?>" alt="User Avatar" class="avatar" />
+            <div class="change-photo-overlay">
+              <i class='bx bx-camera'></i>
+              <span>Change Photo</span>
+            </div>
+          </div>
           <div class="user-info">
             <h3><?php echo htmlspecialchars($user['firstname'] . ' ' . $user['lastname']); ?></h3>
             <p><?php echo htmlspecialchars($user['email']); ?></p>
@@ -197,7 +205,7 @@ if (isset($_SESSION['current_appointment'])) {
               </tr>
             </thead>
             <tbody>
-              <?php while($appointment = $appointments->fetch_assoc()): ?>
+              <?php foreach($appointments as $appointment): ?>
               <tr class="history-row" 
                   data-appointment-id="<?php echo $appointment['id']; ?>" 
                   data-appointment-date="<?php echo $appointment['appointment_date']; ?>"
@@ -207,7 +215,7 @@ if (isset($_SESSION['current_appointment'])) {
                 <td><?php echo date('m/d/y', strtotime($appointment['appointment_date'])); ?></td>
                 <td><span class="history-badge <?php echo strtolower($appointment['status']); ?>"><?php echo $appointment['status']; ?></span></td>
               </tr>
-              <?php endwhile; ?>
+              <?php endforeach; ?>
             </tbody>
           </table>
         </div>
@@ -285,7 +293,14 @@ if (isset($_SESSION['current_appointment'])) {
         <h2>Edit Profile</h2>
         <span class="close">&times;</span>
       </div>
-      <form id="editProfileForm" method="POST" action="update_profile.php">
+      <form id="editProfileForm" method="POST" action="update_profile.php" enctype="multipart/form-data">
+        <div class="profile-pic-edit">
+          <img src="<?php echo $profile_pic; ?>" alt="Profile Picture" id="preview-profile-pic">
+          <div class="pic-edit-overlay">
+            <label for="profile_picture"><i class='bx bx-camera'></i> Change</label>
+            <input type="file" id="profile_picture" name="profile_picture" accept="image/*" style="display:none">
+          </div>
+        </div>
         <div class="form-group">
           <label for="firstname">First Name</label>
           <input type="text" id="firstname" name="firstname" value="<?php echo htmlspecialchars($user['firstname']); ?>" required>
@@ -723,6 +738,36 @@ if (isset($_SESSION['current_appointment'])) {
         // Clear form fields
         document.getElementById('feedbackForm').reset();
     }
+
+    // Profile picture change functionality
+    document.addEventListener('DOMContentLoaded', function() {
+      // Handle profile picture overlay click
+      const profilePicContainer = document.querySelector('.profile-pic-container');
+      if (profilePicContainer) {
+        profilePicContainer.addEventListener('click', function() {
+          document.getElementById('editProfileModal').classList.add("show");
+          // Focus on the file input
+          setTimeout(() => {
+            document.getElementById('profile_picture').click();
+          }, 300);
+        });
+      }
+
+      // Preview the selected image
+      const profilePictureInput = document.getElementById('profile_picture');
+      if (profilePictureInput) {
+        profilePictureInput.addEventListener('change', function() {
+          const file = this.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+              document.getElementById('preview-profile-pic').src = e.target.result;
+            }
+            reader.readAsDataURL(file);
+          }
+        });
+      }
+    });
   </script>
 
   <style>
@@ -887,6 +932,86 @@ if (isset($_SESSION['current_appointment'])) {
         width: 100%;
         text-align: center;
       }
+    }
+    
+    /* Profile picture upload styling */
+    .profile-pic-container {
+      position: relative;
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      overflow: hidden;
+      cursor: pointer;
+    }
+    
+    .avatar {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .change-photo-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    
+    .profile-pic-container:hover .change-photo-overlay {
+      opacity: 1;
+    }
+    
+    .change-photo-overlay i {
+      font-size: 20px;
+      margin-bottom: 4px;
+    }
+    
+    .change-photo-overlay span {
+      font-size: 10px;
+      text-align: center;
+    }
+    
+    .profile-pic-edit {
+      position: relative;
+      width: 100px;
+      height: 100px;
+      margin: 0 auto 20px;
+      border-radius: 50%;
+      overflow: hidden;
+    }
+    
+    .profile-pic-edit img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .pic-edit-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      color: white;
+      text-align: center;
+      padding: 5px 0;
+      cursor: pointer;
+    }
+    
+    .pic-edit-overlay label {
+      cursor: pointer;
+      font-size: 12px;
+      display: block;
+      width: 100%;
     }
   </style>
 </body>

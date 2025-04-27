@@ -29,7 +29,7 @@ $service = $stmt->fetch(PDO::FETCH_ASSOC);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Extraction Service</title>
+    <title>Ocular Inspection Service</title>
     <link rel="stylesheet" href="../CSS CODES/Learn-more.css">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 </head>
@@ -90,67 +90,65 @@ $service = $stmt->fetch(PDO::FETCH_ASSOC);
     <!-- SERVICE CONTENT -->
     <main class="service-content">
         <div class="hero-section">
-            <h1>Extraction Service</h1>
+            <h1>Ocular Inspection Service</h1>
             <p class="description">
-                PESTCOZAM's extraction service is designed to safely and effectively remove unwanted pest colonies, hives, and nests from your property. Our expert technicians use specialized equipment and techniques to ensure complete removal while minimizing risks and damage to your property. This service is particularly important for removing dangerous pests like wasps, hornets, bees, and other stinging insects.
+                An ocular inspection is the essential first step before implementing any pest control treatment. During this inspection, our expert technicians thoroughly examine your property to identify the type and extent of infestation, locate entry points and harborage areas, and develop a customized treatment plan tailored to your specific needs.
             </p>
             <div class="service-image">
-                <img src="../Pictures/<?= htmlspecialchars($service['image_path'] ?? 'extraction-service.jpg') ?>" alt="Extraction Service Process" class="treatment-image">
+                <img src="../Pictures/<?= htmlspecialchars($service['image_path'] ?? 'ocular-inspection.jpg') ?>" alt="Ocular Inspection Process" class="treatment-image">
             </div>
         </div>
 
         <div class="service-details">
             <section class="process-section">
-                <h2>Extraction Process</h2>
+                <h2>Inspection Process</h2>
                 <ol>
-                    <li><strong>Inspection & Assessment:</strong> We thoroughly evaluate the pest infestation, identifying the species, nest location, and potential challenges.</li>
-                    <li><strong>Strategic Planning:</strong> We develop a customized extraction plan based on the infestation type, location, and property conditions.</li>
-                    <li><strong>Site Preparation:</strong> We prepare the area to ensure safety and minimize disruption to unaffected parts of your property.</li>
-                    <li><strong>Professional Extraction:</strong> Our trained technicians execute the extraction using specialized equipment and techniques designed for the specific pest.</li>
-                    <li><strong>Complete Removal:</strong> We ensure the entire nest, colony, or infestation is completely removed from your property.</li>
-                    <li><strong>Prevention Measures:</strong> We implement preventive treatments and provide recommendations to avoid future infestations.</li>
+                    <li><strong>Scheduling:</strong> We'll arrange a convenient time to visit your property, typically within 24-48 hours of your request.</li>
+                    <li><strong>Initial Consultation:</strong> Our inspector will discuss your concerns and any pest activity you've noticed to better understand your situation.</li>
+                    <li><strong>Thorough Examination:</strong> We'll carefully inspect both interior and exterior areas for signs of pest activity, damage, and potential entry points.</li>
+                    <li><strong>Documentation:</strong> We document our findings, including photos if necessary, to develop a comprehensive treatment plan.</li>
+                    <li><strong>Recommendations:</strong> We'll provide detailed treatment options with transparent pricing based on our inspection findings.</li>
+                    <li><strong>Treatment Scheduling:</strong> If you choose to proceed, we can schedule your treatment service right away.</li>
                 </ol>
             </section>
 
             <section class="info-grid">
                 <div class="info-card">
-                    <h3>Target Pests</h3>
+                    <h3>What We Identify</h3>
                     <ul>
-                        <li>Beehives and swarms</li>
-                        <li>Wasp and hornet nests</li>
-                        <li>Rodent colonies in walls or attics</li>
-                        <li>Bird nests in ventilation systems</li>
-                        <li>Other pest infestations in hard-to-reach areas</li>
+                        <li>Type and extent of pest infestation</li>
+                        <li>Entry points and harborage areas</li>
+                        <li>Conducive conditions that may attract pests</li>
+                        <li>Structural vulnerabilities</li>
                     </ul>
                 </div>
 
                 <div class="info-card">
-                    <h3>Safety Measures</h3>
+                    <h3>Benefits</h3>
                     <ul>
-                        <li>Professional-grade protective equipment for technicians</li>
-                        <li>Secure containment of extracted pests and materials</li>
-                        <li>Safe disposal protocols for all removed nests and colonies</li>
-                        <li>Special considerations for honeybee relocations when possible</li>
+                        <li>Accurate assessment of your pest situation</li>
+                        <li>Customized treatment recommendations</li>
+                        <li>Precise cost estimation based on your specific needs</li>
+                        <li>Prevention advice to avoid future infestations</li>
                     </ul>
                 </div>
 
                 <div class="info-card">
                     <h3>Estimated Time</h3>
                     <ul>
-                        <li>Small extractions: 1-2 hours</li>
-                        <li>Medium-sized infestations: 2-4 hours</li>
-                        <li>Complex extractions (requiring wall access): 4-8 hours</li>
-                        <li>Large or multiple colonies: May require multiple visits</li>
+                        <li>Residential properties: 30-60 minutes</li>
+                        <li>Commercial properties: 1-2 hours, depending on size</li>
+                        <li>Large facilities may require additional time</li>
                     </ul>
                 </div>
 
                 <div class="info-card">
-                    <h3>Customer Preparation</h3>
+                    <h3>Important Note</h3>
                     <ul>
-                        <li>Clear access to the affected area</li>
-                        <li>Keep children and pets away during the extraction process</li>
-                        <li>Provide any relevant information about the infestation history</li>
-                        <li>An ocular inspection will be required before extraction service</li>
+                        <li>Ocular inspection is required before any treatment service</li>
+                        <li>The inspection service is provided free of charge</li>
+                        <li>No obligation to proceed with recommended treatments</li>
+                        <li>Access to all areas of concern is necessary for thorough inspection</li>
                     </ul>
                 </div>
             </section>

@@ -209,6 +209,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize calendar for time slot management
     initTimeSlotCalendar();
+
+    // Initialize profile editor functionality
+    initProfileEditor();
 });
 
 // Technician Assignment Functions
@@ -439,6 +442,97 @@ document.addEventListener('DOMContentLoaded', function() {
             logoutModal.style.display = 'none';
         }
     });
+});
+
+// Improved section navigation with proper hiding
+function showSection(sectionId) {
+    // Hide all sections
+    document.querySelectorAll('.section').forEach(section => {
+        section.classList.remove('active');
+        section.style.display = 'none';
+    });
+    
+    // Show the selected section
+    const targetSection = document.getElementById(sectionId);
+    if (targetSection) {
+        targetSection.style.display = 'block';
+        // Force a reflow to ensure the display change takes effect
+        void targetSection.offsetWidth;
+        targetSection.classList.add('active');
+
+        // Update the active menu item in the sidebar
+        document.querySelectorAll('#sidebar .side-menu.top li').forEach(item => {
+            item.classList.remove('active');
+        });
+        const menuItem = document.querySelector(`#sidebar .side-menu.top li a[href="#${sectionId}"]`).parentElement;
+        if (menuItem) {
+            menuItem.classList.add('active');
+        }
+        
+        // Scroll back to top when changing sections
+        window.scrollTo(0, 0);
+
+        // Initialize report cards if we're showing the reports section
+        if (sectionId === 'reports') {
+            initializeReportCards();
+        }
+    }
+}
+
+// Modified logout modal functions to work with new structure
+function openLogoutModal() {
+    const modal = document.getElementById('logoutModal');
+    if (!modal) return;
+    
+    modal.style.display = 'flex';
+    // Force reflow then add show class for transition
+    void modal.offsetWidth;
+    modal.classList.add('show');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeLogoutModal() {
+    const modal = document.getElementById('logoutModal');
+    if (!modal) return;
+    
+    modal.classList.remove('show');
+    setTimeout(() => {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }, 300);
+}
+
+// Update logout modal event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    // Setup logout modal
+    const logoutLink = document.querySelector('a.logout');
+    const logoutModal = document.getElementById('logoutModal');
+    const confirmLogout = document.getElementById('confirmLogout');
+    const cancelLogout = document.getElementById('cancelLogout');
+    
+    if (logoutLink && logoutModal) {
+        logoutLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            openLogoutModal();
+        });
+        
+        if (confirmLogout) {
+            confirmLogout.addEventListener('click', function() {
+                window.location.href = logoutLink.getAttribute('href');
+            });
+        }
+        
+        if (cancelLogout) {
+            cancelLogout.addEventListener('click', closeLogoutModal);
+        }
+        
+        // Close modal when clicking outside
+        window.addEventListener('click', function(e) {
+            if (e.target === logoutModal) {
+                closeLogoutModal();
+            }
+        });
+    }
 });
 
 // Updated Report Modal Functions
@@ -706,6 +800,11 @@ function showSection(sectionId) {
         const menuItem = document.querySelector(`#sidebar .side-menu.top li a[href="#${sectionId}"]`).parentElement;
         if (menuItem) {
             menuItem.classList.add('active');
+        }
+
+        // Initialize report cards if we're showing the reports section
+        if (sectionId === 'reports') {
+            initializeReportCards();
         }
     }
 }
@@ -1116,6 +1215,531 @@ function initTimeSlotCalendar() {
 document.addEventListener('DOMContentLoaded', function() {
     initTimeSlotCalendar();
 });
+
+// PROFILE SECTION FUNCTIONS - Added from dashboard-aos.js
+function openProfileModal() {
+    const modal = document.getElementById('profileModal');
+    if (!modal) return;
+    modal.style.display = 'flex';
+    // Force reflow then add show class for transition
+    void modal.offsetWidth;
+    modal.classList.add('show');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeProfileModal() {
+    const modal = document.getElementById('profileModal');
+    if (!modal) return;
+    modal.classList.remove('show');
+    setTimeout(() => {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }, 300);
+}
+
+function updateUserProfile(form) {
+    const submitBtn = form.querySelector('[type="submit"]');
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = 'Saving...';
+    submitBtn.disabled = true;
+
+    const formData = new FormData(form);
+
+    fetch('../PHP CODES/update_admin_profile.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.text())
+    .then(text => {
+        console.log('Raw server response:', text);
+        let data = null;
+        try {
+            // Try to parse as JSON only if it looks like JSON
+            if (text.trim().startsWith('{') || text.trim().startsWith('[')) {
+                data = JSON.parse(text);
+            } else if (text.toLowerCase().includes('success')) {
+                data = { success: true, message: 'Profile updated successfully' };
+            } else {
+                throw new Error('Response is not valid JSON');
+            }
+        } catch (e) {
+            console.error('JSON parse error:', e, 'Response text:', text);
+            alert('Error updating profile. Invalid response from server.');
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+            return;
+        }
+        if (data && data.success) {
+            alert('Profile updated successfully!');
+            updateProfileDisplay(formData);
+            closeProfileModal();
+            history.replaceState(null, null, location.pathname);
+        } else {
+            alert('Error: ' + (data && data.message ? data.message : 'Update failed'));
+        }
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+    })
+    .catch(error => {
+        console.error('Error updating profile:', error);
+        alert('An error occurred while updating profile: ' + error.message);
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+    });
+}
+
+function updateProfileDisplay(formData) {
+    const firstname = formData.get('firstname');
+    const lastname = formData.get('lastname');
+    const email = formData.get('email');
+    
+    // Update Profile Card (using .profile-info)
+    const profileName = document.querySelector('.profile-info h3');
+    const profileEmail = document.querySelector('.profile-info p');
+    if (profileName) profileName.textContent = `${firstname} ${lastname}`;
+    if (profileEmail) profileEmail.textContent = email;
+    
+    // Update details in personal information section
+    const fnameDetail = document.querySelector('[data-field="firstname"]');
+    const middlenameDetail = document.querySelector('[data-field="middlename"]');
+    const lnameDetail = document.querySelector('[data-field="lastname"]');
+    const emailDetail = document.querySelector('[data-field="email"]');
+    const phoneDetail = document.querySelector('[data-field="mobile_number"]');
+    if (fnameDetail) fnameDetail.textContent = firstname;
+    if (middlenameDetail) middlenameDetail.textContent = formData.get('middlename') || 'Not set';
+    if (lnameDetail) lnameDetail.textContent = lastname;
+    if (emailDetail) emailDetail.textContent = email;
+    if (phoneDetail) phoneDetail.textContent = formData.get('mobile_number');
+}
+
+// Initialize profile editor functionality
+function initProfileEditor() {
+    const editProfileBtn = document.getElementById('openProfileModalBtn');
+    const profileModal = document.getElementById('profileModal');
+    const closeBtn = profileModal ? profileModal.querySelector('.close') : null;
+    const cancelBtn = document.getElementById('closeProfileModalBtn');
+    const profileForm = document.getElementById('editProfileForm');
+    
+    if (editProfileBtn && profileModal && profileForm) {
+        editProfileBtn.addEventListener('click', function() {
+            openProfileModal();
+        });
+        if (closeBtn) {
+            closeBtn.addEventListener('click', function() {
+                closeProfileModal();
+            });
+        }
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', function() {
+                closeProfileModal();
+            });
+        }
+        window.addEventListener('click', function(event) {
+            if (event.target === profileModal) {
+                closeProfileModal();
+            }
+            });
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' && profileModal.classList.contains('show')) {
+                closeProfileModal();
+            }
+        });
+        profileForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            updateUserProfile(this);
+        });
+    }
+}
+
+// Navigation functionality
+const sidebarToggle = document.querySelector('#main-navbar .bx.bx-menu');
+const allSideDivider = document.querySelectorAll('#sidebar .divider');
+
+function handleSidebar() {
+    if (sidebar && sidebarToggle) {
+        sidebarToggle.addEventListener('click', function () {
+            sidebar.classList.toggle('hide');
+        });
+    }
+}
+
+// Section navigation
+function showSection(sectionId) {
+    const sections = document.querySelectorAll('.section');
+    sections.forEach(section => {
+        section.classList.remove('active');
+    });
+    
+    const sectionToShow = document.getElementById(sectionId);
+    if (sectionToShow) {
+        sectionToShow.classList.add('active');
+    }
+    
+    // Update the active item in the sidebar
+    const sideMenuItems = document.querySelectorAll('#sidebar .side-menu li');
+    sideMenuItems.forEach(item => {
+        item.classList.remove('active');
+    });
+    
+    // Find and activate the menu item that triggered this
+    const activeItem = document.querySelector(`#sidebar .side-menu li a[href="#${sectionId}"]`);
+    if (activeItem) {
+        activeItem.parentElement.classList.add('active');
+    }
+    
+    // If sidebar is in mobile view, hide it after selection
+    if (window.innerWidth <= 768) {
+        sidebar.classList.add('hide');
+    }
+}
+
+// Calendar functionality for time slot management
+function initializeCalendar() {
+    const monthSelect = document.getElementById('monthSelect');
+    const yearSelect = document.getElementById('yearSelect');
+    const calendarDays = document.getElementById('calendar-days');
+    
+    if (!monthSelect || !yearSelect || !calendarDays) return;
+    
+    // Populate year dropdown
+    const currentYear = new Date().getFullYear();
+    for (let year = currentYear; year <= currentYear + 5; year++) {
+        const option = document.createElement('option');
+        option.value = year;
+        option.textContent = year;
+        yearSelect.appendChild(option);
+    }
+    
+    // Set current month and year
+    const currentDate = new Date();
+    monthSelect.value = currentDate.getMonth();
+    yearSelect.value = currentDate.getFullYear();
+    
+    // Initialize selected dates array
+    let selectedDates = [];
+    
+    // Generate calendar
+    function generateCalendar() {
+        const month = parseInt(monthSelect.value);
+        const year = parseInt(yearSelect.value);
+        
+        // Clear previous calendar
+        while (calendarDays.firstChild) {
+            calendarDays.removeChild(calendarDays.firstChild);
+        }
+        
+        // Get first day of month and number of days
+        const firstDay = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        
+        // Add empty cells for days before the first day of month
+        for (let i = 0; i < firstDay; i++) {
+            const emptyDay = document.createElement('div');
+            emptyDay.className = 'day';
+            calendarDays.appendChild(emptyDay);
+        }
+        
+        // Add days of the month
+        const today = new Date();
+        const currentMonth = today.getMonth();
+        const currentYear = today.getFullYear();
+        const currentDay = today.getDate();
+        
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dayElement = document.createElement('div');
+            dayElement.className = 'day';
+            dayElement.textContent = day;
+            
+            // Check if day is today
+            if (day === currentDay && month === currentMonth && year === currentYear) {
+                dayElement.classList.add('today');
+            }
+            
+            // Check if day is in past
+            const dayDate = new Date(year, month, day);
+            if (dayDate < new Date(new Date().setHours(0,0,0,0))) {
+                dayElement.classList.add('past');
+            } else {
+                // Only allow selection of future dates
+                dayElement.addEventListener('click', function() {
+                    if (dayElement.classList.contains('past')) return;
+                    
+                    const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                    
+                    // Toggle selection
+                    if (dayElement.classList.contains('selected')) {
+                        dayElement.classList.remove('selected');
+                        selectedDates = selectedDates.filter(date => date !== dateString);
+                    } else {
+                        dayElement.classList.add('selected');
+                        selectedDates.push(dateString);
+                    }
+                    
+                    // Update hidden input and display
+                    updateSelectedDatesDisplay();
+                });
+            }
+            
+            // Check if day is already selected
+            const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            if (selectedDates.includes(dateString)) {
+                dayElement.classList.add('selected');
+            }
+            
+            calendarDays.appendChild(dayElement);
+        }
+    }
+    
+    // Update display of selected dates
+    function updateSelectedDatesDisplay() {
+        const selectedDatesList = document.getElementById('selectedDatesList');
+        const selectedDatesInput = document.getElementById('selectedDatesInput');
+        
+        if (!selectedDatesList || !selectedDatesInput) return;
+        
+        // Clear previous content
+        selectedDatesList.innerHTML = '';
+        
+        // Update hidden input
+        selectedDatesInput.value = JSON.stringify(selectedDates);
+        
+        if (selectedDates.length === 0) {
+            selectedDatesList.innerHTML = '<div class="no-dates">No dates selected</div>';
+            return;
+        }
+        
+        // Sort dates
+        selectedDates.sort();
+        
+        // Add date tags
+        selectedDates.forEach(dateString => {
+            const date = new Date(dateString);
+            const formattedDate = date.toLocaleDateString('en-US', { 
+                weekday: 'short', 
+                month: 'short', 
+                day: 'numeric', 
+                year: 'numeric' 
+            });
+            
+            const dateTag = document.createElement('div');
+            dateTag.className = 'date-tag';
+            dateTag.innerHTML = `
+                <span>${formattedDate}</span>
+                <button type="button" class="remove-date" data-date="${dateString}">
+                    <i class='bx bx-x'></i>
+                </button>
+            `;
+            
+            selectedDatesList.appendChild(dateTag);
+        });
+        
+        // Add event listeners to remove buttons
+        document.querySelectorAll('.remove-date').forEach(button => {
+            button.addEventListener('click', function() {
+                const dateToRemove = this.getAttribute('data-date');
+                selectedDates = selectedDates.filter(date => date !== dateToRemove);
+                updateSelectedDatesDisplay();
+                
+                // Also update the calendar view
+                generateCalendar();
+            });
+        });
+    }
+    
+    // Calendar navigation
+    monthSelect.addEventListener('change', generateCalendar);
+    yearSelect.addEventListener('change', generateCalendar);
+    
+    // Initialize calendar
+    generateCalendar();
+    updateSelectedDatesDisplay();
+}
+
+// Initialize all functions on DOM content loaded
+document.addEventListener('DOMContentLoaded', function() {
+    handleSidebar();
+    
+    // Initialize active section based on URL hash if present
+    const hash = window.location.hash.substring(1);
+    if (hash) {
+        showSection(hash);
+    }
+    
+    // Initialize calendar if the time slot management section exists
+    initializeCalendar();
+});
+
+// Function to open the feedback modal
+function showFeedbackModal(appointmentId) {
+    const modal = document.getElementById('feedbackModal');
+    const appointmentIdField = document.getElementById('feedback_appointment_id');
+    
+    if (modal && appointmentIdField) {
+        appointmentIdField.value = appointmentId;
+        modal.style.display = 'flex';
+    }
+}
+
+// Function to close the feedback modal
+function closeFeedbackModal() {
+    const modal = document.getElementById('feedbackModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// Function to open the report modal
+function openReportModal(reportId) {
+    console.log('Opening report modal for ID:', reportId);
+    const modal = document.getElementById('reportModal');
+    
+    if (!modal) {
+        console.error('Report modal element not found');
+        return;
+    }
+    
+    // Find the report data from the global reportsData array
+    const reportData = window.reportsData.find(report => report.report_id == reportId);
+    
+    if (!reportData) {
+        console.error('Report data not found for ID:', reportId);
+        return;
+    }
+    
+    // Populate the form fields with report data
+    document.getElementById('reportIdField').value = reportId;
+    document.getElementById('reportIdDisplay').value = '#' + reportId;
+    document.getElementById('reportDateField').value = formatDate(reportData.date_of_treatment);
+    document.getElementById('techNameField').value = reportData.tech_name;
+    document.getElementById('clientNameField').value = reportData.account_name;
+    document.getElementById('contactNoField').value = reportData.contact_no;
+    document.getElementById('locationField').value = reportData.location;
+    document.getElementById('treatmentTypeField').value = reportData.treatment_type;
+    document.getElementById('treatmentMethodField').value = reportData.treatment_method;
+    document.getElementById('timeInField').value = reportData.time_in;
+    document.getElementById('timeOutField').value = reportData.time_out;
+    document.getElementById('pestCountField').value = reportData.pest_count;
+    document.getElementById('deviceInstallationField').value = reportData.device_installation;
+    document.getElementById('chemicalsField').value = reportData.consumed_chemicals;
+    document.getElementById('frequencyField').value = reportData.frequency_of_visits;
+    
+    // Handle photos
+    const imageGallery = document.getElementById('imageGallery');
+    imageGallery.innerHTML = '';
+    
+    if (reportData.photos) {
+        let photos = [];
+        try {
+            if (typeof reportData.photos === 'string') {
+                photos = JSON.parse(reportData.photos);
+            } else {
+                photos = reportData.photos;
+            }
+        } catch (e) {
+            console.error('Error parsing photos:', e);
+            photos = [reportData.photos]; // Treat as single photo
+        }
+        
+        if (!Array.isArray(photos)) {
+            photos = [photos]; // Ensure it's an array
+        }
+        
+        photos.forEach(photo => {
+            const imgContainer = document.createElement('div');
+            imgContainer.className = 'gallery-item';
+            
+            const img = document.createElement('img');
+            img.src = '../uploads/' + photo;
+            img.alt = 'Service Report Photo';
+            
+            imgContainer.appendChild(img);
+            imageGallery.appendChild(imgContainer);
+        });
+    } else {
+        imageGallery.innerHTML = '<p>No photos available</p>';
+    }
+    
+    // Show/hide buttons based on report status
+    const approveBtn = document.getElementById('approveBtn');
+    const rejectBtn = document.getElementById('rejectBtn');
+    
+    if (reportData.status.toLowerCase() === 'pending') {
+        approveBtn.style.display = 'block';
+        rejectBtn.style.display = 'block';
+    } else {
+        approveBtn.style.display = 'none';
+        rejectBtn.style.display = 'none';
+    }
+    
+    // Display the modal
+    modal.style.display = 'flex';
+}
+
+// Function to close the report modal
+function closeReportModal() {
+    const modal = document.getElementById('reportModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// Helper function to format dates
+function formatDate(dateString) {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+    });
+}
+
+// Function to update report status
+function updateReportStatus(status) {
+    const reportId = document.getElementById('reportIdField').value;
+    if (!reportId) {
+        alert('Report ID not found');
+        return;
+    }
+    
+    // Send AJAX request to update status
+    fetch('../PHP CODES/update_report_status.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `report_id=${reportId}&status=${status}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(`Report ${status} successfully`);
+            closeReportModal();
+            // Reload page to reflect changes
+            location.reload();
+        } else {
+            alert('Error: ' + (data.message || 'Failed to update report status'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while updating the report status');
+    });
+}
+
+// Function to download report as PDF
+function downloadReportPDF() {
+    alert('PDF download functionality will be implemented soon');
+    // This would be implemented with jsPDF or similar library
+}
+
+// Make sure these functions are globally available
+window.showFeedbackModal = showFeedbackModal;
+window.closeFeedbackModal = closeFeedbackModal;
+window.openReportModal = openReportModal;
+window.closeReportModal = closeReportModal;
+window.updateReportStatus = updateReportStatus;
+window.downloadReportPDF = downloadReportPDF;
 
 
 

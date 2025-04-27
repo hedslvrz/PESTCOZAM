@@ -1,3 +1,22 @@
+<?php
+session_start();
+
+// Include database connection
+require_once '../database.php';
+
+// Check if user is logged in
+$is_logged_in = isset($_SESSION['user_id']);
+
+// If logged in, set user variables for use in the page
+if ($is_logged_in) {
+    $user_id = $_SESSION['user_id'];
+    $profile_pic = isset($_SESSION['profile_pic']) ? $_SESSION['profile_pic'] : '../Pictures/boy.png';
+}
+
+// Initialize database connection
+$database = new Database();
+$db = $database->getConnection();
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -44,6 +63,7 @@
         <li><a href="Home_page.php#offer-section">Services</a></li>
         <li><a href="Home_page.php#about-us-section">About Us</a></li>
         <li><a href="Appointment-service.php" class="btn-appointment">Book Appointment</a></li>
+        <?php if ($is_logged_in): ?>
           <li class="user-profile">
             <div class="profile-dropdown">
               <img src="../Pictures/boy.png" alt="Profile" class="profile-pic">
@@ -53,6 +73,12 @@
               </div>
             </div>
           </li>
+        <?php else: ?>
+          <li class="auth-buttons">
+              <a href="Login.php" class="btn-login"><i class='bx bx-log-in'></i> Login</a>
+              <a href="Signup.php" class="btn-signup"><i class='bx bx-user-plus'></i> Sign Up</a>
+          </li>
+        <?php endif; ?>
       </ul>      
     </nav>
   </header>
@@ -142,9 +168,9 @@
       <div class="footer-right">
         <p class="follow-us-text">Follow us</p>
         <div class="social-icons">
-          <a href="#"><img src="../Pictures/facebook.png" alt="Facebook" /></a>
+          <a href="https://www.facebook.com/PESTCOZAM" target="_blank"><img src="../Pictures/facebook.png" alt="Facebook" /></a>
           <a href="#"><img src="../Pictures/telegram.png" alt="Telegram" /></a>
-          <a href="#"><img src="../Pictures/instagram.png" alt="Instagram" /></a>
+          <a href="https://www.instagram.com/pestcozam" target="_blank"><img src="../Pictures/instagram.png" alt="Instagram" /></a>
         </div>
       </div>
     </div>
@@ -169,6 +195,36 @@
         
         lastScrollTop = scrollTop;
     });
+
+    document.addEventListener("DOMContentLoaded", function () {
+        // Handle appointment button
+        document.querySelectorAll(".btn-appointment").forEach(button => {
+            button.addEventListener("click", function (event) {
+                event.preventDefault();
+    
+                // First check if user is logged in
+                fetch("../PHP CODES/check_session.php")
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.loggedIn) {
+                            // If logged in, clear any existing appointment session first
+                            fetch("../PHP CODES/clear_appointment_session.php")
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.success) {
+                                        window.location.href = "Appointment-service.php";
+                                    }
+                                });
+                        } else {
+                            sessionStorage.setItem("redirectTo", "Appointment-service.php");
+                            alert("You must log in first to make an appointment.");
+                            window.location.href = "Login.php";
+                        }
+                    });
+            });
+        });
+    });
     </script>
+    <script src="../JS CODES/sessionHandler.js"></script>
 </body>
 </html>

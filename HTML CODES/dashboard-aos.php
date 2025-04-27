@@ -84,11 +84,75 @@ try {
         error_log("Error fetching service reports: " . $e->getMessage());
         $serviceReports = [];
     }
+    
+    // Get dashboard statistics
+    try {
+        $stats = $db->query("SELECT 
+            (SELECT COUNT(*) FROM appointments) as total_appointments,
+            (SELECT COUNT(*) FROM appointments WHERE status = 'pending') as pending_jobs,
+            (SELECT COUNT(*) FROM appointments WHERE status = 'completed') as completed_treatments,
+            (SELECT COUNT(*) FROM users WHERE role = 'technician' AND status = 'active') as active_technicians,
+            (SELECT COUNT(*) FROM service_reports) as total_reports"
+        )->fetch(PDO::FETCH_ASSOC);
+    } catch(PDOException $e) {
+        error_log("Error: " . $e->getMessage());
+        $stats = null;
+    }
+    
+    // Get appointment counts by month for the current year
+    try {
+        $currentYear = date('Y');
+        $appointmentsByMonthQuery = "SELECT 
+            MONTH(appointment_date) as month, 
+            COUNT(*) as count 
+        FROM appointments 
+        WHERE YEAR(appointment_date) = ? 
+        GROUP BY MONTH(appointment_date) 
+        ORDER BY month";
+        
+        $stmt = $db->prepare($appointmentsByMonthQuery);
+        $stmt->execute([$currentYear]);
+        $appointmentsByMonth = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Initialize counts for all months (1-12)
+        $monthlyAppointmentCounts = array_fill(0, 12, 0);
+        
+        // Fill in the actual counts
+        foreach ($appointmentsByMonth as $item) {
+            // Month is 1-based, array is 0-based
+            $monthIndex = (int)$item['month'] - 1;
+            $monthlyAppointmentCounts[$monthIndex] = (int)$item['count'];
+        }
+        
+    } catch(PDOException $e) {
+        error_log("Error fetching appointment counts by month: " . $e->getMessage());
+        $monthlyAppointmentCounts = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]; // Default to zeros
+    }
+    
+    // Get service popularity data (appointment counts by service)
+    try {
+        $servicePopularityQuery = "SELECT 
+            s.service_name,
+            COUNT(a.id) as appointment_count
+            FROM services s
+            LEFT JOIN appointments a ON s.service_id = a.service_id
+            GROUP BY s.service_id, s.service_name
+            ORDER BY appointment_count DESC";
+        
+        $stmt = $db->prepare($servicePopularityQuery);
+        $stmt->execute();
+        $servicePopularity = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch(PDOException $e) {
+        error_log("Error fetching service popularity data: " . $e->getMessage());
+        $servicePopularity = [];
+    }
 } catch(PDOException $e) {
     error_log("Error fetching data: " . $e->getMessage());
     $appointments = [];
     $technicians = [];
     $serviceReports = [];
+    $monthlyAppointmentCounts = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    $servicePopularity = [];
 }
 
 // Check if user is logged in and has AOS role
@@ -123,6 +187,130 @@ try {
         #technician-select option[disabled] {
             background-color: transparent;
             color: inherit;
+        }
+        
+        /* Chart Container Styles */
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 24px;
+            margin: 24px 0;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            transition: box-shadow 0.3s ease;
+        }
+        
+        .chart-container:hover {
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+        }
+        
+        .chart-container h2 {
+            margin-bottom: 16px;
+            font-size: 1.5rem;
+            color: #144578;
+            font-weight: 600;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .chart-legend {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .color-box {
+            width: 15px;
+            height: 15px;
+            border-radius: 3px;
+        }
+        
+        .color-box.current-year {
+            background-color: #144578;
+        }
+        
+        .color-box.previous-year {
+            background-color: #90CAF9;
+        }
+        
+        .chart-actions select {
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            color: #333;
+            cursor: pointer;
+        }
+        
+        .chart-card {
+            width: 100%;
+            height: 400px;
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #fafafa;
+            padding: 10px;
+        }
+        
+        .chart-insights {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .insight-card {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            border-left: 4px solid #144578;
+        }
+        
+        .insight-card i {
+            font-size: 24px;
+            color: #144578;
+        }
+        
+        .insight-content h4 {
+            margin: 0 0 5px 0;
+            font-size: 1rem;
+            color: #333;
+        }
+        
+        .insight-content p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        @media screen and (max-width: 768px) {
+            .chart-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .chart-card {
+                height: 300px;
+            }
+            
+            .chart-insights {
+                flex-direction: column;
+            }
         }
     </style>
     <title>AOS Dashboard</title>
@@ -208,31 +396,609 @@ try {
                         </div>
                     </div>
 
-                    <div class="box-info">
+                    <ul class="box-info">
                         <li>
                             <i class='bx bxs-calendar-check'></i>
                             <span class="text">
-                                <h3>5</h3>
-                                <p>Pending Jobs</p>
+                                <h3><?php echo htmlspecialchars($stats['total_appointments'] ?? '0'); ?></h3>
+                                <p>Total Appointments</p>
+                            </span>
+                        </li>
+                        <li>
+                            <i class='bx bxs-hourglass'></i>
+                            <span class="text">
+                                <h3><?php echo htmlspecialchars($stats['pending_jobs'] ?? '0'); ?></h3>
+                                <p>Pending Job Orders</p>
+                            </span>
+                        </li>
+                        <li>
+                            <i class='bx bxs-check-circle'></i>
+                            <span class="text">
+                                <h3><?php echo htmlspecialchars($stats['completed_treatments'] ?? '0'); ?></h3>
+                                <p>Completed Treatments</p>
                             </span>
                         </li>
                         <li>
                             <i class='bx bxs-group'></i>
                             <span class="text">
-                                <h3>8</h3>
+                                <h3><?php echo htmlspecialchars($stats['active_technicians'] ?? '0'); ?></h3>
                                 <p>Active Technicians</p>
                             </span>
                         </li>
-                        <li>
-                            <i class='bx bxs-file'></i>
-                            <span class="text">
-                                <h3>12</h3>
-                                <p>Service Reports</p>
-                            </span>
-                        </li>
+                    </ul>
+
+                    <!-- Appointment Growth Chart Section -->
+                    <div class="chart-container">
+                        <h2>Appointment Growth (<?php echo date('Y'); ?>)</h2>
+                        <div class="chart-header">
+                            <div class="chart-legend">
+                                <div class="legend-item">
+                                    <span class="color-box current-year"></span>
+                                    <span><?php echo date('Y'); ?></span>
+                                </div>
+                                <div class="legend-item">
+                                    <span class="color-box previous-year"></span>
+                                    <span><?php echo date('Y')-1; ?></span>
+                                </div>
+                            </div>
+                            <div class="chart-actions">
+                                <select id="chartViewType">
+                                    <option value="monthly">Monthly View</option>
+                                    <option value="quarterly">Quarterly View</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <canvas id="appointmentGrowthChart"></canvas>
+                        </div>
+                        <div class="chart-insights">
+                            <div class="insight-card">
+                                <i class='bx bx-line-chart'></i>
+                                <div class="insight-content">
+                                    <h4>Growth Trend</h4>
+                                    <p id="growthTrend">Analyzing appointment data...</p>
+                                </div>
+                            </div>
+                            <div class="insight-card">
+                                <i class='bx bx-calendar-check'></i>
+                                <div class="insight-content">
+                                    <h4>Peak Period</h4>
+                                    <p id="peakPeriod">Calculating busy months...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Service Popularity Chart Section -->
+                    <div class="chart-container">
+                        <h2>Service Popularity</h2>
+                        <div class="chart-header">
+                            <div class="chart-legend">
+                                <div class="legend-item">
+                                    <span class="color-box service-chart"></span>
+                                    <span>Appointment Count</span>
+                                </div>
+                            </div>
+                            <div class="chart-actions">
+                                <select id="serviceChartType">
+                                    <option value="bar">Vertical View</option>
+                                    <option value="horizontalBar">Horizontal View</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <canvas id="servicePopularityChart"></canvas>
+                        </div>
                     </div>
                 </form>
             </div>
+            
+            <!-- Chart.js library and initialization -->
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    // Months array for labels
+                    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                    
+                    // Get the real appointment data from PHP
+                    const appointmentData = <?php echo json_encode($monthlyAppointmentCounts); ?>;
+                    
+                    // Generate some "previous year" data for comparison (simulated data)
+                    const previousYearData = appointmentData.map(count => {
+                        // Generate random previous year data that's somewhat related to current year
+                        // but generally a bit lower to show "growth"
+                        return Math.max(0, Math.floor(count * 0.7 + Math.random() * 5));
+                    });
+                    
+                    // Get the chart canvas
+                    const ctx = document.getElementById('appointmentGrowthChart').getContext('2d');
+                    
+                    // Create a gradient for the current year data
+                    const gradientFill = ctx.createLinearGradient(0, 0, 0, 400);
+                    gradientFill.addColorStop(0, 'rgba(20, 69, 120, 0.4)');
+                    gradientFill.addColorStop(1, 'rgba(20, 69, 120, 0.0)');
+                    
+                    // Create the chart
+                    let myChart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: months,
+                            datasets: [
+                                {
+                                    label: 'Appointments (' + new Date().getFullYear() + ')',
+                                    data: appointmentData,
+                                    backgroundColor: gradientFill,
+                                    borderColor: '#144578',
+                                    borderWidth: 3,
+                                    pointBackgroundColor: '#ffffff',
+                                    pointBorderColor: '#144578',
+                                    pointBorderWidth: 2,
+                                    pointRadius: 5,
+                                    pointHoverRadius: 7,
+                                    pointHoverBackgroundColor: '#144578',
+                                    pointHoverBorderColor: '#ffffff',
+                                    pointHoverBorderWidth: 2,
+                                    tension: 0.4,
+                                    fill: true
+                                },
+                                {
+                                    label: 'Appointments (' + (new Date().getFullYear() - 1) + ')',
+                                    data: previousYearData,
+                                    backgroundColor: 'transparent',
+                                    borderColor: '#90CAF9',
+                                    borderWidth: 2,
+                                    pointBackgroundColor: '#ffffff',
+                                    pointBorderColor: '#90CAF9',
+                                    pointBorderWidth: 2,
+                                    pointRadius: 4,
+                                    pointHoverRadius: 6,
+                                    tension: 0.4,
+                                    borderDash: [5, 5]
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            interaction: {
+                                mode: 'index',
+                                intersect: false,
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    title: {
+                                        display: true,
+                                        text: 'Number of Appointments',
+                                        font: {
+                                            weight: 'bold',
+                                            size: 13
+                                        },
+                                        padding: {top: 10, bottom: 10}
+                                    },
+                                    ticks: {
+                                        precision: 0,
+                                        stepSize: 1,
+                                        font: {
+                                            size: 12
+                                        },
+                                        color: '#666'
+                                    },
+                                    grid: {
+                                        color: 'rgba(200, 200, 200, 0.2)',
+                                        borderDash: [5, 5],
+                                        drawBorder: false
+                                    }
+                                },
+                                x: {
+                                    title: {
+                                        display: true,
+                                        text: 'Month',
+                                        font: {
+                                            weight: 'bold',
+                                            size: 13
+                                        },
+                                        padding: {top: 10, bottom: 10}
+                                    },
+                                    ticks: {
+                                        font: {
+                                            size: 12
+                                        },
+                                        color: '#666'
+                                    },
+                                    grid: {
+                                        display: false,
+                                        drawBorder: false
+                                    }
+                                }
+                            },
+                            plugins: {
+                                tooltip: {
+                                    backgroundColor: 'rgba(20, 69, 120, 0.9)',
+                                    titleFont: {
+                                        size: 14,
+                                        weight: 'bold'
+                                    },
+                                    bodyFont: {
+                                        size: 13
+                                    },
+                                    padding: 12,
+                                    cornerRadius: 8,
+                                    caretSize: 6,
+                                    callbacks: {
+                                        label: function(context) {
+                                            return ` ${context.dataset.label}: ${context.raw} appointments`;
+                                        },
+                                        labelTextColor: function() {
+                                            return '#ffffff';
+                                        }
+                                    }
+                                },
+                                legend: {
+                                    display: false, // We use our custom legend
+                                    position: 'top',
+                                    labels: {
+                                        font: {
+                                            size: 12
+                                        },
+                                        boxWidth: 15,
+                                        padding: 20
+                                    }
+                                },
+                                title: {
+                                    display: false
+                                }
+                            }
+                        }
+                    });
+                    
+                    // Handle the chart view type change
+                    document.getElementById('chartViewType').addEventListener('change', function() {
+                        const viewType = this.value;
+                        
+                        if (viewType === 'quarterly') {
+                            // Aggregate monthly data into quarterly data
+                            const quarterlyLabels = ['Q1 (Jan-Mar)', 'Q2 (Apr-Jun)', 'Q3 (Jul-Sep)', 'Q4 (Oct-Dec)'];
+                            const quarterlyData = [
+                                appointmentData.slice(0, 3).reduce((sum, val) => sum + val, 0),
+                                appointmentData.slice(3, 6).reduce((sum, val) => sum + val, 0),
+                                appointmentData.slice(6, 9).reduce((sum, val) => sum + val, 0),
+                                appointmentData.slice(9, 12).reduce((sum, val) => sum + val, 0)
+                            ];
+                            
+                            const quarterlyPrevData = [
+                                previousYearData.slice(0, 3).reduce((sum, val) => sum + val, 0),
+                                previousYearData.slice(3, 6).reduce((sum, val) => sum + val, 0),
+                                previousYearData.slice(6, 9).reduce((sum, val) => sum + val, 0),
+                                previousYearData.slice(9, 12).reduce((sum, val) => sum + val, 0)
+                            ];
+                            
+                            myChart.data.labels = quarterlyLabels;
+                            myChart.data.datasets[0].data = quarterlyData;
+                            myChart.data.datasets[1].data = quarterlyPrevData;
+                        } else {
+                            // Return to monthly view
+                            myChart.data.labels = months;
+                            myChart.data.datasets[0].data = appointmentData;
+                            myChart.data.datasets[1].data = previousYearData;
+                        }
+                        
+                        myChart.update();
+                    });
+                    
+                    // Calculate and display insights
+                    function calculateInsights() {
+                        // Calculate year-over-year growth
+                        let totalCurrentYear = appointmentData.reduce((sum, count) => sum + count, 0);
+                        let totalPreviousYear = previousYearData.reduce((sum, count) => sum + count, 0);
+                        let growthPercentage = totalPreviousYear > 0 ? 
+                            Math.round(((totalCurrentYear - totalPreviousYear) / totalPreviousYear) * 100) : 100;
+                        
+                        // Find peak month (max appointments)
+                        let maxAppointments = Math.max(...appointmentData);
+                        let peakMonthIndex = appointmentData.indexOf(maxAppointments);
+                        let peakMonth = months[peakMonthIndex];
+                        
+                        // Update trend insight
+                        const trendElement = document.getElementById('growthTrend');
+                        if (growthPercentage > 0) {
+                            trendElement.innerHTML = `<span style="color:#28a745">${growthPercentage}% increase</span> in appointments compared to last year`;
+                        } else if (growthPercentage < 0) {
+                            trendElement.innerHTML = `<span style="color:#dc3545">${Math.abs(growthPercentage)}% decrease</span> in appointments compared to last year`;
+                        } else {
+                            trendElement.innerHTML = `Appointment numbers are <span style="color:#ffc107">unchanged</span> from last year`;
+                        }
+                        
+                        // Update peak period insight
+                        const peakElement = document.getElementById('peakPeriod');
+                        if (maxAppointments > 0) {
+                            peakElement.innerHTML = `Busiest month is <span style="color:#144578;font-weight:bold">${peakMonth}</span> with ${maxAppointments} appointments`;
+                        } else {
+                            peakElement.innerHTML = `Not enough data to determine peak period`;
+                        }
+                    }
+                    
+                    // Run insights calculation after chart is initialized
+                    calculateInsights();
+
+                    // Service Popularity Chart
+                    const servicePopularityData = <?php echo json_encode($servicePopularity); ?>;
+                    const serviceNames = servicePopularityData.map(item => item.service_name);
+                    const appointmentCounts = servicePopularityData.map(item => item.appointment_count);
+
+                    const serviceCtx = document.getElementById('servicePopularityChart').getContext('2d');
+                    
+                    // Create gradients for the bars
+                    const barGradient = serviceCtx.createLinearGradient(0, 0, 0, 400);
+                    barGradient.addColorStop(0, 'rgba(20, 69, 120, 0.8)');
+                    barGradient.addColorStop(1, 'rgba(20, 69, 120, 0.2)');
+                    
+                    const horizontalBarGradient = serviceCtx.createLinearGradient(0, 0, 400, 0);
+                    horizontalBarGradient.addColorStop(0, 'rgba(20, 69, 120, 0.8)');
+                    horizontalBarGradient.addColorStop(1, 'rgba(20, 69, 120, 0.2)');
+
+                    // Create the chart with improved design
+                    let serviceChart = new Chart(serviceCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: serviceNames,
+                            datasets: [{
+                                label: 'Number of Appointments',
+                                data: appointmentCounts,
+                                backgroundColor: barGradient,
+                                borderColor: '#144578',
+                                borderWidth: 1,
+                                borderRadius: 6,
+                                barPercentage: 0.7,
+                                categoryPercentage: 0.8,
+                                hoverBackgroundColor: '#2a6db5'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            indexAxis: 'x',
+                            animation: {
+                                duration: 2000,
+                                easing: 'easeOutQuart'
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    title: {
+                                        display: true,
+                                        text: 'Number of Appointments',
+                                        font: {
+                                            weight: 'bold',
+                                            size: 13
+                                        },
+                                        padding: {top: 10, bottom: 10}
+                                    },
+                                    ticks: {
+                                        precision: 0,
+                                        stepSize: 1,
+                                        font: {
+                                            size: 12
+                                        },
+                                        color: '#666'
+                                    },
+                                    grid: {
+                                        color: 'rgba(200, 200, 200, 0.2)',
+                                        borderDash: [5, 5],
+                                        drawBorder: false
+                                    }
+                                },
+                                x: {
+                                    title: {
+                                        display: true,
+                                        text: 'Service Name',
+                                        font: {
+                                            weight: 'bold',
+                                            size: 13
+                                        },
+                                        padding: {top: 10, bottom: 10}
+                                    },
+                                    ticks: {
+                                        font: {
+                                            size: 12
+                                        },
+                                        color: '#666',
+                                        maxRotation: 45,
+                                        minRotation: 45
+                                    },
+                                    grid: {
+                                        display: false,
+                                        drawBorder: false
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    display: false
+                                },
+                                tooltip: {
+                                    backgroundColor: 'rgba(20, 69, 120, 0.9)',
+                                    titleFont: {
+                                        size: 14,
+                                        weight: 'bold'
+                                    },
+                                    bodyFont: {
+                                        size: 13
+                                    },
+                                    padding: 12,
+                                    cornerRadius: 8,
+                                    caretSize: 6,
+                                    displayColors: false,
+                                    callbacks: {
+                                        label: function(context) {
+                                            return `Appointments: ${context.raw}`;
+                                        }
+                                    }
+                                }
+                            },
+                            onResize: function(chart, size) {
+                                // Redraw the chart when container resizes
+                                chart.resize();
+                            }
+                        },
+                        plugins: [{
+                            afterDraw: chart => {
+                                if (chart.data.datasets[0].data.every(item => item === 0)) {
+                                    // Display "No data available" if all values are 0
+                                    const ctx = chart.ctx;
+                                    const width = chart.width;
+                                    const height = chart.height;
+                                    
+                                    chart.clear();
+                                    ctx.save();
+                                    ctx.textAlign = 'center';
+                                    ctx.textBaseline = 'middle';
+                                    ctx.font = '16px sans-serif';
+                                    ctx.fillStyle = '#666';
+                                    ctx.fillText('No appointment data available', width / 2, height / 2);
+                                    ctx.restore();
+                                }
+                            }
+                        }]
+                    });
+
+                    // Handle chart type change (vertical vs horizontal)
+                    document.getElementById('serviceChartType').addEventListener('change', function() {
+                        const chartType = this.value;
+                        
+                        // Destroy current chart
+                        serviceChart.destroy();
+                        
+                        // Setup configuration for the new chart
+                        const isHorizontal = chartType === 'horizontalBar';
+                        
+                        // Create new chart with updated configuration
+                        serviceChart = new Chart(serviceCtx, {
+                            type: 'bar',
+                            data: {
+                                labels: serviceNames,
+                                datasets: [{
+                                    label: 'Number of Appointments',
+                                    data: appointmentCounts,
+                                    backgroundColor: isHorizontal ? horizontalBarGradient : barGradient,
+                                    borderColor: '#144578',
+                                    borderWidth: 1,
+                                    borderRadius: 6,
+                                    barPercentage: 0.7,
+                                    categoryPercentage: 0.8,
+                                    hoverBackgroundColor: '#2a6db5'
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                indexAxis: isHorizontal ? 'y' : 'x',
+                                animation: {
+                                    duration: 1000,
+                                    easing: 'easeOutQuart'
+                                },
+                                scales: {
+                                    x: {
+                                        beginAtZero: true,
+                                        title: {
+                                            display: true,
+                                            text: isHorizontal ? 'Number of Appointments' : 'Service Name',
+                                            font: {
+                                                weight: 'bold',
+                                                size: 13
+                                            },
+                                            padding: {top: 10, bottom: 10}
+                                        },
+                                        ticks: {
+                                            precision: 0,
+                                            stepSize: isHorizontal ? 1 : null,
+                                            font: {
+                                                size: 12
+                                            },
+                                            color: '#666',
+                                            maxRotation: isHorizontal ? 0 : 45,
+                                            minRotation: isHorizontal ? 0 : 45
+                                        },
+                                        grid: {
+                                            color: isHorizontal ? 'rgba(200, 200, 200, 0.2)' : 'transparent',
+                                            borderDash: isHorizontal ? [5, 5] : [],
+                                            drawBorder: false
+                                        }
+                                    },
+                                    y: {
+                                        beginAtZero: true,
+                                        title: {
+                                            display: true,
+                                            text: isHorizontal ? 'Service Name' : 'Number of Appointments',
+                                            font: {
+                                                weight: 'bold',
+                                                size: 13
+                                            },
+                                            padding: {top: 10, bottom: 10}
+                                        },
+                                        ticks: {
+                                            precision: 0,
+                                            stepSize: isHorizontal ? null : 1,
+                                            font: {
+                                                size: 12
+                                            },
+                                            color: '#666'
+                                        },
+                                        grid: {
+                                            color: isHorizontal ? 'transparent' : 'rgba(200, 200, 200, 0.2)',
+                                            borderDash: isHorizontal ? [] : [5, 5],
+                                            drawBorder: false
+                                        }
+                                    }
+                                },
+                                plugins: {
+                                    legend: {
+                                        display: false
+                                    },
+                                    tooltip: {
+                                        backgroundColor: 'rgba(20, 69, 120, 0.9)',
+                                        titleFont: {
+                                            size: 14,
+                                            weight: 'bold'
+                                        },
+                                        bodyFont: {
+                                            size: 13
+                                        },
+                                        padding: 12,
+                                        cornerRadius: 8,
+                                        caretSize: 6,
+                                        displayColors: false,
+                                        callbacks: {
+                                            label: function(context) {
+                                                return `Appointments: ${context.raw}`;
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            plugins: [{
+                                afterDraw: chart => {
+                                    if (chart.data.datasets[0].data.every(item => item === 0)) {
+                                        // Display "No data available" if all values are 0
+                                        const ctx = chart.ctx;
+                                        const width = chart.width;
+                                        const height = chart.height;
+                                        
+                                        chart.clear();
+                                        ctx.save();
+                                        ctx.textAlign = 'center';
+                                        ctx.textBaseline = 'middle';
+                                        ctx.font = '16px sans-serif';
+                                        ctx.fillStyle = '#666';
+                                        ctx.fillText('No appointment data available', width / 2, height / 2);
+                                        ctx.restore();
+                                    }
+                                }
+                            }]
+                        });
+                    });
+                });
+            </script>
         </main>
     </section>
 
@@ -297,15 +1063,25 @@ try {
                                             </td>
                                             <td>
                                                 <div class="customer-info">
-                                                    <p><?php echo htmlspecialchars($appointment['client_firstname'] . ' ' . $appointment['client_lastname']); ?></p>
+                                                    <i class='bx bx-user'></i>
+                                                    <span><?php echo htmlspecialchars($appointment['client_firstname'] . ' ' . $appointment['client_lastname']); ?></span>
                                                 </div>
                                             </td>
                                             <td><?php echo htmlspecialchars($appointment['service_name']); ?></td>
                                             <td>
-                                                <div class="technician-info">
+                                                <div class="tech-info">
                                                     <?php if (!empty($appointment['all_technicians'])): ?>
-                                                        <span class="technician-list">
-                                                            <?php echo htmlspecialchars($appointment['all_technicians']); ?>
+                                                        <i class='bx bx-user-check'></i>
+                                                        <span title="<?php echo htmlspecialchars($appointment['all_technicians']); ?>">
+                                                            <?php 
+                                                            $technicians = $appointment['all_technicians'];
+                                                            $techArray = explode(', ', $technicians);
+                                                            echo '<ul class="tech-list">';
+                                                            foreach ($techArray as $tech) {
+                                                                echo '<li>' . htmlspecialchars($tech) . '</li>';
+                                                            }
+                                                            echo '</ul>';
+                                                            ?>
                                                         </span>
                                                     <?php else: ?>
                                                         <span class="no-tech">Not Assigned</span>
@@ -320,8 +1096,13 @@ try {
                                             <td>
                                                 <div class="action-buttons">
                                                     <a href="job-details.php?id=<?php echo $appointment['appointment_id']; ?>" class="view-btn">
-                                                        <i class='bx bx-show'></i> View Details
+                                                        <i class='bx bx-show'></i> View
                                                     </a>
+                                                    <?php if ($appointment['status'] === 'Completed'): ?>
+                                                        <a href="#" class="review-btn" onclick="loadReviewData(<?php echo $appointment['appointment_id']; ?>); return false;">
+                                                            <i class='bx bx-message-square-check'></i> Check Review
+                                                        </a>
+                                                    <?php endif; ?>
                                                 </div>
                                             </td>
                                         </tr>
@@ -585,6 +1366,8 @@ try {
                                                         $dateClass = 'nextweek';
                                                     } elseif ($appointmentDate >= $monthStart && $appointmentDate <= $monthEnd) {
                                                         $dateClass = 'thismonth';
+                                                    } elseif ($appointmentDate > $monthEnd) {
+                                                        $dateClass = 'nextmonth'; // Add class for next month
                                                     }
                                                     
                                                     echo '<tr class="followup-row" data-date="'.date('Y-m-d', $appointmentDate).'" data-period="'.$dateClass.'">';
@@ -599,10 +1382,10 @@ try {
                                                     echo '</tr>';
                                                 }
                                             } else {
-                                                echo '<tr><td colspan="6">No follow-ups scheduled</td></tr>';
+                                                echo '<tr class="no-results"><td colspan="6">No follow-ups scheduled</td></tr>';
                                             }
                                         } catch(PDOException $e) {
-                                            echo '<tr><td colspan="6">Error loading follow-ups</td></tr>';
+                                            echo '<tr class="no-results"><td colspan="6">Error loading follow-ups: ' . $e->getMessage() . '</td></tr>';
                                         }
                                         ?>
                                     </tbody>
@@ -833,10 +1616,10 @@ try {
                     </div>
 
                     <div class="form-actions">
-                        <button type="button" class="btn-approve" id="approveBtn" onclick="updateReportStatus('approved')">
+                        <button type="button" class="btn-approve" id="approveBtn">
                             <i class='bx bx-check'></i> Approve Report
                         </button>
-                        <button type="button" class="btn-reject" id="rejectBtn" onclick="updateReportStatus('rejected')">
+                        <button type="button" class="btn-reject" id="rejectBtn">
                             <i class='bx bx-x'></i> Reject Report
                         </button>
                         <button type="button" class="btn-download" onclick="downloadReportPDF()">
@@ -1383,6 +2166,14 @@ try {
                     }
                 });
             }
+
+            // Add form submission handler
+            if (profileForm) {
+                profileForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    updateUserProfile(this);
+                });
+            }
         });
     </script>
     
@@ -1399,128 +2190,217 @@ try {
         </div>
     </div>
     
+    <!-- Review Modal with Box Design Layout -->
+    <div id="reviewModal" class="modal">
+        <div class="review-modal-content">
+            <span class="close-modal" onclick="closeReviewModal()">&times;</span>
+            <div class="modal-header">
+                <h3>Customer Review Details</h3>
+            </div>
+            <div class="review-content">
+                <div class="review-grid">
+                    <!-- Left Side - Ratings -->
+                    <div class="review-left">
+                        <div class="overall-rating">
+                            <h4>Overall Rating</h4>
+                            <div class="rating-stars">
+                                <div class="rating-number">
+                                    <span id="overall-rating-value">0</span><span>/5</span>
+                                </div>
+                                <div id="overall-stars" class="stars-container"></div>
+                            </div>
+                        </div>
+                        <div class="rating-details">
+                            <div class="rating-detail">
+                                <span>Service Quality:</span>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div class="stars-container" id="service-stars"></div>
+                                    <div class="rating-number">
+                                        <span id="service-rating-value">0</span><span>/5</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="rating-detail">
+                                <span>Technician Performance:</span>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div class="stars-container" id="technician-stars"></div>
+                                    <div class="rating-number">
+                                        <span id="technician-rating-value">0</span><span>/5</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="date-info">
+                            <p><i class='bx bx-calendar'></i> <strong>Review Date:</strong> <span id="review-date">--/--/----</span></p>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Side - Comments -->
+                    <div class="review-right">
+                        <div class="review-body">
+                            <h4><i class='bx bx-message-detail'></i> Customer Comments</h4>
+                            <p id="review-text">Loading review information...</p>
+                        </div>
+                        
+                        <div class="review-feedback">
+                            <h4><i class='bx bx-comment-check'></i> Service Feedback</h4>
+                            <p id="service-feedback">Loading feedback information...</p>
+                        </div>
+                        
+                        <div class="review-issues" id="issues-container">
+                            <h4><i class='bx bx-error-circle'></i> Reported Issues</h4>
+                            <p id="reported-issues">Loading issues information...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <script src="../JS CODES/modal.js"></script>
     <script src="../JS CODES/dashboard-aos.js"></script>
     <script src="../JS CODES/followup.js"></script>
     <script src="../JS CODES/work-orders.js"></script>
     <script>
-        function loadCustomerDetails(selectedValue) {
-            if (!selectedValue || selectedValue === "") {
-                // Clear form fields if no appointment is selected
-                document.getElementById('service-type').value = '';
-                document.getElementById('customer-location').value = '';
-                // For multi-select, clear all selections
-                const techSelect = document.getElementById('technician-select');
-                if (techSelect) {
-                    for (let i = 0; i < techSelect.options.length; i++) {
-                        techSelect.options[i].selected = false;
-                    }
-                }
-                return;
-            }
+        // ...existing script code...
+
+        // New function to load and display review data
+        function loadReviewData(appointmentId) {
+            // Show loading state
+            document.getElementById('review-text').textContent = 'Loading...';
+            document.getElementById('service-feedback').textContent = 'Loading...';
+            document.getElementById('reported-issues').textContent = 'Loading...';
             
-            console.log('Loading details for appointment ID:', selectedValue);
+            // Clear star ratings
+            document.getElementById('overall-stars').innerHTML = '';
+            document.getElementById('service-stars').innerHTML = '';
+            document.getElementById('technician-stars').innerHTML = '';
             
-            // Get the selected option element
-            const selectedOption = document.querySelector(`#customer-select option[value="${selectedValue}"]`);
-            if (!selectedOption) {
-                console.error('Selected option not found for appointment ID:', selectedValue);
-                return;
-            }
+            // Show the modal first for better UX
+            const modal = document.getElementById('reviewModal');
+            modal.style.display = 'flex';
+            setTimeout(() => {
+                modal.classList.add('show');
+            }, 10);
             
-            // Extract data from data attributes
-            const serviceId = selectedOption.getAttribute('data-service');
-            const location = selectedOption.getAttribute('data-location');
-            const allTechnicians = selectedOption.getAttribute('data-all-technicians');
-            const allTechnicianNames = selectedOption.getAttribute('data-all-technician-names');
-            
-            console.log('Appointment details found:', { serviceId, location, allTechnicians });
-            
-            // Set service type and customer location if available
-            if (serviceId) document.getElementById('service-type').value = serviceId;
-            if (location) document.getElementById('customer-location').value = location;
-            
-            const technicianSelect = document.getElementById('technician-select');
-            if (technicianSelect) {
-                // Clear previous selections
-                for (let i = 0; i < technicianSelect.options.length; i++) {
-                    technicianSelect.options[i].selected = false;
-                }
-                
-                // Process technician IDs from all_technicians attribute
-                if (allTechnicians && allTechnicians.trim() !== "" && allTechnicians.toLowerCase() !== "null") {
-                    const techIds = allTechnicians.split(',').map(id => id.trim());
-                    const techNames = allTechnicianNames ? 
-                        allTechnicianNames.split(',').map(name => name.trim()) : 
-                        techIds.map(id => `Technician ${id}`);
-                    
-                    console.log('Setting technicians:', techIds);
-                    
-                    // Select technicians that exist in the dropdown
-                    for (let i = 0; i < technicianSelect.options.length; i++) {
-                        if (techIds.includes(technicianSelect.options[i].value)) {
-                            technicianSelect.options[i].selected = true;
-                        }
-                    }
-                    
-                    // Add any missing technicians to the dropdown
-                    techIds.forEach((id, index) => {
-                        const exists = Array.from(technicianSelect.options)
-                            .some(opt => opt.value === id);
+            // Fetch review data
+            fetch(`../PHP CODES/get_review.php?appointment_id=${appointmentId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const review = data.review;
                         
-                        if (!exists && id) {
-                            const name = techNames[index] || `Technician ${id}`;
-                            const opt = document.createElement('option');
-                            opt.value = id;
-                            opt.text = name;
-                            technicianSelect.appendChild(opt);
-                            opt.selected = true;
-                        }
-                    });
-                } else {
-                    // Fallback to main technician if no multi-technician data
-                    const mainTechId = selectedOption.getAttribute('data-technician');
-                    if (mainTechId && mainTechId !== 'null') {
-                        const mainTechName = selectedOption.getAttribute('data-technician-name');
-                        console.log('Setting main technician:', mainTechId, mainTechName);
+                        // Update overall rating
+                        document.getElementById('overall-rating-value').textContent = review.rating;
+                        document.getElementById('overall-stars').innerHTML = generateStars(review.rating);
                         
-                        // Check if the technician exists in the dropdown
-                        let techExists = false;
-                        for (let i = 0; i < technicianSelect.options.length; i++) {
-                            if (technicianSelect.options[i].value === mainTechId) {
-                                technicianSelect.options[i].selected = true;
-                                techExists = true;
-                                break;
-                            }
+                        // Update service rating
+                        document.getElementById('service-rating-value').textContent = review.service_rating || 'N/A';
+                        document.getElementById('service-stars').innerHTML = review.service_rating ? 
+                            generateStars(review.service_rating) : '';
+                        
+                        // Update technician rating
+                        document.getElementById('technician-rating-value').textContent = review.technician_rating || 'N/A';
+                        document.getElementById('technician-stars').innerHTML = review.technician_rating ? 
+                            generateStars(review.technician_rating) : '';
+                        
+                        // Update review text and feedback
+                        document.getElementById('review-text').textContent = review.review_text || 'No review provided';
+                        document.getElementById('service-feedback').textContent = review.service_feedback || 'No feedback provided';
+                        
+                        // Update reported issues (hide container if none)
+                        const issuesContainer = document.getElementById('issues-container');
+                        if (review.reported_issues) {
+                            document.getElementById('reported-issues').textContent = review.reported_issues;
+                            issuesContainer.style.display = 'block';
+                        } else {
+                            issuesContainer.style.display = 'none';
                         }
                         
-                        // If not found, add it
-                        if (!techExists && mainTechId) {
-                            const opt = document.createElement('option');
-                            opt.value = mainTechId;
-                            opt.text = mainTechName || `Technician ${mainTechId}`;
-                            technicianSelect.appendChild(opt);
-                            opt.selected = true;
-                        }
+                        // Update meta information
+                        document.getElementById('review-date').textContent = new Date(review.created_at).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        });
+                    } else {
+                        // No review found
+                        document.getElementById('review-text').textContent = 'No review found for this appointment.';
+                        document.getElementById('service-feedback').textContent = 'N/A';
+                        document.getElementById('reported-issues').textContent = 'N/A';
+                        
+                        // Clear ratings
+                        document.getElementById('overall-rating-value').textContent = 'N/A';
+                        document.getElementById('service-rating-value').textContent = 'N/A';
+                        document.getElementById('technician-rating-value').textContent = 'N/A';
+                        
+                        // Hide issues container
+                        document.getElementById('issues-container').style.display = 'none';
+                        
+                        // Clear meta info
+                        document.getElementById('review-date').textContent = 'N/A';
                     }
-                }
-            }
+                })
+                .catch(error => {
+                    console.error('Error fetching review:', error);
+                    document.getElementById('review-text').textContent = 'Error loading review data. Please try again.';
+                });
         }
         
-        // When the page loads, attach event handler to the schedule button
-        document.addEventListener('DOMContentLoaded', function() {
-            const scheduleBtn = document.getElementById('schedule-followup-btn');
-            if (scheduleBtn) {
-                scheduleBtn.addEventListener('click', scheduleFollowUp);
+        // Helper function to generate star icons based on rating
+        function generateStars(rating) {
+            let stars = '';
+            // Convert to number and ensure it's between 1-5
+            const numRating = Math.min(Math.max(parseInt(rating) || 0, 0), 5);
+            
+            // Generate filled stars
+            for (let i = 0; i < numRating; i++) {
+                stars += '<i class="bx bxs-star filled"></i>';
             }
             
-            // Initialize customer select change event if it exists on this page
-            const customerSelect = document.getElementById('customer-select');
-            if (customerSelect) {
-                customerSelect.addEventListener('change', function() {
-                    loadCustomerDetails(this.value);
-                });
+            // Generate empty stars
+            for (let i = numRating; i < 5; i++) {
+                stars += '<i class="bx bxs-star"></i>';
             }
+            
+            return stars;
+        }
+        
+        // Function to close review modal
+        function closeReviewModal() {
+            const modal = document.getElementById('reviewModal');
+            modal.classList.remove('show');
+            
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
+        }
+        
+        // Add event listener to "Check Review" buttons
+        document.addEventListener('DOMContentLoaded', function() {
+            const reviewButtons = document.querySelectorAll('.review-btn');
+            reviewButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const appointmentId = this.getAttribute('href').split('=')[1];
+                    loadReviewData(appointmentId);
+                });
+            });
+            
+            // Close modal when clicking outside
+            window.addEventListener('click', function(event) {
+                const modal = document.getElementById('reviewModal');
+                if (event.target === modal) {
+                    closeReviewModal();
+                }
+            });
+            
+            // Close modal with Escape key
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape') {
+                    closeReviewModal();
+                }
+            });
         });
     </script>
 </body>

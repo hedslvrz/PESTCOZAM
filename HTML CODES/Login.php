@@ -39,6 +39,9 @@
     <div class="input-group">
         <label for="password">Password</label>
         <input type="password" id="password" name="password" placeholder="Enter your password" />
+        <p class="forgot-text">
+            <a href="../HTML CODES/ForgotPassword.php">Forgot Password?</a>
+        </p>
     </div>
 
     <div class="bottom-row">

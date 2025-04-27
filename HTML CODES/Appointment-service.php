@@ -247,10 +247,12 @@ $services = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <p>Who is this appointment for?</p>
                 <div class="radio-group">
                     <label>
-                        <input type="radio" name="appointment_for" value="1" id="for-myself">For Myself
+                        <input type="radio" name="appointment_for" value="1" id="for-myself">
+                        <span>For Myself</span>
                     </label>
                     <label>
-                        <input type="radio" name="appointment_for" value="0" id="for-someone-else">For Someone Else
+                        <input type="radio" name="appointment_for" value="0" id="for-someone-else">
+                        <span>For Someone Else</span>
                     </label>
                 </div>
             </div>
