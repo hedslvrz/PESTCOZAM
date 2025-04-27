@@ -62,6 +62,10 @@ foreach ($services as $service) {
     <title>Home Page</title>
     <link rel="stylesheet" href="./CSS CODES/Home_page.css">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <!-- SweetAlert2 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <!-- SweetAlert2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
   
@@ -547,8 +551,14 @@ foreach ($services as $service) {
                                 });
                         } else {
                             sessionStorage.setItem("redirectTo", "./HTML CODES/Appointment-service.php");
-                            alert("You must log in first to make an appointment.");
-                            window.location.href = "./HTML CODES/Login.php";
+                            Swal.fire({
+                                icon: 'info',
+                                title: 'Login Required',
+                                text: 'You must log in first to make an appointment.',
+                                confirmButtonText: 'OK'
+                            }).then(() => {
+                                window.location.href = "./HTML CODES/Login.php";
+                            });
                         }
                     });
             });
