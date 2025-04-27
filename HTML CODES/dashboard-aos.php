@@ -297,15 +297,25 @@ try {
                                             </td>
                                             <td>
                                                 <div class="customer-info">
-                                                    <p><?php echo htmlspecialchars($appointment['client_firstname'] . ' ' . $appointment['client_lastname']); ?></p>
+                                                    <i class='bx bx-user'></i>
+                                                    <span><?php echo htmlspecialchars($appointment['client_firstname'] . ' ' . $appointment['client_lastname']); ?></span>
                                                 </div>
                                             </td>
                                             <td><?php echo htmlspecialchars($appointment['service_name']); ?></td>
                                             <td>
-                                                <div class="technician-info">
+                                                <div class="tech-info">
                                                     <?php if (!empty($appointment['all_technicians'])): ?>
-                                                        <span class="technician-list">
-                                                            <?php echo htmlspecialchars($appointment['all_technicians']); ?>
+                                                        <i class='bx bx-user-check'></i>
+                                                        <span title="<?php echo htmlspecialchars($appointment['all_technicians']); ?>">
+                                                            <?php 
+                                                            $technicians = $appointment['all_technicians'];
+                                                            $techArray = explode(', ', $technicians);
+                                                            echo '<ul class="tech-list">';
+                                                            foreach ($techArray as $tech) {
+                                                                echo '<li>' . htmlspecialchars($tech) . '</li>';
+                                                            }
+                                                            echo '</ul>';
+                                                            ?>
                                                         </span>
                                                     <?php else: ?>
                                                         <span class="no-tech">Not Assigned</span>
@@ -320,11 +330,13 @@ try {
                                             <td>
                                                 <div class="action-buttons">
                                                     <a href="job-details.php?id=<?php echo $appointment['appointment_id']; ?>" class="view-btn">
-                                                        <i class='bx bx-show'></i> View Details
+                                                        <i class='bx bx-show'></i> View
                                                     </a>
-                                                    <a href="check-review.php?id=<?php echo $appointment['appointment_id']; ?>" class="review-btn">
-                                                        <i class='bx bx-star'></i> Check Review
-                                                    </a>
+                                                    <?php if ($appointment['status'] === 'Completed'): ?>
+                                                        <a href="#" class="review-btn" onclick="loadReviewData(<?php echo $appointment['appointment_id']; ?>); return false;">
+                                                            <i class='bx bx-message-square-check'></i> Check Review
+                                                        </a>
+                                                    <?php endif; ?>
                                                 </div>
                                             </td>
                                         </tr>

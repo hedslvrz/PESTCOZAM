@@ -1325,7 +1325,7 @@ try {
                         <tbody>
                             <?php if (!empty($appointments)): ?>
                                 <?php foreach ($appointments as $appointment): ?>
-                                    <tr>
+                                    <tr data-status="<?php echo strtolower(trim($appointment['status'])); ?>" data-date="<?php echo date('Y-m-d', strtotime($appointment['appointment_date'])); ?>">
                                         <td>#<?php echo htmlspecialchars($appointment['appointment_id']); ?></td>
                                         <td>
                                             <div class="schedule-info">
@@ -1376,15 +1376,17 @@ try {
                                         </td>
                                         <td>
                                             <div class="action-buttons">
-                                                <?php if ($appointment['status'] === 'Pending' || $appointment['status'] === 'Confirmed'): ?>
-                                                    <a href="job-details.php?id=<?php echo $appointment['appointment_id']; ?>" class="view-btn">
-                                                        <i class='bx bx-show'></i> View Details
+                                                <a href="job-details.php?id=<?php echo $appointment['appointment_id']; ?>" class="view-btn">
+                                                    <i class='bx bx-show'></i> View Details
+                                                </a>
+                                                <?php if ($appointment['status'] === 'Completed'): ?>
+                                                    <a href="#" class="review-btn" onclick="loadReviewData(<?php echo $appointment['appointment_id']; ?>); return false;">
+                                                        <i class='bx bx-message-square-check'></i> Check Review
                                                     </a>
+                                                <?php elseif ($appointment['status'] === 'Pending' || $appointment['status'] === 'Confirmed'): ?>
                                                     <button type="button" class="feedback-btn" onclick="showFeedbackModal(<?php echo $appointment['appointment_id']; ?>)">
                                                         <i class='bx bx-message-square-detail'></i> Feedback
                                                     </button>
-                                                <?php else: ?>
-                                                    <span class="status-message">Job completed</span>
                                                 <?php endif; ?>
                                             </div>
                                         </td>
@@ -2678,6 +2680,12 @@ function escapeRegExp(string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+// Get all text content from an element including nested elements
+function getElementText(element) {
+    if (!element || !element.textContent) return '';
+    return element.textContent.trim().toLowerCase();
+}
+
 // Search functions for each section
 function searchWorkOrders(searchTerm) {
     const workOrdersTable = document.querySelector('#work-orders .work-orders-table tbody');
@@ -2685,18 +2693,20 @@ function searchWorkOrders(searchTerm) {
     
     let count = 0;
     const rows = workOrdersTable.querySelectorAll('tr');
+    const searchRegex = new RegExp(escapeRegExp(searchTerm), 'i');
     
     rows.forEach(row => {
         let rowMatch = false;
-        const textCells = row.querySelectorAll('td:not(:last-child)');
+        const cells = row.querySelectorAll('td:not(:last-child)');
         
-        textCells.forEach(cell => {
-            if (highlightText(cell, searchTerm)) {
+        cells.forEach(cell => {
+            const cellText = getElementText(cell);
+            if (searchRegex.test(cellText)) {
                 rowMatch = true;
+                highlightTextInElement(cell, searchTerm);
             }
         });
         
-        // Show/hide rows based on match
         if (rowMatch) {
             row.style.display = '';
             count++;
@@ -2705,13 +2715,50 @@ function searchWorkOrders(searchTerm) {
         }
     });
     
-    // Update the section heading to show search results
     const heading = document.querySelector('#work-orders .head-title h1');
     if (heading) {
         heading.innerHTML = `Work Orders Management ${count > 0 ? `<span class="search-count">(${count} results)</span>` : ''}`;
     }
     
     return count;
+}
+
+// Function to highlight text in all text nodes of an element
+function highlightTextInElement(element, searchTerm) {
+    if (!element) return;
+    
+    const walker = document.createTreeWalker(
+        element,
+        NodeFilter.SHOW_TEXT,
+        null,
+        false
+    );
+    
+    const textNodes = [];
+    let node;
+    while (node = walker.nextNode()) {
+        textNodes.push(node);
+    }
+    
+    const regex = new RegExp('(' + escapeRegExp(searchTerm) + ')', 'gi');
+    textNodes.forEach(textNode => {
+        const parent = textNode.parentNode;
+        const text = textNode.nodeValue;
+        
+        if (!regex.test(text) || parent.classList && parent.classList.contains('search-highlight')) {
+            return;
+        }
+        
+        const temp = document.createElement('span');
+        temp.innerHTML = text.replace(regex, '<span class="search-highlight">$1</span>');
+        
+        const fragment = document.createDocumentFragment();
+        while (temp.firstChild) {
+            fragment.appendChild(temp.firstChild);
+        }
+        
+        parent.replaceChild(fragment, textNode);
+    });
 }
 
 function searchEmployees(searchTerm) {
@@ -2739,7 +2786,6 @@ function searchEmployees(searchTerm) {
         }
     });
     
-    // Update the section heading
     const heading = document.querySelector('#employees .head-title h1');
     if (heading) {
         heading.innerHTML = `Employee Management ${count > 0 ? `<span class="search-count">(${count} results)</span>` : ''}`;
@@ -2776,7 +2822,6 @@ function searchServices(searchTerm) {
         }
     });
     
-    // Update the section heading
     const heading = document.querySelector('#services .head-title h1');
     if (heading) {
         heading.innerHTML = `Services Management ${count > 0 ? `<span class="search-count">(${count} results)</span>` : ''}`;
@@ -2793,7 +2838,7 @@ function searchCustomers(searchTerm) {
     const rows = customerTable.querySelectorAll('tr');
     
     rows.forEach(row => {
-        if (row.querySelector('.no-data')) return; // Skip "no data" row
+        if (row.querySelector('.no-data')) return;
         
         let rowMatch = false;
         const textCells = row.querySelectorAll('td:not(:last-child)');
@@ -2812,7 +2857,6 @@ function searchCustomers(searchTerm) {
         }
     });
     
-    // Update the section heading
     const heading = document.querySelector('#customers .head-title h1');
     if (heading) {
         heading.innerHTML = `Customer Management ${count > 0 ? `<span class="search-count">(${count} results)</span>` : ''}`;
@@ -2859,7 +2903,6 @@ function searchReports(searchTerm) {
         }
     });
     
-    // Update the section heading
     const heading = document.querySelector('#reports .head-title h1');
     if (heading) {
         heading.innerHTML = `Manage Technicians Reports ${count > 0 ? `<span class="search-count">(${count} results)</span>` : ''}`;
@@ -2870,7 +2913,6 @@ function searchReports(searchTerm) {
 
 // Initialize all section-specific search boxes
 function initializeSectionSearches() {
-    // Work orders search
     const workOrdersSearch = document.getElementById('searchAppointments');
     if (workOrdersSearch) {
         workOrdersSearch.addEventListener('input', function() {
@@ -2878,7 +2920,6 @@ function initializeSectionSearches() {
             if (searchTerm.length > 0) {
                 searchWorkOrders(searchTerm);
             } else {
-                // Reset display when search is cleared
                 document.querySelectorAll('#work-orders .work-orders-table tbody tr').forEach(row => {
                     row.style.display = '';
                 });
@@ -2893,9 +2934,6 @@ function initializeSectionSearches() {
         });
     }
     
-    // Employees search is already handled by existing jQuery code
-    
-    // Reports search
     const reportsSearch = document.getElementById('reportSearchInput');
     if (reportsSearch) {
         reportsSearch.addEventListener('input', function() {
@@ -2903,7 +2941,6 @@ function initializeSectionSearches() {
             if (searchTerm.length > 0) {
                 searchReports(searchTerm);
             } else {
-                // Reset display when search is cleared
                 document.querySelectorAll('#reports .report-card').forEach(card => {
                     card.style.display = '';
                 });
@@ -2921,13 +2958,11 @@ function initializeSectionSearches() {
 
 // Display search results notification
 function showSearchResults(count, searchTerm) {
-    // Remove any existing notifications
     const existingNotification = document.getElementById('searchResultsNotification');
     if (existingNotification) {
         document.body.removeChild(existingNotification);
     }
     
-    // Create notification element
     const notification = document.createElement('div');
     notification.id = 'searchResultsNotification';
     notification.className = 'search-results-notification';
@@ -2948,16 +2983,13 @@ function showSearchResults(count, searchTerm) {
         notification.className += ' warning';
     }
     
-    // Add to body
     document.body.appendChild(notification);
     
-    // Show with animation
     setTimeout(() => {
         notification.style.transform = 'translateY(0)';
         notification.style.opacity = '1';
     }, 10);
     
-    // Auto-hide after 5 seconds
     setTimeout(() => {
         notification.style.transform = 'translateY(-100%)';
         notification.style.opacity = '0';
@@ -2971,45 +3003,36 @@ function showSearchResults(count, searchTerm) {
 
 // Function to clear global search
 function clearGlobalSearch() {
-    // Remove stored search term
     sessionStorage.removeItem('globalSearchTerm');
     
-    // Clear search input
     const globalSearchInput = document.getElementById('globalSearchInput');
     if (globalSearchInput) {
         globalSearchInput.value = '';
     }
     
-    // Reset all sections
     document.querySelectorAll('.section').forEach(section => {
-        // Reset employee table
         section.querySelectorAll('table tbody tr').forEach(row => {
             row.style.display = '';
         });
         
-        // Reset service cards
         section.querySelectorAll('.service-card').forEach(card => {
             card.style.display = '';
         });
         
-        // Reset report cards
         section.querySelectorAll('.report-card').forEach(card => {
             card.style.display = '';
         });
         
-        // Remove highlights
         section.querySelectorAll('.search-highlight').forEach(el => {
             el.outerHTML = el.innerHTML;
         });
         
-        // Reset headings
         const heading = section.querySelector('.head-title h1');
         if (heading) {
             heading.innerHTML = heading.innerHTML.replace(/<span class="search-count">.*?<\/span>/, '');
         }
     });
     
-    // Remove notification
     const notification = document.getElementById('searchResultsNotification');
     if (notification) {
         notification.style.transform = 'translateY(-100%)';
@@ -3023,7 +3046,6 @@ function clearGlobalSearch() {
 }
 </script>
 
-<!-- Add search notification styling -->
 <style>
 .search-highlight {
     background-color: #ffec8b;
@@ -3090,7 +3112,6 @@ function clearGlobalSearch() {
     background-color: #e0e0e0;
 }
 
-/* Make global search more prominent */
 #globalSearchForm .form-input {
     position: relative;
     transition: all 0.3s ease;
