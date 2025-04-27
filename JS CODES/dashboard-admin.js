@@ -449,16 +449,20 @@ function showSection(sectionId) {
     // Hide all sections
     document.querySelectorAll('.section').forEach(section => {
         section.classList.remove('active');
-        section.style.display = 'none';
+        section.style.display = 'none'; // Ensure all sections are hidden
+        section.style.pointerEvents = 'none'; // Disable interaction with hidden sections
+        section.style.opacity = '0'; // Make hidden sections invisible
+        section.style.zIndex = '-1'; // Push hidden sections behind the active section
     });
-    
+
     // Show the selected section
     const targetSection = document.getElementById(sectionId);
     if (targetSection) {
-        targetSection.style.display = 'block';
-        // Force a reflow to ensure the display change takes effect
-        void targetSection.offsetWidth;
-        targetSection.classList.add('active');
+        targetSection.style.display = 'block'; // Display the selected section
+        targetSection.style.pointerEvents = 'auto'; // Enable interaction with the active section
+        targetSection.style.opacity = '1'; // Make the active section visible
+        targetSection.style.zIndex = '10'; // Bring the active section to the front
+        targetSection.classList.add('active'); // Mark it as active
 
         // Update the active menu item in the sidebar
         document.querySelectorAll('#sidebar .side-menu.top li').forEach(item => {
@@ -468,16 +472,16 @@ function showSection(sectionId) {
         if (menuItem) {
             menuItem.classList.add('active');
         }
-        
+
         // Scroll back to top when changing sections
         window.scrollTo(0, 0);
-
-        // Initialize report cards if we're showing the reports section
-        if (sectionId === 'reports') {
-            initializeReportCards();
-        }
     }
 }
+
+// Ensure the dashboard section is shown by default on page load
+document.addEventListener('DOMContentLoaded', function() {
+    showSection('content'); // Default section to show
+});
 
 // Modified logout modal functions to work with new structure
 function openLogoutModal() {
@@ -537,169 +541,86 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Updated Report Modal Functions
 function openReportModal(reportId) {
-    console.log('openReportModal called from external JS with ID:', reportId);
-    
-    // Completely remove recursion checks and use a simpler approach
-    // Simply populate the modal directly here
-    
-    // Find the report data
-    if (typeof window.reportsData !== 'undefined') {
-        const report = window.reportsData.find(r => parseInt(r.report_id) === parseInt(reportId));
-        if (!report) {
-            console.error('Report not found for ID:', reportId);
-            alert('Error: Report data not found');
-            return;
-        }
-        
-        console.log('Found report data:', report);
-        
-        try {
-            // Populate the modal fields
-            document.getElementById('reportIdField').value = report.report_id || '';
-            document.getElementById('reportIdDisplay').value = report.report_id ? `REP-${report.report_id.toString().padStart(4, '0')}` : 'N/A';
-            
-            if (report.date_of_treatment) {
-                document.getElementById('reportDateField').value = new Date(report.date_of_treatment).toLocaleDateString('en-US', {
-                    year: 'numeric', month: 'long', day: 'numeric'
-                });
-            } else {
-                document.getElementById('reportDateField').value = 'N/A';
-            }
-            
-            document.getElementById('techNameField').value = report.tech_name || 'N/A';
-            document.getElementById('clientNameField').value = report.account_name || 'N/A';
-            document.getElementById('contactNoField').value = report.contact_no || 'N/A';
-            document.getElementById('locationField').value = report.location || 'N/A';
-            document.getElementById('treatmentTypeField').value = report.treatment_type || 'N/A';
-            document.getElementById('treatmentMethodField').value = report.treatment_method || 'N/A';
-            document.getElementById('timeInField').value = report.time_in || 'N/A';
-            document.getElementById('timeOutField').value = report.time_out || 'N/A';
-            document.getElementById('pestCountField').value = report.pest_count || 'N/A';
-            document.getElementById('deviceInstallationField').value = report.device_installation || 'N/A';
-            document.getElementById('chemicalsField').value = report.consumed_chemicals || 'N/A';
-            document.getElementById('frequencyField').value = report.frequency_of_visits || 'N/A';
-            
-            // Handle approval buttons based on status
-            const approveBtn = document.getElementById('approveBtn');
-            const rejectBtn = document.getElementById('rejectBtn');
-            
-            if (report.status === 'approved') {
-                approveBtn.disabled = true;
-                approveBtn.classList.add('disabled');
-                rejectBtn.disabled = false;
-                rejectBtn.classList.remove('disabled');
-            } else if (report.status === 'rejected') {
-                approveBtn.disabled = false;
-                approveBtn.classList.remove('disabled');
-                rejectBtn.disabled = true;
-                rejectBtn.classList.add('disabled');
-            } else {
-                approveBtn.disabled = false;
-                approveBtn.classList.remove('disabled');
-                rejectBtn.disabled = false;
-                rejectBtn.classList.remove('disabled');
-            }
-            
-            // Handle photos
-            const imageGallery = document.getElementById('imageGallery');
-            imageGallery.innerHTML = ''; // Clear previous images
-            const photosSection = document.getElementById('photosSection');
-            
-            if (report.photos && report.photos !== null && report.photos !== '') {
-                photosSection.style.display = 'block';
-                
-                try {
-                    let photos = report.photos;
-                    console.log('Processing photos data:', photos, 'Type:', typeof photos);
-                    
-                    if (typeof photos === 'string') {
-                        try {
-                            photos = JSON.parse(photos);
-                            console.log('Parsed JSON photos:', photos);
-                        } catch (e) {
-                            console.warn('Error parsing photos JSON, treating as single photo:', e);
-                            photos = [photos]; // Treat as single photo
-                        }
-                    }
-                    
-                    if (Array.isArray(photos) && photos.length > 0) {
-                        console.log('Processing photo array of length:', photos.length);
-                        photos.forEach((photo, index) => {
-                            createPhotoElement(photo, index, imageGallery);
-                        });
-                    } else if (photos && typeof photos === 'string') {
-                        console.log('Processing single photo string:', photos);
-                        createPhotoElement(photos, 0, imageGallery);
-                    } else {
-                        console.warn('No usable photos found');
-                        photosSection.style.display = 'none';
-                    }
-                } catch (e) {
-                    console.error('Error processing photos:', e);
-                    photosSection.style.display = 'none';
-                }
-            } else {
-                console.log('No photos available for report');
-                photosSection.style.display = 'none';
-            }
-            
-            // Show the modal
-            const modal = document.getElementById('reportModal');
-            modal.classList.add('show');
-            modal.style.display = 'block';
-            document.body.style.overflow = 'hidden';
-        } catch (err) {
-            console.error('Error populating modal fields:', err);
-        }
-    } else {
-        console.error('reportsData is not defined. Modal cannot be populated.');
-    }
-}
+    console.log(`Opening report modal for ID: ${reportId}`);
+    const modal = document.getElementById('reportModal');
 
-// Helper function for creating photo elements (add this if it doesn't exist)
-function createPhotoElement(photo, index, container) {
-    console.log(`Creating photo element for: ${photo} (index: ${index})`);
-    const imgContainer = document.createElement('div');
-    imgContainer.className = 'image-item';
-    
-    const img = document.createElement('img');
-    img.src = `../uploads/${photo}`;
-    img.alt = `Treatment Photo ${index + 1}`;
-    
-    // Add error handling for images
-    img.onerror = function() {
-        console.warn(`Image not found: ${img.src}`);
-        this.src = '../Pictures/image-placeholder.jpg';
-        this.alt = 'Image not found';
-    };
-    
-    const span = document.createElement('span');
-    span.textContent = `Photo ${index + 1}`;
-    
-    imgContainer.appendChild(img);
-    imgContainer.appendChild(span);
-    container.appendChild(imgContainer);
+    if (!modal) {
+        console.error('Report modal element not found.');
+        return;
+    }
+
+    // Find the report data from the global reportsData array
+    const reportData = window.reportsData.find(report => report.report_id == reportId);
+
+    if (!reportData) {
+        console.error(`Report data not found for ID: ${reportId}`);
+        return;
+    }
+
+    // Populate the modal fields
+    document.getElementById('reportIdField').value = reportId;
+    document.getElementById('reportIdDisplay').value = `#${reportId}`;
+    document.getElementById('reportDateField').value = reportData.date_of_treatment || 'N/A';
+    document.getElementById('techNameField').value = reportData.tech_name || 'N/A';
+    document.getElementById('clientNameField').value = reportData.account_name || 'N/A';
+    document.getElementById('locationField').value = reportData.location || 'N/A';
+    document.getElementById('contactNoField').value = reportData.contact_no || 'N/A';
+    document.getElementById('treatmentTypeField').value = reportData.treatment_type || 'N/A';
+    document.getElementById('treatmentMethodField').value = reportData.treatment_method || 'N/A';
+    document.getElementById('timeInField').value = reportData.time_in || 'N/A';
+    document.getElementById('timeOutField').value = reportData.time_out || 'N/A';
+    document.getElementById('pestCountField').value = reportData.pest_count || 'N/A';
+    document.getElementById('deviceInstallationField').value = reportData.device_installation || 'N/A';
+    document.getElementById('chemicalsField').value = reportData.consumed_chemicals || 'N/A';
+    document.getElementById('frequencyField').value = reportData.frequency_of_visits || 'N/A';
+
+    // Handle photos
+    const photosContainer = document.getElementById('photosContainer');
+    if (!photosContainer) {
+        console.error('Photos container element not found.');
+        return;
+    }
+    photosContainer.innerHTML = ''; // Clear existing photos
+    if (reportData.photos) {
+        const photos = JSON.parse(reportData.photos); // Assuming photos are stored as JSON
+        photos.forEach(photo => {
+            const img = document.createElement('img');
+            img.src = `../uploads/${photo}`;
+            img.alt = 'Service Photo';
+            img.className = 'report-photo';
+            photosContainer.appendChild(img);
+        });
+    } else {
+        photosContainer.innerHTML = '<p>No photos available</p>';
+    }
+
+    // Show the modal
+    modal.style.display = 'flex';
+    modal.classList.add('show');
+    document.body.style.overflow = 'hidden';
 }
 
 function closeReportModal() {
     const modal = document.getElementById('reportModal');
-    if (!modal) return;
-    modal.classList.remove('show');
-    modal.style.display = 'none';
-    document.body.style.overflow = '';
+    if (modal) {
+        modal.style.display = 'none';
+        modal.classList.remove('show');
+        document.body.style.overflow = '';
+        console.log('Report modal closed.');
+    }
 }
 
 function initializeReportCards() {
-    console.log('initializeReportCards called from external JS');
+    console.log('Initializing report cards...');
     const reportCards = document.querySelectorAll('.report-card');
-    
+
     if (reportCards.length > 0) {
-        console.log(`Found ${reportCards.length} report cards in external JS`);
+        console.log(`Found ${reportCards.length} report cards.`);
         reportCards.forEach(card => {
             // Remove any existing click listeners to avoid duplicates
             const newCard = card.cloneNode(true);
             card.parentNode.replaceChild(newCard, card);
-            
+
             newCard.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -709,7 +630,7 @@ function initializeReportCards() {
             });
         });
     } else {
-        console.log('No report cards found from external JS');
+        console.log('No report cards found.');
     }
 }
 
@@ -1590,89 +1511,74 @@ function closeFeedbackModal() {
 
 // Function to open the report modal
 function openReportModal(reportId) {
-    console.log('Opening report modal for ID:', reportId);
+    console.log(`Opening report modal for ID: ${reportId}`);
     const modal = document.getElementById('reportModal');
-    
+
     if (!modal) {
-        console.error('Report modal element not found');
+        console.error('Report modal element not found.');
         return;
     }
-    
+
     // Find the report data from the global reportsData array
     const reportData = window.reportsData.find(report => report.report_id == reportId);
-    
+
     if (!reportData) {
-        console.error('Report data not found for ID:', reportId);
+        console.error(`Report data not found for ID: ${reportId}`);
         return;
     }
-    
-    // Populate the form fields with report data
+
+    // Populate the modal fields
     document.getElementById('reportIdField').value = reportId;
-    document.getElementById('reportIdDisplay').value = '#' + reportId;
-    document.getElementById('reportDateField').value = formatDate(reportData.date_of_treatment);
-    document.getElementById('techNameField').value = reportData.tech_name;
-    document.getElementById('clientNameField').value = reportData.account_name;
-    document.getElementById('contactNoField').value = reportData.contact_no;
-    document.getElementById('locationField').value = reportData.location;
-    document.getElementById('treatmentTypeField').value = reportData.treatment_type;
-    document.getElementById('treatmentMethodField').value = reportData.treatment_method;
-    document.getElementById('timeInField').value = reportData.time_in;
-    document.getElementById('timeOutField').value = reportData.time_out;
-    document.getElementById('pestCountField').value = reportData.pest_count;
-    document.getElementById('deviceInstallationField').value = reportData.device_installation;
-    document.getElementById('chemicalsField').value = reportData.consumed_chemicals;
-    document.getElementById('frequencyField').value = reportData.frequency_of_visits;
-    
+    document.getElementById('reportIdDisplay').value = `#${reportId}`;
+    document.getElementById('reportDateField').value = reportData.date_of_treatment || 'N/A';
+    document.getElementById('techNameField').value = reportData.tech_name || 'N/A';
+    document.getElementById('clientNameField').value = reportData.account_name || 'N/A';
+    document.getElementById('locationField').value = reportData.location || 'N/A';
+    document.getElementById('contactNoField').value = reportData.contact_no || 'N/A';
+    document.getElementById('treatmentTypeField').value = reportData.treatment_type || 'N/A';
+    document.getElementById('treatmentMethodField').value = reportData.treatment_method || 'N/A';
+    document.getElementById('timeInField').value = reportData.time_in || 'N/A';
+    document.getElementById('timeOutField').value = reportData.time_out || 'N/A';
+    document.getElementById('pestCountField').value = reportData.pest_count || 'N/A';
+    document.getElementById('deviceInstallationField').value = reportData.device_installation || 'N/A';
+    document.getElementById('chemicalsField').value = reportData.consumed_chemicals || 'N/A';
+    document.getElementById('frequencyField').value = reportData.frequency_of_visits || 'N/A';
+
     // Handle photos
-    const imageGallery = document.getElementById('imageGallery');
-    imageGallery.innerHTML = '';
-    
+    const photosContainer = document.getElementById('photosContainer');
+    if (!photosContainer) {
+        console.error('Photos container element not found.');
+        return;
+    }
+    photosContainer.innerHTML = ''; // Clear existing photos
     if (reportData.photos) {
-        let photos = [];
-        try {
-            if (typeof reportData.photos === 'string') {
-                photos = JSON.parse(reportData.photos);
-            } else {
-                photos = reportData.photos;
-            }
-        } catch (e) {
-            console.error('Error parsing photos:', e);
-            photos = [reportData.photos]; // Treat as single photo
-        }
-        
-        if (!Array.isArray(photos)) {
-            photos = [photos]; // Ensure it's an array
-        }
-        
+        const photos = JSON.parse(reportData.photos); // Assuming photos are stored as JSON
         photos.forEach(photo => {
-            const imgContainer = document.createElement('div');
-            imgContainer.className = 'gallery-item';
-            
             const img = document.createElement('img');
-            img.src = '../uploads/' + photo;
-            img.alt = 'Service Report Photo';
-            
-            imgContainer.appendChild(img);
-            imageGallery.appendChild(imgContainer);
+            img.src = `../uploads/${photo}`;
+            img.alt = 'Service Photo';
+            img.className = 'report-photo';
+            photosContainer.appendChild(img);
         });
     } else {
-        imageGallery.innerHTML = '<p>No photos available</p>';
+        photosContainer.innerHTML = '<p>No photos available</p>';
     }
-    
-    // Show/hide buttons based on report status
-    const approveBtn = document.getElementById('approveBtn');
-    const rejectBtn = document.getElementById('rejectBtn');
-    
-    if (reportData.status.toLowerCase() === 'pending') {
-        approveBtn.style.display = 'block';
-        rejectBtn.style.display = 'block';
-    } else {
-        approveBtn.style.display = 'none';
-        rejectBtn.style.display = 'none';
-    }
-    
-    // Display the modal
+
+    // Show the modal
     modal.style.display = 'flex';
+    modal.classList.add('show');
+    document.body.style.overflow = 'hidden';
+
+    // Debugging: Confirm modal visibility
+    const computedStyle = window.getComputedStyle(modal);
+    console.log('Modal display style:', computedStyle.display);
+    console.log('Modal visibility:', computedStyle.visibility);
+
+    if (computedStyle.display !== 'flex') {
+        console.error('Modal is not visible. Check CSS or JavaScript logic.');
+    } else {
+        console.log('Modal is now visible.');
+    }
 }
 
 // Function to close the report modal
@@ -1680,6 +1586,9 @@ function closeReportModal() {
     const modal = document.getElementById('reportModal');
     if (modal) {
         modal.style.display = 'none';
+        modal.classList.remove('show');
+        document.body.style.overflow = '';
+        console.log('Report modal closed.');
     }
 }
 

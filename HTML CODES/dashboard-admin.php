@@ -134,26 +134,27 @@ try {
 
 // Get service reports
 try {
-    $serviceReportsQuery = "SELECT 
-        sr.report_id,
-        sr.date_of_treatment,
-        sr.time_in,
-        sr.time_out,
-        sr.treatment_type,
-        sr.treatment_method,
-        sr.pest_count,
-        sr.device_installation,
-        sr.consumed_chemicals,
-        sr.frequency_of_visits,
-        sr.photos,
-        sr.location,
-        sr.account_name,
-        sr.contact_no,
-        sr.status,
-        CONCAT(u.firstname, ' ', u.lastname) AS tech_name
-    FROM service_reports sr
-    JOIN users u ON sr.technician_id = u.id
-    ORDER BY sr.date_of_treatment DESC";
+    $serviceReportsQuery = "
+        SELECT 
+            sr.report_id,
+            sr.date_of_treatment,
+            sr.time_in,
+            sr.time_out,
+            sr.treatment_type,
+            sr.treatment_method,
+            sr.pest_count,
+            sr.device_installation,
+            sr.consumed_chemicals,
+            sr.frequency_of_visits,
+            sr.photos,
+            sr.location,
+            sr.account_name,
+            sr.contact_no,
+            sr.status,
+            CONCAT(u.firstname, ' ', u.lastname) AS tech_name
+        FROM service_reports sr
+        JOIN users u ON sr.technician_id = u.id
+        ORDER BY sr.date_of_treatment DESC";
 
     $stmt = $db->prepare($serviceReportsQuery);
     $stmt->execute();
@@ -1708,8 +1709,8 @@ try {
 
                 <div class="form-section" id="photosSection">
                     <h3>Documentation</h3>
-                    <div class="image-gallery" id="imageGallery">
-                        <!-- Images will be loaded dynamically via JavaScript -->
+                    <div class="image-gallery" id="photosContainer">
+                        <!-- Photos will be dynamically added here -->
                     </div>
                 </div>
 

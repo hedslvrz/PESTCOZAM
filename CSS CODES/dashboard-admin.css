@@ -23,8 +23,26 @@ html, body {
     overflow-x: hidden;
 }
 
+/* Hide all sections by default */
 .section {
-    overflow-x: hidden; /* Prevent horizontal scrolling in sections */
+    display: none; /* Ensure all sections are hidden */
+    position: absolute; /* Prevent stacking of sections */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* Disable interaction with hidden sections */
+    opacity: 0; /* Make hidden sections invisible */
+    z-index: -1; /* Push hidden sections behind the active section */
+}
+
+/* Show only the active section */
+.section.active {
+    display: block; /* Display the active section */
+    position: relative; /* Restore normal positioning */
+    pointer-events: auto; /* Enable interaction with the active section */
+    opacity: 1; /* Make the active section visible */
+    z-index: 10; /* Bring the active section to the front */
 }
 
 /* Ensure proper width constraints for all containers */
@@ -33,6 +51,8 @@ html, body {
     max-width: 100%;
     overflow-x: hidden;
     box-sizing: border-box;
+    position: relative; /* Ensure proper stacking context */
+    z-index: 1; /* Ensure main content is above background elements */
 }
 
 /* Fix for reports section */
@@ -395,6 +415,13 @@ html, body {
 }
 
 /* ===== MAIN CONTENT LAYOUT ===== */
+#content {
+    height: calc(100vh - 60px); /* Adjust height to fit within the viewport minus the navbar height */
+    overflow-y: auto; /* Allow scrolling if content exceeds the available space */
+    margin: 0; /* Remove any unnecessary margins */
+    padding-bottom: 20px; /* Optional: Add padding for better spacing at the bottom */
+}
+
 .section main {
     width: calc(100% - 90px);  /* Increased right margin */
     padding: 24px;
