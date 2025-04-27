@@ -128,6 +128,21 @@ body {
   background-color: #F5F5F5;
 }
 
+.forgot-text {
+  font-size: 13px;
+  text-align: right;
+  margin-top: 5px;
+}
+
+.forgot-text a {
+  color: #1E2A5A;
+  text-decoration: none;
+}
+
+.forgot-text a:hover {
+  text-decoration: underline;
+}
+
 .bottom-row {
   display: flex;
   align-items: center;
@@ -168,4 +183,3 @@ body {
 .login-btn:hover {
   background-color: #142045;
 }
-  

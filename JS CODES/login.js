@@ -9,12 +9,32 @@ function validateForm(event) {
     let email = document.getElementById('email').value.trim();
     let password = document.getElementById('password').value.trim();
 
+    // Email validation
     if (email === "") {
         showModal("Error", "Email is required.");
+        event.preventDefault();
         return false;
     }
+    
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        showModal("Error", "Please enter a valid email address.");
+        event.preventDefault();
+        return false;
+    }
+    
+    // Password validation
     if (password === "") {
         showModal("Error", "Password is required.");
+        event.preventDefault();
+        return false;
+    }
+    
+    // Check for minimum password length
+    if (password.length < 6) {
+        showModal("Error", "Password must be at least 6 characters.");
+        event.preventDefault();
         return false;
     }
 
@@ -31,17 +51,44 @@ function showModal(title, message) {
 function loginUser(event) {
     event.preventDefault(); // Prevent form submission
 
-    let formData = {
-        email: document.getElementById('email').value.trim(),
-        password: document.getElementById('password').value.trim()
-    };
+    // Use FormData instead of JSON for more reliable form submission
+    const formData = new FormData();
+    formData.append('email', document.getElementById('email').value.trim());
+    formData.append('password', document.getElementById('password').value.trim());
 
     fetch("../PHP CODES/login_api.php", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData)
+        headers: { 
+            "X-Requested-With": "XMLHttpRequest" // Helps identify AJAX requests
+        },
+        body: formData
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        
+        // Handle both text and JSON responses
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+            return response.json();
+        } else {
+            // For non-JSON responses, try to parse or return formatted error
+            return response.text().then(text => {
+                try {
+                    // Try to parse as JSON anyway
+                    return JSON.parse(text);
+                } catch (e) {
+                    console.error("Server response was not JSON:", text);
+                    // Create a standardized error response
+                    return { 
+                        success: false, 
+                        message: "Server returned invalid response. Please try again." 
+                    };
+                }
+            });
+        }
+    })
     .then(data => {
         if (data.success) {
             if (data.role === "admin") {
@@ -62,11 +109,11 @@ function loginUser(event) {
                 });
             }
         } else {
-            customModal.showError(data.message);
+            customModal.showError(data.message || "Invalid login credentials");
         }
     })
     .catch(error => {
-        customModal.showError("An error occurred. Please try again.");
-        console.error("Error:", error);
+        console.error("Login Error:", error);
+        customModal.showError("An error occurred during login. Please try again.");
     });
 }

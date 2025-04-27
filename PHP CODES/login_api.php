@@ -1,60 +1,101 @@
-<?php 
+<?php
+// Start session
 session_start();
 
-require_once '../database.php';
-$database = new Database();
-$conn = $database->getConnection();
+// Set content type - always return JSON
+header('Content-Type: application/json');
 
-$data = json_decode(file_get_contents("php://input"), true);
-
-if (!isset($data['email']) || !isset($data['password'])) {
-    http_response_code(400);
-    echo json_encode(["success" => false, "message" => "Email and Password are required."]);
-    exit();
-}
-
-$query = "SELECT * FROM users WHERE email = :email";
-$stmt = $conn->prepare($query);
-$stmt->bindParam(":email", $data['email']);
-$stmt->execute();
-
-if ($stmt->rowCount() > 0) {
-    $row = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if (password_verify($data['password'], $row['password'])) {
-        if (strcasecmp(trim($row['status']), 'active') === 0) { // Changed from "Verified" to "active"
-            // Set all necessary session variables
-            $_SESSION['user_id'] = $row['id'];
-            $_SESSION['firstname'] = $row['firstname'];
-            $_SESSION['lastname'] = $row['lastname'];
-            $_SESSION['email'] = $row['email'];
-            $_SESSION['role'] = $row['role'];
-            $_SESSION['profile_pic'] = $row['profile_pic'] ?? '../Pictures/boy.png';
-            $_SESSION['mobile_number'] = $row['mobile_number'];
-            $_SESSION['logged_in'] = true;
-
-            // Return success with role information
-            echo json_encode([
-                "success" => true,
-                "message" => "Login successful",
-                "role" => $row['role'],
-                "user" => [
-                    "id" => $row['id'],
-                    "firstname" => $row['firstname'],
-                    "lastname" => $row['lastname'],
-                    "email" => $row['email']
-                ]
-            ]);
-        } else {
-            http_response_code(403);
-            echo json_encode(["success" => false, "message" => "Account is inactive. Please contact administrator."]); // Updated error message
+try {
+    // Include database connection
+    require_once "../database.php";
+    
+    // Log that we're starting the login process
+    error_log("Login API started");
+    
+    // Get input from either POST or direct input
+    $email = isset($_POST['email']) ? trim($_POST['email']) : '';
+    $password = isset($_POST['password']) ? trim($_POST['password']) : '';
+    
+    // If not in POST, try getting from raw input
+    if (empty($email) || empty($password)) {
+        $jsonInput = file_get_contents('php://input');
+        if (!empty($jsonInput)) {
+            $data = json_decode($jsonInput, true);
+            $email = isset($data['email']) ? trim($data['email']) : '';
+            $password = isset($data['password']) ? trim($data['password']) : '';
         }
-    } else {
-        http_response_code(401);
-        echo json_encode(["success" => false, "message" => "Invalid credentials."]);
     }
-} else {
-    http_response_code(404);
-    echo json_encode(["success" => false, "message" => "Account not found."]);
+    
+    error_log("Received login request for email: " . $email);
+    
+    // Basic validation
+    if (empty($email)) {
+        throw new Exception("Email is required");
+    }
+    
+    if (empty($password)) {
+        throw new Exception("Password is required");
+    }
+    
+    // Create database connection
+    $database = new Database();
+    $db = $database->getConnection();
+    
+    // Check if connection was successful
+    if (!$db) {
+        error_log("Database connection failed");
+        throw new Exception("Could not connect to database. Please try again later.");
+    }
+    
+    // Prepare query to check user
+    $query = "SELECT id, firstname, lastname, password, role, status FROM users WHERE email = ?";
+    $stmt = $db->prepare($query);
+    $stmt->execute([$email]);
+    
+    if ($stmt->rowCount() === 0) {
+        error_log("No user found with email: " . $email);
+        throw new Exception("Invalid email or password");
+    }
+    
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    // Verify password
+    if (!password_verify($password, $user['password'])) {
+        error_log("Password verification failed for: " . $email);
+        throw new Exception("Invalid email or password");
+    }
+    
+    // Check status
+    if ($user['status'] !== 'active') {
+        error_log("Account not active for: " . $email);
+        throw new Exception("Your account is not active. Please contact admin.");
+    }
+    
+    // Login successful - set session
+    $_SESSION['user_id'] = $user['id'];
+    $_SESSION['firstname'] = $user['firstname'];
+    $_SESSION['lastname'] = $user['lastname'];
+    $_SESSION['email'] = $email;
+    $_SESSION['role'] = $user['role'];
+    
+    error_log("Login successful for: " . $email . " with role: " . $user['role']);
+    
+    // Return success response
+    echo json_encode([
+        'success' => true,
+        'message' => 'Login successful',
+        'role' => $user['role'],
+        'name' => $user['firstname'] . ' ' . $user['lastname']
+    ]);
+    
+} catch (Exception $e) {
+    // Log the error
+    error_log("Login error: " . $e->getMessage());
+    
+    // Return error response
+    echo json_encode([
+        'success' => false,
+        'message' => $e->getMessage()
+    ]);
 }
 ?>
