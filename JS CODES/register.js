@@ -88,7 +88,7 @@ function validatePassword() {
     var confirm_password = document.getElementById('confirm_password').value;
     var minNumberofChars = 8;
     var maxNumberofChars = 16;
-    var regularExpression = /^(?=.*\d)(?=.*[a-zA-Z])[a-zA-Z0-9]{8,16}$/;
+    var regularExpression = /^(?=.*\d)(?=.*[a-zA-Z]).{8,16}$/;
 
     if (password.length < minNumberofChars || password.length > maxNumberofChars) {
         alert("Password must be between 8 to 16 characters.");
