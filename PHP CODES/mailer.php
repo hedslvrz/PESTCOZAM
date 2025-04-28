@@ -35,15 +35,15 @@ function sendEmail($to, $subject, $body, $attachments = []) {
     try {
         // Server settings
         $mail->isSMTP();
-        $mail->Host = 'smtp.gmail.com';
+        $mail->Host = 'smtp.hostinger.com';
         $mail->SMTPAuth = true;
-        $mail->Username = 'aldwinsuarez56@gmail.com'; // Your SMTP username (email address)
-        $mail->Password = 'wnobpnaneikdqzvz'; // Your SMTP password (app password or email password)
+        $mail->Username = 'noreply@pestcozam.online'; // Your SMTP username (email address)
+        $mail->Password = 'Pestcozam@2025'; // Your SMTP password (app password or email password)
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port = 587;
         
         // Recipients
-        $mail->setFrom('aldwinsuarez56@gmail.com', 'No-reply_Pestcozam'); // Your email address and name
+        $mail->setFrom('noreply@pestcozam.online', 'No-reply_Pestcozam'); // Your email address and name
         $mail->addAddress($to);
         
         // Content
