@@ -1475,25 +1475,16 @@ try {
             </div>
         </div>
 
-        <!-- Search and Filter Controls -->
+        <!-- Search and Filter Controls - -->
         <div class="report-controls">
-            <div class="search-box">
-                <input type="text" id="reportSearchInput" placeholder="Search by technician, location or client...">
-                <i class='bx bx-search'></i>
-            </div>
             <div class="filter-options">
                 <select id="statusFilter">
-                    <option value="">All Statuses</option>
+                    <option value="">Filter Status</option>
                     <option value="pending">Pending Review</option>
                     <option value="approved">Approved</option>
                     <option value="rejected">Rejected</option>
                 </select>
-                <select id="dateFilter">
-                    <option value="">All Dates</option>
-                    <option value="today">Today</option>
-                    <option value="week">This Week</option>
-                    <option value="month">This Month</option>
-                </select>
+                <input type="date" id="dateFilter" placeholder="Filter by date">
             </div>
         </div>
 
@@ -1760,6 +1751,62 @@ try {
         });
     });
     </script>
+
+    <!-- Add this script at the end of the reports section -->
+    <script>
+    // Ensure all report cards have proper data attributes
+    document.addEventListener('DOMContentLoaded', function() {
+        const reportCards = document.querySelectorAll('.report-card');
+        
+        reportCards.forEach(card => {
+            // Extract data from DOM elements if data attributes aren't set
+            if (!card.hasAttribute('data-tech-name')) {
+                const techName = card.querySelector('.technician-info h3')?.textContent || '';
+                card.setAttribute('data-tech-name', techName);
+            }
+            
+            if (!card.hasAttribute('data-location')) {
+                const locationElement = card.querySelector('.report-preview p:nth-child(1)');
+                if (locationElement) {
+                    // Remove the icon and extract just the location text
+                    const locationText = locationElement.textContent.replace(/\s*\u{1F4CD}\s*/u, '').trim();
+                    card.setAttribute('data-location', locationText);
+                }
+            }
+            
+            if (!card.hasAttribute('data-account')) {
+                const accountElement = card.querySelector('.report-preview p:nth-child(2)');
+                if (accountElement) {
+                    // Remove the "Client:" prefix and extract just the client name
+                    const accountText = accountElement.textContent.replace(/Client:\s*/i, '').trim();
+                    card.setAttribute('data-account', accountText);
+                }
+            }
+            
+            if (!card.hasAttribute('data-treatment')) {
+                const treatmentElement = card.querySelector('.report-preview p:nth-child(3)');
+                if (treatmentElement) {
+                    // Remove the "Service:" prefix and extract just the service name
+                    const treatmentText = treatmentElement.textContent.replace(/Service:\s*/i, '').trim();
+                    card.setAttribute('data-treatment', treatmentText);
+                }
+            }
+            
+            if (!card.hasAttribute('data-status')) {
+                const statusElement = card.querySelector('.report-status');
+                if (statusElement) {
+                    const statusText = statusElement.textContent.toLowerCase();
+                    card.setAttribute('data-status', statusText);
+                }
+            }
+        });
+        
+        // Initialize the filter after ensuring all attributes are set
+        if (typeof filterReportsCorrectly === 'function') {
+            filterReportsCorrectly();
+        }
+    });
+    </script>
 </section>
 
 <!-- Employee Section -->
@@ -1983,10 +2030,6 @@ try {
                 <div class="services-list">
                     <div class="head">
                         <h3>Available Services</h3>
-                        <div class="actions">
-                            <i class="bx bx-search"></i>
-                            <i class="bx bx-filter"></i>
-                        </div>
                     </div>
                     <div class="service-cards">
                         <?php if (!empty($services)): ?>
@@ -2163,11 +2206,29 @@ try {
             }
             $customers = $customersStmt->fetchAll(PDO::FETCH_ASSOC);
             
+            // Fetch all customers for client-side filtering (limited to 500 for performance)
+            $allCustomersQuery = "SELECT 
+                id, 
+                firstname, 
+                lastname, 
+                email, 
+                mobile_number, 
+                (SELECT COUNT(*) FROM appointments WHERE user_id = users.id) as appointment_count
+                FROM users 
+                WHERE role = 'user'
+                ORDER BY lastname, firstname
+                LIMIT 500";
+            
+            $allCustomersStmt = $db->prepare($allCustomersQuery);
+            $allCustomersStmt->execute();
+            $allCustomers = $allCustomersStmt->fetchAll(PDO::FETCH_ASSOC);
+            
         } catch(PDOException $e) {
             error_log("Error fetching customers: " . $e->getMessage());
             echo "<div class='error-message'>Database error: " . $e->getMessage() . "</div>";
             $customers = [];
             $totalPages = 0;
+            $allCustomers = [];
         }
         ?>
         <form id="customers-form" method="GET" action="#customers">
@@ -2186,8 +2247,8 @@ try {
                 <div class="customer-header">
                     <h2>Customer Directory <span class="customer-count">(<?php echo $totalCustomers; ?> total)</span></h2>
                     <div class="search-container">
-                        <input type="text" name="customer_search" placeholder="Search customers..." value="<?php echo htmlspecialchars($searchTerm); ?>">
-                        <button type="submit" class="search-btn"><i class='bx bx-search'></i></button>
+                        <input type="text" name="customer_search" id="customer_search" placeholder="Search customers..." value="<?php echo htmlspecialchars($searchTerm); ?>">
+                        <button type="submit" class="search-btn" id="customer_search_btn"><i class='bx bx-search'></i></button>
                     </div>
                 </div>
                 <div class="table-responsive">
@@ -2202,7 +2263,7 @@ try {
                                 <th>Actions</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="customer-table-body">
                             <?php if (!empty($customers)): ?>
                                 <?php foreach ($customers as $customer): ?>
                                     <tr>
@@ -2279,9 +2340,286 @@ try {
                 <?php endif; ?>
             </div>
         </form>
+
+        <script>
+        // Store all customers data for client-side filtering
+        const allCustomers = <?php echo json_encode($allCustomers); ?>;
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const customerSearchInput = document.getElementById('customer_search');
+            const customerTableBody = document.getElementById('customer-table-body');
+            const customerForm = document.getElementById('customers-form');
+            const customerSearchBtn = document.getElementById('customer_search_btn');
+            const customerCountSpan = document.querySelector('.customer-count');
+            
+            if (customerSearchInput && customerTableBody) {
+                // Enhanced real-time search with more responsive feedback
+                customerSearchInput.addEventListener('input', function() {
+                    const searchTerm = this.value.toLowerCase().trim();
+                    
+                    // Always update UI immediately for better responsiveness
+                    if (searchTerm === '') {
+                        // If empty, show all rows and reset highlighting
+                        showAllCustomerRows();
+                        return;
+                    }
+                    
+                    // Client-side filtering for instant results
+                    if (searchTerm.length >= 1) {
+                        // More immediate feedback even with just one character
+                        const filteredCount = filterCustomersTable(searchTerm);
+                        
+                        // Update customer count to show filtered results
+                        if (customerCountSpan) {
+                            const text = filteredCount > 0 
+                                ? `(${filteredCount} found)` 
+                                : '(No matches found)';
+                            customerCountSpan.textContent = text;
+                        }
+                    }
+                });
+                
+                // Form submission event (for server-side processing when Enter is pressed)
+                if (customerForm) {
+                    customerForm.addEventListener('submit', function(e) {
+                        const searchTerm = customerSearchInput.value.trim();
+                        // If very short search term and not empty, prevent submission and show message
+                        if (searchTerm.length > 0 && searchTerm.length < 2) {
+                            e.preventDefault();
+                            Swal.fire({
+                                title: 'Search Too Short',
+                                text: 'Please enter at least 2 characters to search',
+                                icon: 'info',
+                                confirmButtonColor: '#144578'
+                            });
+                        }
+                    });
+                }
+                
+                // Add clear button functionality
+                const clearBtn = document.createElement('button');
+                clearBtn.type = 'button';
+                clearBtn.className = 'clear-search-btn';
+                clearBtn.innerHTML = '<i class="bx bx-x"></i>';
+                clearBtn.style.display = 'none';
+                clearBtn.title = 'Clear search';
+                
+                // Insert clear button before the search button
+                if (customerSearchBtn && customerSearchBtn.parentNode) {
+                    customerSearchBtn.parentNode.insertBefore(clearBtn, customerSearchBtn);
+                }
+                
+                // Show/hide clear button based on search input
+                customerSearchInput.addEventListener('input', function() {
+                    clearBtn.style.display = this.value ? 'flex' : 'none';
+                });
+                
+                // Clear search when button is clicked
+                clearBtn.addEventListener('click', function() {
+                    customerSearchInput.value = '';
+                    customerSearchInput.focus();
+                    showAllCustomerRows();
+                    clearBtn.style.display = 'none';
+                    
+                    // Reset customer count to total
+                    if (customerCountSpan) {
+                        customerCountSpan.textContent = `(${allCustomers.length} total)`;
+                    }
+                });
+            }
+            
+            // Function to show all customer rows and clear highlights
+            function showAllCustomerRows() {
+                if (!customerTableBody) return;
+                
+                // Get all customer rows
+                const rows = customerTableBody.querySelectorAll('tr');
+                
+                // Clear highlighting and show all rows
+                rows.forEach(row => {
+                    row.style.display = '';
+                    row.querySelectorAll('.search-highlight').forEach(highlight => {
+                        highlight.outerHTML = highlight.innerHTML;
+                    });
+                });
+                
+                // Check if we need to show "no data" row
+                const noDataRow = customerTableBody.querySelector('.no-data');
+                if (noDataRow) {
+                    if (allCustomers.length === 0) {
+                        noDataRow.closest('tr').style.display = '';
+                    } else {
+                        noDataRow.closest('tr').style.display = 'none';
+                    }
+                }
+            }
+            
+            // Function to filter customers table in real-time
+            function filterCustomersTable(searchTerm) {
+                if (!customerTableBody) return 0;
+                
+                // Get all customer rows (excluding no-data row)
+                const rows = customerTableBody.querySelectorAll('tr:not(.no-data)');
+                let matchCount = 0;
+                
+                // Process each row
+                rows.forEach(row => {
+                    // Skip the "no data" rows
+                    if (row.querySelector('.no-data')) return;
+                    
+                    let rowMatch = false;
+                    const cells = row.querySelectorAll('td:not(:last-child)'); // Skip the actions column
+                    
+                    // Clear existing highlights first
+                    row.querySelectorAll('.search-highlight').forEach(el => {
+                        el.outerHTML = el.innerHTML;
+                    });
+                    
+                    // Check each cell for a match
+                    cells.forEach(cell => {
+                        const text = cell.textContent.toLowerCase();
+                        if (text.includes(searchTerm)) {
+                            // Highlight the matching text
+                            highlightText(cell, searchTerm);
+                            rowMatch = true;
+                        }
+                    });
+                    
+                    // Show/hide the row based on match
+                    row.style.display = rowMatch ? '' : 'none';
+                    if (rowMatch) matchCount++;
+                });
+                
+                // Handle no results case
+                if (matchCount === 0 && searchTerm.length > 0) {
+                    let noDataRow = customerTableBody.querySelector('.no-data');
+                    
+                    // Safely escape HTML in search term to prevent XSS
+                    const safeSearchTerm = escapeHtml(searchTerm);
+                    
+                    if (!noDataRow) {
+                        // Create a "no results" row if it doesn't exist
+                        const newRow = document.createElement('tr');
+                        newRow.innerHTML = `
+                            <td colspan="6" class="no-data">
+                                No customers found matching "${safeSearchTerm}". 
+                                <a href="#" class="clear-search-link">Clear search</a>
+                            </td>
+                        `;
+                        customerTableBody.appendChild(newRow);
+                        
+                        // Add event listener to clear search link
+                        const clearLink = newRow.querySelector('.clear-search-link');
+                        if (clearLink) {
+                            clearLink.addEventListener('click', function(e) {
+                                e.preventDefault();
+                                customerSearchInput.value = '';
+                                showAllCustomerRows();
+                                
+                                // Reset customer count to total
+                                if (customerCountSpan) {
+                                    customerCountSpan.textContent = `(${allCustomers.length} total)`;
+                                }
+                                
+                                // Hide clear button
+                                const clearBtn = document.querySelector('.clear-search-btn');
+                                if (clearBtn) clearBtn.style.display = 'none';
+                            });
+                        }
+                    } else {
+                        // Update existing no-data message
+                        noDataRow.innerHTML = `
+                            No customers found matching "${safeSearchTerm}". 
+                            <a href="#" class="clear-search-link">Clear search</a>
+                        `;
+                        noDataRow.closest('tr').style.display = '';
+                        
+                        // Add event listener to clear search link
+                        const clearLink = noDataRow.querySelector('.clear-search-link');
+                        if (clearLink) {
+                            clearLink.addEventListener('click', function(e) {
+                                e.preventDefault();
+                                customerSearchInput.value = '';
+                                showAllCustomerRows();
+                                
+                                // Reset customer count to total
+                                if (customerCountSpan) {
+                                    customerCountSpan.textContent = `(${allCustomers.length} total)`;
+                                }
+                                
+                                // Hide clear button
+                                const clearBtn = document.querySelector('.clear-search-btn');
+                                if (clearBtn) clearBtn.style.display = 'none';
+                            });
+                        }
+                    }
+                } else {
+                    // Hide any "no results" message if we have results
+                    const noDataRow = customerTableBody.querySelector('.no-data');
+                    if (noDataRow) {
+                        noDataRow.closest('tr').style.display = 'none';
+                    }
+                }
+                
+                return matchCount;
+            }
+            
+            // Add this helper function to escape HTML and prevent XSS
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+            
+            // Helper function to highlight text with XSS protection
+            function highlightText(element, searchTerm) {
+                if (!element || !element.textContent) return;
+                
+                const regex = new RegExp('(' + escapeRegExp(searchTerm) + ')', 'gi');
+                const text = element.textContent;
+                
+                if (regex.test(text)) {
+                    // Save innerHTML and replace only text nodes
+                    const walker = document.createTreeWalker(
+                        element,
+                        NodeFilter.SHOW_TEXT,
+                        null,
+                        false
+                    );
+                    
+                    const textNodes = [];
+                    let node;
+                    while (node = walker.nextNode()) {
+                        if (regex.test(node.nodeValue)) {
+                            textNodes.push(node);
+                        }
+                    }
+                    
+                    textNodes.forEach(textNode => {
+                        const temp = document.createElement('span');
+                        temp.textContent = textNode.nodeValue; // Use textContent for safe handling
+                        
+                        // Replace each match with a span containing the highlighted text
+                        const safeHtml = temp.innerHTML.replace(regex, function(match) {
+                            return '<span class="search-highlight">' + match + '</span>';
+                        });
+                        
+                        const fragment = document.createRange().createContextualFragment(safeHtml);
+                        textNode.parentNode.replaceChild(fragment, textNode);
+                    });
+                }
+            }
+            
+            // Escape special characters in the search term for regex
+            function escapeRegExp(string) {
+                return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            }
+        });
+        </script>
     </main>
 </section>
-
+<!-- Customers Section -->
+ 
 <!-- Profile Section -->
 <section id="profile" class="section">
     <main>
@@ -2564,6 +2902,8 @@ try {
 
 <script src="../JS CODES/dashboard-admin.js"></script>
 <script src="../JS CODES/work-orders.js"></script>
+<script src="../JS CODES/fix-report-search.js"></script>
+<script src="../JS CODES/technician-reports-fix.js"></script>
 
 <script>
 // Global search functionality
@@ -3122,5 +3462,93 @@ function clearGlobalSearch() {
     opacity: 1;
 }
 </style>
+
+<!-- Add this right before the closing body tag -->
+<style>
+/* Fix for technician report card display */
+#reports .report-preview p {
+    display: flex !important;
+    align-items: center !important;
+    margin: 8px 0 !important;
+    font-size: 14px !important;
+    line-height: 1.4 !important;
+}
+
+#reports .report-preview p i {
+    margin-right: 8px !important;
+    font-size: 16px !important;
+    color: #144578 !important;
+    min-width: 20px !important;
+    flex-shrink: 0 !important;
+}
+
+/* Ensure only one icon per paragraph */
+#reports .report-preview p i + i {
+    display: none !important;
+}
+</style>
+
+<script>
+// Call the fix function when the page is fully loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Run immediately
+    if (typeof fixTechnicianReportCards === 'function') {
+        fixTechnicianReportCards();
+    }
+    
+    // Run again after a slight delay to catch any dynamic content
+    setTimeout(function() {
+        if (typeof fixTechnicianReportCards === 'function') {
+            console.log('Running delayed technician report fix');
+            fixTechnicianReportCards();
+        }
+    }, 500);
+    
+    // Fix cards when clicking on the Reports tab
+    const reportsTabLink = document.querySelector('a[href="#reports"]');
+    if (reportsTabLink) {
+        reportsTabLink.addEventListener('click', function() {
+            setTimeout(function() {
+                if (typeof fixTechnicianReportCards === 'function') {
+                    fixTechnicianReportCards();
+                }
+            }, 100);
+        });
+    }
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Run the fix on tab changes
+    const reportTabLink = document.querySelector('a[href="#reports"]');
+    if (reportTabLink) {
+        reportTabLink.addEventListener('click', function() {
+            // Wait a moment for the tab to show
+            setTimeout(function() {
+                if (typeof fixTechnicianReportCards === 'function') {
+                    console.log('Running technician report fix after tab click');
+                    fixTechnicianReportCards();
+                }
+            }, 200);
+        });
+    }
+    
+    // Run the fix again on window resize (layout shifts can cause issues)
+    window.addEventListener('resize', function() {
+        if (document.querySelector('.section.active#reports') && 
+            typeof fixTechnicianReportCards === 'function') {
+            fixTechnicianReportCards();
+        }
+    });
+    
+    // Run one more time after everything else has loaded
+    window.addEventListener('load', function() {
+        if (typeof fixTechnicianReportCards === 'function') {
+            fixTechnicianReportCards();
+        }
+    });
+});
+</script>
 </body>
 </html>

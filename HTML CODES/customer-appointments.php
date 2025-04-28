@@ -67,211 +67,7 @@ try {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../CSS CODES/dashboard-admin.css">
-    <style>
-        .appointments-container {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            margin-top: 20px;
-        }
-        
-        .back-button {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: #f0f2f5;
-            color: #344767;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 15px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            text-decoration: none;
-            margin-bottom: 20px;
-            transition: all 0.2s ease;
-        }
-        
-        .back-button:hover {
-            background: #e0e4e9;
-        }
-        
-        .customer-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .customer-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .customer-avatar {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: #f0f2f5;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            color: #144578;
-        }
-        
-        .customer-name h2 {
-            margin: 0;
-            font-size: 1.5rem;
-            color: #144578;
-        }
-        
-        .customer-name p {
-            margin: 5px 0 0 0;
-            color: #666;
-            font-size: 0.9rem;
-        }
-        
-        .filter-controls {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .filter-controls label {
-            font-size: 0.9rem;
-            color: #555;
-        }
-        
-        .filter-controls select {
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 0.9rem;
-        }
-        
-        .appointments-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        
-        .appointments-table th {
-            background: #f8f9fa;
-            padding: 12px 15px;
-            text-align: left;
-            font-weight: 600;
-            color: #333;
-            border-bottom: 2px solid #ddd;
-        }
-        
-        .appointments-table td {
-            padding: 12px 15px;
-            border-bottom: 1px solid #eee;
-            vertical-align: middle;
-        }
-        
-        .appointments-table tr:hover {
-            background: #f8f9fa;
-        }
-        
-        .status-badge {
-            display: inline-block;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-        
-        .status-badge.pending {
-            background: #fff2c6;
-            color: #a77b06;
-        }
-        
-        .status-badge.confirmed {
-            background: #b7e9ff;
-            color: #0072a4;
-        }
-        
-        .status-badge.completed {
-            background: #c6ffd9;
-            color: #00732a;
-        }
-        
-        .status-badge.canceled {
-            background: #ffd0d0;
-            color: #b92c2c;
-        }
-        
-        .view-btn, .print-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            padding: 6px 10px;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: 500;
-            text-decoration: none;
-            transition: all 0.2s ease;
-        }
-        
-        .view-btn {
-            background: #e6f3ff;
-            color: #144578;
-        }
-        
-        .view-btn:hover {
-            background: #c9e6ff;
-        }
-        
-        .print-btn {
-            background: #f0f2f5;
-            color: #344767;
-        }
-        
-        .print-btn:hover {
-            background: #e0e4e9;
-        }
-        
-        .action-buttons {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: #666;
-            font-style: italic;
-        }
-        
-        @media screen and (max-width: 768px) {
-            .customer-header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            
-            .filter-controls {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            
-            .action-buttons {
-                flex-direction: column;
-            }
-            
-            .view-btn, .print-btn {
-                width: 100%;
-                justify-content: center;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="../CSS CODES/customer-appointments.css">
 </head>
 <body>
     <!-- Main content -->
@@ -317,14 +113,24 @@ try {
                     
                     <!-- Filter Controls -->
                     <div class="filter-controls">
-                        <label for="status-filter">Filter by Status:</label>
-                        <select id="status-filter">
-                            <option value="all">All Statuses</option>
-                            <option value="pending">Pending</option>
-                            <option value="confirmed">Confirmed</option>
-                            <option value="completed">Completed</option>
-                            <option value="canceled">Canceled</option>
-                        </select>
+                        <div class="filter-group">
+                            <label for="status-filter">Filter by Status:</label>
+                            <select id="status-filter">
+                                <option value="all">All Statuses</option>
+                                <option value="pending">Pending</option>
+                                <option value="confirmed">Confirmed</option>
+                                <option value="completed">Completed</option>
+                                <option value="canceled">Canceled</option>
+                            </select>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label for="date-filter">Filter by Date:</label>
+                            <input type="date" id="date-filter">
+                            <button id="clear-date" class="clear-filter-btn">
+                                <i class='bx bx-x'></i>
+                            </button>
+                        </div>
                     </div>
                     
                     <!-- Appointments Table -->
@@ -343,7 +149,8 @@ try {
                                 </thead>
                                 <tbody>
                                     <?php foreach ($appointments as $appointment): ?>
-                                        <tr data-status="<?php echo strtolower($appointment['status']); ?>">
+                                        <tr data-status="<?php echo strtolower($appointment['status']); ?>" 
+                                           data-date="<?php echo $appointment['appointment_date']; ?>">
                                             <td>
                                                 <div style="font-weight: 500;"><?php echo date('M d, Y', strtotime($appointment['appointment_date'])); ?></div>
                                                 <div style="color: #666; font-size: 0.9rem;"><?php echo date('h:i A', strtotime($appointment['appointment_time'])); ?></div>
@@ -402,13 +209,31 @@ try {
     
     <script>
         // Filter appointments by status
-        document.getElementById('status-filter').addEventListener('change', function() {
-            const selectedStatus = this.value.toLowerCase();
+        document.getElementById('status-filter').addEventListener('change', filterAppointments);
+        
+        // Filter appointments by date
+        document.getElementById('date-filter').addEventListener('change', filterAppointments);
+        
+        // Clear date filter
+        document.getElementById('clear-date').addEventListener('click', function() {
+            document.getElementById('date-filter').value = '';
+            filterAppointments();
+        });
+        
+        function filterAppointments() {
+            const selectedStatus = document.getElementById('status-filter').value.toLowerCase();
+            const selectedDate = document.getElementById('date-filter').value;
             const rows = document.querySelectorAll('.appointments-table tbody tr');
             
             rows.forEach(row => {
                 const rowStatus = row.getAttribute('data-status');
-                if (selectedStatus === 'all' || rowStatus === selectedStatus) {
+                const rowDate = row.getAttribute('data-date');
+                
+                // Check if both status and date match (or if filters are not applied)
+                const statusMatch = selectedStatus === 'all' || rowStatus === selectedStatus;
+                const dateMatch = !selectedDate || rowDate === selectedDate;
+                
+                if (statusMatch && dateMatch) {
                     row.style.display = '';
                 } else {
                     row.style.display = 'none';
@@ -418,16 +243,33 @@ try {
             // Check if any rows are visible
             const visibleRows = document.querySelectorAll('.appointments-table tbody tr:not([style*="display: none"])');
             const tableEl = document.querySelector('.table-responsive');
-            const emptyStateEl = document.querySelector('.empty-state');
             
-            if (visibleRows.length === 0 && !emptyStateEl) {
+            if (visibleRows.length === 0) {
                 // Create empty state if no rows match filter
+                let message = 'No appointments match the selected filters.';
+                
+                // Customize message based on filters applied
+                if (selectedDate && selectedStatus !== 'all') {
+                    message = `No ${selectedStatus} appointments found on ${formatDate(selectedDate)}.`;
+                } else if (selectedDate) {
+                    message = `No appointments found on ${formatDate(selectedDate)}.`;
+                } else if (selectedStatus !== 'all') {
+                    message = `No ${selectedStatus} appointments found.`;
+                }
+                
+                // Remove any existing empty state first
+                const existingEmptyState = document.querySelector('.filtered-empty');
+                if (existingEmptyState) {
+                    existingEmptyState.remove();
+                }
+                
                 const emptyState = document.createElement('div');
                 emptyState.className = 'empty-state filtered-empty';
                 emptyState.innerHTML = `
-                    <p>No appointments found with status "${selectedStatus}".</p>
-                    <button class="back-button" onclick="document.getElementById('status-filter').value='all';document.getElementById('status-filter').dispatchEvent(new Event('change'));">
-                        Show All Appointments
+                    <i class='bx bx-calendar-x' style="font-size: 3rem; color: #ddd; margin-bottom: 15px;"></i>
+                    <p>${message}</p>
+                    <button class="back-button" onclick="resetFilters()">
+                        <i class='bx bx-reset'></i> Reset Filters
                     </button>
                 `;
                 tableEl.style.display = 'none';
@@ -440,7 +282,19 @@ try {
                     tableEl.style.display = '';
                 }
             }
-        });
+        }
+        
+        // Format date for display
+        function formatDate(dateString) {
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            return new Date(dateString).toLocaleDateString(undefined, options);
+        }
+        
+        function resetFilters() {
+            document.getElementById('status-filter').value = 'all';
+            document.getElementById('date-filter').value = '';
+            filterAppointments();
+        }
     </script>
 </body>
 </html>

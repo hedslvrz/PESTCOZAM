@@ -348,19 +348,15 @@ try {
                                 <span class="detail-value">#<?php echo $customer['id']; ?></span>
                             </div>
                             <div class="detail-item">
-                                <span class="detail-label">Status</span>
-                                <span class="detail-value">
-                                    <?php if ($customer['status'] === 'verified'): ?>
-                                        <span class="status-badge status-completed">Verified</span>
-                                    <?php else: ?>
-                                        <span class="status-badge status-pending">Unverified</span>
-                                    <?php endif; ?>
-                                </span>
-                            </div>
-                            <div class="detail-item">
                                 <span class="detail-label">Total Appointments</span>
                                 <span class="detail-value"><?php echo $appointmentCount; ?></span>
                             </div>
+                            <?php if (!empty($customer['created_at'])): ?>
+                            <div class="detail-item">
+                                <span class="detail-label">Registration Date</span>
+                                <span class="detail-value"><?php echo date('F d, Y', strtotime($customer['created_at'])); ?></span>
+                            </div>
+                            <?php endif; ?>
                         </div>
                         
                         <!-- Latest Appointment -->

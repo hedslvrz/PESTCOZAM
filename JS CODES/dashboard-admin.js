@@ -378,6 +378,13 @@ function showSection(sectionId) {
 
         // Scroll back to top when changing sections
         window.scrollTo(0, 0);
+        
+        // Initialize section-specific components
+        if (sectionId === 'reports') {
+            console.log('Initializing reports section');
+            initializeReportCards();
+            initializeReportFilters();
+        }
     }
 }
 
@@ -484,59 +491,210 @@ function initializeReportCards() {
                 openReportModal(reportId);
             });
         });
+        
+        // Initialize the filter functionality
+        initializeReportFilters();
+        
+        // Run an initial filter to match any URL parameters or show all by default
+        if (typeof filterReports === 'function') {
+            filterReports();
+        } else if (window.filterReports) {
+            window.filterReports();
+        }
     } else {
         console.log('No report cards found.');
     }
 }
 
-// Add a dedicated function to ensure modals are properly hidden
-function hideAllModals() {
-    const modals = document.querySelectorAll('.modal, #reportModal, .report-modal-content');
-    modals.forEach(modal => {
-        if (modal) {
-            modal.style.display = 'none';
-            modal.classList.remove('show');
+// Create a dedicated function for report search without affecting other code
+function initializeReportFilters() {
+    const searchInput = document.getElementById('reportSearchInput');
+    const statusFilter = document.getElementById('statusFilter');
+    const dateFilter = document.getElementById('dateFilter');
+    
+    if (searchInput && statusFilter && dateFilter) {
+        console.log('Initializing report filters');
+        
+        // Replace the previous event listeners with our improved filter function
+        searchInput.addEventListener('input', filterReportsCorrectly);
+        statusFilter.addEventListener('change', filterReportsCorrectly);
+        dateFilter.addEventListener('change', filterReportsCorrectly);
+        
+        // Reset filters button (if present)
+        const resetFiltersBtn = document.getElementById('resetFilters');
+        if (resetFiltersBtn) {
+            resetFiltersBtn.addEventListener('click', function() {
+                searchInput.value = '';
+                statusFilter.value = '';
+                dateFilter.value = '';
+                filterReportsCorrectly();
+            });
         }
-    });
-    document.body.style.overflow = '';
-}
-
-// Ensure showSection also hides modals when changing sections
-function showSection(sectionId) {
-    // Hide all sections
-    document.querySelectorAll('.section').forEach(section => {
-        section.classList.remove('active');
-        section.style.display = 'none'; // Ensure all sections are hidden
-        section.style.pointerEvents = 'none'; // Disable interaction with hidden sections
-        section.style.opacity = '0'; // Make hidden sections invisible
-        section.style.zIndex = '-1'; // Push hidden sections behind the active section
-    });
-
-    // Hide all modals when changing sections
-    hideAllModals();
-
-    // Show the selected section
-    const targetSection = document.getElementById(sectionId);
-    if (targetSection) {
-        targetSection.style.display = 'block'; // Display the selected section
-        targetSection.style.pointerEvents = 'auto'; // Enable interaction with the active section
-        targetSection.style.opacity = '1'; // Make the active section visible
-        targetSection.style.zIndex = '10'; // Bring the active section to the front
-        targetSection.classList.add('active'); // Mark it as active
-
-        // Update the active menu item in the sidebar
-        document.querySelectorAll('#sidebar .side-menu.top li').forEach(item => {
-            item.classList.remove('active');
-        });
-        const menuItem = document.querySelector(`#sidebar .side-menu.top li a[href="#${sectionId}"]`).parentElement;
-        if (menuItem) {
-            menuItem.classList.add('active');
-        }
-
-        // Scroll back to top when changing sections
-        window.scrollTo(0, 0);
     }
 }
+
+// New improved filter function that avoids text highlighting issues
+function filterReportsCorrectly() {
+    const searchValue = document.getElementById('reportSearchInput')?.value.toLowerCase().trim() || '';
+    const statusFilter = document.getElementById('statusFilter')?.value || '';
+    const dateFilter = document.getElementById('dateFilter')?.value || '';
+    
+    console.log(`Filtering reports - Search: "${searchValue}", Status: "${statusFilter}", Date: "${dateFilter}"`);
+    
+    const reportCards = document.querySelectorAll('.report-card');
+    let visibleCount = 0;
+    
+    // Process each report card
+    reportCards.forEach(card => {
+        // Extract data for filtering from data attributes instead of text content
+        const techName = card.getAttribute('data-tech-name')?.toLowerCase() || '';
+        const accountName = card.getAttribute('data-account')?.toLowerCase() || '';
+        const location = card.getAttribute('data-location')?.toLowerCase() || '';
+        const treatment = card.getAttribute('data-treatment')?.toLowerCase() || '';
+        const status = card.getAttribute('data-status')?.toLowerCase() || '';
+        const dateStr = card.getAttribute('data-date') || '';
+        
+        // Determine if the card matches search criteria
+        const matchesSearch = !searchValue || 
+            techName.includes(searchValue) || 
+            accountName.includes(searchValue) || 
+            location.includes(searchValue) ||
+            treatment.includes(searchValue);
+            
+        // Check status filter
+        const matchesStatus = !statusFilter || status === statusFilter;
+        
+        // Check date filter
+        let matchesDate = true;
+        if (dateFilter && dateStr) {
+            const reportDate = new Date(dateStr);
+            const today = new Date();
+            
+            if (dateFilter === 'today') {
+                const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                const todayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59);
+                matchesDate = reportDate >= todayStart && reportDate <= todayEnd;
+            } else if (dateFilter === 'week') {
+                const weekStart = new Date(today);
+                weekStart.setDate(today.getDate() - today.getDay());
+                weekStart.setHours(0, 0, 0, 0);
+                
+                const weekEnd = new Date(weekStart);
+                weekEnd.setDate(weekStart.getDate() + 6);
+                weekEnd.setHours(23, 59, 59, 999);
+                
+                matchesDate = reportDate >= weekStart && reportDate <= weekEnd;
+            } else if (dateFilter === 'month') {
+                const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+                const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59);
+                matchesDate = reportDate >= monthStart && reportDate <= monthEnd;
+            } else {
+                // Specific date selected
+                const filterDate = new Date(dateFilter);
+                const reportDateOnly = new Date(reportDate.getFullYear(), reportDate.getMonth(), reportDate.getDate());
+                const filterDateOnly = new Date(filterDate.getFullYear(), filterDate.getMonth(), filterDate.getDate());
+                matchesDate = reportDateOnly.getTime() === filterDateOnly.getTime();
+            }
+        }
+        
+        // Show or hide based on all filter criteria
+        const isVisible = matchesSearch && matchesStatus && matchesDate;
+        card.style.display = isVisible ? 'block' : 'none';
+        
+        // If it matches the search, highlight the matching text without breaking the layout
+        if (isVisible && searchValue) {
+            // Clear previous highlights
+            card.querySelectorAll('.search-highlight').forEach(el => {
+                el.outerHTML = el.textContent;
+            });
+            
+            // Safely highlight text in specific elements
+            const elementsToHighlight = [
+                card.querySelector('.technician-info h3'),
+                card.querySelector('.report-preview p:nth-child(1)'),
+                card.querySelector('.report-preview p:nth-child(2)'),
+                card.querySelector('.report-preview p:nth-child(3)')
+            ];
+            
+            elementsToHighlight.forEach(element => {
+                if (element) {
+                    highlightTextSafely(element, searchValue);
+                }
+            });
+        }
+        
+        // Count visible cards
+        if (isVisible) {
+            visibleCount++;
+        }
+    });
+    
+    // Show "No reports found" message if no cards are visible
+    const reportsGrid = document.querySelector('.reports-grid');
+    let noReportsMsg = document.querySelector('.no-reports');
+    
+    if (visibleCount === 0) {
+        if (!noReportsMsg) {
+            noReportsMsg = document.createElement('div');
+            noReportsMsg.className = 'no-reports';
+            noReportsMsg.innerHTML = `
+                <i class='bx bx-file-blank'></i>
+                <p>No matching reports found</p>
+                <span>Try adjusting your search or filter criteria</span>
+            `;
+            reportsGrid.appendChild(noReportsMsg);
+        } else {
+            noReportsMsg.style.display = 'block';
+        }
+    } else if (noReportsMsg) {
+        noReportsMsg.style.display = 'none';
+    }
+    
+    console.log(`Filter complete: ${visibleCount} visible cards`);
+}
+
+// Helper function to safely highlight text without breaking HTML structure
+function highlightTextSafely(element, searchTerm) {
+    if (!element || !searchTerm) return;
+    
+    const walker = document.createTreeWalker(
+        element, 
+        NodeFilter.SHOW_TEXT,
+        null, 
+        false
+    );
+    
+    const searchRegex = new RegExp('(' + escapeRegExp(searchTerm) + ')', 'gi');
+    const nodesToReplace = [];
+    
+    // First, find all text nodes that need replacing
+    let node;
+    while (node = walker.nextNode()) {
+        if (node.nodeValue.toLowerCase().includes(searchTerm.toLowerCase())) {
+            nodesToReplace.push({
+                node: node,
+                text: node.nodeValue
+            });
+        }
+    }
+    
+    // Then replace the text in each node
+    nodesToReplace.forEach(item => {
+        const highlighted = item.text.replace(searchRegex, '<span class="search-highlight">$1</span>');
+        const fragment = document.createRange().createContextualFragment(highlighted);
+        item.node.parentNode.replaceChild(fragment, item.node);
+    });
+}
+
+// Helper function to escape special characters in regex
+function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// Make sure our new functions are globally available
+window.filterReportsCorrectly = filterReportsCorrectly;
+window.highlightTextSafely = highlightTextSafely;
+window.escapeRegExp = escapeRegExp;
 
 // Function to update report status (add this if it doesn't exist)
 function updateReportStatus(status) {
@@ -1698,6 +1856,61 @@ function closeReviewModal() {
 window.loadReviewData = loadReviewData;
 window.closeReviewModal = closeReviewModal;
 window.generateStars = generateStars;
+
+// Function to initialize section-specific searches
+function initializeSectionSearches() {
+    // Customer section search functionality
+    const customerForm = document.getElementById('customers-form');
+    const customerSearchInput = document.getElementById('customer_search');
+    const customerSearchBtn = document.getElementById('customer_search_btn');
+
+    if (customerForm && customerSearchInput && customerSearchBtn) {
+        // Submit form when search button is clicked
+        customerSearchBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            customerForm.submit();
+        });
+
+        // Submit form when Enter key is pressed in search input
+        customerSearchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                customerForm.submit();
+            }
+        });
+
+        // Handle case when input is cleared
+        customerSearchInput.addEventListener('input', function() {
+            if (this.value === '') {
+                const clearSearchBtn = document.createElement('button');
+                clearSearchBtn.innerHTML = '<i class="bx bx-x"></i>';
+                clearSearchBtn.className = 'clear-search-btn';
+                clearSearchBtn.type = 'button';
+                clearSearchBtn.addEventListener('click', function() {
+                    window.location.href = window.location.pathname + '#customers';
+                });
+                
+                // Add clear button if not already present
+                if (!document.querySelector('.clear-search-btn')) {
+                    customerSearchInput.parentNode.appendChild(clearSearchBtn);
+                }
+            } else {
+                // Remove clear button if input is not empty
+                const clearBtn = document.querySelector('.clear-search-btn');
+                if (clearBtn) {
+                    clearBtn.remove();
+                }
+            }
+        });
+    }
+
+    // Initialize other section searches as needed
+}
+
+// Call the search initializer when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    initializeSectionSearches();
+});
 
 
 

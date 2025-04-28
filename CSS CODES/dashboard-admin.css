@@ -57,11 +57,96 @@ html, body {
 
 /* Fix for reports section */
 #reports .reports-grid {
-    width: auto; /* Remove fixed width which can cause overflow */
-    max-width: 100%;
-    box-sizing: border-box;
-    margin-left: 20px;
-    margin-right: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Ensure consistent column sizing */
+    gap: 20px; /* Add consistent spacing between cards */
+    width: 100%; /* Ensure grid takes full width */
+    box-sizing: border-box; /* Include padding and border in width/height calculations */
+}
+
+/* Fix for individual report cards */
+#reports .report-card {
+    display: flex;
+    flex-direction: column; /* Ensure content stacks vertically */
+    justify-content: space-between; /* Space out content evenly */
+    align-items: flex-start; /* Align content to the left */
+    width: 100%; /* Ensure cards take full column width */
+    max-width: 100%; /* Prevent cards from exceeding column width */
+    height: auto; /* Allow height to adjust based on content */
+    padding: 15px; /* Add consistent padding inside cards */
+    background: white; /* Ensure consistent background color */
+    border: 1px solid #ddd; /* Add a subtle border */
+    border-radius: 8px; /* Add rounded corners */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
+    box-sizing: border-box; /* Include padding and border in width/height calculations */
+    overflow: hidden; /* Prevent content overflow */
+}
+
+/* Ensure all cards have consistent height */
+#reports .report-card .card-content {
+    flex-grow: 1; /* Allow content to grow and fill available space */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* Fix for card content alignment */
+#reports .report-card .technician-info,
+#reports .report-card .report-preview {
+    width: 100%; /* Ensure content spans full width */
+    margin-bottom: 10px; /* Add spacing between sections */
+}
+
+/* Fix for card status alignment */
+#reports .report-card .report-status {
+    align-self: flex-end; /* Align status to the right */
+    padding: 5px 10px; /* Add padding inside status */
+    border-radius: 12px; /* Add rounded corners */
+    font-size: 0.85rem; /* Adjust font size */
+    font-weight: 500; /* Make text bold */
+}
+
+/* Fix for rejected status color */
+#reports .report-card .report-status.rejected {
+    background: #ffebee;
+    color: #c62828;
+}
+
+/* Ensure consistent spacing for grid container */
+#reports .reports-container {
+    padding: 20px; /* Add padding around the grid */
+    margin: 0 auto; /* Center the grid container */
+    max-width: 1200px; /* Limit the maximum width */
+    box-sizing: border-box; /* Include padding and border in width calculations */
+}
+
+/* Fix for "no reports found" message */
+#reports .no-reports {
+    text-align: center;
+    padding: 40px 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    margin: 20px auto;
+    max-width: 600px;
+}
+
+#reports .no-reports i {
+    font-size: 60px;
+    color: #d0d0d0;
+    margin-bottom: 15px;
+}
+
+#reports .no-reports p {
+    font-size: 18px;
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 5px;
+}
+
+#reports .no-reports span {
+    color: #888;
+    font-size: 14px;
 }
 
 /* Ensure tables don't cause overflow */
@@ -1886,6 +1971,70 @@ html, body {
     transition: 0.3s ease;
 }
 
+/* Enhanced Customer Search Styles */
+.search-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    max-width: 300px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+    transition: all 0.3s ease;
+}
+
+.search-container:focus-within {
+    border-color: #144578;
+    box-shadow: 0 0 0 2px rgba(20, 69, 120, 0.1);
+}
+
+.search-container input[type="text"] {
+    flex: 1;
+    padding: 10px 12px;
+    border: none;
+    background: transparent;
+    outline: none;
+    width: 100%;
+    font-size: 14px;
+    color: #333;
+}
+
+.search-container .search-btn {
+    background: none;
+    border: none;
+    color: #666;
+    padding: 0 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    transition: color 0.2s ease;
+}
+
+.search-container .search-btn:hover {
+    color: #144578;
+}
+
+.search-container .clear-search-btn {
+    position: absolute;
+    right: 40px;
+    background: none;
+    border: none;
+    color: #999;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: color 0.2s ease;
+}
+
+.search-container .clear-search-btn:hover {
+    color: #555;
+}
+
 /* Customer Section Styles */
 .customer-container {
     background: white;
@@ -2825,26 +2974,28 @@ th {
 /* Fix Report Card Margins */
 .reports-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 30px; /* Increased gap to prevent overlapping */
-    padding: 10x; /* Consistent padding */
-    margin: 20px 5px; /* Match left and right margins */
-    width: calc(100% - 40px); /* Account for margins */
-    max-width: 1600px; /* Maximum width to prevent stretching on large screens */
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Ensure consistent column sizing */
+    gap: 20px; /* Add consistent spacing between cards */
+    width: 100%; /* Ensure grid takes full width */
+    box-sizing: border-box; /* Include padding and border in width/height calculations */
 }
 
 /* Report Card Styles */
 #reports .report-card {
-    background: white;
-    border-radius: 15px;
-    padding: 24px; /* Consistent padding */
-    margin: 0; /* Remove default margin since we're using grid gap */
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-    cursor: pointer;
-    height: fit-content;
-    width: 100%;
-    box-sizing: border-box; /* Ensure padding is included in width calculation */
+    display: flex;
+    flex-direction: column; /* Ensure content stacks vertically */
+    justify-content: space-between; /* Space out content evenly */
+    align-items: flex-start; /* Align content to the left */
+    width: 100%; /* Ensure cards take full column width */
+    max-width: 100%; /* Prevent cards from exceeding column width */
+    height: auto; /* Allow height to adjust based on content */
+    padding: 15px; /* Add consistent padding inside cards */
+    background: white; /* Ensure consistent background color */
+    border: 1px solid #ddd; /* Add a subtle border */
+    border-radius: 8px; /* Add rounded corners */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
+    box-sizing: border-box; /* Include padding and border in width/height calculations */
+    overflow: hidden; /* Prevent content overflow */
 }
 
 /* Report Header */
@@ -3036,6 +3187,162 @@ th {
 #reports .form-actions button:hover {
     opacity: 0.9;
     transform: translateY(-1px);
+}
+
+/* Enhanced Report Controls */
+#reports .report-controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+#reports .search-box {
+    display: flex;
+    align-items: center;
+    background: #f5f5f5;
+    border-radius: 8px;
+    padding: 10px 16px;
+    flex: 1;
+    max-width: 400px;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+}
+
+#reports .search-box:focus-within {
+    border-color: #144578;
+    box-shadow: 0 0 0 2px rgba(20, 69, 120, 0.1);
+}
+
+#reports .search-box i {
+    color: #666;
+    font-size: 18px;
+    margin-right: 10px;
+}
+
+#reports .search-box input {
+    border: none;
+    background: none;
+    outline: none;
+    width: 100%;
+    font-size: 14px;
+    color: #333;
+}
+
+/* Search highlight styling */
+.search-highlight {
+    background-color: rgba(255, 255, 0, 0.4);
+    padding: 2px 0;
+    border-radius: 2px;
+    font-weight: 500;
+}
+
+/* Filter reset button */
+.btn-reset {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 8px 12px;
+    background: #f0f2f5;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    color: #555;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-reset:hover {
+    background: #e0e4e9;
+}
+
+.btn-reset i {
+    font-size: 1.1rem;
+}
+
+#reports .filter-options {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+#reports .filter-options select {
+    padding: 10px 15px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    outline: none;
+    font-size: 0.9rem;
+    cursor: pointer;
+    background-color: #f8f9fa;
+    min-width: 140px;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23444' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: calc(100% - 12px) center;
+    padding-right: 32px;
+    transition: all 0.2s ease;
+}
+
+#reports .filter-options select:focus {
+    border-color: #144578;
+    box-shadow: 0 0 0 2px rgba(20, 69, 120, 0.1);
+}
+
+/* No reports message styling */
+#reports .no-reports {
+    text-align: center;
+    padding: 40px 20px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    margin: 20px auto;
+    max-width: 600px;
+}
+
+#reports .no-reports i {
+    font-size: 60px;
+    color: #d0d0d0;
+    margin-bottom: 15px;
+}
+
+#reports .no-reports p {
+    font-size: 18px;
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 5px;
+}
+
+#reports .no-reports span {
+    color: #888;
+    font-size: 14px;
+}
+
+/* Responsive adjustments for report controls */
+@media screen and (max-width: 768px) {
+    #reports .report-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    #reports .search-box {
+        max-width: 100%;
+    }
+    
+    #reports .filter-options {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    #reports .filter-options select {
+        flex: 1;
+        min-width: 0;
+    }
 }
 
 /* Work Orders Section Styles - Enhanced Version */
