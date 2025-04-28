@@ -93,8 +93,16 @@ foreach ($services as $service) {
               <img src="./Pictures/pest_logo.png" alt="Flower Logo" class="flower-logo">
               <span class="brand-name" style="font-size: 2rem;">PESTCOZAM</span>
           </div>
+          
+          <!-- Mobile Menu Toggle Button -->
+          <button class="mobile-menu-btn" id="mobileMenuBtn">
+              <span></span>
+              <span></span>
+              <span></span>
+          </button>
+          
           <nav>
-            <ul>
+            <ul id="navMenu">
               <li><a href="index.php">Home</a></li>
               <li><a href="#offer-section">Services</a></li>
               <li><a href="#about-us-section">About Us</a></li>
@@ -564,8 +572,65 @@ foreach ($services as $service) {
             });
         });
     });
-    </script> 
-    <script src="./JS CODES/sessionHandler.js"></script>
+
+    // Mobile menu toggle
+    document.addEventListener('DOMContentLoaded', function() {
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const navMenu = document.getElementById('navMenu');
+        
+        if (mobileMenuBtn && navMenu) {
+            mobileMenuBtn.addEventListener('click', function() {
+                navMenu.classList.toggle('active');
+                mobileMenuBtn.classList.toggle('active');
+            });
+            
+            // Close mobile menu when clicking on nav links
+            const navLinks = navMenu.querySelectorAll('a');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    navMenu.classList.remove('active');
+                    mobileMenuBtn.classList.remove('active');
+                });
+            });
+        }
+        
+        // Close menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const isClickInsideMenu = navMenu.contains(event.target);
+            const isClickOnMenuBtn = mobileMenuBtn.contains(event.target);
+            
+            if (!isClickInsideMenu && !isClickOnMenuBtn && navMenu.classList.contains('active')) {
+                navMenu.classList.remove('active');
+                mobileMenuBtn.classList.remove('active');
+            }
+        });
+    });
+
+    // Handle responsive review slider adjustments
+    document.addEventListener('DOMContentLoaded', function() {
+        function adjustReviewSlider() {
+            const isMobile = window.innerWidth <= 768;
+            const reviewSlides = document.querySelectorAll('.review-slide');
+            
+            if (isMobile) {
+                // On mobile, only show the active slide
+                reviewSlides.forEach(slide => {
+                    if (!slide.classList.contains('active')) {
+                        slide.style.display = 'none';
+                    }
+                });
+            } else {
+                // On desktop, show prev/next slides
+                updateSlidePositions(); // Call your existing function here
+            }
+        }
+        
+        // Call on load and resize
+        window.addEventListener('resize', adjustReviewSlider);
+        setTimeout(adjustReviewSlider, 100); // Initial call with slight delay
+    });
+  </script> 
+  <script src="./JS CODES/sessionHandler.js"></script>
   <script>
     // Enhanced Review Slider with Fixed Positioning
     document.addEventListener('DOMContentLoaded', function() {
