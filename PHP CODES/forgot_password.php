@@ -36,8 +36,8 @@ try {
             // Try connecting directly with PDO
             $host = 'localhost';
             $db_name = 'u302876046_pestcozam';
-            $username = 'root'; // Use your local MySQL username
-            $password = '';     // Use your local MySQL password
+            $username = 'u302876046_root'; // Use your local MySQL username
+            $password = 'Pestcozam@2025';     // Use your local MySQL password
             
             $db = new PDO("mysql:host=$host", $username, $password);
             $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
