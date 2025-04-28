@@ -85,6 +85,9 @@
     <title>Personal Information</title>
     <link rel="stylesheet" href="../CSS CODES/Appointment-info.css">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <!-- Add SweetAlert2 CSS and JS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
 </head>
 <body>
 
@@ -249,12 +252,20 @@ document.getElementById("nextButton").addEventListener("click", function(event) 
     const agreement = document.getElementById("agreement").checked;
     
     if (!firstname || !lastname || !email || !mobile_number) {
-        alert("Please fill in all required fields");
+        Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: 'Please fill in all required fields',
+        });
         return;
     }
     
     if (!agreement) {
-        alert("Please agree to the data privacy policy to continue");
+        Swal.fire({
+            icon: 'warning',
+            title: 'Attention',
+            text: 'Please agree to the data privacy policy to continue',
+        });
         return;
     }
 
@@ -273,12 +284,31 @@ document.getElementById("nextButton").addEventListener("click", function(event) 
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            window.location.href = "Appointment-calendar.php"; // Move to next step after saving
+            Swal.fire({
+                icon: 'success',
+                title: 'Saved!',
+                text: 'Personal information saved successfully.',
+                showConfirmButton: false,
+                timer: 1500
+            }).then(() => {
+                window.location.href = "Appointment-calendar.php"; // Move to next step after saving
+            });
         } else {
-            alert("Error: " + data.message);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error: ' + data.message,
+            });
         }
     })
-    .catch(error => console.error("Error:", error));
+    .catch(error => {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'An unexpected error occurred.',
+        });
+        console.error("Error:", error);
+    });
 });
 </script>
 

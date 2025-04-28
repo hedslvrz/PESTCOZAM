@@ -134,26 +134,27 @@ try {
 
 // Get service reports
 try {
-    $serviceReportsQuery = "SELECT 
-        sr.report_id,
-        sr.date_of_treatment,
-        sr.time_in,
-        sr.time_out,
-        sr.treatment_type,
-        sr.treatment_method,
-        sr.pest_count,
-        sr.device_installation,
-        sr.consumed_chemicals,
-        sr.frequency_of_visits,
-        sr.photos,
-        sr.location,
-        sr.account_name,
-        sr.contact_no,
-        sr.status,
-        CONCAT(u.firstname, ' ', u.lastname) AS tech_name
-    FROM service_reports sr
-    JOIN users u ON sr.technician_id = u.id
-    ORDER BY sr.date_of_treatment DESC";
+    $serviceReportsQuery = "
+        SELECT 
+            sr.report_id,
+            sr.date_of_treatment,
+            sr.time_in,
+            sr.time_out,
+            sr.treatment_type,
+            sr.treatment_method,
+            sr.pest_count,
+            sr.device_installation,
+            sr.consumed_chemicals,
+            sr.frequency_of_visits,
+            sr.photos,
+            sr.location,
+            sr.account_name,
+            sr.contact_no,
+            sr.status,
+            CONCAT(u.firstname, ' ', u.lastname) AS tech_name
+        FROM service_reports sr
+        JOIN users u ON sr.technician_id = u.id
+        ORDER BY sr.date_of_treatment DESC";
 
     $stmt = $db->prepare($serviceReportsQuery);
     $stmt->execute();
@@ -203,6 +204,9 @@ try {
     <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../CSS CODES/dashboard-admin.css">
     <link rel="stylesheet" href="../CSS CODES/timeslot.css">
+    <!-- Add SweetAlert2 CSS and JS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
     <title>Pestcozam Dashboard</title>
 </head>
 <body>
@@ -256,13 +260,7 @@ try {
                 </a>
             </li>
             <li>
-                <a href="#settings" onclick="showSection('settings')">
-                    <i class='bx bx-cog' ></i>
-                    <span class="text">Settings</span>
-                </a>
-            </li>
-            <li>
-                <a href="Login.php" class="logout">
+                <a href="logout.php" class="logout">
                     <i class='bx bx-log-out' ></i>
                     <span class="text">Log out</span>
                 </a>
@@ -1708,8 +1706,8 @@ try {
 
                 <div class="form-section" id="photosSection">
                     <h3>Documentation</h3>
-                    <div class="image-gallery" id="imageGallery">
-                        <!-- Images will be loaded dynamically via JavaScript -->
+                    <div class="image-gallery" id="photosContainer">
+                        <!-- Photos will be dynamically added here -->
                     </div>
                 </div>
 
@@ -1977,8 +1975,16 @@ try {
 
                         async function confirmDelete(event) {
                             event.preventDefault();
-                            const confirmed = await confirm('Are you sure you want to delete this employee?');
-                            if (confirmed) {
+                            const confirmed = await Swal.fire({
+                                title: 'Are you sure?',
+                                text: 'You won\'t be able to revert this!',
+                                icon: 'warning',
+                                showCancelButton: true,
+                                confirmButtonColor: '#3085d6',
+                                cancelButtonColor: '#d33',
+                                confirmButtonText: 'Yes, delete it!'
+                            });
+                            if (confirmed.isConfirmed) {
                                 window.location.href = event.target.href;
                             }
                             return false;
@@ -2082,31 +2088,53 @@ try {
         }
         
         function deleteService(serviceId, serviceName) {
-            if (confirm(`Are you sure you want to delete "${serviceName}"? This action cannot be undone.`)) {
-                // Use fetch with proper JSON handling
-                fetch(`delete-service.php?id=${serviceId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            alert(`${serviceName} has been deleted successfully.`);
-                            // Remove the service card from the DOM
-                            const serviceCard = document.querySelector(`input[value="${serviceId}"]`).closest('.service-card');
-                            serviceCard.remove();
-                            
-                            // If no more services, show the "No services available" message
-                            if (document.querySelectorAll('.service-card').length === 0) {
-                                const serviceCards = document.querySelector('.service-cards');
-                                serviceCards.innerHTML = '<p class="no-services-message">No services available. Please add services.</p>';
+            Swal.fire({
+                title: `Are you sure you want to delete "${serviceName}"?`,
+                text: "This action cannot be undone.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Use fetch with proper JSON handling
+                    fetch(`delete-service.php?id=${serviceId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire(
+                                    'Deleted!',
+                                    `${serviceName} has been deleted successfully.`,
+                                    'success'
+                                );
+                                // Remove the service card from the DOM
+                                const serviceCard = document.querySelector(`input[value="${serviceId}"]`).closest('.service-card');
+                                serviceCard.remove();
+                                
+                                // If no more services, show the "No services available" message
+                                if (document.querySelectorAll('.service-card').length === 0) {
+                                    const serviceCards = document.querySelector('.service-cards');
+                                    serviceCards.innerHTML = '<p class="no-services-message">No services available. Please add services.</p>';
+                                }
+                            } else {
+                                Swal.fire(
+                                    'Error!',
+                                    'Error deleting service: ' + (data.message || 'Unknown error'),
+                                    'error'
+                                );
                             }
-                        } else {
-                            alert('Error deleting service: ' + (data.message || 'Unknown error'));
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('An error occurred while deleting the service. Please try again.');
-                    });
-            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            Swal.fire(
+                                'Error!',
+                                'An error occurred while deleting the service. Please try again.',
+                                'error'
+                            );
+                        });
+                }
+            });
         }
         </script>
     </main>
@@ -2501,25 +2529,41 @@ try {
                             }
                         } catch (e) {
                             console.error('JSON parse error:', e, 'Response text:', text);
-                            alert('Error updating profile. Invalid response from server.');
+                            Swal.fire(
+                                'Error!',
+                                'Error updating profile. Invalid response from server.',
+                                'error'
+                            );
                             submitBtn.textContent = originalText;
                             submitBtn.disabled = false;
                             return;
                         }
                         if (data && data.success) {
-                            alert('Profile updated successfully!');
+                            Swal.fire(
+                                'Success!',
+                                'Profile updated successfully!',
+                                'success'
+                            );
                             updateProfileDisplay(formData);
                             closeProfileModal();
                             history.replaceState(null, null, location.pathname);
                         } else {
-                            alert('Error: ' + (data && data.message ? data.message : 'Update failed'));
+                            Swal.fire(
+                                'Error!',
+                                'Error: ' + (data && data.message ? data.message : 'Update failed'),
+                                'error'
+                            );
                         }
                         submitBtn.textContent = originalText;
                         submitBtn.disabled = false;
                     })
                     .catch(error => {
                         console.error('Error updating profile:', error);
-                        alert('An error occurred while updating profile: ' + error.message);
+                        Swal.fire(
+                            'Error!',
+                            'An error occurred while updating profile: ' + error.message,
+                            'error'
+                        );
                         submitBtn.textContent = originalText;
                         submitBtn.disabled = false;
                     });
@@ -2554,29 +2598,6 @@ try {
     </main>
 </section>
 
-<!-- Settings Section -->
-<section id="settings" class="section">
-    <main>
-        <form id="settings-form" method="POST" action="process_settings.php">
-            <div class="head-title">
-                <div class="left">
-                    <h1>Settings Management</h1>
-                    <ul class="breadcrumb">
-                        <li><a href="#">Settings</a></li>
-                        <li><i class='bx bx-right-arrow-alt'></i></li>
-                        <li><a class="active" href="#">System Settings</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="table-data">
-                <div class="settings-list">
-                    <!-- Settings specific content will be added here -->
-                </div>
-            </div>
-        </form>
-    </main>
-</section>
-
 <!-- Logout Confirmation Modal - Fixed structure -->
 <div id="logoutModal" class="modal">
     <div class="modal-content">
@@ -2605,7 +2626,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const searchTerm = globalSearchInput.value.trim().toLowerCase();
             
             if (searchTerm.length < 2) {
-                alert('Please enter at least 2 characters to search');
+                Swal.fire(
+                    'Error!',
+                    'Please enter at least 2 characters to search',
+                    'error'
+                );
                 return;
             }
             

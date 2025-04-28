@@ -25,6 +25,9 @@ $db = $database->getConnection();
   <title>PESTCOZAM OFFICE</title>
   <link rel="stylesheet" href="../CSS CODES/Location_page.css"/>
   <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+  <!-- Add SweetAlert2 CSS and JS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
 </head>
   <style>
     html {
@@ -217,8 +220,16 @@ $db = $database->getConnection();
                                 });
                         } else {
                             sessionStorage.setItem("redirectTo", "Appointment-service.php");
-                            alert("You must log in first to make an appointment.");
-                            window.location.href = "Login.php";
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Login Required',
+                                text: 'You must log in first to make an appointment.',
+                                confirmButtonText: 'Login'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    window.location.href = "Login.php";
+                                }
+                            });
                         }
                     });
             });

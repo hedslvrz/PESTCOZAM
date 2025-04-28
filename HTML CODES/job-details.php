@@ -177,6 +177,9 @@ $treatmentTypes = [
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="stylesheet" href="../CSS CODES/dashboard-admin.css">
     <link rel="stylesheet" href="../CSS CODES/job-details.css">
+    <!-- Add SweetAlert2 CSS and JS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
 </head>
 <body>
     <div class="job-details-container">
@@ -553,24 +556,26 @@ $treatmentTypes = [
                 saveButton.disabled = false;
                 
                 if (data.success) {
-                    // Show success message
-                    const successMessage = document.createElement('div');
-                    successMessage.className = 'success-message';
-                    successMessage.innerHTML = '<i class="bx bx-check-circle"></i> ' + data.message;
-                    document.querySelector('.job-details-container').prepend(successMessage);
-                    
-                    // Remove message after 3 seconds
-                    setTimeout(() => {
-                        successMessage.remove();
-                    }, 3000);
+                    // Show success message using SweetAlert2
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Saved!',
+                        text: data.message,
+                        timer: 3000,
+                        showConfirmButton: false
+                    });
                     
                     // Reload the page to show updated data
                     setTimeout(() => {
                         window.location.reload();
                     }, 1500);
                 } else {
-                    // Show error message
-                    alert('Error saving job details: ' + (data.message || 'Unknown error'));
+                    // Show error message using SweetAlert2
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message || 'Unknown error',
+                    });
                 }
             })
             .catch(error => {
@@ -579,7 +584,11 @@ $treatmentTypes = [
                 saveButton.disabled = false;
                 
                 console.error('Error:', error);
-                alert('An error occurred while saving');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'An error occurred while saving',
+                });
             });
         });
         
