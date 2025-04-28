@@ -10,7 +10,6 @@
   <script src="../JS CODES/login.js"></script>
 </head>
 <body>
-
   <!-- Header-->
   <header class="header-bar">
     <img src="../Pictures/pest_logo.png" alt="PESTCOZAM Logo" class="header-logo" />
@@ -31,28 +30,27 @@
       <hr class="title-underline" />
 
       <form id="loginUser" name="loginUser" class="login-form">
-    <div class="input-group">
-        <label for="email">Your Email</label>
-        <input type="email" id="email" name="email" placeholder="Enter your email address" />
-    </div>
+        <div class="input-group">
+            <label for="email">Your Email</label>
+            <input type="email" id="email" name="email" placeholder="Enter your email address" />
+        </div>
 
-    <div class="input-group">
-        <label for="password">Password</label>
-        <input type="password" id="password" name="password" placeholder="Enter your password" />
-        <p class="forgot-text">
-            <a href="../HTML CODES/ForgotPassword.php">Forgot Password?</a>
-        </p>
-    </div>
+        <div class="input-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" placeholder="Enter your password" />
+            <p class="forgot-text">
+                <a href="../HTML CODES/ForgotPassword.php">Forgot Password?</a>
+            </p>
+        </div>
 
-    <div class="bottom-row">
-        <p class="signup-text">
-            Don't have an account?
-            <a href="../HTML CODES/Signup.php">Sign up here</a>
-        </p>
-        <button type="submit" value="login" class="login-btn">Login</button>
-    </div>
-</form>
-
+        <div class="bottom-row">
+            <p class="signup-text">
+                Don't have an account?
+                <a href="../HTML CODES/Signup.php">Sign up here</a>
+            </p>
+            <button type="submit" value="login" class="login-btn">Login</button>
+        </div>
+      </form>
     </div>
   </div>
 </body>

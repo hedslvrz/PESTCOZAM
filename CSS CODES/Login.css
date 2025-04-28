@@ -16,6 +16,7 @@ body {
   flex-direction: column;
   align-items: center;
   min-height: 100vh;
+  padding: 1rem;
 }
 
 .header-bar {
@@ -34,7 +35,7 @@ body {
 }
 
 .header-text {
-  font-size: 30px;
+  font-size: clamp(1.5rem, 4vw, 2rem);
   font-weight: bold;
   color: white;
   font-family: 'Shrikhand', cursive;
@@ -49,12 +50,14 @@ body {
 
 .login-container {
   display: flex;
-  width: 950px; 
-  height: 520px;
+  width: 100%;
+  max-width: 950px;
+  min-height: 520px;
   background-color: #fff;
   border-radius: 10px;
   overflow: hidden;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 40px;
 }
 
 .left-column {
@@ -75,7 +78,7 @@ body {
   top: 20px;
   left: 20px;
   color: #fff;
-  font-size: 4vh;
+  font-size: clamp(1.2rem, 3vw, 2rem);
   font-weight: bold;
   max-width: 70%;
   margin-top: 5vh;
@@ -83,11 +86,11 @@ body {
 
 .right-column {
   width: 60%;
-  padding: 40px;
+  padding: 2rem;
 }
 
 .login-title {
-  font-size: 7vh;
+  font-size: clamp(2rem, 5vw, 3.5rem);
   color: #000;
   margin-bottom: 5px;
 }
@@ -105,12 +108,13 @@ body {
   display: flex;
   flex-direction: column;
   gap: 15px;
-  margin-top: 13vh;
+  margin-top: clamp(2rem, 10vh, 5rem);
 }
 
 .input-group {
   display: flex;
   flex-direction: column;
+  margin-bottom: 1rem;
 }
 
 .input-group label {
@@ -126,6 +130,7 @@ body {
   border-radius: 5px;
   font-size: 14px;
   background-color: #F5F5F5;
+  width: 100%;
 }
 
 .forgot-text {
@@ -147,14 +152,14 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 20px;
+  margin-top: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
 }
 
 .signup-text {
   font-size: 14px;
   color: #333;
-  margin-top: 5vh;
-  margin-left: 8vh;
 }
 
 .signup-text a {
@@ -176,10 +181,54 @@ body {
   font-size: 16px;
   cursor: pointer;
   transition: 0.3s ease;
-  margin-top: 5vh;
-  margin-right: 10vh;
 }
 
 .login-btn:hover {
   background-color: #142045;
+}
+
+/* Media Queries */
+@media screen and (max-width: 768px) {
+  .login-container {
+    flex-direction: column;
+    height: auto;
+  }
+  
+  .left-column {
+    width: 100%;
+    height: 200px;
+  }
+  
+  .right-column {
+    width: 100%;
+  }
+  
+  .bottom-row {
+    flex-direction: column;
+    gap: 1.5rem;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .signup-text, .login-btn {
+    margin: 0;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  body {
+    padding: 0.5rem;
+  }
+  
+  .right-column {
+    padding: 1rem;
+  }
+  
+  .login-form {
+    margin-top: 1.5rem;
+  }
+  
+  .tagline {
+    font-size: 1rem;
+  }
 }
