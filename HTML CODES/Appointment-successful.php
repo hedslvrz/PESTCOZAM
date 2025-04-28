@@ -164,7 +164,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         AppointmentSession::clearAllData();
         
         // Redirect to home page
-        header("Location: ../Index.php");
+        header("Location: ../index.php");
         exit();
     }
 }

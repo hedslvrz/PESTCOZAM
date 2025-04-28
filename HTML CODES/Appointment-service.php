@@ -266,7 +266,7 @@ $services = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </div>
             
             <div class="button-container">
-            <a href="../Index.php" class="back-btn">Back to Home</a>
+            <a href="../index.php" class="back-btn">Back to Home</a>
             <form id="serviceForm" action="Appointment-service.php" method="POST">
                 <input type="hidden" id="selectedService" name="service_id" value="">
                 <!-- Changed ID to avoid duplicate IDs -->
