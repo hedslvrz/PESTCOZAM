@@ -101,6 +101,9 @@ try {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../CSS CODES/dashboard-pct.css">
+    <!-- Add SweetAlert2 CSS and JS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
     <title>PCT Dashboard</title>
 </head>
 <body>
@@ -555,7 +558,12 @@ try {
                 previewContainer.innerHTML = ''; // Clear previous previews
                 
                 if (this.files.length > 5) {
-                    alert('You can only upload a maximum of 5 photos.');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Too many files',
+                        text: 'You can only upload a maximum of 5 photos.',
+                        confirmButtonColor: '#144578'
+                    });
                     this.value = ''; // Clear selected files
                     return;
                 }
@@ -565,7 +573,12 @@ try {
                     
                     // Check file size (max 2MB)
                     if (file.size > 2 * 1024 * 1024) {
-                        alert(`File ${file.name} exceeds 2MB. Please select a smaller file.`);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'File too large',
+                            text: `File ${file.name} exceeds 2MB. Please select a smaller file.`,
+                            confirmButtonColor: '#144578'
+                        });
                         continue;
                     }
                     

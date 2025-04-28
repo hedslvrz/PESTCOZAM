@@ -53,6 +53,9 @@ $calendarData = AppointmentSession::getData('calendar', []);
   <!-- Link to your external CSS file -->
   <link rel="stylesheet" href="../CSS CODES/Appointment-calendar.css" />
   <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+  <!-- Add SweetAlert2 CSS and JS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
 </head>
 <body>
 
@@ -536,13 +539,21 @@ $calendarData = AppointmentSession::getData('calendar', []);
 
     function saveDateTime() {
       if (!selectedDate || !selectedTime) {
-        alert('Please select both date and time');
+        Swal.fire({
+          icon: 'warning',
+          title: 'Incomplete Selection',
+          text: 'Please select both date and time',
+        });
         return;
       }
 
       const serviceId = document.querySelector('input[name="service_id"]:checked');
       if (!serviceId) {
-        alert('Please select a service type');
+        Swal.fire({
+          icon: 'warning',
+          title: 'Service Type Missing',
+          text: 'Please select a service type',
+        });
         return;
       }
 
@@ -567,16 +578,30 @@ $calendarData = AppointmentSession::getData('calendar', []);
       })
       .then(data => {
         if (data.success) {
-          window.location.href = 'Appointment-successful.php';
+          Swal.fire({
+            icon: 'success',
+            title: 'Appointment Saved',
+            text: 'Your appointment details have been saved successfully!',
+          }).then(() => {
+            window.location.href = 'Appointment-successful.php';
+          });
         } else {
-          alert('Error: ' + (data.message || 'Failed to save appointment details'));
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: data.message || 'Failed to save appointment details',
+          });
           document.getElementById('nextButton').disabled = false;
           document.getElementById('nextButton').textContent = 'Next';
         }
       })
       .catch(error => {
         console.error('Error:', error);
-        alert('An error occurred. Please try again.');
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'An error occurred. Please try again.',
+        });
         document.getElementById('nextButton').disabled = false;
         document.getElementById('nextButton').textContent = 'Next';
       });

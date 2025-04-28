@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Forgot Password - PESTCOZAM</title>
   <link rel="stylesheet" href="../CSS CODES/Login.css" />
+  <!-- Add SweetAlert2 CSS and JS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
 </head>
 <body>
 
@@ -49,8 +52,14 @@
     document.querySelector('form').addEventListener('submit', function(event) {
       const email = document.getElementById('email').value.trim();
       if (!email) {
-        alert('Please enter your email address');
         event.preventDefault();
+        Swal.fire({
+          icon: 'error',
+          title: 'Oops...',
+          text: 'Please enter your email address',
+          confirmButtonColor: '#3085d6',
+          confirmButtonText: 'OK'
+        });
       }
     });
   </script>

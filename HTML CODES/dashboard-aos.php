@@ -182,6 +182,9 @@ try {
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../CSS CODES/dashboard-aos.css">
     <link rel="stylesheet" href="../CSS CODES/modal.css">
+    <!-- Add SweetAlert2 CSS and JS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
     <style>
         /* Override disabled option styling for technician select */
         #technician-select option[disabled] {
@@ -1809,65 +1812,88 @@ try {
             const reportId = document.getElementById('reportIdField').value;
             
             if (!reportId) {
-                alert('Report ID not found');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Report ID not found',
+                });
                 return;
             }
             
             // Confirm before changing status
-            if (!confirm(`Are you sure you want to ${status} this report?`)) {
-                return;
-            }
-            
-            // Prepare data for AJAX request
-            const formData = new FormData();
-            formData.append('report_id', reportId);
-            formData.append('status', status);
-            formData.append('action', 'update_status');
-            formData.append('role', 'supervisor'); // Identify that a supervisor is making the change
-            
-            // Send AJAX request to update status
-            fetch('../PHP CODES/update_report_status.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Update UI to reflect the change
-                    alert(`Report has been ${status} successfully.`);
+            Swal.fire({
+                title: `Are you sure you want to ${status} this report?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, proceed!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Prepare data for AJAX request
+                    const formData = new FormData();
+                    formData.append('report_id', reportId);
+                    formData.append('status', status);
+                    formData.append('action', 'update_status');
+                    formData.append('role', 'supervisor'); // Identify that a supervisor is making the change
                     
-                    // Update the report's status in the global data
-                    const reportIndex = window.reportsData.findIndex(r => r.report_id == reportId);
-                    if (reportIndex !== -1) {
-                        window.reportsData[reportIndex].status = status;
-                    }
-                    
-                    // Update the report card's status
-                    const reportCard = document.querySelector(`.report-card[data-report-id="${reportId}"]`);
-                    if (reportCard) {
-                        reportCard.setAttribute('data-status', status);
-                        const statusElement = reportCard.querySelector('.report-status');
-                        if (statusElement) {
-                            statusElement.className = `report-status ${status}`;
-                            statusElement.textContent = status === 'approved' ? 'Approved' : 'Rejected';
+                    // Send AJAX request to update status
+                    fetch('../PHP CODES/update_report_status.php', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Update UI to reflect the change
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success',
+                                text: `Report has been ${status} successfully.`,
+                            });
+                            
+                            // Update the report's status in the global data
+                            const reportIndex = window.reportsData.findIndex(r => r.report_id == reportId);
+                            if (reportIndex !== -1) {
+                                window.reportsData[reportIndex].status = status;
+                            }
+                            
+                            // Update the report card's status
+                            const reportCard = document.querySelector(`.report-card[data-report-id="${reportId}"]`);
+                            if (reportCard) {
+                                reportCard.setAttribute('data-status', status);
+                                const statusElement = reportCard.querySelector('.report-status');
+                                if (statusElement) {
+                                    statusElement.className = `report-status ${status}`;
+                                    statusElement.textContent = status === 'approved' ? 'Approved' : 'Rejected';
+                                }
+                            }
+                            
+                            // Update action buttons
+                            updateActionButtons(status);
+                            
+                            // Close the modal after a short delay
+                            setTimeout(() => {
+                                closeReportModal();
+                            }, 1500);
+                            
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: data.message || 'Failed to update report status',
+                            });
                         }
-                    }
-                    
-                    // Update action buttons
-                    updateActionButtons(status);
-                    
-                    // Close the modal after a short delay
-                    setTimeout(() => {
-                        closeReportModal();
-                    }, 1500);
-                    
-                } else {
-                    alert(`Error: ${data.message || 'Failed to update report status'}`);
+                    })
+                    .catch(error => {
+                        console.error('Error updating report status:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'An error occurred while updating the report status. Please try again.',
+                        });
+                    });
                 }
-            })
-            .catch(error => {
-                console.error('Error updating report status:', error);
-                alert('An error occurred while updating the report status. Please try again.');
             });
         }
         
