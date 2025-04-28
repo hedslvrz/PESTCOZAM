@@ -117,7 +117,7 @@ try {
         }
         
         // Create the reset link
-        $resetLink = "http://" . $_SERVER['HTTP_HOST'] . "/PESTCOZAM/HTML CODES/ResetPassword.php?token=" . $token;
+        $resetLink = "http://" . $_SERVER['HTTP_HOST'] . "../HTML CODES/ResetPassword.php?token=" . $token;
         
         // Use the email template system for password reset email
         require_once '../EMAIL TEMPLATES/email_functions.php';
