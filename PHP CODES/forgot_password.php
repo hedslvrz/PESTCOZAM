@@ -11,16 +11,7 @@ $email = isset($_POST['email']) ? trim($_POST['email']) : '';
 
 // Basic validation
 if (empty($email)) {
-    echo "<script>
-        Swal.fire({
-            icon: 'error',
-            title: 'Email Required',
-            text: 'Please enter your email address',
-            confirmButtonColor: '#144578'
-        }).then(function() {
-            window.location.href='../HTML CODES/ForgotPassword.php';
-        });
-    </script>";
+    echo "<script>alert('Email is required'); window.location.href='../HTML CODES/ForgotPassword.php';</script>";
     exit;
 }
 
@@ -73,16 +64,7 @@ try {
         } else {
             error_log("No user found with email: $email, password reset aborted");
             // Instead of hiding that the email doesn't exist, now we'll tell the user
-            echo "<script>
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Email Not Found',
-                    text: 'We couldn't find an account with that email. Please check your email and try again.',
-                    confirmButtonColor: '#144578'
-                }).then(function() {
-                    window.location.href='../HTML CODES/ForgotPassword.php';
-                });
-            </script>";
+            echo "<script>alert('Email not found. Please check your email and try again.'); window.location.href='../HTML CODES/ForgotPassword.php';</script>";
             exit;
         }
     } catch (Exception $e) {
@@ -154,42 +136,15 @@ try {
         
         if ($result['success']) {
             // Redirect with success message
-            echo "<script>
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Email Sent',
-                    text: 'A password reset link has been sent to your email address.',
-                    confirmButtonColor: '#144578'
-                }).then(function() {
-                    window.location.href='../HTML CODES/Login.php';
-                });
-            </script>";
+            echo "<script>alert('A password reset link has been sent to your email address.'); window.location.href='../HTML CODES/Login.php';</script>";
         } else {
             error_log("Failed to send email: " . $result['message']);
-            echo "<script>
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Email Delivery Failed',
-                    text: 'There was a problem sending the email. Please try again later.',
-                    confirmButtonColor: '#144578'
-                }).then(function() {
-                    window.location.href='../HTML CODES/ForgotPassword.php';
-                });
-            </script>";
+            echo "<script>alert('There was a problem sending the email. Please try again later.'); window.location.href='../HTML CODES/ForgotPassword.php';</script>";
         }
     }
 } catch (Exception $e) {
     error_log("Password reset error: " . $e->getMessage());
-    echo "<script>
-        Swal.fire({
-            icon: 'error',
-            title: 'System Error',
-            text: 'An unexpected error occurred. Please try again later.',
-            confirmButtonColor: '#144578'
-        }).then(function() {
-            window.location.href='../HTML CODES/ForgotPassword.php';
-        });
-    </script>";
+    echo "<script>alert('An error occurred. Please try again later.'); window.location.href='../HTML CODES/ForgotPassword.php';</script>";
 }
 
 ob_end_flush();
