@@ -1378,12 +1378,8 @@ try {
                                                     <i class='bx bx-show'></i> View Details
                                                 </a>
                                                 <?php if ($appointment['status'] === 'Completed'): ?>
-                                                    <a href="#" class="review-btn" onclick="loadReviewData(<?php echo $appointment['appointment_id']; ?>); return false;">
+                                                    <button href="#" class="review-btn" onclick="loadReviewData(<?php echo $appointment['appointment_id']; ?>); return false;">
                                                         <i class='bx bx-message-square-check'></i> Check Review
-                                                    </a>
-                                                <?php elseif ($appointment['status'] === 'Pending' || $appointment['status'] === 'Confirmed'): ?>
-                                                    <button type="button" class="feedback-btn" onclick="showFeedbackModal(<?php echo $appointment['appointment_id']; ?>)">
-                                                        <i class='bx bx-message-square-detail'></i> Feedback
                                                     </button>
                                                 <?php endif; ?>
                                             </div>
@@ -1403,97 +1399,65 @@ try {
     </main>
 </section>
 
-<!-- Feedback Modal - Updated with proper form fields -->
-<div id="feedbackModal" class="modal">
-    <div class="modal-content">
-        <span class="close-modal" onclick="closeFeedbackModal()">&times;</span>
-        <h2>Job Feedback / Follow-up Report</h2>
-        <form id="feedbackForm" method="POST">
-            <input type="hidden" name="appointment_id" id="feedback_appointment_id">
-            
-            <div class="form-section">
-                <h3>Report Information</h3>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Report Type:</label>
-                        <select name="report_type" required>
-                            <option value="">Select Report Type</option>
-                            <option value="follow-up">Follow-up Required</option>
-                            <option value="complaint">Customer Complaint</option>
-                            <option value="feedback">General Feedback</option>
-                            <option value="issue">Service Issue</option>
-                        </select>
+<!-- Review Modal -->
+<div class="modal" id="reviewModal">
+    <div class="review-modal-content">
+        <div class="modal-header">
+            <h3>Customer Review Details</h3>
+            <span class="close-modal" onclick="closeReviewModal()">&times;</span>
+        </div>
+        <div class="review-content">
+            <div class="review-grid">
+                <div class="review-left">
+                    <div class="overall-rating">
+                        <h4>Overall Rating</h4>
+                        <div class="rating-stars">
+                            <span id="overall-rating-value">0</span>
+                            <div class="stars-container" id="overall-stars"></div>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label>Priority:</label>
-                        <select name="priority" required>
-                            <option value="low">Low</option>
-                            <option value="medium">Medium</option>
-                            <option value="high">High</option>
-                            <option value="urgent">Urgent</option>
-                        </select>
+                    
+                    <div class="rating-details">
+                        <div class="rating-detail">
+                            <h4>Service Rating</h4>
+                            <div>
+                                <span id="service-rating-value">0</span>
+                                <div class="stars-container" id="service-stars"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="rating-detail">
+                            <h4>Technician Rating</h4>
+                            <div>
+                                <span id="technician-rating-value">0</span>
+                                <div class="stars-container" id="technician-stars"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="date-info">
+                        <p><i class='bx bx-calendar'></i> <span id="review-date">N/A</span></p>
                     </div>
                 </div>
                 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Date of Report:</label>
-                        <input type="date" name="report_date" required value="<?php echo date('Y-m-d'); ?>">
+                <div class="review-right">
+                    <div class="review-body">
+                        <h4><i class='bx bx-message-square-detail'></i> Review</h4>
+                        <p id="review-text">No review found.</p>
                     </div>
-                    <div class="form-group">
-                        <label>Follow-up Date (if needed):</label>
-                        <input type="date" name="followup_date">
+                    
+                    <div class="review-feedback">
+                        <h4><i class='bx bx-comment-detail'></i> Service Feedback</h4>
+                        <p id="service-feedback">No feedback provided.</p>
                     </div>
-                </div>
-            </div>
-            
-            <div class="form-section">
-                <h3>Issue Details</h3>
-                <div class="form-group">
-                    <label>Description of Issue/Feedback:</label>
-                    <textarea name="description" rows="4" required placeholder="Provide a detailed description..."></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label>Customer Comments:</label>
-                    <textarea name="customer_comments" rows="3" placeholder="Enter any comments from the customer..."></textarea>
-                </div>
-            </div>
-            
-            <div class="form-section">
-                <h3>Action Plan</h3>
-                <div class="form-group">
-                    <label>Recommended Actions:</label>
-                    <textarea name="recommended_actions" rows="3" required placeholder="What needs to be done to address this issue?"></textarea>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Assign To:</label>
-                        <select name="assigned_to">
-                            <option value="">Select Technician/Staff</option>
-                            <?php foreach ($technicians as $tech): ?>
-                                <option value="<?php echo $tech['id']; ?>"><?php echo htmlspecialchars($tech['firstname'] . ' ' . $tech['lastname']); ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Status:</label>
-                        <select name="status" required>
-                            <option value="pending">Pending</option>
-                            <option value="in_progress">In Progress</option>
-                            <option value="completed">Completed</option>
-                            <option value="cancelled">Cancelled</option>
-                        </select>
+                    
+                    <div class="review-issues" id="issues-container">
+                        <h4><i class='bx bx-error-circle'></i> Reported Issues</h4>
+                        <p id="reported-issues">No issues reported.</p>
                     </div>
                 </div>
             </div>
-            
-            <div class="form-actions">
-                <button type="submit" class="submit-btn">Submit Report</button>
-                <button type="button" class="cancel-btn" onclick="closeFeedbackModal()">Cancel</button>
-            </div>
-        </form>
+        </div>
     </div>
 </div>
 
@@ -2597,18 +2561,6 @@ try {
         </script>
     </main>
 </section>
-
-<!-- Logout Confirmation Modal - Fixed structure -->
-<div id="logoutModal" class="modal">
-    <div class="modal-content">
-        <h2>Confirm Logout</h2>
-        <p>Are you sure you want to logout?</p>
-        <div class="modal-buttons">
-            <button type="button" id="cancelLogout" class="cancel-btn">Cancel</button>
-            <button type="button" id="confirmLogout" class="logout-btn">Logout</button>
-        </div>
-    </div>
-</div>
 
 <script src="../JS CODES/dashboard-admin.js"></script>
 <script src="../JS CODES/work-orders.js"></script>

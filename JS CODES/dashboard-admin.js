@@ -140,34 +140,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Enhanced logout confirmation
-    const logoutLink = document.querySelector('a[href*="logout"]'); // Ensure the correct logout link is selected
-    const logoutModal = document.getElementById('logoutModal');
-    const confirmLogout = document.getElementById('confirmLogout');
-    const cancelLogout = document.getElementById('cancelLogout');
-
-    if (logoutLink) {
-        logoutLink.addEventListener('click', function (e) {
-            e.preventDefault(); // Prevent default logout behavior
-            logoutModal.style.display = 'block';
-        });
-
-        confirmLogout.addEventListener('click', function () {
-            window.location.href = logoutLink.href; // Redirect to the logout link
-        });
-
-        cancelLogout.addEventListener('click', function () {
-            logoutModal.style.display = 'none'; // Hide the modal
-        });
-
-        // Close modal when clicking outside the modal content
-        window.addEventListener('click', function (e) {
-            if (e.target === logoutModal) {
-                logoutModal.style.display = 'none';
-            }
-        });
-    }
-
     // Initialize report cards
     initializeReportCards();
 
@@ -370,78 +342,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     });
-
-    // Enhanced logout confirmation
-    const logoutLink = document.querySelector('a[href*="logout"]'); // Ensure the correct logout link is selected
-    const logoutModal = document.getElementById('logoutModal');
-    const confirmLogout = document.getElementById('confirmLogout');
-    const cancelLogout = document.getElementById('cancelLogout');
-
-    if (logoutLink) {
-        logoutLink.addEventListener('click', function (e) {
-            e.preventDefault(); // Prevent default logout behavior
-            logoutModal.style.display = 'block';
-        });
-
-        confirmLogout.addEventListener('click', function () {
-            window.location.href = logoutLink.href; // Redirect to the logout link
-        });
-
-        cancelLogout.addEventListener('click', function () {
-            logoutModal.style.display = 'none'; // Hide the modal
-        });
-
-        // Close modal when clicking outside the modal content
-        window.addEventListener('click', function (e) {
-            if (e.target === logoutModal) {
-                logoutModal.style.display = 'none';
-            }
-        });
-    }
-});
-
-// Logout Modal Functionality
-document.addEventListener('DOMContentLoaded', function() {
-    const logoutLink = document.querySelector('.logout');
-    const logoutModal = document.getElementById('logoutModal');
-    const confirmLogout = document.getElementById('confirmLogout');
-    const cancelLogout = document.getElementById('cancelLogout');
-
-    // Show modal when logout link is clicked
-    if (logoutLink) {
-        logoutLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            logoutModal.style.display = 'block';
-        });
-    }
-
-    // Handle confirm logout
-    if (confirmLogout) {
-        confirmLogout.addEventListener('click', function() {
-            window.location.href = 'Login.php';
-        });
-    }
-
-    // Handle cancel logout
-    if (cancelLogout) {
-        cancelLogout.addEventListener('click', function() {
-            logoutModal.style.display = 'none';
-        });
-    }
-
-    // Close modal when clicking outside
-    window.addEventListener('click', function(e) {
-        if (e.target === logoutModal) {
-            logoutModal.style.display = 'none';
-        }
-    });
-
-    // Close modal with Escape key
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && logoutModal.style.display === 'block') {
-            logoutModal.style.display = 'none';
-        }
-    });
 });
 
 // Improved section navigation with proper hiding
@@ -454,6 +354,9 @@ function showSection(sectionId) {
         section.style.opacity = '0'; // Make hidden sections invisible
         section.style.zIndex = '-1'; // Push hidden sections behind the active section
     });
+
+    // Hide all modals when changing sections
+    hideAllModals();
 
     // Show the selected section
     const targetSection = document.getElementById(sectionId);
@@ -481,62 +384,6 @@ function showSection(sectionId) {
 // Ensure the dashboard section is shown by default on page load
 document.addEventListener('DOMContentLoaded', function() {
     showSection('content'); // Default section to show
-});
-
-// Modified logout modal functions to work with new structure
-function openLogoutModal() {
-    const modal = document.getElementById('logoutModal');
-    if (!modal) return;
-    
-    modal.style.display = 'flex';
-    // Force reflow then add show class for transition
-    void modal.offsetWidth;
-    modal.classList.add('show');
-    document.body.style.overflow = 'hidden';
-}
-
-function closeLogoutModal() {
-    const modal = document.getElementById('logoutModal');
-    if (!modal) return;
-    
-    modal.classList.remove('show');
-    setTimeout(() => {
-        modal.style.display = 'none';
-        document.body.style.overflow = '';
-    }, 300);
-}
-
-// Update logout modal event listeners
-document.addEventListener('DOMContentLoaded', function() {
-    // Setup logout modal
-    const logoutLink = document.querySelector('a.logout');
-    const logoutModal = document.getElementById('logoutModal');
-    const confirmLogout = document.getElementById('confirmLogout');
-    const cancelLogout = document.getElementById('cancelLogout');
-    
-    if (logoutLink && logoutModal) {
-        logoutLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            openLogoutModal();
-        });
-        
-        if (confirmLogout) {
-            confirmLogout.addEventListener('click', function() {
-                window.location.href = logoutLink.getAttribute('href');
-            });
-        }
-        
-        if (cancelLogout) {
-            cancelLogout.addEventListener('click', closeLogoutModal);
-        }
-        
-        // Close modal when clicking outside
-        window.addEventListener('click', function(e) {
-            if (e.target === logoutModal) {
-                closeLogoutModal();
-            }
-        });
-    }
 });
 
 // Updated Report Modal Functions
@@ -612,6 +459,14 @@ function closeReportModal() {
 
 function initializeReportCards() {
     console.log('Initializing report cards...');
+    
+    // First, ensure the report modal is hidden
+    const reportModal = document.getElementById('reportModal');
+    if (reportModal) {
+        reportModal.style.display = 'none';
+        reportModal.classList.remove('show');
+    }
+    
     const reportCards = document.querySelectorAll('.report-card');
 
     if (reportCards.length > 0) {
@@ -631,6 +486,55 @@ function initializeReportCards() {
         });
     } else {
         console.log('No report cards found.');
+    }
+}
+
+// Add a dedicated function to ensure modals are properly hidden
+function hideAllModals() {
+    const modals = document.querySelectorAll('.modal, #reportModal, .report-modal-content');
+    modals.forEach(modal => {
+        if (modal) {
+            modal.style.display = 'none';
+            modal.classList.remove('show');
+        }
+    });
+    document.body.style.overflow = '';
+}
+
+// Ensure showSection also hides modals when changing sections
+function showSection(sectionId) {
+    // Hide all sections
+    document.querySelectorAll('.section').forEach(section => {
+        section.classList.remove('active');
+        section.style.display = 'none'; // Ensure all sections are hidden
+        section.style.pointerEvents = 'none'; // Disable interaction with hidden sections
+        section.style.opacity = '0'; // Make hidden sections invisible
+        section.style.zIndex = '-1'; // Push hidden sections behind the active section
+    });
+
+    // Hide all modals when changing sections
+    hideAllModals();
+
+    // Show the selected section
+    const targetSection = document.getElementById(sectionId);
+    if (targetSection) {
+        targetSection.style.display = 'block'; // Display the selected section
+        targetSection.style.pointerEvents = 'auto'; // Enable interaction with the active section
+        targetSection.style.opacity = '1'; // Make the active section visible
+        targetSection.style.zIndex = '10'; // Bring the active section to the front
+        targetSection.classList.add('active'); // Mark it as active
+
+        // Update the active menu item in the sidebar
+        document.querySelectorAll('#sidebar .side-menu.top li').forEach(item => {
+            item.classList.remove('active');
+        });
+        const menuItem = document.querySelector(`#sidebar .side-menu.top li a[href="#${sectionId}"]`).parentElement;
+        if (menuItem) {
+            menuItem.classList.add('active');
+        }
+
+        // Scroll back to top when changing sections
+        window.scrollTo(0, 0);
     }
 }
 
@@ -1490,25 +1394,6 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeCalendar();
 });
 
-// Function to open the feedback modal
-function showFeedbackModal(appointmentId) {
-    const modal = document.getElementById('feedbackModal');
-    const appointmentIdField = document.getElementById('feedback_appointment_id');
-    
-    if (modal && appointmentIdField) {
-        appointmentIdField.value = appointmentId;
-        modal.style.display = 'flex';
-    }
-}
-
-// Function to close the feedback modal
-function closeFeedbackModal() {
-    const modal = document.getElementById('feedbackModal');
-    if (modal) {
-        modal.style.display = 'none';
-    }
-}
-
 // Function to open the report modal
 function openReportModal(reportId) {
     console.log(`Opening report modal for ID: ${reportId}`);
@@ -1643,12 +1528,176 @@ function downloadReportPDF() {
 }
 
 // Make sure these functions are globally available
-window.showFeedbackModal = showFeedbackModal;
-window.closeFeedbackModal = closeFeedbackModal;
 window.openReportModal = openReportModal;
 window.closeReportModal = closeReportModal;
 window.updateReportStatus = updateReportStatus;
 window.downloadReportPDF = downloadReportPDF;
+
+// Function to load and display review data
+function loadReviewData(appointmentId) {
+    console.log("Loading review data for appointment ID:", appointmentId);
+    
+    // Get the modal element
+    const modal = document.getElementById('reviewModal');
+    if (!modal) {
+        console.error('Review modal not found in the DOM');
+        return;
+    }
+    
+    // Show the modal with loading state
+    modal.style.display = 'flex';
+    setTimeout(() => {
+        modal.classList.add('show');
+    }, 10);
+    
+    // Get all the elements we need to update
+    const reviewText = document.getElementById('review-text');
+    const serviceFeedback = document.getElementById('service-feedback');
+    const reportedIssues = document.getElementById('reported-issues');
+    const overallRatingValue = document.getElementById('overall-rating-value');
+    const serviceRatingValue = document.getElementById('service-rating-value');
+    const technicianRatingValue = document.getElementById('technician-rating-value');
+    const overallStars = document.getElementById('overall-stars');
+    const serviceStars = document.getElementById('service-stars');
+    const technicianStars = document.getElementById('technician-stars');
+    const reviewDate = document.getElementById('review-date');
+    const issuesContainer = document.getElementById('issues-container');
+    
+    // Set loading states
+    if (reviewText) reviewText.textContent = 'Loading...';
+    if (serviceFeedback) serviceFeedback.textContent = 'Loading...';
+    if (reportedIssues) reportedIssues.textContent = 'Loading...';
+    if (overallStars) overallStars.innerHTML = '';
+    if (serviceStars) serviceStars.innerHTML = '';
+    if (technicianStars) technicianStars.innerHTML = '';
+    
+    // Fetch the review data
+    fetch(`../PHP CODES/get_review.php?appointment_id=${appointmentId}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log("Review data received:", data);
+            
+            if (data.success && data.review) {
+                const review = data.review;
+                
+                // Update overall rating
+                if (overallRatingValue) overallRatingValue.textContent = review.rating || 'N/A';
+                if (overallStars) overallStars.innerHTML = generateStars(review.rating);
+                
+                // Update service rating
+                if (serviceRatingValue) serviceRatingValue.textContent = review.service_rating || 'N/A';
+                if (serviceStars) serviceStars.innerHTML = generateStars(review.service_rating);
+                
+                // Update technician rating
+                if (technicianRatingValue) technicianRatingValue.textContent = review.technician_rating || 'N/A';
+                if (technicianStars) technicianStars.innerHTML = generateStars(review.technician_rating);
+                
+                // Update review text
+                if (reviewText) reviewText.textContent = review.review_text || 'No review provided';
+                
+                // Update service feedback
+                if (serviceFeedback) serviceFeedback.textContent = review.service_feedback || 'No feedback provided';
+                
+                // Update reported issues
+                if (issuesContainer) {
+                    if (review.reported_issues && review.reported_issues.trim() !== '') {
+                        if (reportedIssues) reportedIssues.textContent = review.reported_issues;
+                        issuesContainer.style.display = 'block';
+                    } else {
+                        issuesContainer.style.display = 'none';
+                    }
+                }
+                
+                // Update review date
+                if (reviewDate) reviewDate.textContent = review.formatted_date || 'N/A';
+                
+            } else {
+                // No review found or error occurred
+                console.log("No review found or error occurred");
+                
+                if (overallRatingValue) overallRatingValue.textContent = 'N/A';
+                if (serviceRatingValue) serviceRatingValue.textContent = 'N/A';
+                if (technicianRatingValue) technicianRatingValue.textContent = 'N/A';
+                
+                if (overallStars) overallStars.innerHTML = '';
+                if (serviceStars) serviceStars.innerHTML = '';
+                if (technicianStars) technicianStars.innerHTML = '';
+                
+                if (reviewText) reviewText.textContent = 'No review has been submitted for this appointment.';
+                if (serviceFeedback) serviceFeedback.textContent = 'No feedback provided.';
+                
+                if (issuesContainer) issuesContainer.style.display = 'none';
+                if (reviewDate) reviewDate.textContent = 'N/A';
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching review data:', error);
+            
+            // Handle error state
+            if (reviewText) reviewText.textContent = 'Error loading review data. Please try again.';
+            if (serviceFeedback) serviceFeedback.textContent = 'Error loading data.';
+            if (reportedIssues) reportedIssues.textContent = 'Error loading data.';
+            
+            if (overallRatingValue) overallRatingValue.textContent = 'Error';
+            if (serviceRatingValue) serviceRatingValue.textContent = 'Error';
+            if (technicianRatingValue) technicianRatingValue.textContent = 'Error';
+        });
+}
+
+// Helper function to generate star icons based on rating
+function generateStars(rating) {
+    if (!rating || isNaN(rating)) {
+        // Return empty stars if no rating or invalid rating
+        let emptyStars = '';
+        for (let i = 0; i < 5; i++) {
+            emptyStars += '<i class="bx bxs-star"></i>';
+        }
+        return emptyStars;
+    }
+    
+    // Parse rating as float and limit to 0-5 range
+    rating = Math.min(Math.max(parseFloat(rating), 0), 5);
+    
+    // Calculate full and empty stars
+    const fullStars = Math.floor(rating);
+    const emptyStars = 5 - fullStars;
+    
+    // Build the HTML for stars
+    let starsHTML = '';
+    
+    // Add filled stars
+    for (let i = 0; i < fullStars; i++) {
+        starsHTML += '<i class="bx bxs-star filled"></i>';
+    }
+    
+    // Add empty stars
+    for (let i = 0; i < emptyStars; i++) {
+        starsHTML += '<i class="bx bxs-star"></i>';
+    }
+    
+    return starsHTML;
+}
+
+// Function to close review modal
+function closeReviewModal() {
+    const modal = document.getElementById('reviewModal');
+    if (modal) {
+        modal.classList.remove('show');
+        setTimeout(() => {
+            modal.style.display = 'none';
+        }, 300);
+    }
+}
+
+// Make functions globally available
+window.loadReviewData = loadReviewData;
+window.closeReviewModal = closeReviewModal;
+window.generateStars = generateStars;
 
 
 
