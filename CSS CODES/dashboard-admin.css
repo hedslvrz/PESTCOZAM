@@ -1457,38 +1457,117 @@ html, body {
     width: 100%;
 }
 
-#work-orders table {
+/* Enhanced table styles with centered headers and borders between columns */
+#work-orders .table-responsive {
+    overflow-x: auto;
+    border-radius: 8px;
+}
+
+#work-orders .work-orders-table {
     width: 100%;
-    border-collapse: collapse;
-    table-layout: fixed;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: white;
 }
 
-#work-orders th, 
-#work-orders td {
-    padding: 12px;
-    text-align: left;
-    border: 1px solid #ddd;
+#work-orders .work-orders-table th {
+    background: #f8f9fa;
+    color: #344767;
+    font-weight: 600;
+    padding: 16px;
+    text-align: center; /* Centered headers */
+    font-size: 14px;
+    border-bottom: 1px solid #edf0f7;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    vertical-align: middle;
+    border-right: 1px solid #edf0f7; /* Add vertical borders between header columns */
 }
 
-#work-orders th {
-    background: #144578;
-    color: white;
-    cursor: pointer;
+#work-orders .work-orders-table th:last-child {
+    border-right: none; /* Remove border from last header cell */
 }
 
-#work-orders td:nth-child(5) {
-    text-align: center;
+#work-orders .work-orders-table td {
+    padding: 14px 16px;
+    vertical-align: middle;
+    border-bottom: 1px solid #edf0f7;
+    border-right: 1px solid #edf0f7; /* Add vertical borders between data columns */
+    font-size: 14px;
+    color: #555;
+    transition: background 0.2s ease;
+}
+
+#work-orders .work-orders-table td:last-child {
+    border-right: none; /* Remove border from last data cell */
+}
+
+/* Column widths with consistent dimensions */
+#work-orders .work-orders-table th:nth-child(1),
+#work-orders .work-orders-table td:nth-child(1) {
+    width: 60px;
+    padding-left: 16px;
+    padding-right: 16px;
+}
+
+#work-orders .work-orders-table th:nth-child(2),
+#work-orders .work-orders-table td:nth-child(2) {
+    width: 15%;
+    padding-left: 16px;
+    padding-right: 16px;
+}
+
+#work-orders .work-orders-table th:nth-child(3),
+#work-orders .work-orders-table td:nth-child(3) {
+    width: 15%;
+    padding-left: 16px;
+    padding-right: 16px;
+}
+
+#work-orders .work-orders-table th:nth-child(4),
+#work-orders .work-orders-table td:nth-child(4) {
+    width: 15%;
+    padding-left: 16px;
+    padding-right: 16px;
+}
+
+#work-orders .work-orders-table th:nth-child(5),
+#work-orders .work-orders-table td:nth-child(5) {
+    width: 15%;
+    padding-left: 16px;
+    padding-right: 16px;
+    text-align: center; /* Center status column */
+}
+
+#work-orders .work-orders-table th:nth-child(6),
+#work-orders .work-orders-table td:nth-child(6) {
     width: 120px;
-    padding: 8px;
+    padding-left: 16px;
+    padding-right: 16px;
 }
 
-#work-orders td {
-    vertical-align: middle;
+#work-orders .work-orders-table th:nth-child(7),
+#work-orders .work-orders-table td:nth-child(7) {
+    width: 180px;
+    padding-left: 16px;
+    padding-right: 16px;
 }
 
-#work-orders td:last-child {
-    text-align: center;
-    vertical-align: middle;
+/* Improve alignment for specific content types */
+#work-orders .schedule-info,
+#work-orders .customer-info,
+#work-orders .service-info,
+#work-orders .tech-info {
+    padding: 5px 0;
+    min-height: 42px; /* Ensure consistent height */
+    display: flex;
+    align-items: center;
+}
+
+/* Ensure status badges have consistent alignment */
+#work-orders .status {
+    margin: 0 auto; /* Center horizontally */
 }
 
 /* Update status styles for work orders to be more compact */
@@ -2864,398 +2943,6 @@ th {
     overflow-y: auto;
 }
 
-/* Form Sections */
-#reports .form-section {
-    background: #f8f9fa;
-    border-radius: 10px;
-    padding: 20px;
-    margin-bottom: 20px;
-}
-
-#reports .form-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-    margin-bottom: 15px;
-}
-
-#reports .form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-#reports .form-group label {
-    font-weight: 500;
-    color: #555;
-}
-
-#reports .form-group input,
-#reports .form-group textarea {
-    padding: 8px 12px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    width: 100%;
-    box-sizing: border-box;
-    resize: none; /* Prevent resizing */
-}
-
-#reports .form-group textarea {
-    height: 120px; /* Fixed height for textareas */
-}
-
-/* Image Gallery */
-#reports .image-gallery {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 15px;
-    margin-top: 15px;
-}
-
-#reports .image-gallery img {
-    width: 100%;
-    height: 150px;
-    object-fit: cover;
-    border-radius: 8px;
-}
-
-/* Form Actions */
-#reports .form-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 20px;
-    padding-top: 20px;
-    border-top: 1px solid #eee;
-}
-
-#reports .form-actions button {
-    padding: 8px 16px;
-    border: none;
-    border-radius: 6px;
-    font-weight: 500;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    transition: all 0.2s ease;
-}
-
-#reports .btn-approve {
-    background: #4caf50;
-    color: white;
-}
-
-#reports .btn-reject {
-    background: #f44336;
-    color: white;
-}
-
-#reports .btn-print {
-    background: #144578;
-    color: white;
-}
-
-#reports .form-actions button:hover {
-    opacity: 0.9;
-    transform: translateY(-1px);
-}
-
-/* Modal Animation */
-@keyframes modalFadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Modal Content Styles */
-.report-modal-content h2 {
-    font-size: 1.8rem;
-    margin-bottom: 25px;
-    color: #144578;
-}
-
-.report-modal-content .form-section {
-    margin-bottom: 25px;
-    padding: 20px;
-    background: #f8f9fa;
-    border-radius: 10px;
-}
-
-.report-modal-content label {
-    font-size: 0.95rem;
-    font-weight: 500;
-    color: #333;
-    margin-bottom: 8px;
-    display: block;
-}
-
-.report-modal-content input,
-.report-modal-content textarea {
-    font-family: 'Roboto', sans-serif;
-    font-size: 0.95rem;
-    padding: 10px 12px;
-    width: 100%;
-    box-sizing: border-box;
-    resize: none; /* Prevent resizing */
-}
-
-.report-modal-content textarea {
-    height: 120px; /* Fixed height for textareas */
-}
-
-/* Modal Buttons */
-.report-modal-content .form-actions {
-    margin-top: 30px;
-    padding-top: 20px;
-    border-top: 1px solid #eee;
-}
-
-.report-modal-content .form-actions button {
-    padding: 10px 20px;
-    font-size: 0.95rem;
-    font-weight: 500;
-    letter-spacing: 0.3px;
-}
-
-/* Enhanced Modal Styles */
-.modal {
-    display: flex;
-    align-items: center; /* Center vertically */
-    justify-content: center; /* Center horizontally */
-    overflow-y: auto; /* Allow scrolling for content */
-    padding: 20px;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.75); /* Darker background for better focus */
-    z-index: 1000;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
-}
-
-.modal.show {
-    opacity: 1;
-    visibility: visible;
-}
-
-.report-modal-content {
-    padding: 30px;
-    border-radius: 15px;
-    max-width: 600px;
-    width: 100%;
-    max-height: 80vh; /* Limit height to 80% of the viewport */
-    overflow-y: auto; /* Enable scrolling for content */
-    position: relative;
-    transform: translateY(-20px);
-    transition: transform 0.3s ease;
-}
-
-.modal.show .report-modal-content {
-    transform: translateY(0);
-}
-
-.report-modal-content h2 {
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: #144578;
-    margin-bottom: 20px;
-    text-align: center;
-}
-
-.report-modal-content .form-section {
-    background: #f9f9f9;
-    border-radius: 10px;
-    padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.1), inset -2px -2px 5px rgba(255, 255, 255, 0.7);
-}
-
-.report-modal-content .form-section h3 {
-    font-size: 1.1rem;
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 15px;
-}
-
-.report-modal-content .form-actions button {
-    background: linear-gradient(145deg, #e0e0e0, #ffffff);
-    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1), -2px -2px 5px rgba(255, 255, 255, 0.7);
-    transition: all 0.3s ease;
-}
-
-.report-modal-content .form-actions button:hover {
-    background: linear-gradient(145deg, #d0d0d0, #f8f8f8);
-    box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.15), -3px -3px 8px rgba(255, 255, 255, 0.8);
-}
-
-.close-modal {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    font-size: 24px;
-    cursor: pointer;
-    color: #666;
-    transition: color 0.2s ease;
-}
-
-.close-modal:hover {
-    color: #333;
-}
-
-/* Scrollbar for modal content */
-.report-modal-content::-webkit-scrollbar {
-    width: 8px;
-}
-
-.report-modal-content::-webkit-scrollbar-thumb {
-    background: #ccc;
-    border-radius: 4px;
-}
-
-.report-modal-content::-webkit-scrollbar-thumb:hover {
-    background: #aaa;
-}
-
-/* Responsive adjustments */
-@media screen and (max-width: 768px) {
-    .report-modal-content {
-        max-width: 90%;
-        padding: 20px;
-    }
-}
-
-/* Reports Section Specific Styles */
-.reports-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 30px;
-    padding: 10px;
-    margin: 20px 5px;
-    width: calc(100% - 60px);
-    max-width: 1600px;
-}
-
-#reports .report-card {
-    background: white;
-    border-radius: 15px;
-    padding: 24px;
-    margin: 0;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-    cursor: pointer;
-    height: fit-content;
-    width: 100%;
-    box-sizing: border-box;
-}
-
-#reports .report-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-}
-
-#reports .report-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 15px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid #eee;
-}
-
-#reports .report-status {
-    display: inline-block;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: 500;
-}
-
-#reports .report-status.pending {
-    background: #fff3e0;
-    color: #e65100;
-}
-
-#reports .report-status.approved {
-    background: #e8f5e9;
-    color: #2e7d32;
-}
-
-#reports .technician-info {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 15px;
-}
-
-#reports .technician-info img {
-    width: 45px;
-    height: 45px;
-    border-radius: 50%;
-    object-fit: cover;
-}
-
-#reports .technician-info h3 {
-    margin: 0;
-    font-size: 1rem;
-    color: #333;
-}
-
-#reports .technician-info span {
-    font-size: 0.85rem;
-    color: #666;
-}
-
-#reports .report-preview {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-#reports .report-preview p {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin: 0;
-    font-size: 0.9rem;
-    color: #555;
-}
-
-#reports .report-preview i {
-    color: #144578;
-    font-size: 1.1rem;
-}
-
-/* Modal Styles for Reports */
-#reports .modal {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(0, 0, 0, 0.7);
-    padding: 20px;
-}
-
-#reports .report-modal-content {
-    background: white;
-    width: 100%;
-    max-width: 800px;
-    max-height: 85vh;
-    border-radius: 15px;
-    padding: 30px;
-    position: relative;
-    overflow-y: auto;
-}
-
 #reports .form-section {
     background: #f8f9fa;
     border-radius: 10px;
@@ -4514,8 +4201,7 @@ th {
 }
 
 /* Fix the consistency between feedback and view details buttons */
-#work-orders .view-btn,
-#work-orders .feedback-btn {
+#work-orders .view-btn {
     padding: 7px 12px;
     border: none;
     border-radius: 6px;
@@ -4543,20 +4229,27 @@ th {
     background: #e0e4e9;
 }
 
-#work-orders .feedback-btn {
-    background: #e6f3ff;
-    color: #144578;
-}
-
-#work-orders .feedback-btn:hover {
-    background: #c9e6ff;
-    color: #144578;
-}
-
-#work-orders .view-btn i,
-#work-orders .feedback-btn i {
+#work-orders .view-btn i {
     font-size: 16px;
     flex-shrink: 0; /* Prevent icon from shrinking */
+}
+
+/* Ensure action buttons container has consistent spacing */
+#work-orders .action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+}
+
+/* Ensure that action buttons have the same width when in the same container */
+#work-orders .action-buttons > * {
+    flex: 1;
+    min-height: 34px;
+    max-height: 34px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 /* Ensure action buttons container has consistent spacing */
@@ -4811,4 +4504,318 @@ th {
     color: white;
     transform: scale(1.05);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Enhanced Review Modal Styles with Box Design */
+#reviewModal.modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+#reviewModal.modal.show {
+    display: flex !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+.review-modal-content {
+    background-color: #fefefe;
+    margin: auto;
+    padding: 0;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 55%;
+    position: relative;
+    transform: translateY(-50px);
+    animation: modalDrop 0.3s forwards;
+    overflow: hidden;
+    border-top: 5px solid #144578;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+}
+
+@keyframes modalDrop {
+    to {
+        transform: translateY(0);
+    }
+}
+
+/* Review content styles */
+.review-content {
+    padding: 25px 30px 30px;
+    max-height: 70vh;
+    overflow-y: auto;
+    background-color: #fff;
+}
+
+/* New grid layout for side-by-side design */
+.review-grid {
+    display: grid;
+    grid-template-columns: 320px 1fr; /* Fixed width for ratings section, fluid for comments */
+    gap: 30px;
+}
+
+/* Left side - Ratings */
+.review-left {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.overall-rating {
+    text-align: center;
+    padding: 25px 20px;
+    background: linear-gradient(to bottom, #f8faff, #eef5ff);
+    border-radius: 4px; /* More box-like corners */
+    border: 1px solid #d0e1fd;
+    box-shadow: 0 4px 15px rgba(20, 69, 120, 0.08);
+}
+
+.overall-rating h4 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #144578;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.rating-stars {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    font-weight: 600;
+    color: #144578;
+    gap: 10px;
+}
+
+/* Rating number styling for consistent display */
+.rating-number {
+    display: flex;
+    font-size: 22px;
+    font-weight: 600;
+    color: #144578;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 5px;
+}
+
+/* Stars container */
+.stars-container {
+    display: flex;
+    gap: 5px;
+}
+
+.stars-container i {
+    color: #d0e1fd; /* Lighter dashboard color for empty stars */
+    font-size: 24px;
+}
+
+.stars-container i.filled {
+    color: #ffc107; /* Yellow for filled stars */
+}
+
+.rating-details {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.rating-detail {
+    padding: 15px;
+    background-color: #f8faff;
+    border-radius: 4px;
+    border: 1px solid #e6effd;
+}
+
+.rating-detail > div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 8px;
+}
+
+.rating-detail .rating-number {
+    font-size: 18px; /* Slightly smaller than the overall rating */
+}
+
+.rating-detail .stars-container {
+    margin-right: auto;
+}
+
+.date-info {
+    padding: 15px;
+    background-color: #f8faff;
+    border-radius: 4px;
+    border: 1px solid #e6effd;
+}
+
+.date-info p {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #144578;
+    font-size: 14px;
+}
+
+/* Right side - Comments */
+.review-right {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.review-body, .review-feedback, .review-issues {
+    padding: 20px;
+    background-color: #f8faff;
+    border-radius: 4px;
+    border: 1px solid #e6effd;
+    box-shadow: 0 3px 10px rgba(20, 69, 120, 0.05);
+}
+
+.review-body h4, .review-feedback h4, .review-issues h4 {
+    color: #144578;
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-weight: 600;
+    font-size: 17px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.review-body p, .review-feedback p, .review-issues p {
+    line-height: 1.7;
+    color: #444;
+    margin: 0;
+    font-size: 15px;
+    word-wrap: break-word;
+}
+
+/* Custom scrollbar for review modal */
+.review-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.review-content::-webkit-scrollbar-track {
+    background: #f8faff;
+    border-radius: 10px;
+}
+
+.review-content::-webkit-scrollbar-thumb {
+    background-color: #d0e1fd;
+    border-radius: 10px;
+    border: 2px solid #f8faff;
+}
+
+.review-content::-webkit-scrollbar-thumb:hover {
+    background-color: #144578;
+}
+
+/* Close button for review modal */
+#reviewModal .close-modal {
+    position: absolute;
+    right: 20px;
+    top: 15px;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+    transition: color 0.2s;
+    z-index: 10;
+}
+
+#reviewModal .close-modal:hover {
+    color: #144578;
+}
+
+/* Modal header for review modal */
+#reviewModal .modal-header {
+    margin-bottom: 0;
+    position: relative;
+    text-align: left;
+    padding: 20px 30px;
+    background: linear-gradient(to right, #f5f9ff, #eef5ff);
+    border-bottom: 1px solid #d0e1fd;
+}
+
+#reviewModal .modal-header h3 {
+    color: #144578;
+    margin: 0;
+    font-size: 1.5rem;
+    text-align: left;
+    padding-right: 40px; /* Space for close button */
+    font-weight: 600;
+}
+
+/* Responsive adjustments for review modal */
+@media (max-width: 800px) {
+    .review-grid {
+        grid-template-columns: 1fr; /* Stack columns on small screens */
+        gap: 20px;
+    }
+    
+    .review-left {
+        order: 1; /* Ratings section comes first on mobile */
+    }
+    
+    .review-right {
+        order: 2;
+    }
+    
+    .overall-rating {
+        padding: 20px 15px;
+    }
+    
+    .rating-detail, .review-meta {
+        padding: 12px;
+    }
+    
+    .review-modal-content {
+        width: 95%;
+        max-width: 95%;
+    }
+}
+
+/* Review button in work orders table */
+#work-orders .review-btn {
+    padding: 7px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+    width: 100%;
+    height: 34px;
+    box-sizing: border-box;
+    text-decoration: none;
+    margin: 0;
+    background: #fff8e1; /* Updated to yellow matching dashboard-aos */
+    color: #ffa000; /* Updated text color for better contrast with yellow */
+}
+
+#work-orders .review-btn:hover {
+    background: #ffecb3; /* Updated hover state to match dashboard-aos */
+}
+
+#work-orders .review-btn i {
+    font-size: 16px;
+    flex-shrink: 0;
 }
