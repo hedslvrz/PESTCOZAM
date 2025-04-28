@@ -148,12 +148,9 @@ $locationData = AppointmentSession::getData('location', []);
         <li><a href="../HTML CODES/Appointment-service.php" class="btn-appointment">Book Appointment</a></li>
         
         <?php if (isset($_SESSION['user_id'])): ?>
-            <?php 
-                $profile_pic = isset($_SESSION['profile_pic']) ? $_SESSION['profile_pic'] : '../Pictures/boy.png';
-            ?>
             <li class="user-profile">
                 <div class="profile-dropdown">
-                    <img src="<?php echo $profile_pic; ?>" alt="Profile" class="profile-pic">
+                    <i class='bx bx-menu hamburger-icon'></i>
                     <div class="dropdown-content">
                         <a href="../HTML CODES/Profile.php"><i class='bx bx-user'></i> Profile</a>
                         <a href="../HTML CODES/logout.php"><i class='bx bx-log-out'></i> Logout</a>

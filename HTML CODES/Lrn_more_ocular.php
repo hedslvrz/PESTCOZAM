@@ -71,19 +71,19 @@ $service = $stmt->fetch(PDO::FETCH_ASSOC);
             <?php if ($is_logged_in): ?>
             <li class="user-profile">
                 <div class="profile-dropdown">
-                    <img src="<?php echo $profile_pic; ?>" alt="Profile" class="profile-pic">
+                    <i class='bx bx-menu hamburger-icon'></i>
                     <div class="dropdown-content">
                         <a href="../HTML CODES/Profile.php"><i class='bx bx-user'></i> Profile</a>
                         <a href="../HTML CODES/logout.php"><i class='bx bx-log-out'></i> Logout</a>
                     </div>
                 </div>
             </li>
-        <?php else: ?>
+            <?php else: ?>
             <li class="auth-buttons">
                 <a href="../HTML CODES/Login.php" class="btn-login"><i class='bx bx-log-in'></i> Login</a>
                 <a href="../HTML CODES/Signup.php" class="btn-signup"><i class='bx bx-user-plus'></i> Sign Up</a>
             </li>
-        <?php endif; ?>
+            <?php endif; ?>
           </ul>      
         </nav>
     </header>

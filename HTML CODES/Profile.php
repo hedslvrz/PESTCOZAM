@@ -122,7 +122,7 @@ if (isset($_SESSION['current_appointment'])) {
           <?php if (isset($_SESSION['user_id'])): ?>
             <li class="user-profile">
               <div class="profile-dropdown">
-                <img src="<?php echo $profile_pic; ?>" alt="Profile" class="profile-pic">
+                <i class='bx bx-menu hamburger-icon'></i>
                 <div class="dropdown-content">
                   <a href="Profile.php"><i class='bx bx-user'></i> Profile</a>
                   <a href="logout.php"><i class='bx bx-log-out'></i> Logout</a>
