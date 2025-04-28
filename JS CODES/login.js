@@ -105,7 +105,7 @@ function loginUser(event) {
                 });
             } else {
                 customModal.showSuccess("Login Successful!", () => {
-                    window.location.href = "../Index.php";
+                    window.location.href = "../index.php";
                 });
             }
         } else {
