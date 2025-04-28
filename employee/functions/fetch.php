@@ -1,33 +1,72 @@
 <?php
-// Include database connection if not already included
-if (!class_exists('Database')) {
-    require_once dirname(__FILE__) . "/../../database.php";
-}
+// Include the database connection file
+require_once __DIR__ . '/../../database.php';
 
-// Function to fetch all employees (technicians and supervisors)
+// Initialize the employees array
+$employees = [];
+
+/**
+ * Fetch all employees from the database
+ * @return array Array of employees
+ */
 function fetchEmployees() {
+    global $employees;
+    
     try {
+        // Create a new Database instance inside the function to ensure it's initialized
         $database = new Database();
-        $conn = $database->getConnection();
+        $db = $database->getConnection();
         
-        $query = "SELECT id, firstname, lastname, dob, email, mobile_number, role, status, 
-                        employee_no, sss_no, pagibig_no, philhealth_no 
-                 FROM users 
-                 WHERE role IN ('technician', 'supervisor')
-                 ORDER BY lastname, firstname";
-                 
-        $stmt = $conn->prepare($query);
+        if (!$db) {
+            error_log("Database connection is null in fetchEmployees()");
+            return [];
+        }
+        
+        // Prepare and execute the query
+        $stmt = $db->prepare("SELECT * FROM users WHERE role IN ('technician', 'supervisor')");
+        if (!$stmt) {
+            error_log("Failed to prepare statement in fetchEmployees()");
+            return [];
+        }
+        
         $stmt->execute();
         
+        // Fetch the results
         $employees = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        return $employees;
         
+        return $employees;
     } catch (PDOException $e) {
+        // Log the error and return an empty array
         error_log("Error fetching employees: " . $e->getMessage());
         return [];
     }
 }
 
-// Get the employees data
-$employees = fetchEmployees();
+/**
+ * Get an employee by ID
+ * @param int $id Employee ID
+ * @return array|null Employee data or null if not found
+ */
+function getEmployeeById($id) {
+    global $employees;
+    
+    // If employees array is empty, fetch them
+    if (empty($employees)) {
+        $employees = fetchEmployees();
+    }
+    
+    // Find the employee with the matching ID
+    foreach ($employees as $employee) {
+        if ($employee['id'] == $id) {
+            return $employee;
+        }
+    }
+    
+    return null;
+}
+
+// Only fetch employees if none have been fetched yet
+if (empty($employees)) {
+    $employees = fetchEmployees();
+}
 ?>

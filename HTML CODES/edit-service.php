@@ -12,73 +12,141 @@ if(!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 $database = new Database();
 $db = $database->getConnection();
 
-// Check if service ID is provided
-if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
-    header("Location: dashboard-admin.php#services");
-    exit();
-}
+// Get service ID from URL parameter
+$serviceId = $_GET['id'] ?? 0;
 
-$serviceId = (int)$_GET['id'];
-
-// Fetch service details
-try {
-    $stmt = $db->prepare("SELECT * FROM services WHERE service_id = ?");
-    $stmt->execute([$serviceId]);
-    $service = $stmt->fetch(PDO::FETCH_ASSOC);
+// Function to resize and compress image
+function resizeAndCompressImage($imagePath, $maxWidth = 600, $maxHeight = 600, $quality = 65) {
+    // Get image info
+    list($width, $height, $type) = getimagesize($imagePath);
     
-    if (!$service) {
-        // Service not found
-        header("Location: dashboard-admin.php#services");
-        exit();
+    // Calculate new dimensions
+    $ratio = min($maxWidth / $width, $maxHeight / $height);
+    // Only resize if the image is larger than the max dimensions
+    if ($ratio < 1) {
+        $newWidth = $width * $ratio;
+        $newHeight = $height * $ratio;
+    } else {
+        // Keep original size if already smaller than max dimensions
+        $newWidth = $width;
+        $newHeight = $height;
     }
-} catch(PDOException $e) {
-    error_log("Error: " . $e->getMessage());
-    header("Location: dashboard-admin.php#services");
-    exit();
+    
+    // Create new image resource
+    $newImage = imagecreatetruecolor($newWidth, $newHeight);
+    
+    // Create source image resource
+    switch ($type) {
+        case IMAGETYPE_JPEG:
+            $source = imagecreatefromjpeg($imagePath);
+            break;
+        case IMAGETYPE_PNG:
+            $source = imagecreatefrompng($imagePath);
+            // Preserve transparency
+            imagealphablending($newImage, false);
+            imagesavealpha($newImage, true);
+            break;
+        case IMAGETYPE_GIF:
+            $source = imagecreatefromgif($imagePath);
+            break;
+        default:
+            return false;
+    }
+    
+    // Resize image
+    imagecopyresampled($newImage, $source, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+    
+    // Output buffer to capture compressed image
+    ob_start();
+    
+    // Output compressed image to buffer
+    switch ($type) {
+        case IMAGETYPE_JPEG:
+            imagejpeg($newImage, null, $quality);
+            break;
+        case IMAGETYPE_PNG:
+            // PNG quality is 0-9 (0=no compression, 9=max compression)
+            $pngQuality = round((100 - $quality) / 11.11);
+            imagepng($newImage, null, $pngQuality);
+            break;
+        case IMAGETYPE_GIF:
+            imagegif($newImage);
+            break;
+    }
+    
+    // Get image data from buffer
+    $imageData = ob_get_clean();
+    
+    // Free up memory
+    imagedestroy($source);
+    imagedestroy($newImage);
+    
+    return $imageData;
 }
 
-// Process form submission
+// Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $service_name = $_POST['service_name'] ?? '';
+    $description = $_POST['description'] ?? '';
+    $estimated_time = $_POST['estimated_time'] ?? '';
+    $starting_price = $_POST['starting_price'] ?? 0;
+    $keep_existing_image = isset($_POST['keep_existing_image']) ? true : false;
+    
     try {
-        // Prepare update query
-        $query = "UPDATE services SET service_name = ?, description = ?, starting_price = ?";
-        $params = [
-            $_POST['service_name'],
-            $_POST['description'],
-            $_POST['starting_price']
-        ];
+        // Initialize query and parameters
+        $params = [$service_name, $description, $estimated_time, $starting_price];
+        $query = "UPDATE services SET service_name = ?, description = ?, estimated_time = ?, starting_price = ?";
         
-        // Check if new image is uploaded
-        $hasNewImage = !empty($_FILES['service_image']['name']) && $_FILES['service_image']['error'] === UPLOAD_ERR_OK;
-        
-        if ($hasNewImage) {
-            // Process image upload
-            $targetDir = "../Pictures/";
-            $fileName = basename($_FILES["service_image"]["name"]);
-            $targetFilePath = $targetDir . $fileName;
-            $fileType = pathinfo($targetFilePath, PATHINFO_EXTENSION);
+        // Handle image upload
+        if (!$keep_existing_image && isset($_FILES['service_image']) && $_FILES['service_image']['error'] == 0) {
+            $imageType = $_FILES['service_image']['type'];
             
-            // Allow certain file formats
-            $allowTypes = array('jpg', 'png', 'jpeg');
-            if (in_array(strtolower($fileType), $allowTypes)) {
-                // Upload file
-                if (move_uploaded_file($_FILES["service_image"]["tmp_name"], $targetFilePath)) {
-                    $query .= ", image_path = ?";
-                    $params[] = $fileName;
+            // Validate image type (optional)
+            $allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+            if (!in_array($imageType, $allowedTypes)) {
+                $errorMessage = "Invalid image type. Please upload a JPEG, PNG, or GIF image.";
+            } else {
+                // Instead of direct file_get_contents, resize and compress the image
+                $imageData = resizeAndCompressImage($_FILES['service_image']['tmp_name']);
+                
+                if ($imageData) {
+                    // Add image data to query and parameters
+                    $query .= ", image_data = ?, image_type = ?";
+                    $params[] = $imageData;
+                    $params[] = $imageType;
+                } else {
+                    $errorMessage = "Error processing the image. Please try a different image.";
                 }
             }
         }
         
+        // Complete the query
         $query .= " WHERE service_id = ?";
         $params[] = $serviceId;
         
-        $stmt = $db->prepare($query);
-        $stmt->execute($params);
-        
-        header("Location: dashboard-admin.php#services");
-        exit();
-    } catch(PDOException $e) {
+        if (empty($errorMessage)) {
+            // Execute the query
+            $stmt = $db->prepare($query);
+            $stmt->execute($params);
+            
+            header("Location: dashboard-admin.php#services");
+            exit();
+        }
+    } catch (PDOException $e) {
         $errorMessage = "Error updating service: " . $e->getMessage();
+    }
+} else {
+    // Fetch existing service data
+    try {
+        $stmt = $db->prepare("SELECT * FROM services WHERE service_id = ?");
+        $stmt->execute([$serviceId]);
+        $service = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if (!$service) {
+            $errorMessage = "Service not found.";
+        }
+    } catch (PDOException $e) {
+        $errorMessage = "Error fetching service: " . $e->getMessage();
     }
 }
 ?>
@@ -138,6 +206,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
                 
                 <div class="form-section">
+                    <h2>Additional Information</h2>
+                    <div class="form-group">
+                        <label for="estimated_time">Estimated Time <span class="required-field">*</span></label>
+                        <input type="text" id="estimated_time" name="estimated_time" value="<?php echo htmlspecialchars($service['estimated_time'] ?? ''); ?>" required>
+                        <div class="helper-text">Provide an estimated time for the service</div>
+                    </div>
+                </div>
+                
+                <div class="form-section">
                     <h2>Pricing Information</h2>
                     <div class="form-group">
                         <label for="starting_price">Starting Price (₱) <span class="required-field">*</span></label>
@@ -149,19 +226,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="form-section">
                     <h2>Service Image</h2>
                     <div class="form-group">
-                        <label for="service_image">Upload Service Image</label>
-                        <div class="file-upload">
-                            <div class="file-upload-btn <?php echo !empty($service['image_path']) ? 'has-image' : ''; ?>" id="upload-container">
-                                <?php if (!empty($service['image_path'])): ?>
-                                    <img src="../Pictures/<?php echo htmlspecialchars($service['image_path']); ?>" alt="Current Service Image">
-                                <?php else: ?>
-                                    <i class='bx bx-upload'></i>
-                                    <span>Click to upload image or drag and drop</span>
-                                    <p>PNG, JPG, JPEG (Max 5MB)</p>
-                                <?php endif; ?>
-                            </div>
-                            <input type="file" id="service_image" name="service_image" accept="image/*">
+                        <label>Current Image:</label>
+                        <div class="current-image-container">
+                            <?php if (!empty($service['image_data'])): ?>
+                                <?php 
+                                    $imageType = $service['image_type'] ?? 'image/jpeg';
+                                    $base64Image = base64_encode($service['image_data']);
+                                ?>
+                                <img src="data:<?php echo $imageType; ?>;base64,<?php echo $base64Image; ?>" 
+                                     alt="<?php echo htmlspecialchars($service['service_name']); ?>" 
+                                     style="max-width: 200px; max-height: 200px;">
+                            <?php elseif (!empty($service['image_path'])): ?>
+                                <?php 
+                                    $imagePath = $service['image_path'];
+                                    $displayImagePath = "../Pictures/" . $imagePath;
+                                ?>
+                                <img src="<?php echo htmlspecialchars($displayImagePath); ?>" 
+                                     alt="<?php echo htmlspecialchars($service['service_name']); ?>" 
+                                     style="max-width: 200px; max-height: 200px;">
+                            <?php else: ?>
+                                <p>No image available</p>
+                            <?php endif; ?>
                         </div>
+                        <div class="form-check mt-2">
+                            <input type="checkbox" id="keep_existing_image" name="keep_existing_image" class="form-check-input" checked>
+                            <label for="keep_existing_image" class="form-check-label">Keep existing image</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="service_image">Upload New Image:</label>
+                        <input type="file" id="service_image" name="service_image" accept="image/*">
+                        <small class="form-text text-muted">Upload a new image for this service (JPEG, PNG, or GIF).</small>
                     </div>
                 </div>
                 
@@ -208,6 +304,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <?php endif; ?>
                 }
             });
+
+            // Toggle file input based on checkbox
+            const keepExistingImageCheckbox = document.getElementById('keep_existing_image');
+            keepExistingImageCheckbox.addEventListener('change', function() {
+                const fileInput = document.getElementById('service_image');
+                fileInput.disabled = this.checked;
+                if (this.checked) {
+                    fileInput.value = ''; // Clear the file input when checkbox is checked
+                }
+            });
+            
+            // Set initial state
+            document.getElementById('service_image').disabled = keepExistingImageCheckbox.checked;
         });
     </script>
 </body>

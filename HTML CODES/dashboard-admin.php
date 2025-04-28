@@ -2038,20 +2038,26 @@ try {
                                     <input type="hidden" name="service_id[]" value="<?php echo $service['service_id']; ?>">
                                     <div class="service-image">
                                         <?php 
-                                        // Define the image path
-                                        $imagePath = $service['image_path'];
-                                        
-                                        // For web display, use relative URL path
-                                        $displayImagePath = "../Pictures/" . $imagePath;
-                                        
-                                        // For file_exists check, use server file system path
-                                        $serverImagePath = $_SERVER['DOCUMENT_ROOT'] . "/PESTCOZAM/Pictures/" . $imagePath;
-                                        
-                                        // Check if image exists and path is not empty
-                                        if (!empty($imagePath) && file_exists($serverImagePath)) {
-                                            echo '<img src="' . htmlspecialchars($displayImagePath) . '" alt="' . htmlspecialchars($service['service_name']) . '">';
+                                        // Check if the image is stored in the database as binary data
+                                        if (!empty($service['image_data'])) {
+                                            // Image is stored in the database as binary data
+                                            $imageType = $service['image_type'] ?? 'image/jpeg'; // Default to JPEG if type not specified
+                                            $base64Image = base64_encode($service['image_data']);
+                                            echo '<img src="data:' . $imageType . ';base64,' . $base64Image . '" alt="' . htmlspecialchars($service['service_name']) . '">';
+                                        } 
+                                        // Fallback to old path-based method if no image_data but has image_path
+                                        else if (!empty($service['image_path'])) {
+                                            $imagePath = $service['image_path'];
+                                            $displayImagePath = "../Pictures/" . $imagePath;
+                                            $serverImagePath = $_SERVER['DOCUMENT_ROOT'] . "/PESTCOZAM/Pictures/" . $imagePath;
+                                            
+                                            if (file_exists($serverImagePath)) {
+                                                echo '<img src="' . htmlspecialchars($displayImagePath) . '" alt="' . htmlspecialchars($service['service_name']) . '">';
+                                            } else {
+                                                echo '<img src="../Pictures/service-placeholder.png" alt="' . htmlspecialchars($service['service_name']) . '" class="placeholder-img">';
+                                            }
                                         } else {
-                                            // If image doesn't exist or path is empty, show placeholder
+                                            // If no image available, show placeholder
                                             echo '<img src="../Pictures/service-placeholder.png" alt="' . htmlspecialchars($service['service_name']) . '" class="placeholder-img">';
                                         }
                                         ?>

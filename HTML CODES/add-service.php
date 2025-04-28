@@ -15,38 +15,41 @@ $db = $database->getConnection();
 // Process form submission
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Get form data
-    $service_name = $_POST['service_name'];
-    $description = $_POST['description'];
-    $estimated_time = $_POST['estimated_time'];
-    $starting_price = $_POST['starting_price'];
+    $service_name = $_POST['service_name'] ?? '';
+    $description = $_POST['description'] ?? '';
+    $estimated_time = $_POST['estimated_time'] ?? '';
+    $starting_price = $_POST['starting_price'] ?? 0;
     
-    // Handle file upload
-    $image_path = '';
-    if(isset($_FILES['service_image']) && $_FILES['service_image']['error'] == 0) {
-        $target_dir = "../Pictures/";
-        $image_path = basename($_FILES["service_image"]["name"]);
-        $target_file = $target_dir . $image_path;
+    // Initialize variables for image handling
+    $imageData = null;
+    $imageType = null;
+    
+    // Check if an image was uploaded
+    if (isset($_FILES['service_image']) && $_FILES['service_image']['error'] == 0) {
+        // Read the image data
+        $imageData = file_get_contents($_FILES['service_image']['tmp_name']);
+        $imageType = $_FILES['service_image']['type'];
         
-        // Move uploaded file
-        if (move_uploaded_file($_FILES["service_image"]["tmp_name"], $target_file)) {
-            // File uploaded successfully
-        } else {
-            echo "Sorry, there was an error uploading your file.";
-            exit();
+        // Validate image type (optional)
+        $allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+        if (!in_array($imageType, $allowedTypes)) {
+            $error = "Invalid image type. Please upload a JPEG, PNG, or GIF image.";
         }
     }
 
-    try {
-        // Insert new service
-        $stmt = $db->prepare("INSERT INTO services (service_name, description, estimated_time, starting_price, image_path) VALUES (?, ?, ?, ?, ?)");
-        $stmt->execute([$service_name, $description, $estimated_time, $starting_price, $image_path]);
+    if (empty($error)) {
+        try {
+            // Insert new service
+            $stmt = $db->prepare("INSERT INTO services (service_name, description, estimated_time, starting_price, image_data, image_type) VALUES (?, ?, ?, ?, ?, ?)");
+            $stmt->execute([$service_name, $description, $estimated_time, $starting_price, $imageData, $imageType]);
 
-        // Redirect back to services management page
-        header("Location: dashboard-admin.php#services");
-        exit();
-    } catch(PDOException $e) {
-        echo "Error: " . $e->getMessage();
-        exit();
+            // Redirect back to services management page
+            header("Location: dashboard-admin.php#services");
+            exit();
+        } catch(PDOException $e) {
+            echo "Error: " . $e->getMessage();
+            exit();
+        }
     }
 }
 ?>
