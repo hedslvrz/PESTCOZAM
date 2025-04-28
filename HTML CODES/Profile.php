@@ -275,7 +275,7 @@ if (isset($_SESSION['current_appointment'])) {
       
       <div class="modal-actions">
         <button class="download-receipt-btn" onclick="downloadCurrentReceipt()">
-          <i class='bx bx-download'></i> Download Receipt
+          <i class='bx bx-download'></i> Download Appointment Confirmation
         </button>
         
         <div id="feedbackButtonContainer" style="display: none;">
@@ -583,7 +583,7 @@ if (isset($_SESSION['current_appointment'])) {
 
       doc.setFont("helvetica", "bold");
       doc.setFontSize(16);
-      doc.text("PESTCOZAM Appointment Receipt", 105, 20, { align: "center" });
+      doc.text("PESTCOZAM Appointment Confirmation", 105, 20, { align: "center" });
 
       doc.setFont("helvetica", "normal");
       doc.setFontSize(12);
