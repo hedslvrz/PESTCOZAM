@@ -9,14 +9,26 @@ document.addEventListener("DOMContentLoaded", function() {
             
             // Basic validation
             if (email === '') {
-                alert('Please enter your email address.');
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Empty Field',
+                    text: 'Please enter your email address.',
+                    confirmButtonColor: '#144578',
+                    confirmButtonText: 'OK'
+                });
                 return;
             }
             
             // Simple email validation
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(email)) {
-                alert('Please enter a valid email address.');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Invalid Email',
+                    text: 'Please enter a valid email address.',
+                    confirmButtonColor: '#144578',
+                    confirmButtonText: 'OK'
+                });
                 return;
             }
             
@@ -41,25 +53,54 @@ document.addEventListener("DOMContentLoaded", function() {
                     try {
                         const response = JSON.parse(xhr.responseText);
                         if (response.success) {
-                            alert('If your email exists in our system, you will receive a password reset link shortly.');
-                            document.getElementById('email').value = '';
-                            window.location.href = '../HTML CODES/Login.php';
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Reset Email Sent',
+                                text: 'If your email exists in our system, you will receive a password reset link shortly.',
+                                confirmButtonColor: '#144578',
+                                timer: 3000,
+                                timerProgressBar: true,
+                                willClose: () => {
+                                    document.getElementById('email').value = '';
+                                    window.location.href = '../HTML CODES/Login.php';
+                                }
+                            });
                         } else {
-                            alert(response.message || 'An error occurred. Please try again.');
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: response.message || 'An error occurred. Please try again.',
+                                confirmButtonColor: '#144578'
+                            });
                         }
                     } catch (e) {
-                        alert('There was a problem processing the response. Please try again.');
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Processing Error',
+                            text: 'There was a problem processing the response. Please try again.',
+                            confirmButtonColor: '#144578'
+                        });
                         console.error('Response parse error:', xhr.responseText);
                     }
                 } else {
-                    alert('There was a problem connecting to the server. Please try again later.');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Connection Error',
+                        text: 'There was a problem connecting to the server. Please try again later.',
+                        confirmButtonColor: '#144578'
+                    });
                 }
             };
             
             xhr.onerror = function() {
                 submitBtn.textContent = 'Reset Password';
                 submitBtn.disabled = false;
-                alert('There was a problem connecting to the server. Please try again later.');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Connection Error',
+                    text: 'There was a problem connecting to the server. Please try again later.',
+                    confirmButtonColor: '#144578'
+                });
             };
             
             xhr.send(formData);

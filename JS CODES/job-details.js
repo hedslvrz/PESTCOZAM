@@ -52,13 +52,33 @@ document.getElementById('reportForm').addEventListener('submit', async function(
         
         const result = await response.json();
         if (result.success) {
-            alert('Report submitted successfully');
-            closeReportModal();
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: 'Report submitted successfully',
+                confirmButtonColor: '#144578',
+                timer: 2000,
+                timerProgressBar: true,
+                showConfirmButton: false,
+                didClose: () => {
+                    closeReportModal();
+                }
+            });
         } else {
-            alert('Error submitting report: ' + result.message);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error submitting report: ' + result.message,
+                confirmButtonColor: '#144578'
+            });
         }
     } catch (error) {
         console.error('Error:', error);
-        alert('An error occurred while submitting the report');
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'An error occurred while submitting the report',
+            confirmButtonColor: '#144578'
+        });
     }
 });

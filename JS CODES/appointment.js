@@ -47,9 +47,27 @@ document.getElementById('bookAppointment').addEventListener('click', function(ev
     })
     .then(response => response.json())
     .then(data => {
-        alert(data.message);
         if (data.success) {
-            window.location.href = "appointment-success.php";
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: data.message,
+                confirmButtonColor: '#144578',
+                timer: 2000,
+                timerProgressBar: true,
+                showConfirmButton: false,
+                didClose: () => {
+                    window.location.href = "appointment-success.php";
+                }
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: data.message,
+                confirmButtonColor: '#144578',
+                confirmButtonText: 'OK'
+            });
         }
     })
     .catch(error => console.error('Error:', error));
