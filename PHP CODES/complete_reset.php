@@ -13,17 +13,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     // Validate inputs
     if (empty($token) || empty($password) || empty($confirmPassword)) {
-        echo "<script>alert('All fields are required'); window.location.href='../HTML CODES/ResetPassword.php?token=$token';</script>";
+        echo "<script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'All fields are required',
+                confirmButtonColor: '#144578'
+            }).then(function() {
+                window.location.href='../HTML CODES/ResetPassword.php?token=$token';
+            });
+        </script>";
         exit;
     }
     
     if ($password !== $confirmPassword) {
-        echo "<script>alert('Passwords do not match'); window.location.href='../HTML CODES/ResetPassword.php?token=$token';</script>";
+        echo "<script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Passwords Don\'t Match',
+                text: 'Please ensure both passwords match',
+                confirmButtonColor: '#144578'
+            }).then(function() {
+                window.location.href='../HTML CODES/ResetPassword.php?token=$token';
+            });
+        </script>";
         exit;
     }
     
     if (strlen($password) < 8) {
-        echo "<script>alert('Password must be at least 8 characters long'); window.location.href='../HTML CODES/ResetPassword.php?token=$token';</script>";
+        echo "<script>
+            Swal.fire({
+                icon: 'warning',
+                title: 'Password Too Short',
+                text: 'Password must be at least 8 characters long',
+                confirmButtonColor: '#144578'
+            }).then(function() {
+                window.location.href='../HTML CODES/ResetPassword.php?token=$token';
+            });
+        </script>";
         exit;
     }
     
@@ -55,7 +82,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt = $conn->prepare("DELETE FROM password_resets WHERE token = ?");
                 $stmt->execute([$token]);
                 
-                echo "<script>alert('Your password has been reset successfully!'); window.location.href='../HTML CODES/Login.php';</script>";
+                echo "<script>
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: 'Your password has been reset successfully!',
+                        confirmButtonColor: '#144578'
+                    }).then(function() {
+                        window.location.href='../HTML CODES/Login.php';
+                    });
+                </script>";
                 exit;
             }
         }
@@ -63,12 +99,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // If we couldn't connect to DB or token wasn't found/valid,
         // still show success for development
         error_log("Using development fallback for password reset");
-        echo "<script>alert('Password reset completed successfully!'); window.location.href='../HTML CODES/Login.php';</script>";
+        echo "<script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: 'Password reset completed successfully!',
+                confirmButtonColor: '#144578'
+            }).then(function() {
+                window.location.href='../HTML CODES/Login.php';
+            });
+        </script>";
         
     } catch (Exception $e) {
         // Log error but show success message for development purposes
         error_log("Error in complete_reset.php: " . $e->getMessage());
-        echo "<script>alert('Password reset completed successfully!'); window.location.href='../HTML CODES/Login.php';</script>";
+        echo "<script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: 'Password reset completed successfully!',
+                confirmButtonColor: '#144578'
+            }).then(function() {
+                window.location.href='../HTML CODES/Login.php';
+            });
+        </script>";
     }
     
 } else {

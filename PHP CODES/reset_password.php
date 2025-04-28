@@ -18,17 +18,44 @@ $confirmPassword = isset($_POST['confirm_password']) ? trim($_POST['confirm_pass
 
 // Validate input
 if (empty($token) || empty($password) || empty($confirmPassword)) {
-    echo "<script>alert('All fields are required'); window.location.href='../HTML CODES/ResetPassword.php?token=$token';</script>";
+    echo "<script>
+        Swal.fire({
+            icon: 'error',
+            title: 'Missing Information',
+            text: 'All fields are required',
+            confirmButtonColor: '#144578'
+        }).then(function() {
+            window.location.href='../HTML CODES/ResetPassword.php?token=$token';
+        });
+    </script>";
     exit;
 }
 
 if ($password !== $confirmPassword) {
-    echo "<script>alert('Passwords do not match'); window.location.href='../HTML CODES/ResetPassword.php?token=$token';</script>";
+    echo "<script>
+        Swal.fire({
+            icon: 'error',
+            title: 'Passwords Don\'t Match',
+            text: 'Please ensure both passwords match',
+            confirmButtonColor: '#144578'
+        }).then(function() {
+            window.location.href='../HTML CODES/ResetPassword.php?token=$token';
+        });
+    </script>";
     exit;
 }
 
 if (strlen($password) < 8) {
-    echo "<script>alert('Password must be at least 8 characters long'); window.location.href='../HTML CODES/ResetPassword.php?token=$token';</script>";
+    echo "<script>
+        Swal.fire({
+            icon: 'warning',
+            title: 'Password Too Short',
+            text: 'Password must be at least 8 characters long',
+            confirmButtonColor: '#144578'
+        }).then(function() {
+            window.location.href='../HTML CODES/ResetPassword.php?token=$token';
+        });
+    </script>";
     exit;
 }
 
@@ -41,7 +68,16 @@ try {
     if (!$db) {
         // For testing/development, just show success even if DB connection fails
         error_log("Database connection failed in reset_password.php");
-        echo "<script>alert('Your password has been reset successfully. You can now log in with your new password.'); window.location.href='../HTML CODES/Login.php';</script>";
+        echo "<script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: 'Your password has been reset successfully. You can now log in with your new password.',
+                confirmButtonColor: '#144578'
+            }).then(function() {
+                window.location.href='../HTML CODES/Login.php';
+            });
+        </script>";
         exit;
     }
     
@@ -57,14 +93,32 @@ try {
     
     if (!$reset) {
         error_log("Token not found in database or not associated with a valid user: $token");
-        echo "<script>alert('This password reset link is invalid or has expired. Please request a new one.'); window.location.href='../HTML CODES/ForgotPassword.php';</script>";
+        echo "<script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Invalid Link',
+                text: 'This password reset link is invalid or has expired. Please request a new one.',
+                confirmButtonColor: '#144578'
+            }).then(function() {
+                window.location.href='../HTML CODES/ForgotPassword.php';
+            });
+        </script>";
         exit;
     }
     
     // Check if token has expired
     if (strtotime($reset['expires_at']) < time()) {
         error_log("Token expired: $token");
-        echo "<script>alert('This token has expired. Please request a new password reset.'); window.location.href='../HTML CODES/ForgotPassword.php';</script>";
+        echo "<script>
+            Swal.fire({
+                icon: 'warning',
+                title: 'Link Expired',
+                text: 'This password reset link has expired. Please request a new one.',
+                confirmButtonColor: '#144578'
+            }).then(function() {
+                window.location.href='../HTML CODES/ForgotPassword.php';
+            });
+        </script>";
         exit;
     }
     
@@ -79,7 +133,16 @@ try {
     
     if ($stmt->rowCount() === 0) {
         error_log("No user found with email: $email");
-        echo "<script>alert('Could not update password. User not found.'); window.location.href='../HTML CODES/Login.php';</script>";
+        echo "<script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Account Not Found',
+                text: 'Could not update password. Please contact support.',
+                confirmButtonColor: '#144578'
+            }).then(function() {
+                window.location.href='../HTML CODES/Login.php';
+            });
+        </script>";
         exit;
     }
     
@@ -88,13 +151,31 @@ try {
     $stmt->execute([$token]);
     
     // Redirect to login page with success message
-    echo "<script>alert('Your password has been reset successfully. You can now log in with your new password.'); window.location.href='../HTML CODES/Login.php';</script>";
+    echo "<script>
+        Swal.fire({
+            icon: 'success',
+            title: 'Password Reset Complete!',
+            text: 'Your password has been reset successfully. You can now log in with your new password.',
+            confirmButtonColor: '#144578'
+        }).then(function() {
+            window.location.href='../HTML CODES/Login.php';
+        });
+    </script>";
     
 } catch (Exception $e) {
     // Log the error
     error_log("Password reset error: " . $e->getMessage());
     
     // For a better user experience, just show success even if there's an error
-    echo "<script>alert('Your password has been reset successfully. You can now log in with your new password.'); window.location.href='../HTML CODES/Login.php';</script>";
+    echo "<script>
+        Swal.fire({
+            icon: 'success',
+            title: 'Password Reset Complete!',
+            text: 'Your password has been reset successfully. You can now log in with your new password.',
+            confirmButtonColor: '#144578'
+        }).then(function() {
+            window.location.href='../HTML CODES/Login.php';
+        });
+    </script>";
 }
 ?>

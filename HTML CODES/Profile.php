@@ -85,6 +85,7 @@ if (isset($_SESSION['current_appointment'])) {
     <link rel="stylesheet" href="../CSS CODES/Profile.css" />
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
 
@@ -469,12 +470,22 @@ if (isset($_SESSION['current_appointment'])) {
               updateAppointmentModal(currentAppointment);
               openAppointmentModal();
             } else {
-              alert('Could not load appointment details: ' + data.message);
+              Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Could not load appointment details: ' + data.message,
+                confirmButtonColor: '#144578'
+              });
             }
           })
           .catch(error => {
             console.error('Error:', error);
-            alert('An error occurred while loading appointment details');
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: 'An error occurred while loading appointment details',
+              confirmButtonColor: '#144578'
+            });
           });
       });
     });
@@ -558,7 +569,12 @@ if (isset($_SESSION['current_appointment'])) {
     
     async function downloadCurrentReceipt() {
       if (!currentAppointment) {
-        alert('No appointment selected to download.');
+        Swal.fire({
+          icon: 'warning',
+          title: 'No Selection',
+          text: 'No appointment selected to download.',
+          confirmButtonColor: '#144578'
+        });
         return;
       }
 
@@ -717,16 +733,33 @@ if (isset($_SESSION['current_appointment'])) {
             
             // Show success message
             if (data.success) {
-                alert('Feedback submitted successfully!');
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: 'Feedback submitted successfully!',
+                    confirmButtonColor: '#144578',
+                    timer: 3000,
+                    timerProgressBar: true
+                });
                 // Optionally reload the page to refresh any data
                 // window.location.reload();
             } else {
-                alert('Error: ' + data.message);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Error: ' + data.message,
+                    confirmButtonColor: '#144578'
+                });
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('An error occurred while submitting your feedback.');
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'An error occurred while submitting your feedback.',
+                confirmButtonColor: '#144578'
+            });
         });
     });
 

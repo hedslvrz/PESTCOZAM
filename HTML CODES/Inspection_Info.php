@@ -48,8 +48,8 @@ if ($is_logged_in) {
             <nav>
               <ul>
                 <li><a href="../index.php">Home</a></li>
-                <li><a href="#offer-section">Services</a></li>
-                <li><a href="#about-us-section">About Us</a></li>
+                <li><a href="../index.php#offer-section">Services</a></li>
+                <li><a href="../index.php#about-us-section">About Us</a></li>
                 <li><a href="../HTML CODES/Appointment-service.php" class="btn-appointment">Book Appointment</a></li>
                 <?php if ($is_logged_in): ?>
                 <li class="user-profile">

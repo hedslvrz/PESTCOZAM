@@ -61,6 +61,9 @@ try {
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Reset Password - PESTCOZAM</title>
   <link rel="stylesheet" href="../CSS CODES/Login.css" />
+  <!-- Add SweetAlert2 CSS and JS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
 </head>
 <body>
 
@@ -124,13 +127,23 @@ try {
           const confirmPassword = document.getElementById('confirm_password').value;
           
           if (password.length < 8) {
-            alert('Password must be at least 8 characters long');
+            Swal.fire({
+              icon: 'warning',
+              title: 'Password Too Short',
+              text: 'Password must be at least 8 characters long',
+              confirmButtonColor: '#144578'
+            });
             e.preventDefault();
             return;
           }
           
           if (password !== confirmPassword) {
-            alert('Passwords do not match');
+            Swal.fire({
+              icon: 'error',
+              title: 'Passwords Don\'t Match',
+              text: 'Please ensure both passwords match',
+              confirmButtonColor: '#144578'
+            });
             e.preventDefault();
             return;
           }

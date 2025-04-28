@@ -86,9 +86,9 @@ $calendarData = AppointmentSession::getData('calendar', []);
     <nav>
         <ul>
             <li><a href="../index.php">Home</a></li>
-            <li><a href="../HTML CODES/About_us.html">About Us</a></li>
-            <li><a href="../HTML CODES/Services.html" class="services">Services</a></li>
-            <li><a href="../HTML CODES/Appointment-service.php" class="btn-appointment">Appointment</a></li>
+            <li><a href="../index.php#offer-section">Services</a></li>
+            <li><a href="../index.php#about-us-section">About Us</a></li>
+            <li><a href="../HTML CODES/Appointment-service.php" class="btn-appointment">Book Appointment</a></li>
             
             <?php if (isset($_SESSION['user_id'])): ?>
                 <?php 

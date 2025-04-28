@@ -18,6 +18,9 @@ if ($is_logged_in) {
     <title>Soil Poisoning Service</title>
     <link rel="stylesheet" href="../CSS CODES/Learn-more.css">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <!-- Add SweetAlert2 CSS and JS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
 </head>
 <body>
 
@@ -48,8 +51,8 @@ if ($is_logged_in) {
         <nav>
           <ul>
             <li><a href="../index.php">Home</a></li>
-            <li><a href="#offer-section">Services</a></li>
-            <li><a href="#about-us-section">About Us</a></li>
+            <li><a href="../index.php#offer-section">Services</a></li>
+            <li><a href="../index.php#about-us-section">About Us</a></li>
             <li><a href="../HTML CODES/Appointment-service.php" class="btn-appointment">Book Appointment</a></li>
             <?php if ($is_logged_in): ?>
             <li class="user-profile">
@@ -156,5 +159,70 @@ if ($is_logged_in) {
       </div>
     </div>
   </footer>
+
+<script>
+    let lastScrollTop = 0;
+    const headerWrapper = document.querySelector('.header-wrapper');
+    const navbarHeight = headerWrapper.offsetHeight;
+    
+    window.addEventListener('scroll', () => {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        
+        // Scroll down
+        if (scrollTop > lastScrollTop && scrollTop > navbarHeight) {
+            headerWrapper.classList.add('hide-nav-group');
+        } 
+        // Scroll up
+        else {
+            headerWrapper.classList.remove('hide-nav-group');
+        }
+        
+        lastScrollTop = scrollTop;
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+        // Handle appointment button
+        document.querySelectorAll(".btn-appointment").forEach(button => {
+            button.addEventListener("click", function (event) {
+                event.preventDefault();
+    
+                // First check if user is logged in
+                fetch("../PHP CODES/check_session.php")
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.loggedIn) {
+                            // If logged in, clear any existing appointment session first
+                            fetch("../PHP CODES/clear_appointment_session.php")
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.success) {
+                                        window.location.href = "Appointment-service.php";
+                                    }
+                                });
+                        } else {
+                            sessionStorage.setItem("redirectTo", "Appointment-service.php");
+                            Swal.fire({
+                                icon: 'info',
+                                title: 'Login Required',
+                                text: 'You must log in first to make an appointment.',
+                                confirmButtonText: 'Log In Now',
+                                confirmButtonColor: '#144578',
+                                showClass: {
+                                    popup: 'animate__animated animate__fadeInDown'
+                                },
+                                hideClass: {
+                                    popup: 'animate__animated animate__fadeOutUp'
+                                }
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    window.location.href = "Login.php";
+                                }
+                            });
+                        }
+                    });
+            });
+        });
+    });
+</script>
 </body>
 </html>

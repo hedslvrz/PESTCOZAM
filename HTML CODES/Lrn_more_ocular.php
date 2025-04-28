@@ -32,6 +32,9 @@ $service = $stmt->fetch(PDO::FETCH_ASSOC);
     <title>Ocular Inspection Service</title>
     <link rel="stylesheet" href="../CSS CODES/Learn-more.css">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <!-- Add SweetAlert2 CSS and JS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
 </head>
 <body>
 
@@ -220,8 +223,23 @@ $service = $stmt->fetch(PDO::FETCH_ASSOC);
                                 });
                         } else {
                             sessionStorage.setItem("redirectTo", "Appointment-service.php");
-                            alert("You must log in first to make an appointment.");
-                            window.location.href = "Login.php";
+                            Swal.fire({
+                                icon: 'info',
+                                title: 'Login Required',
+                                text: 'You must log in first to make an appointment.',
+                                confirmButtonText: 'Log In Now',
+                                confirmButtonColor: '#144578',
+                                showClass: {
+                                    popup: 'animate__animated animate__fadeInDown'
+                                },
+                                hideClass: {
+                                    popup: 'animate__animated animate__fadeOutUp'
+                                }
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    window.location.href = "Login.php";
+                                }
+                            });
                         }
                     });
             });

@@ -192,7 +192,7 @@ foreach ($services as $service) {
           </p>
         </div>
         <div class="who-video">
-          <video class="analytics-video" autoplay onclick="this.paused ? this.play() : this.pause()">
+          <video class="analytics-video" onclick="this.paused ? this.play() : this.pause()">
             <source src="./Videos/who-we-are.mp4" type="video/mp4" />
             Your browser does not support the video tag.
           </video>
@@ -261,7 +261,7 @@ foreach ($services as $service) {
   <section class="analytics-section">
   <div class="analytics-container">
     <div class="analytics-video-container">
-      <video class="analytics-video" autoplay onclick="this.paused ? this.play() : this.pause()">
+      <video class="analytics-video" onclick="this.paused ? this.play() : this.pause()">
         <source src="./Videos/pestcozam-video.mp4" type="video/mp4">
       </video>
     </div>
