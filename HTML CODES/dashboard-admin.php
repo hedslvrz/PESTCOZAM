@@ -3550,5 +3550,72 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
+<script>
+// Function to update report status
+function updateReportStatus(status) {
+    const reportId = document.getElementById('reportIdField').value;
+    if (!reportId) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Report ID not found'
+        });
+        return;
+    }
+    
+    // Confirm before proceeding
+    Swal.fire({
+        title: `Are you sure you want to ${status} this report?`,
+        text: status === 'approved' ? "This will also mark the associated appointment as completed." : "",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, proceed!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch('../PHP CODES/update_report_status.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    report_id: reportId,
+                    status: status,
+                    role: 'admin' // Add role identifier
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: `Report ${status === 'approved' ? 'approved' : 'rejected'} successfully!${status === 'approved' ? ' The appointment has been marked as completed.' : ''}`,
+                    }).then(() => {
+                        // Refresh the page to show updated status
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Error updating report status: ' + (data.message || 'Unknown error')
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'An error occurred while updating the report status.'
+                });
+            });
+        }
+    });
+}
+</script>
 </body>
 </html>

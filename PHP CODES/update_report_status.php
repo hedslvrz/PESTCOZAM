@@ -73,6 +73,9 @@ try {
     $database = new Database();
     $db = $database->getConnection();
     
+    // Begin transaction
+    $db->beginTransaction();
+    
     // Prepare the update query
     $stmt = $db->prepare("UPDATE service_reports SET status = :status WHERE report_id = :report_id");
     
@@ -82,17 +85,49 @@ try {
     
     // Execute the query
     if ($stmt->execute()) {
+        // If the report is approved, update the appointment status to "Completed"
+        if ($status === 'approved') {
+            // First, get the appointment_id associated with this report
+            $appointmentStmt = $db->prepare("SELECT appointment_id FROM service_reports WHERE report_id = :report_id");
+            $appointmentStmt->bindParam(':report_id', $data['report_id']);
+            $appointmentStmt->execute();
+            
+            $appointmentData = $appointmentStmt->fetch(PDO::FETCH_ASSOC);
+            
+            // If appointment_id exists, update the appointment status
+            if ($appointmentData && !empty($appointmentData['appointment_id'])) {
+                $updateAppointmentStmt = $db->prepare("UPDATE appointments SET status = 'Completed' WHERE id = :appointment_id");
+                $updateAppointmentStmt->bindParam(':appointment_id', $appointmentData['appointment_id']);
+                
+                if (!$updateAppointmentStmt->execute()) {
+                    // Log error but don't fail the transaction
+                    error_log("Failed to update appointment status: " . implode(", ", $updateAppointmentStmt->errorInfo()));
+                }
+            }
+        }
+        
+        // Commit the transaction
+        $db->commit();
+        
         echo json_encode([
             'success' => true,
             'message' => 'Report status updated successfully.'
         ]);
     } else {
+        // Rollback on failure
+        $db->rollBack();
+        
         echo json_encode([
             'success' => false,
             'message' => 'Failed to update report status.'
         ]);
     }
 } catch (PDOException $e) {
+    // Rollback on exception
+    if (isset($db) && $db->inTransaction()) {
+        $db->rollBack();
+    }
+    
     // Log error for server side debugging
     error_log("Database error: " . $e->getMessage());
     

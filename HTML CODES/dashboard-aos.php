@@ -1845,38 +1845,31 @@ try {
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            // Update UI to reflect the change
                             Swal.fire({
                                 icon: 'success',
-                                title: 'Success',
-                                text: `Report has been ${status} successfully.`,
-                            });
-                            
-                            // Update the report's status in the global data
-                            const reportIndex = window.reportsData.findIndex(r => r.report_id == reportId);
-                            if (reportIndex !== -1) {
-                                window.reportsData[reportIndex].status = status;
-                            }
-                            
-                            // Update the report card's status
-                            const reportCard = document.querySelector(`.report-card[data-report-id="${reportId}"]`);
-                            if (reportCard) {
-                                reportCard.setAttribute('data-status', status);
-                                const statusElement = reportCard.querySelector('.report-status');
-                                if (statusElement) {
-                                    statusElement.className = `report-status ${status}`;
-                                    statusElement.textContent = status === 'approved' ? 'Approved' : 'Rejected';
+                                title: 'Status Updated',
+                                text: `Report has been ${status} successfully${status === 'approved' ? '. The appointment has been marked as completed.' : ''}`,
+                                confirmButtonColor: '#144578'
+                            }).then(() => {
+                                // Update the UI to reflect the status change
+                                const reportCard = document.querySelector(`.report-card[data-report-id="${reportId}"]`);
+                                if (reportCard) {
+                                    reportCard.setAttribute('data-status', status);
+                                    const statusElement = reportCard.querySelector('.report-status');
+                                    if (statusElement) {
+                                        statusElement.className = `report-status ${status}`;
+                                        statusElement.textContent = status === 'approved' ? 'Approved' : 'Rejected';
+                                    }
                                 }
-                            }
-                            
-                            // Update action buttons
-                            updateActionButtons(status);
-                            
-                            // Close the modal after a short delay
-                            setTimeout(() => {
-                                closeReportModal();
-                            }, 1500);
-                            
+                                
+                                // Update action buttons
+                                updateActionButtons(status);
+                                
+                                // Close the modal after a short delay
+                                setTimeout(() => {
+                                    closeReportModal();
+                                }, 1500);
+                            });
                         } else {
                             Swal.fire({
                                 icon: 'error',
