@@ -1,3 +1,4 @@
+//added a comment again
 <?php
 session_start();
 
