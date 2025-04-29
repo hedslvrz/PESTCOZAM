@@ -334,7 +334,6 @@ foreach ($services as $service) {
           </div>
           <div class="button-group">
             <button class="book-now-btn" onclick="window.location.href='./HTML CODES/Appointment-service.php'">Book Now</button>
-            <button class="learn-more-btn" onclick="window.location.href='./HTML CODES/Lrn_more_ocular.php?service_id=<?= $ocularService['service_id'] ?>'">Learn More</button>
           </div>
         </div>
       </div>
@@ -408,7 +407,7 @@ foreach ($services as $service) {
                   $learnMorePage = 'Lrn_more_sp.php'; // Default case
               }
               ?>
-              <button class="learn-more-btn" onclick="window.location.href='./HTML CODES/<?= $learnMorePage ?>?service_id=<?= $service['service_id'] ?>'">Learn More</button>
+              
             </div>
           </div>
         </div>
