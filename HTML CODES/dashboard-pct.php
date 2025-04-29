@@ -743,12 +743,13 @@ try {
                                             LEFT JOIN users t ON a.technician_id = t.id
                                             LEFT JOIN appointment_technicians att ON a.id = att.appointment_id
                                             WHERE a.status = 'Completed'
-                                            AND (a.technician_id = :technician_id OR att.technician_id = :technician_id)
+                                            AND (a.technician_id = :technician_id1 OR att.technician_id = :technician_id2)
                                             GROUP BY a.id
                                             ORDER BY a.appointment_date DESC";
                                             
                                             $stmt = $db->prepare($customerQuery);
-                                            $stmt->bindParam(':technician_id', $_SESSION['user_id'], PDO::PARAM_INT);
+                                            $stmt->bindParam(':technician_id1', $_SESSION['user_id'], PDO::PARAM_INT);
+                                            $stmt->bindParam(':technician_id2', $_SESSION['user_id'], PDO::PARAM_INT);
                                             $stmt->execute();
                                             $customers = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                             
