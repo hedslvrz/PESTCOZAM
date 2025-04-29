@@ -744,3 +744,259 @@ main {
 .progress-line.completed {
     background-color: #007bff; /* Blue color */
 }
+
+/* Enhanced Responsive Styles */
+@media screen and (max-width: 768px) {
+    .container {
+        padding: 0 20px;
+    }
+    
+    .logo-container {
+        margin-left: 0;
+    }
+    
+    .brand-name {
+        font-size: 40px !important;
+    }
+    
+    .navbar {
+        padding: 5px 20px;
+    }
+    
+    .progress-bar {
+        width: 90%;
+    }
+    
+    .progress-step .label {
+        font-size: 12px;
+    }
+    
+    .offer-card {
+        max-width: 100%;
+    }
+    
+    .offer-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .appointment-for {
+        max-width: 100%;
+    }
+    
+    .Appointment-lbl {
+        font-size: 24px;
+    }
+    
+    .ocular-card.featured {
+        flex-direction: column;
+    }
+    
+    .ocular-card.featured img {
+        width: 100%;
+        height: 200px;
+    }
+    
+    .ocular-card.featured .offer-text {
+        padding: 20px;
+    }
+    
+    .button-container {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .back-btn, #nextButton {
+        width: 100%;
+        text-align: center;
+    }
+    
+    main {
+        padding: 20px 15px;
+    }
+    
+    .ocular-card {
+        margin-top: 140px;
+    }
+    
+    .ocular-content {
+        flex-direction: column;
+    }
+    
+    .ocular-info h3 {
+        margin-top: 15px;
+    }
+    
+    .book-now-btn {
+        width: 100%;
+        padding: 12px 10px;
+    }
+}
+
+@media screen and (max-width: 576px) {
+    .top-header {
+        padding: 15px 0;
+    }
+    
+    .container {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+    
+    .location, .contact-info {
+        justify-content: center;
+    }
+    
+    .navbar {
+        flex-direction: column;
+        padding: 10px;
+    }
+    
+    .logo-container {
+        margin: 10px 0;
+    }
+    
+    .brand-name {
+        font-size: 32px !important;
+    }
+    
+    .radio-group {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .ocular-info h3 {
+        font-size: 22px;
+    }
+    
+    .offer-text h3 {
+        font-size: 18px;
+    }
+    
+    .service-details {
+        padding: 8px 15px;
+    }
+    
+    .reminder {
+        padding: 15px;
+        font-size: 14px;
+    }
+    
+    .reminder p {
+        font-size: 16px;
+    }
+    
+    .progress-bar {
+        overflow-x: auto;
+        padding-bottom: 10px;
+    }
+    
+    .Appointment-lbl {
+        font-size: 22px;
+        margin-bottom: 20px;
+    }
+    
+    .appointment-for {
+        padding: 20px 15px;
+    }
+    
+    .ocular-info {
+        padding: 15px;
+    }
+    
+    .service-details {
+        padding: 10px;
+        margin: 8px 0;
+    }
+    
+    .offer-text h3 {
+        font-size: 16px;
+    }
+    
+    .offer-text p {
+        font-size: 14px;
+        min-height: 40px;
+    }
+    
+    .offer-card {
+        max-width: 320px;
+    }
+    
+    .offer-card img {
+        height: 180px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .header-wrapper {
+        position: relative;
+    }
+    
+    .progress-bar {
+        margin-top: 0;
+    }
+    
+    .ocular-card {
+        margin-top: 20px;
+    }
+    
+    .ocular-info h3 {
+        font-size: 20px;
+    }
+    
+    .ocular-info p {
+        font-size: 14px;
+    }
+    
+    .ocular-image {
+        height: 180px;
+    }
+    
+    .offer-card {
+        margin-bottom: 15px;
+    }
+    
+    .service-details p {
+        margin: 5px 0;
+        font-size: 13px;
+    }
+    
+    .reminder {
+        font-size: 13px;
+        padding: 15px 12px;
+    }
+    
+    .reminder p {
+        font-size: 15px;
+    }
+    
+    .reminder ol {
+        padding-left: 20px;
+    }
+    
+    .radio-group {
+        gap: 10px;
+    }
+    
+    .radio-group label {
+        padding: 10px;
+    }
+    
+    .button-container {
+        margin: 20px auto;
+    }
+}
+
+/* Larger touch targets for mobile */
+@media (hover: none) and (pointer: coarse) {
+    .book-now-btn,
+    .back-btn,
+    #nextButton {
+        min-height: 44px;
+    }
+    
+    .radio-group input[type="radio"] {
+        min-width: 20px;
+        min-height: 20px;
+    }
+}

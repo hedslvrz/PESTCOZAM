@@ -736,3 +736,279 @@ nav ul li a:hover {
   from { transform: translateY(-50px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
+
+/* Responsive Styles */
+@media screen and (max-width: 768px) {
+    .container {
+        padding: 0 20px;
+    }
+    
+    .logo-container {
+        margin-left: 0;
+    }
+    
+    .brand-name {
+        font-size: 40px !important;
+    }
+    
+    .navbar {
+        padding: 5px 20px;
+    }
+    
+    .progress-bar {
+        width: 90%;
+    }
+    
+    .calendar-container {
+        width: 90%;
+        padding: 20px 15px;
+    }
+    
+    .day {
+        padding: 10px 0;
+        font-size: 14px;
+    }
+    
+    .calendar-nav {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .back-btn, .next-btn {
+        width: 100%;
+    }
+    
+    .service-options {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .service-option {
+        width: 100%;
+    }
+    
+    .calendar-section {
+        padding: 20px 10px;
+        margin-top: 120px;
+    }
+    
+    .month-year-container select {
+        font-size: 14px;
+        padding: 8px;
+    }
+    
+    .schedule-table table {
+        font-size: 14px;
+    }
+}
+
+@media screen and (max-width: 576px) {
+    .top-header {
+        padding: 15px 0;
+    }
+    
+    .container {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+    
+    .location, .contact-info {
+        justify-content: center;
+    }
+    
+    .navbar {
+        flex-direction: column;
+        padding: 10px;
+    }
+    
+    .logo-container {
+        margin: 10px 0;
+    }
+    
+    .brand-name {
+        font-size: 32px !important;
+    }
+    
+    .month-year-container {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .schedule-table th, .schedule-table td {
+        padding: 8px 5px;
+        font-size: 14px;
+    }
+    
+    .progress-bar {
+        overflow-x: auto;
+        padding-bottom: 10px;
+    }
+    
+    .day-label, .day {
+        font-size: 12px;
+    }
+    
+    .modal-content {
+        width: 95%;
+        margin: 20% auto;
+    }
+    
+    .calendar-container {
+        padding: 15px 10px;
+    }
+    
+    .instruction {
+        font-size: 14px;
+    }
+    
+    .day {
+        padding: 8px 0;
+        font-size: 14px;
+    }
+    
+    .service-option {
+        padding: 12px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .calendar-grid {
+        gap: 2px;
+    }
+    
+    .day {
+        padding: 8px 0;
+        font-size: 12px;
+    }
+    
+    .select-time {
+        padding: 4px 8px;
+        font-size: 12px;
+    }
+    
+    .modal-body {
+        padding: 15px 10px;
+    }
+    
+    .modal-footer {
+        padding: 10px;
+    }
+    
+    .modal-btn {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+    
+    .header-wrapper {
+        position: relative;
+    }
+    
+    .calendar-section {
+        margin-top: 20px;
+    }
+    
+    .day-label {
+        font-size: 12px;
+        padding: 5px 0;
+    }
+    
+    .day {
+        padding: 7px 0;
+        font-size: 13px;
+    }
+    
+    .selected-date-heading {
+        font-size: 16px;
+    }
+    
+    .schedule-table th, 
+    .schedule-table td {
+        padding: 8px 4px;
+        font-size: 13px;
+    }
+    
+    .select-time {
+        padding: 6px 8px;
+        font-size: 12px;
+    }
+    
+    .service-options {
+        flex-direction: column;
+    }
+    
+    .service-option {
+        width: 100%;
+        padding: 10px;
+    }
+    
+    .service-title {
+        font-size: 14px;
+    }
+    
+    .service-details p {
+        font-size: 12px;
+    }
+    
+    .modal-content {
+        width: 95%;
+        margin: 30% auto;
+    }
+    
+    .modal-header h2 {
+        font-size: 18px;
+    }
+    
+    .modal-body p {
+        font-size: 14px;
+    }
+}
+
+/* Improved touch experience */
+@media (hover: none) and (pointer: coarse) {
+    .day {
+        min-height: 40px;
+    }
+    
+    .select-time {
+        min-height: 36px;
+        min-width: 70px;
+    }
+    
+    .service-option input[type="radio"] {
+        transform: scale(1.3);
+    }
+    
+    .modal-btn {
+        min-height: 44px;
+        padding: 12px 20px;
+    }
+    
+    .back-btn, .next-btn {
+        min-height: 44px;
+    }
+}
+
+/* Fix for smaller iPhone screens */
+@media screen and (max-width: 360px) {
+    .day {
+        font-size: 11px;
+        padding: 5px 0;
+    }
+    
+    .day-label {
+        font-size: 10px;
+    }
+    
+    .schedule-table th, 
+    .schedule-table td {
+        padding: 6px 2px;
+        font-size: 12px;
+    }
+    
+    .select-time {
+        padding: 5px;
+        font-size: 11px;
+        min-width: 60px;
+    }
+}
