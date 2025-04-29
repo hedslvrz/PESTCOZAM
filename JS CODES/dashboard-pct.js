@@ -199,19 +199,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Logout confirmation
-document.addEventListener('DOMContentLoaded', function() {
-    const logoutLink = document.querySelector('a[href*="logout"]');
-    if (logoutLink) {
-        logoutLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            if (confirm('Are you sure you want to logout?')) {
-                window.location.href = this.href;
-            }
-        });
-    }
-});
-
 // Calendar functionality with dropdowns and custom time
 function handleTimeSlotSelection() {
     document.querySelectorAll('.select-time').forEach(button => {
