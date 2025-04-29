@@ -799,34 +799,48 @@ td:has(.status-badge) {
 
 /* Modal Styles */
 .modal {
-  display: none; /* Default state is hidden */ /* This is getting overridden */
+  display: none; /* Default state is hidden */
   position: fixed;
-  z-index: 1001;
+  z-index: 1050; /* Ensure it is above other elements */
   left: 0;
   top: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0,0,0,0.5);
+  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
   overflow-y: auto; /* Enable scrolling if needed */
-} /* This is overriding the display:none above */
+}
 
-/* Additional class to apply when showing modals */
-.modal.show-modal {
-  display: flex;
+.modal.show {
+  display: flex; /* Ensure modal is visible */
   align-items: center;
   justify-content: center;
 }
 
 .modal-content {
-  background-color: #fefefe;
-  margin: 20px;
+  background-color: #fff;
+  margin: auto;
   padding: 20px;
   border-radius: 8px;
-  width: 80%;
+  width: 90%;
   max-width: 500px;
   position: relative;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  animation: modalFadeIn 0.3s ease;
+  z-index: 1100; /* Ensure it is above the modal background */
 }
 
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Ensure modal close button is styled properly */
 .close {
   position: absolute;
   right: 20px;
@@ -834,57 +848,22 @@ td:has(.status-badge) {
   font-size: 28px;
   font-weight: bold;
   cursor: pointer;
+  color: #666;
+  transition: color 0.3s;
 }
 
-.form-group {
-  margin-bottom: 15px;
+.close:hover {
+  color: #333;
 }
 
-.form-group label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: 600;
+/* Prevent modal from being obstructed by other elements */
+body.modal-open {
+  overflow: hidden; /* Disable scrolling when modal is open */
 }
 
-.form-group input {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
-}
-
-.form-buttons {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 20px;
-}
-
-.save-btn, .cancel-btn {
-  padding: 8px 16px;
-  border-radius: 4px;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-.save-btn {
-  background-color: #007bff;
-  color: white;
-}
-
-.cancel-btn {
-  background-color: #6c757d;
-  color: white;
-}
-
-.save-btn:hover {
-  background-color: #0056b3;
-}
-
-.cancel-btn:hover {
-  background-color: #545b62;
+/* Debugging styles for modal visibility */
+.modal-debug {
+  outline: 2px solid red; /* Add a red outline for debugging */
 }
 
 /* Modal Styles for Appointment Details */
@@ -985,17 +964,6 @@ td:has(.status-badge) {
   padding: 30px;
   color: #666;
   font-style: italic;
-}
-
-@keyframes modalFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-40px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 /* Responsive styles for the modal */
@@ -1436,3 +1404,99 @@ table td:last-child {
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
+
+/* Change Password Button */
+.change-password-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #FF9800;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 6px 12px;
+  margin-left: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.change-password-btn:hover {
+  background-color: #F57C00;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.change-password-btn i {
+  margin-right: 5px;
+}
+
+/* Password Modal Styles */
+#changePasswordModal .modal-content {
+  max-width: 450px;
+}
+
+.password-requirements {
+  font-size: 0.85rem;
+  color: #666;
+  margin-top: 5px;
+  margin-bottom: 15px;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-radius: 5px;
+  border-left: 3px solid #0C3B6F;
+}
+
+.password-requirements ul {
+  margin-top: 5px;
+  padding-left: 20px;
+}
+
+.password-match-status {
+  font-size: 0.85rem;
+  margin-top: 5px;
+  transition: all 0.3s ease;
+}
+
+.password-match-status.match {
+  color: #2E7D32;
+}
+
+.password-match-status.no-match {
+  color: #C62828;
+}
+
+.password-strength-meter {
+  height: 5px;
+  background-color: #e0e0e0;
+  margin-top: 5px;
+  border-radius: 2px;
+  position: relative;
+  overflow: hidden;
+}
+
+.password-strength-meter .strength-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+.password-strength-text {
+  font-size: 0.85rem;
+  margin-top: 5px;
+  transition: all 0.3s ease;
+}
+
+/* Password strength colors */
+.strength-very-weak { background-color: #d32f2f; width: 20%; }
+.strength-weak { background-color: #ff9800; width: 40%; }
+.strength-medium { background-color: #ffc107; width: 60%; }
+.strength-strong { background-color: #4caf50; width: 80%; }
+.strength-very-strong { background-color: #2e7d32; width: 100%; }
+
+.text-very-weak { color: #d32f2f; }
+.text-weak { color: #ff9800; }
+.text-medium { color: #ffc107; }
+.text-strong { color: #4caf50; }
+.text-very-strong { color: #2e7d32; }
