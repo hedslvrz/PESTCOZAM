@@ -12,15 +12,38 @@ if(!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 $database = new Database();
 $db = $database->getConnection();
 
+// Initialize service variable with default values
+$service = [
+    'service_id' => 0,
+    'service_name' => '',
+    'description' => '',
+    'estimated_time' => '',
+    'starting_price' => 0,
+    'image_data' => null,
+    'image_type' => null,
+    'image_path' => ''
+];
+
 // Get service ID from URL parameter
 $serviceId = $_GET['id'] ?? 0;
 
-// Function to resize and compress image
-function resizeAndCompressImage($imagePath, $maxWidth = 600, $maxHeight = 600, $quality = 65) {
+// Function to check if GD library is available
+function isGDAvailable() {
+    return extension_loaded('gd') && function_exists('imagecreatetruecolor');
+}
+
+// Function to resize and compress image with better optimization
+function resizeAndCompressImage($imagePath, $maxWidth = 600, $maxHeight = 600, $quality = 60) {
+    // Check if GD is available first
+    if (!isGDAvailable()) {
+        // Fallback: just return the original image data if GD is not available
+        return file_get_contents($imagePath);
+    }
+    
     // Get image info
     list($width, $height, $type) = getimagesize($imagePath);
     
-    // Calculate new dimensions
+    // Calculate new dimensions - use more aggressive resizing for large images
     $ratio = min($maxWidth / $width, $maxHeight / $height);
     // Only resize if the image is larger than the max dimensions
     if ($ratio < 1) {
@@ -50,7 +73,7 @@ function resizeAndCompressImage($imagePath, $maxWidth = 600, $maxHeight = 600, $
             $source = imagecreatefromgif($imagePath);
             break;
         default:
-            return false;
+            return file_get_contents($imagePath); // Return original for unsupported types
     }
     
     // Resize image
@@ -59,14 +82,16 @@ function resizeAndCompressImage($imagePath, $maxWidth = 600, $maxHeight = 600, $
     // Output buffer to capture compressed image
     ob_start();
     
-    // Output compressed image to buffer
+    // Output compressed image to buffer with higher compression
     switch ($type) {
         case IMAGETYPE_JPEG:
+            // Use higher compression (lower quality) for JPEGs
             imagejpeg($newImage, null, $quality);
             break;
         case IMAGETYPE_PNG:
             // PNG quality is 0-9 (0=no compression, 9=max compression)
-            $pngQuality = round((100 - $quality) / 11.11);
+            // Use maximum compression for PNGs
+            $pngQuality = 9;
             imagepng($newImage, null, $pngQuality);
             break;
         case IMAGETYPE_GIF:
@@ -82,6 +107,28 @@ function resizeAndCompressImage($imagePath, $maxWidth = 600, $maxHeight = 600, $
     imagedestroy($newImage);
     
     return $imageData;
+}
+
+// New function to save image as a file if it's too large for the database
+function saveImageAsFile($imageData, $serviceName, $serviceId) {
+    $uploadsDir = '../Pictures/services/';
+    
+    // Create directory if it doesn't exist
+    if (!file_exists($uploadsDir)) {
+        mkdir($uploadsDir, 0755, true);
+    }
+    
+    // Generate a unique filename
+    $safeServiceName = preg_replace('/[^a-z0-9]+/', '-', strtolower($serviceName));
+    $filename = $safeServiceName . '-' . $serviceId . '-' . time() . '.jpg';
+    $filePath = $uploadsDir . $filename;
+    
+    // Save the image
+    if (file_put_contents($filePath, $imageData)) {
+        return 'services/' . $filename; // Return relative path to be stored in database
+    }
+    
+    return false;
 }
 
 // Handle form submission
@@ -107,13 +154,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $errorMessage = "Invalid image type. Please upload a JPEG, PNG, or GIF image.";
             } else {
                 // Instead of direct file_get_contents, resize and compress the image
-                $imageData = resizeAndCompressImage($_FILES['service_image']['tmp_name']);
+                $imageData = resizeAndCompressImage($_FILES['service_image']['tmp_name'], 500, 500, 55);
                 
                 if ($imageData) {
-                    // Add image data to query and parameters
-                    $query .= ", image_data = ?, image_type = ?";
-                    $params[] = $imageData;
-                    $params[] = $imageType;
+                    // Check if image data is too large (more than ~1MB)
+                    if (strlen($imageData) > 1048576) {
+                        // If image is too large, save it as a file instead
+                        $imagePath = saveImageAsFile($imageData, $service_name, $serviceId);
+                        
+                        if ($imagePath) {
+                            // Store the image path in the database instead of binary data
+                            $query .= ", image_path = ?, image_data = NULL, image_type = ?";
+                            $params[] = $imagePath;
+                            $params[] = $imageType;
+                        } else {
+                            $errorMessage = "Failed to save image file. Please try again.";
+                        }
+                    } else {
+                        // Image is small enough for database storage
+                        $query .= ", image_data = ?, image_type = ?";
+                        $params[] = $imageData;
+                        $params[] = $imageType;
+                    }
                 } else {
                     $errorMessage = "Error processing the image. Please try a different image.";
                 }
@@ -138,16 +200,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 } else {
     // Fetch existing service data
     try {
-        $stmt = $db->prepare("SELECT * FROM services WHERE service_id = ?");
-        $stmt->execute([$serviceId]);
-        $service = $stmt->fetch(PDO::FETCH_ASSOC);
-        
-        if (!$service) {
-            $errorMessage = "Service not found.";
+        if (!$serviceId) {
+            $errorMessage = "No service ID provided.";
+        } else {
+            $stmt = $db->prepare("SELECT * FROM services WHERE service_id = ?");
+            $stmt->execute([$serviceId]);
+            $serviceData = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if (!$serviceData) {
+                $errorMessage = "Service not found.";
+            } else {
+                // Update our service variable with the fetched data
+                $service = $serviceData;
+            }
         }
     } catch (PDOException $e) {
         $errorMessage = "Error fetching service: " . $e->getMessage();
     }
+}
+
+// If we have a critical error that prevents editing, redirect back to services page
+if (isset($errorMessage) && !$service['service_id']) {
+    $_SESSION['error_message'] = $errorMessage;
+    header("Location: dashboard-admin.php#services");
+    exit();
 }
 ?>
 <!DOCTYPE html>
