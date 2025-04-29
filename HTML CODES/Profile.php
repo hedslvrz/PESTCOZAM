@@ -154,9 +154,14 @@ if (isset($_SESSION['current_appointment'])) {
             <h3><?php echo htmlspecialchars($user['firstname'] . ' ' . $user['lastname']); ?></h3>
             <p><?php echo htmlspecialchars($user['email']); ?></p>
           </div>
-          <button class="edit-btn">
-            <i class="bx bx-edit"></i> Edit
-          </button>
+          <div class="profile-actions">
+            <button class="edit-btn">
+              <i class="bx bx-edit"></i> Edit
+            </button>
+            <button class="change-password-btn" id="changePasswordBtn">
+              <i class="bx bx-lock-alt"></i> Change Password
+            </button>
+          </div>
         </div>
 
         <!-- Personal Details -->
@@ -265,7 +270,7 @@ if (isset($_SESSION['current_appointment'])) {
           <p><strong>Email:</strong> <span id="modal-email"><?php echo htmlspecialchars($current_appointment['is_for_self'] == 1 ? $user['email'] : ($current_appointment['email'] ?? 'N/A')); ?></span></p>
           <p><strong>Phone:</strong> <span id="modal-phone"><?php echo htmlspecialchars($current_appointment['is_for_self'] == 1 ? $user['mobile_number'] : ($current_appointment['mobile_number'] ?? 'N/A')); ?></span></p>
           
-          <p><strong>Technician:</strong> <span id="modal-technician"><?php echo $current_appointment['technician_name'] ? htmlspecialchars($current_appointment['technician_name']) : 'Not yet assigned'; ?></span></p>
+          <p><strong>Technician:</strong> <span id="modal-technician"><?php echo $current_appointment['technician_name'] ? htmlspecialchars($current_appointment['technician_name']) : 'Not assigned'; ?></span></p>
           <p>
             <strong>Status:</strong> 
             <span id="modal-status" class="appointment-status <?php echo strtolower($current_appointment['status']); ?>"><?php echo $current_appointment['status']; ?></span>
@@ -413,6 +418,166 @@ if (isset($_SESSION['current_appointment'])) {
     </div>
   </div>
 
+  <!-- Add Change Password Modal (Updated styling) -->
+  <div id="changePasswordModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Change Password</h2>
+        <span class="close" id="closePasswordModal">&times;</span>
+      </div>
+      <form id="changePasswordForm" method="POST" action="../PHP%20CODES/change_password.php">
+        <div class="form-group">
+          <label for="current_password">Current Password</label>
+          <input type="password" id="current_password" name="current_password" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="new_password">New Password</label>
+          <input type="password" id="new_password" name="new_password" required minlength="8" 
+                 pattern="^(?=.*\d)(?=.*[a-zA-Z]).{8,16}$" 
+                 title="Password must be 8-16 characters long and include at least one number and one letter.">
+          <div class="password-strength-meter">
+            <div class="strength-fill"></div>
+          </div>
+          <div class="password-strength-text"></div>
+          <div class="password-requirements">
+            Password must contain:
+            <ul>
+              <li>At least 8 characters</li>
+              <li>At least one letter</li>
+              <li>At least one number</li>
+            </ul>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="confirm_password">Confirm New Password</label>
+          <input type="password" id="confirm_password" name="confirm_password" required minlength="8">
+          <div class="password-match-status"></div>
+        </div>
+        
+        <div class="form-buttons">
+          <button type="submit" class="save-btn" id="submitPasswordChange">Update Password</button>
+          <button type="button" class="cancel-btn" id="cancelPasswordChange">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const changePasswordBtn = document.getElementById('changePasswordBtn');
+        const changePasswordModal = document.getElementById('changePasswordModal');
+        const closePasswordModal = document.getElementById('closePasswordModal');
+        const cancelPasswordChange = document.getElementById('cancelPasswordChange');
+        const changePasswordForm = document.getElementById('changePasswordForm');
+        const newPasswordInput = document.getElementById('new_password');
+        const confirmPasswordInput = document.getElementById('confirm_password');
+        const passwordMatchStatus = document.querySelector('.password-match-status');
+        const submitPasswordBtn = document.getElementById('submitPasswordChange');
+        const strengthFill = document.querySelector('.strength-fill');
+        const strengthText = document.querySelector('.password-strength-text');
+
+        // Open the modal
+        if (changePasswordBtn) {
+            changePasswordBtn.addEventListener('click', function () {
+                changePasswordModal.classList.add('show');
+                document.body.classList.add('modal-open');
+            });
+        }
+
+        // Close the modal
+        function closePasswordChangeModal() {
+            changePasswordModal.classList.remove('show');
+            document.body.classList.remove('modal-open');
+            changePasswordForm.reset();
+            passwordMatchStatus.textContent = '';
+            passwordMatchStatus.className = 'password-match-status';
+            strengthFill.style.width = '0';
+            strengthText.textContent = '';
+            submitPasswordBtn.disabled = true;
+        }
+
+        if (closePasswordModal) {
+            closePasswordModal.addEventListener('click', closePasswordChangeModal);
+        }
+
+        if (cancelPasswordChange) {
+            cancelPasswordChange.addEventListener('click', closePasswordChangeModal);
+        }
+
+        // Check if passwords match
+        function checkPasswordsMatch() {
+            const newPassword = newPasswordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+
+            if (newPassword === confirmPassword && newPassword.length > 0) {
+                passwordMatchStatus.textContent = 'Passwords match';
+                passwordMatchStatus.className = 'password-match-status match';
+                submitPasswordBtn.disabled = false;
+            } else {
+                passwordMatchStatus.textContent = 'Passwords do not match';
+                passwordMatchStatus.className = 'password-match-status no-match';
+                submitPasswordBtn.disabled = true;
+            }
+        }
+
+        // Handle form submission
+        if (changePasswordForm) {
+            changePasswordForm.addEventListener('submit', function (e) {
+                e.preventDefault(); 
+
+                const formData = new FormData(this);
+                
+                // Important: Add the current user ID to ensure no prompts appear
+                formData.append('user_id', '<?php echo $user_id; ?>');
+
+                fetch('../PHP%20CODES/change_password.php', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest' // Add this to prevent any default browser prompts
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                title: 'Success!',
+                                text: 'Password updated successfully!',
+                                icon: 'success',
+                                confirmButtonColor: '#0C3B6F'
+                            }).then(() => {
+                                closePasswordChangeModal();
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'Error!',
+                                text: data.message,
+                                icon: 'error',
+                                confirmButtonColor: '#0C3B6F'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'An error occurred while updating your password.',
+                            icon: 'error',
+                            confirmButtonColor: '#0C3B6F'
+                        });
+                    });
+            });
+        }
+
+        // Add event listeners for password inputs
+        if (newPasswordInput && confirmPasswordInput) {
+            newPasswordInput.addEventListener('input', checkPasswordsMatch);
+            confirmPasswordInput.addEventListener('input', checkPasswordsMatch);
+        }
+    });
+  </script>
+
   <script>
     let lastScrollTop = 0;
     const headerWrapper = document.querySelector('.header-wrapper');
@@ -470,22 +635,12 @@ if (isset($_SESSION['current_appointment'])) {
               updateAppointmentModal(currentAppointment);
               openAppointmentModal();
             } else {
-              Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Could not load appointment details: ' + data.message,
-                confirmButtonColor: '#144578'
-              });
+              alert('Could not load appointment details: ' + data.message);
             }
           })
           .catch(error => {
             console.error('Error:', error);
-            Swal.fire({
-              icon: 'error',
-              title: 'Error',
-              text: 'An error occurred while loading appointment details',
-              confirmButtonColor: '#144578'
-            });
+            alert('An error occurred while loading appointment details');
           });
       });
     });
@@ -569,12 +724,7 @@ if (isset($_SESSION['current_appointment'])) {
     
     async function downloadCurrentReceipt() {
       if (!currentAppointment) {
-        Swal.fire({
-          icon: 'warning',
-          title: 'No Selection',
-          text: 'No appointment selected to download.',
-          confirmButtonColor: '#144578'
-        });
+        alert('No appointment selected to download.');
         return;
       }
 
@@ -704,6 +854,7 @@ if (isset($_SESSION['current_appointment'])) {
       const appointmentModal = document.getElementById('appointmentModal');
       const feedbackModal = document.getElementById('feedbackModal');
       const profileModal = document.getElementById('editProfileModal');
+      const changePasswordModal = document.getElementById('changePasswordModal');
       
       if (event.target == appointmentModal) {
         closeAppointmentModal();
@@ -711,6 +862,8 @@ if (isset($_SESSION['current_appointment'])) {
         closeFeedbackModal();
       } else if (event.target == profileModal) {
         closeModal();
+      } else if (event.target == changePasswordModal) {
+        closePasswordChangeModal();
       }
     }
 
@@ -733,33 +886,14 @@ if (isset($_SESSION['current_appointment'])) {
             
             // Show success message
             if (data.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Success!',
-                    text: 'Feedback submitted successfully!',
-                    confirmButtonColor: '#144578',
-                    timer: 3000,
-                    timerProgressBar: true
-                });
-                // Optionally reload the page to refresh any data
-                // window.location.reload();
+                alert('Feedback submitted successfully!');
             } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Error: ' + data.message,
-                    confirmButtonColor: '#144578'
-                });
+                alert('Error: ' + data.message);
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'An error occurred while submitting your feedback.',
-                confirmButtonColor: '#144578'
-            });
+            alert('An error occurred while submitting your feedback.');
         });
     });
 
@@ -1045,6 +1179,13 @@ if (isset($_SESSION['current_appointment'])) {
       font-size: 12px;
       display: block;
       width: 100%;
+    }
+
+    /* Additional styles for button positioning */
+    .profile-actions {
+      display: flex;
+      margin-left: auto;
+      gap: 10px;
     }
   </style>
 </body>
