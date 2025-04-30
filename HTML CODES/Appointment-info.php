@@ -193,7 +193,7 @@
             
             <div class="checkbox-container">
                 <input type="checkbox" id="agreement">
-                <label for="agreement">I agree to the collection and processing of my personal data in accordance with the Data Privacy Act of 2012 and the company's privacy policy.</label>
+                <label for="agreement">I agree to the collection and processing of my personal data in accordance with the <a href="https://www.privacy.gov.ph/data-privacy-act/" target="_blank">Data Privacy Act of 2012</a> and the company's privacy policy.</label>
             </div>
             
             <div class="navigation-buttons">
