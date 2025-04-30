@@ -272,7 +272,7 @@ try {
             'appointment_date' => $calendarData['appointment_date'] ?? date('Y-m-d'),
             'appointment_time' => $calendarData['appointment_time'] ?? '12:00:00',
             'street_address' => $locationData['street_address'] ?? '',
-            'landmark' => $locationData['landmark'] ?? '', // Add landmark
+            'landmark' => $locationData['landmark'] ?? '',
             'barangay' => $locationData['barangay'] ?? '',
             'city' => $locationData['city'] ?? 'Zamboanga City',
             'province' => $locationData['province'] ?? 'Zamboanga Del Sur',
@@ -285,7 +285,8 @@ try {
             'establishment_name' => $locationData['establishment_name'] ?? '',
             'property_area' => $locationData['property_area'] ?? '',
             'pest_concern' => $locationData['pest_concern'] ?? '',
-            'service_id' => $service_id
+            'service_id' => $service_id,
+            'service_type' => $calendarData['service_type'] ?? (($service_id == 17) ? 'Ocular Inspection' : 'Treatment')
         ];
     }
 
@@ -431,7 +432,12 @@ try {
                         <span class="value">
                             <?php 
                             // Check if this is an ocular inspection (service ID 17)
-                            if (isset($appointment['service_id']) && $appointment['service_id'] == 17) {
+                            if ((isset($appointment['service_id']) && $appointment['service_id'] == 17) || 
+                                (isset($appointment['service_type']) && strtolower($appointment['service_type']) == 'ocular inspection') ||
+                                (isset($calendarData['service_id']) && $calendarData['service_id'] == 17) ||
+                                (isset($calendarData['service_type']) && strtolower($calendarData['service_type']) == 'ocular inspection') ||
+                                (isset($serviceData['service_id']) && $serviceData['service_id'] == 17)
+                            ) {
                                 echo '<span class="service-badge ocular">Ocular Inspection</span>';
                             } else {
                                 echo '<span class="service-badge treatment">Treatment</span>';
