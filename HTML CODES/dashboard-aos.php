@@ -1706,10 +1706,10 @@ try {
     <script src="../JS CODES/followup.js"></script>
     <script src="../JS CODES/work-orders.js"></script>
     <script>
-        // ...existing script code...
-
         // New function to load and display review data
         function loadReviewData(appointmentId) {
+            console.log('Loading review data for appointment ID:', appointmentId);
+            
             // Show loading state
             document.getElementById('review-text').textContent = 'Loading...';
             document.getElementById('service-feedback').textContent = 'Loading...';
@@ -1727,11 +1727,18 @@ try {
                 modal.classList.add('show');
             }, 10);
             
-            // Fetch review data
+            // Fetch review data with better error handling
             fetch(`../PHP CODES/get_review.php?appointment_id=${appointmentId}`)
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
                 .then(data => {
-                    if (data.success) {
+                    console.log('Review data received:', data);
+                    
+                    if (data.success && data.review) {
                         const review = data.review;
                         
                         // Update overall rating
@@ -1754,24 +1761,25 @@ try {
                         
                         // Update reported issues (hide container if none)
                         const issuesContainer = document.getElementById('issues-container');
-                        if (review.reported_issues) {
+                        if (review.reported_issues && review.reported_issues.trim() !== '') {
                             document.getElementById('reported-issues').textContent = review.reported_issues;
                             issuesContainer.style.display = 'block';
                         } else {
                             issuesContainer.style.display = 'none';
                         }
                         
-                        // Update meta information
-                        document.getElementById('review-date').textContent = new Date(review.created_at).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                        });
+                        // Update meta information with formatted date
+                        document.getElementById('review-date').textContent = review.formatted_date || 
+                            new Date(review.created_at).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                            });
                     } else {
                         // No review found
                         document.getElementById('review-text').textContent = 'No review found for this appointment.';
-                        document.getElementById('service-feedback').textContent = 'N/A';
-                        document.getElementById('reported-issues').textContent = 'N/A';
+                        document.getElementById('service-feedback').textContent = 'No feedback provided.';
+                        document.getElementById('reported-issues').textContent = 'No issues reported.';
                         
                         // Clear ratings
                         document.getElementById('overall-rating-value').textContent = 'N/A';
@@ -1788,6 +1796,13 @@ try {
                 .catch(error => {
                     console.error('Error fetching review:', error);
                     document.getElementById('review-text').textContent = 'Error loading review data. Please try again.';
+                    document.getElementById('service-feedback').textContent = 'Error loading feedback data.';
+                    document.getElementById('reported-issues').textContent = 'Error loading issues data.';
+                    
+                    // Show error state for ratings
+                    document.getElementById('overall-rating-value').textContent = 'Error';
+                    document.getElementById('service-rating-value').textContent = 'Error';
+                    document.getElementById('technician-rating-value').textContent = 'Error';
                 });
         }
         
@@ -1822,12 +1837,25 @@ try {
         
         // Add event listener to "Check Review" buttons
         document.addEventListener('DOMContentLoaded', function() {
+            // Log when the DOM is loaded
+            console.log('DOM loaded, initializing review buttons');
+            
             const reviewButtons = document.querySelectorAll('.review-btn');
+            console.log(`Found ${reviewButtons.length} review buttons`);
+            
             reviewButtons.forEach(button => {
                 button.addEventListener('click', function(e) {
                     e.preventDefault();
-                    const appointmentId = this.getAttribute('href').split('=')[1];
-                    loadReviewData(appointmentId);
+                    const appointmentId = this.getAttribute('data-appointment-id') || 
+                                         (this.getAttribute('href') ? this.getAttribute('href').split('=')[1] : null);
+                    
+                    console.log('Review button clicked for appointment ID:', appointmentId);
+                    
+                    if (appointmentId) {
+                        loadReviewData(appointmentId);
+                    } else {
+                        console.error('Could not determine appointment ID from button');
+                    }
                 });
             });
             

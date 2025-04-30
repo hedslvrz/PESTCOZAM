@@ -84,11 +84,50 @@ try {
     $stmt = $db->prepare($confirmedAppointmentsQuery);
     $stmt->execute([$_SESSION['user_id']]);
     $confirmedAppointments = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Get statistics for dashboard
+    // 1. Count pending jobs (appointments with status 'pending' or 'confirmed')
+    $pendingJobsQuery = "SELECT COUNT(*) as count FROM appointments a 
+                        LEFT JOIN appointment_technicians at ON a.id = at.appointment_id
+                        WHERE (a.status = 'pending' OR a.status = 'confirmed') 
+                        AND (a.technician_id = ? OR at.technician_id = ?)";
+    $stmt = $db->prepare($pendingJobsQuery);
+    $stmt->execute([$_SESSION['user_id'], $_SESSION['user_id']]);
+    $pendingJobs = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
+    
+    // 2. Count active technicians
+    $activeTechsQuery = "SELECT COUNT(*) as count FROM users 
+                         WHERE role = 'technician' AND status = 'verified'";
+    $stmt = $db->prepare($activeTechsQuery);
+    $stmt->execute();
+    $activeTechs = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
+    
+    // 3. Count service reports submitted by this technician
+    $reportsQuery = "SELECT COUNT(*) as count FROM service_reports 
+                     WHERE technician_id = ?";
+    $stmt = $db->prepare($reportsQuery);
+    $stmt->execute([$_SESSION['user_id']]);
+    $serviceReports = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
+    
+    // 4. Count scheduled follow-ups
+    $followupsQuery = "SELECT COUNT(*) as count FROM appointments a
+                      LEFT JOIN appointment_technicians at ON a.id = at.appointment_id
+                      WHERE a.status = 'Confirmed' 
+                      AND a.appointment_date >= CURDATE()
+                      AND (a.technician_id = ? OR at.technician_id = ?)";
+    $stmt = $db->prepare($followupsQuery);
+    $stmt->execute([$_SESSION['user_id'], $_SESSION['user_id']]);
+    $scheduledFollowups = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
+    
 } catch(PDOException $e) {
     error_log("Error: " . $e->getMessage());
     $technician = null;
     $assignments = [];
     $confirmedAppointments = [];
+    $pendingJobs = 0;
+    $activeTechs = 0;
+    $serviceReports = 0;
+    $scheduledFollowups = 0;
 }
 ?>
 <!DOCTYPE html>
@@ -191,22 +230,29 @@ try {
                         <li>
                             <i class='bx bxs-calendar-check'></i>
                             <span class="text">
-                                <h3>5</h3>
+                                <h3><?php echo $pendingJobs; ?></h3>
                                 <p>Pending Jobs</p>
                             </span>
                         </li>
                         <li>
                             <i class='bx bxs-group'></i>
                             <span class="text">
-                                <h3>8</h3>
+                                <h3><?php echo $activeTechs; ?></h3>
                                 <p>Active Technicians</p>
                             </span>
                         </li>
                         <li>
                             <i class='bx bxs-file'></i>
                             <span class="text">
-                                <h3>12</h3>
+                                <h3><?php echo $serviceReports; ?></h3>
                                 <p>Service Reports</p>
+                            </span>
+                        </li>
+                        <li>
+                            <i class='bx bxs-calendar-plus'></i>
+                            <span class="text">
+                                <h3><?php echo $scheduledFollowups; ?></h3>
+                                <p>Scheduled Follow-ups</p>
                             </span>
                         </li>
                     </div>
@@ -697,12 +743,13 @@ try {
                                             LEFT JOIN users t ON a.technician_id = t.id
                                             LEFT JOIN appointment_technicians att ON a.id = att.appointment_id
                                             WHERE a.status = 'Completed'
-                                            AND (a.technician_id = :technician_id OR att.technician_id = :technician_id)
+                                            AND (a.technician_id = :technician_id1 OR att.technician_id = :technician_id2)
                                             GROUP BY a.id
                                             ORDER BY a.appointment_date DESC";
                                             
                                             $stmt = $db->prepare($customerQuery);
-                                            $stmt->bindParam(':technician_id', $_SESSION['user_id'], PDO::PARAM_INT);
+                                            $stmt->bindParam(':technician_id1', $_SESSION['user_id'], PDO::PARAM_INT);
+                                            $stmt->bindParam(':technician_id2', $_SESSION['user_id'], PDO::PARAM_INT);
                                             $stmt->execute();
                                             $customers = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                             

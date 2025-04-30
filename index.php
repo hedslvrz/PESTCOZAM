@@ -18,7 +18,7 @@ $database = new Database();
 $db = $database->getConnection();
 
 // Fetch services from database
-$query = "SELECT service_id, service_name, description, estimated_time, starting_price, image_path, 
+$query = "SELECT service_id, service_name, description, estimated_time, starting_price, image_path, image_data, image_type, 
           CASE WHEN service_name = 'Ocular Inspection' THEN 1 ELSE 0 END AS is_ocular 
           FROM services ORDER BY is_ocular DESC, service_id ASC";
 $stmt = $db->prepare($query);
@@ -301,7 +301,25 @@ foreach ($services as $service) {
       <?php if ($ocularService): ?>
       <!-- Ocular Inspection Card -->
       <div class="offer-card">
-        <img src="./Pictures/<?= htmlspecialchars($ocularService['image_path']) ?>" alt="<?= htmlspecialchars($ocularService['service_name']) ?>" />
+        <?php 
+        // Enhanced image handling to match admin dashboard
+        if (!empty($ocularService['image_data'])) {
+            // Image stored as binary data in the database
+            $imageType = $ocularService['image_type'] ?? 'image/jpeg';
+            $base64Image = base64_encode($ocularService['image_data']);
+            echo '<img src="data:' . $imageType . ';base64,' . $base64Image . '" alt="' . htmlspecialchars($ocularService['service_name']) . '">';
+        } 
+        // Fallback to path-based approach
+        else if (!empty($ocularService['image_path'])) {
+            $imagePath = htmlspecialchars($ocularService['image_path']);
+            $imageSrc = "./Pictures/{$imagePath}";
+            echo '<img src="' . $imageSrc . '" alt="' . htmlspecialchars($ocularService['service_name']) . '">';
+        } 
+        // If no image available, show placeholder
+        else {
+            echo '<img src="./Pictures/service-placeholder.png" alt="' . htmlspecialchars($ocularService['service_name']) . '">';
+        }
+        ?>
         <div class="offer-text">
           <h3><?= htmlspecialchars($ocularService['service_name']) ?></h3>
           <p><?= htmlspecialchars($ocularService['description']) ?></p>
@@ -316,7 +334,6 @@ foreach ($services as $service) {
           </div>
           <div class="button-group">
             <button class="book-now-btn" onclick="window.location.href='./HTML CODES/Appointment-service.php'">Book Now</button>
-            <button class="learn-more-btn" onclick="window.location.href='./HTML CODES/Lrn_more_ocular.php?service_id=<?= $ocularService['service_id'] ?>'">Learn More</button>
           </div>
         </div>
       </div>
@@ -328,7 +345,25 @@ foreach ($services as $service) {
         <?php foreach ($regularServices as $service): ?>
         <!-- Service Card -->
         <div class="offer-card">
-          <img src="./Pictures/<?= htmlspecialchars($service['image_path']) ?>" alt="<?= htmlspecialchars($service['service_name']) ?>" />
+          <?php 
+          // Enhanced image handling to match admin dashboard
+          if (!empty($service['image_data'])) {
+              // Image stored as binary data in the database
+              $imageType = $service['image_type'] ?? 'image/jpeg';
+              $base64Image = base64_encode($service['image_data']);
+              echo '<img src="data:' . $imageType . ';base64,' . $base64Image . '" alt="' . htmlspecialchars($service['service_name']) . '">';
+          } 
+          // Fallback to path-based approach
+          else if (!empty($service['image_path'])) {
+              $imagePath = htmlspecialchars($service['image_path']);
+              $imageSrc = "./Pictures/{$imagePath}";
+              echo '<img src="' . $imageSrc . '" alt="' . htmlspecialchars($service['service_name']) . '">';
+          } 
+          // If no image available, show placeholder
+          else {
+              echo '<img src="./Pictures/service-placeholder.png" alt="' . htmlspecialchars($service['service_name']) . '">';
+          }
+          ?>
           <div class="offer-text">
             <h3><?= htmlspecialchars($service['service_name']) ?></h3>
             <p><?= htmlspecialchars($service['description']) ?></p>
@@ -372,7 +407,7 @@ foreach ($services as $service) {
                   $learnMorePage = 'Lrn_more_sp.php'; // Default case
               }
               ?>
-              <button class="learn-more-btn" onclick="window.location.href='./HTML CODES/<?= $learnMorePage ?>?service_id=<?= $service['service_id'] ?>'">Learn More</button>
+              
             </div>
           </div>
         </div>

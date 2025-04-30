@@ -78,46 +78,6 @@ function getEmailStyles() {
 }
 
 /**
- * Get password reset email template
- * 
- * @param array $data Data for the password reset email
- * @return string Complete HTML email template
- */
-function getPasswordResetEmailTemplate($data) {
-    $title = $data['title'] ?? 'Password Reset Request';
-    $resetLink = $data['resetLink'] ?? '#';
-    $expiryTime = $data['expiryTime'] ?? '24 hours';
-    
-    return "
-    <html>
-    <head>
-        " . getEmailStyles() . "
-    </head>
-    <body>
-        <div class='container'>
-            " . getEmailHeader($title) . "
-            <div class='content'>
-                <p>Hello,</p>
-                <p>We received a request to reset your password for your PESTCOZAM account. To complete the password reset process, please click the button below:</p>
-                
-                <div style='text-align: center;'>
-                    <a href='" . $resetLink . "' class='button' style='color: #FFFFFF; text-decoration: none;'>Reset My Password</a>
-                </div>
-                
-                <div class='note'>
-                    <p><strong>Important:</strong> This link will expire in " . $expiryTime . " for security reasons.</p>
-                    <p>If you didn't request a password reset, please ignore this email or contact us if you have questions.</p>
-                </div>
-                
-                <p>Thank you,<br>PESTCOZAM Support Team</p>
-            </div>
-            " . getEmailFooter() . "
-        </div>
-    </body>
-    </html>";
-}
-
-/**
  * Get appointment confirmation email template
  * 
  * @param array $data Data for the appointment email

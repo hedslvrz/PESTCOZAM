@@ -541,3 +541,172 @@ button:last-child:hover {
 .progress-line.completed {
   background-color: #007bff; /* Blue color */
 }
+
+/* Responsive Styles */
+@media screen and (max-width: 768px) {
+    .container {
+        padding: 0 20px;
+    }
+    
+    .logo-container {
+        margin-left: 0;
+    }
+    
+    .brand-name {
+        font-size: 40px !important;
+    }
+    
+    .navbar {
+        padding: 5px 20px;
+    }
+    
+    .progress-bar {
+        width: 90%;
+    }
+    
+    .progress-step .label {
+        font-size: 12px;
+    }
+    
+    main {
+        padding: 140px 15px 40px;
+    }
+    
+    .appointment-fillup {
+        width: 95%;
+        padding: 25px 15px;
+        margin: 0 auto;
+    }
+    
+    .form-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+    
+    .form-title {
+        font-size: 22px;
+    }
+    
+    input {
+        font-size: 16px; /* Better for mobile to prevent zoom */
+    }
+}
+
+@media screen and (max-width: 576px) {
+    .top-header {
+        padding: 15px 0;
+    }
+    
+    .container {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+    
+    .location, .contact-info {
+        justify-content: center;
+    }
+    
+    .navbar {
+        flex-direction: column;
+        padding: 10px;
+    }
+    
+    .logo-container {
+        margin: 10px 0;
+    }
+    
+    .brand-name {
+        font-size: 32px !important;
+    }
+    
+    .progress-bar {
+        overflow-x: auto;
+        padding-bottom: 10px;
+    }
+    
+    .progress-step .circle {
+        width: 25px;
+        height: 25px;
+        font-size: 14px;
+    }
+    
+    .form-header {
+        margin-bottom: 20px;
+    }
+    
+    .checkbox-container {
+        padding: 12px 10px;
+    }
+    
+    .checkbox-container label {
+        font-size: 13px;
+    }
+    
+    .navigation-buttons {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .navigation-buttons button {
+        width: 100%;
+        padding: 12px 15px;
+        font-size: 15px;
+    }
+}
+
+/* Extra small devices */
+@media screen and (max-width: 480px) {
+    .header-wrapper {
+        position: relative;
+    }
+    
+    main {
+        padding-top: 20px;
+    }
+    
+    input[type="checkbox"] {
+        min-width: 20px;
+        min-height: 20px;
+    }
+    
+    .form-description {
+        font-size: 14px;
+    }
+    
+    .form-header-logo img {
+        width: 30px;
+        height: 30px;
+    }
+    
+    .form-header-logo span {
+        font-size: 20px;
+    }
+    
+    input {
+        padding: 10px;
+        margin-bottom: 12px;
+    }
+    
+    label {
+        font-size: 14px;
+        margin-bottom: 5px;
+    }
+    
+    .navigation-buttons {
+        margin-top: 20px;
+    }
+}
+
+/* Improve touch targets for mobile */
+@media (hover: none) and (pointer: coarse) {
+    input[type="checkbox"] {
+        min-width: 24px;
+        min-height: 24px;
+    }
+    
+    .navigation-buttons button {
+        min-height: 48px;
+    }
+}
