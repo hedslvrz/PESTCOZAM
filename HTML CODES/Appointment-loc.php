@@ -43,6 +43,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             'city' => $data['city'],
             'barangay' => $data['barangay'],
             'street_address' => $data['street_address'],
+            'landmark' => $data['landmark'] ?? null, // Add landmark
             'latitude' => $data['latitude'],
             'longitude' => $data['longitude'],
             'property_type' => $data['property_type'] ?? 'residential',
@@ -58,6 +59,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                   city = :city, 
                   barangay = :barangay, 
                   street_address = :street_address,
+                  landmark = :landmark, 
                   latitude = :latitude,
                   longitude = :longitude,
                   property_type = :property_type,
@@ -75,6 +77,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             ':city' => $data['city'],
             ':barangay' => $data['barangay'],
             ':street_address' => $data['street_address'],
+            ':landmark' => $data['landmark'] ?? null, // Add landmark
             ':latitude' => $data['latitude'],
             ':longitude' => $data['longitude'],
             ':property_type' => $data['property_type'] ?? 'residential',
@@ -296,6 +299,10 @@ $locationData = AppointmentSession::getData('location', []);
           <input type="text" id="street_address" class="specify-addr" 
                 placeholder="Street Name & House/Building No.">
           
+          <!-- Add landmark field -->
+          <input type="text" id="landmark" class="specify-addr" 
+                placeholder="Nearest Landmark (optional)">
+          
           <!-- Hidden fields for lat/lng to save in DB -->
           <input type="hidden" id="latitude">
           <input type="hidden" id="longitude">
@@ -395,6 +402,7 @@ $locationData = AppointmentSession::getData('location', []);
         city: document.getElementById("city").value,
         barangay: document.getElementById("barangay").value,
         street_address: document.getElementById("street_address").value,
+        landmark: document.getElementById("landmark").value, // Add landmark
         latitude: document.getElementById("latitude").value,
         longitude: document.getElementById("longitude").value,
         property_type: document.querySelector('input[name="property_type"]:checked').value,
@@ -443,6 +451,9 @@ $locationData = AppointmentSession::getData('location', []);
       }
       if (document.getElementById('street_address')) {
         document.getElementById('street_address').value = "<?php echo addslashes($locationData['street_address'] ?? ''); ?>";
+      }
+      if (document.getElementById('landmark')) { 
+        document.getElementById('landmark').value = "<?php echo addslashes($locationData['landmark'] ?? ''); ?>";
       }
       if (document.getElementById('latitude')) {
         document.getElementById('latitude').value = "<?php echo addslashes($locationData['latitude'] ?? ''); ?>";

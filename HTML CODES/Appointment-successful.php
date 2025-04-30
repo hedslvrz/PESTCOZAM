@@ -272,6 +272,7 @@ try {
             'appointment_date' => $calendarData['appointment_date'] ?? date('Y-m-d'),
             'appointment_time' => $calendarData['appointment_time'] ?? '12:00:00',
             'street_address' => $locationData['street_address'] ?? '',
+            'landmark' => $locationData['landmark'] ?? '', // Add landmark
             'barangay' => $locationData['barangay'] ?? '',
             'city' => $locationData['city'] ?? 'Zamboanga City',
             'province' => $locationData['province'] ?? 'Zamboanga Del Sur',
@@ -302,6 +303,7 @@ try {
         'appointment_date' => date('Y-m-d'),
         'appointment_time' => '12:00:00',
         'street_address' => '',
+        'landmark' => '',
         'barangay' => '',
         'city' => 'Zamboanga City',
         'province' => 'Zamboanga Del Sur',
@@ -453,6 +455,14 @@ try {
                             ?>
                         </span>
                     </div>
+                    
+                    <!-- Display landmark if available -->
+                    <?php if(!empty($appointment['landmark'])): ?>
+                    <div class="receipt-row">
+                        <span class="label">Nearest Landmark:</span>
+                        <span class="value"><?php echo htmlspecialchars($appointment['landmark']); ?></span>
+                    </div>
+                    <?php endif; ?>
                     
                     <!-- New fields -->
                     <div class="receipt-row">
