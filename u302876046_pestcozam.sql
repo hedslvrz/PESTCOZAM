@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 30, 2025 at 02:27 PM
+-- Generation Time: Apr 30, 2025 at 03:11 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -31,11 +31,13 @@ CREATE TABLE `appointments` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
   `service_id` int(11) NOT NULL,
+  `service_type` enum('Ocular Inspection','Treatment') NOT NULL DEFAULT 'Ocular Inspection',
   `region` varchar(100) NOT NULL,
   `province` varchar(100) NOT NULL,
   `city` varchar(100) NOT NULL,
   `barangay` varchar(100) NOT NULL,
   `street_address` text DEFAULT NULL,
+  `landmark` varchar(255) DEFAULT NULL,
   `appointment_date` date NOT NULL,
   `appointment_time` time NOT NULL,
   `status` enum('Pending','Confirmed','Completed','Canceled') DEFAULT 'Pending',
@@ -68,9 +70,8 @@ CREATE TABLE `appointments` (
 -- Dumping data for table `appointments`
 --
 
-INSERT INTO `appointments` (`id`, `user_id`, `service_id`, `region`, `province`, `city`, `barangay`, `street_address`, `appointment_date`, `appointment_time`, `status`, `created_at`, `is_for_self`, `firstname`, `lastname`, `email`, `mobile_number`, `technician_id`, `latitude`, `longitude`, `updated_at`, `treatment_methods`, `chemicals`, `chemical_quantities`, `pct`, `device_installation`, `chemical_consumables`, `visit_frequency`, `time_in`, `time_out`, `property_type`, `establishment_name`, `property_area`, `pest_concern`) VALUES
-(92, 48, 2, 'Region IX', 'Zamboanga Del Sur', 'Zamboanga City', 'Tumaga', 'Hector Suarez Avenue', '2025-04-30', '09:00:00', 'Completed', '2025-04-29 05:15:07', 1, NULL, NULL, NULL, NULL, 50, 6.935697, 122.078564, '2025-04-29 05:17:48', '[]', '[]', '[]', '', '', '', 'weekly', '10:00:00', '13:00:00', 'residential', '', 300.00, ''),
-(93, 48, 2, 'Region IX', 'Zamboanga Del Sur', 'Zamboanga City', 'Tumaga', 'Hector Suarez Avenue', '2026-02-20', '11:00:00', 'Confirmed', '2025-04-29 05:19:00', 1, NULL, NULL, NULL, NULL, 50, NULL, NULL, '2025-04-29 05:19:00', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'residential', NULL, NULL, NULL);
+INSERT INTO `appointments` (`id`, `user_id`, `service_id`, `service_type`, `region`, `province`, `city`, `barangay`, `street_address`, `landmark`, `appointment_date`, `appointment_time`, `status`, `created_at`, `is_for_self`, `firstname`, `lastname`, `email`, `mobile_number`, `technician_id`, `latitude`, `longitude`, `updated_at`, `treatment_methods`, `chemicals`, `chemical_quantities`, `pct`, `device_installation`, `chemical_consumables`, `visit_frequency`, `time_in`, `time_out`, `property_type`, `establishment_name`, `property_area`, `pest_concern`) VALUES
+(95, 52, 3, 'Ocular Inspection', 'Region IX', 'Zamboanga Del Sur', 'Zamboanga City', 'Canelar', 'Wee Siu Tuy Road', NULL, '2025-04-30', '09:00:00', 'Pending', '2025-04-30 13:02:02', 1, NULL, NULL, NULL, NULL, NULL, 6.913780, 122.074293, '2025-04-30 13:03:17', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'residential', '', 200.00, '');
 
 -- --------------------------------------------------------
 
@@ -84,14 +85,6 @@ CREATE TABLE `appointment_technicians` (
   `technician_id` int(11) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `appointment_technicians`
---
-
-INSERT INTO `appointment_technicians` (`id`, `appointment_id`, `technician_id`, `created_at`) VALUES
-(19, 92, 50, '2025-04-29 05:16:41'),
-(20, 93, 50, '2025-04-29 05:19:00');
 
 -- --------------------------------------------------------
 
@@ -158,7 +151,7 @@ CREATE TABLE `reviews` (
 --
 
 INSERT INTO `reviews` (`id`, `user_id`, `service_id`, `appointment_id`, `rating`, `review_text`, `service_rating`, `technician_rating`, `service_feedback`, `reported_issues`, `status`, `created_at`, `updated_at`) VALUES
-(7, 48, 2, 92, 3, 'sadadsa', 3, 4, 'sdada', 'asdsadsa', 'pending', '2025-04-29 06:39:32', '2025-04-29 06:39:32');
+(7, 48, 2, NULL, 3, 'sadadsa', 3, 4, 'sdada', 'asdsadsa', 'pending', '2025-04-29 06:39:32', '2025-04-29 06:39:32');
 
 -- --------------------------------------------------------
 
@@ -228,7 +221,7 @@ CREATE TABLE `service_reports` (
 --
 
 INSERT INTO `service_reports` (`report_id`, `technician_id`, `appointment_id`, `date_of_treatment`, `time_in`, `time_out`, `treatment_type`, `treatment_method`, `pest_count`, `device_installation`, `consumed_chemicals`, `frequency_of_visits`, `photos`, `location`, `account_name`, `contact_no`, `status`, `created_at`, `updated_at`) VALUES
-(7, 50, 92, '2025-04-29', '13:16:00', '15:16:00', 'Mound Demolition', 'kqml a', NULL, 'mklsamql', 'klzmqlq', NULL, NULL, 'Hector Suarez Avenue, Tumaga, Zamboanga City', 'Pestcozam Admin', '09234567431', 'approved', '2025-04-29 05:17:10', '2025-04-29 05:17:48');
+(7, 50, NULL, '2025-04-29', '13:16:00', '15:16:00', 'Mound Demolition', 'kqml a', NULL, 'mklsamql', 'klzmqlq', NULL, NULL, 'Hector Suarez Avenue, Tumaga, Zamboanga City', 'Pestcozam Admin', '09234567431', 'approved', '2025-04-29 05:17:10', '2025-04-29 05:17:48');
 
 -- --------------------------------------------------------
 
@@ -295,7 +288,8 @@ CREATE TABLE `users` (
 INSERT INTO `users` (`id`, `firstname`, `middlename`, `lastname`, `email`, `mobile_number`, `password`, `created_at`, `role`, `status`, `dob`, `employee_no`, `sss_no`, `pagibig_no`, `philhealth_no`, `profile_pic`) VALUES
 (48, 'Pestcozam', '', 'Admin', 'pestcozam2025@gmail.com', '09234567431', '$2y$10$BtHe06BusDhEpoLOk1V/LOAV0IEw/A8oJFuMOr2ect1E6o6a3YVLS', '2025-04-29 02:29:12', 'admin', 'active', NULL, NULL, NULL, NULL, NULL, NULL),
 (50, 'Hedrian', NULL, 'Alvarez', 'hedrianlvrz13@gmail.com', '09759500123', '$2y$10$2vSdbX.kbClrLtifajS9vOlb3HlBMCzanV8Ksb5JAgIfc.HuMIn8K', '2025-04-29 04:45:18', 'technician', 'active', '2004-04-13', 'EMP-0001', '', '', '', NULL),
-(51, 'Aldwin', NULL, 'Suarez', 'aldwinsuarez@gmail.com', '09786758943', '$2y$10$gg1ZDPNqQDZ3bXzcI.YMM.DfkEqnviVfXUlV0vJwmCp.dUYUuCZby', '2025-04-29 05:13:19', 'supervisor', 'active', '2004-04-13', 'EMP-0002', '', '', '', NULL);
+(51, 'Aldwin', NULL, 'Suarez', 'aldwinsuarez@gmail.com', '09786758943', '$2y$10$gg1ZDPNqQDZ3bXzcI.YMM.DfkEqnviVfXUlV0vJwmCp.dUYUuCZby', '2025-04-29 05:13:19', 'supervisor', 'active', '2004-04-13', 'EMP-0002', '', '', '', NULL),
+(52, 'Dunn', 'Pastores', 'Alvarez', 'dunnlvrz13@gmail.com', '09759500123', '$2y$10$ynB4RQ830MyNS2JoqT/c5.RDjPLcMp2dkciJIGtCAgJ5ndP.lfzGa', '2025-04-30 12:59:37', 'user', 'active', NULL, NULL, NULL, NULL, NULL, NULL);
 
 --
 -- Indexes for dumped tables
@@ -381,7 +375,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `appointments`
 --
 ALTER TABLE `appointments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=94;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=96;
 
 --
 -- AUTO_INCREMENT for table `appointment_technicians`
@@ -429,7 +423,7 @@ ALTER TABLE `time_slots`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=52;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=53;
 
 --
 -- Constraints for dumped tables

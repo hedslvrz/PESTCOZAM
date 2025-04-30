@@ -558,13 +558,16 @@ $calendarData = AppointmentSession::getData('calendar', []);
       document.getElementById('nextButton').disabled = true;
       document.getElementById('nextButton').textContent = 'Processing...';
 
+      // Log the service ID value to console for debugging
+      console.log("Selected service ID:", serviceId.value);
+
       fetch('Appointment-calendar.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           appointment_date: selectedDate,
           appointment_time: selectedTime,
-          service_id: serviceId.value
+          service_id: serviceId.value  // This value will be either 17 (ocular) or original service_id (treatment)
         })
       })
       .then(response => {
