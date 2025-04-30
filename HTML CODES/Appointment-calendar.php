@@ -28,15 +28,38 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $data = json_decode(file_get_contents("php://input"), true);
     
     if (isset($data['appointment_date'], $data['appointment_time'], $data['service_id'])) {
+        // Determine service type based on service_id
+        $service_type = ($data['service_id'] == 17) ? 'Ocular Inspection' : 'Treatment';
+        
         // Store in session
         AppointmentSession::saveStep('calendar', [
             'appointment_date' => $data['appointment_date'],
             'appointment_time' => $data['appointment_time'],
-            'service_id' => $data['service_id']
+            'service_id' => $data['service_id'],
+            'service_type' => $service_type
         ]);
         
-        // Return success response to redirect to confirmation page
-        echo json_encode(["success" => true]);
+        // Update database
+        $query = "UPDATE appointments SET 
+                  appointment_date = :appointment_date, 
+                  appointment_time = :appointment_time, 
+                  service_id = :service_id,
+                  service_type = :service_type
+                  WHERE user_id = :user_id AND id = :appointment_id";
+        
+        $stmt = $db->prepare($query);
+        $result = $stmt->execute([
+            ':appointment_date' => $data['appointment_date'],
+            ':appointment_time' => $data['appointment_time'],
+            ':service_id' => $data['service_id'],
+            ':service_type' => $service_type,
+            ':user_id' => $user_id,
+            ':appointment_id' => AppointmentSession::getAppointmentId()
+        ]);
+        
+        // Respond with success/error message
+        header('Content-Type: application/json');
+        echo json_encode(['success' => $result]);
         exit();
     }
 }

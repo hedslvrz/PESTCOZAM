@@ -23,25 +23,28 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['next'])) {
         // Update existing appointment
         $updateQuery = "UPDATE appointments SET 
                         service_id = :service_id, 
-                        is_for_self = :is_for_self 
+                        is_for_self = :is_for_self,
+                        service_type = :service_type
                         WHERE id = :appointment_id AND user_id = :user_id";
         $stmt = $db->prepare($updateQuery);
         $stmt->execute([
             ':service_id' => $service_id,
             ':is_for_self' => $isForSelf,
+            ':service_type' => ($service_id == 17) ? 'Ocular Inspection' : 'Treatment',
             ':appointment_id' => $appointment_id,
             ':user_id' => $user_id
         ]);
     } else {
         // Insert a new appointment
-        $insertQuery = "INSERT INTO appointments (user_id, service_id, is_for_self, status) 
-                        VALUES (:user_id, :service_id, :is_for_self, :status)";
+        $insertQuery = "INSERT INTO appointments (user_id, service_id, is_for_self, status, service_type) 
+                        VALUES (:user_id, :service_id, :is_for_self, :status, :service_type)";
         $stmt = $db->prepare($insertQuery);
         $stmt->execute([
             ':user_id' => $user_id,
             ':service_id' => $service_id,
             ':is_for_self' => $isForSelf,
-            ':status' => 'pending'
+            ':status' => 'pending',
+            ':service_type' => ($service_id == 17) ? 'Ocular Inspection' : 'Treatment'
         ]);
         
         // Get the newly created appointment ID
