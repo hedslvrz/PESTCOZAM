@@ -210,24 +210,13 @@ try {
         }
     } else {
         // Get appointment details from session steps
-        // Get calendar data which includes the selected service_id from the calendar page
-        $calendarData = AppointmentSession::getData('calendar', []);
-        if (!$calendarData) {
-            throw new Exception("Calendar data not found in session.");
+        // Get service data
+        $serviceData = AppointmentSession::getData('service', []);
+        if (!$serviceData) {
+            throw new Exception("Service data not found in session.");
         }
         
-        // Use service_id from calendar data if available (this is the user's actual selection)
-        $service_id = $calendarData['service_id'] ?? null;
-        
-        // Fallback to service data if not found in calendar data
-        if (!$service_id) {
-            $serviceData = AppointmentSession::getData('service', []);
-            if (!$serviceData) {
-                throw new Exception("Service data not found in session.");
-            }
-            $service_id = $serviceData['service_id'] ?? null;
-        }
-        
+        $service_id = $serviceData['service_id'] ?? null;
         if (!$service_id) {
             throw new Exception("Service ID not found in session data.");
         }
