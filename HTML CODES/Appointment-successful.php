@@ -332,6 +332,9 @@ try {
     <title>Appointment Successful</title>
     <link rel="stylesheet" href="../CSS CODES/Appointment-successful.css">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <!-- Add SweetAlert2 CSS and JS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
 </head>
 <body>
 
@@ -523,13 +526,15 @@ try {
 
         <div class="thank-you-nav">
             <?php if (isset($_SESSION['appointment_confirmed']) && $_SESSION['appointment_confirmed']): ?>
-                <form method="post" style="width: 100%; text-align: center;">
-                    <button type="submit" name="done" class="done-btn">Done</button>
+                <form method="post" id="doneForm" style="width: 100%; text-align: center;">
+                    <button type="button" id="doneBtn" class="done-btn">Done</button>
+                    <input type="hidden" name="done" value="1">
                 </form>
             <?php else: ?>
-                <form method="post">
-                    <button type="submit" name="cancel" class="back-btn">Cancel</button>
-                    <button type="submit" name="confirm" class="next-btn">Confirm<br>Appointment</button>
+                <form method="post" id="actionForm">
+                    <button type="button" id="cancelBtn" class="back-btn">Cancel</button>
+                    <button type="button" id="confirmBtn" class="next-btn">Confirm<br>Appointment</button>
+                    <input type="hidden" name="action" id="formAction" value="">
                 </form>
             <?php endif; ?>
         </div>
@@ -560,5 +565,65 @@ try {
           </div>
         </div>
       </footer>
+
+    <script>
+        // For the "Done" button when appointment is confirmed
+        document.getElementById('doneBtn')?.addEventListener('click', function() {
+            Swal.fire({
+                title: 'Return to Homepage',
+                text: 'You will be redirected to the homepage. Continue?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#144578',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, continue',
+                cancelButtonText: 'No, stay here'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('doneForm').submit();
+                }
+            });
+        });
+
+        // For the "Cancel" button before confirmation
+        document.getElementById('cancelBtn')?.addEventListener('click', function() {
+            Swal.fire({
+                title: 'Cancel Appointment?',
+                text: 'Are you sure you want to cancel this appointment? This action cannot be undone.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, cancel appointment',
+                cancelButtonText: 'No, keep appointment'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('formAction').value = 'cancel';
+                    document.getElementById('actionForm').innerHTML += '<input type="hidden" name="cancel" value="1">';
+                    document.getElementById('actionForm').submit();
+                }
+            });
+        });
+
+        // For the "Confirm Appointment" button
+        document.getElementById('confirmBtn')?.addEventListener('click', function() {
+            Swal.fire({
+                title: 'Confirm Appointment?',
+                text: 'Are you sure you want to confirm this appointment? An email confirmation will be sent to you.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#144578',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, confirm appointment',
+                cancelButtonText: 'No, not yet'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('formAction').value = 'confirm';
+                    document.getElementById('actionForm').innerHTML += '<input type="hidden" name="confirm" value="1">';
+                    document.getElementById('actionForm').submit();
+                }
+            });
+        });
+    </script>
 </body>
 </html>
