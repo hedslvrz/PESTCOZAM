@@ -192,6 +192,9 @@ try {
     error_log("Error fetching services: " . $e->getMessage());
     $services = [];
 }
+
+
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -1855,6 +1858,11 @@ try {
                             <input type="text" id="searchInput" placeholder="Search employee...">
                         </div>
                         <div class="filter-options">
+                        
+                            <a href="../employee/forms/archive.php" class="btn">
+                                <i class='bx bx-archive'></i>
+                                <span class="text">View Archive</span>
+                            </a>
                             <select id="sortBy">
                                 <option value="">Sort by</option>
                                 <option value="asc">A - Z</option>
@@ -1877,7 +1885,7 @@ try {
                         <table id="employeeTable">
                             <thead>
                                 <tr>
-                                    <td><input type="checkbox"></td>
+                                    
                                     <th>Employee No.</th>
                                     <th>Name</th>
                                     <th>Date of Birth</th>
@@ -1896,7 +1904,7 @@ try {
                                     <?php foreach ($employees as $res): ?>
                                         <?php if ($res['role'] === 'technician' || $res['role'] === 'supervisor'): ?>
                                         <tr data-role="<?php echo htmlspecialchars($res['role']); ?>" data-status="<?php echo htmlspecialchars($res['status']); ?>">
-                                            <td><input type="checkbox"></td>
+                                            
                                             <td><?php echo htmlspecialchars($res['employee_no'] ?? 'EMP-'.str_pad(($res['id'] ?? 0), 4, '0', STR_PAD_LEFT)); ?></td>
                                             <td><?php echo htmlspecialchars(($res['firstname'] ?? '') . ' ' . ($res['lastname'] ?? '')); ?></td>
                                             <td><?php echo htmlspecialchars($res['dob'] ?? 'N/A'); ?></td>
@@ -1986,18 +1994,50 @@ try {
 
                         async function confirmDelete(event) {
                             event.preventDefault();
-                            const confirmed = await Swal.fire({
+
+                            const { value: reason, isConfirmed } = await Swal.fire({
                                 title: 'Are you sure?',
-                                text: 'You won\'t be able to revert this!',
+                                text: "You won't be able to revert this!",
                                 icon: 'warning',
+                                input: 'textarea',
+                                inputLabel: 'Reason for deletion',
+                                inputPlaceholder: 'Type your reason here...',
+                                inputAttributes: {
+                                    'aria-label': 'Type your reason here'
+                                },
                                 showCancelButton: true,
                                 confirmButtonColor: '#3085d6',
                                 cancelButtonColor: '#d33',
-                                confirmButtonText: 'Yes, delete it!'
+                                confirmButtonText: 'Yes, delete it!',
+                                preConfirm: (inputValue) => {
+                                    if (!inputValue) {
+                                        Swal.showValidationMessage('You need to write a reason!');
+                                    }
+                                    return inputValue;
+                                }
                             });
-                            if (confirmed.isConfirmed) {
-                                window.location.href = event.target.href;
+
+                            if (isConfirmed && reason) {
+                                const deleteUrl = event.target.href;
+
+                                const response = await fetch(deleteUrl, {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                    },
+                                    body: JSON.stringify({ reason: reason })
+                                });
+
+                                const result = await response.json();
+                                if (result.success) {
+                                    Swal.fire('Deleted!', result.message, 'success').then(() => {
+                                        location.reload();
+                                    });
+                                } else {
+                                    Swal.fire('Error', result.message, 'error');
+                                }
                             }
+
                             return false;
                         }
                     </script>

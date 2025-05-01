@@ -22,8 +22,8 @@ function fetchEmployees() {
             return [];
         }
         
-        // Prepare and execute the query
-        $stmt = $db->prepare("SELECT * FROM users WHERE role IN ('technician', 'supervisor')");
+        // Prepare and execute the query — now filtering out deleted users
+        $stmt = $db->prepare("SELECT * FROM users WHERE role IN ('technician', 'supervisor') AND deleted = 0");
         if (!$stmt) {
             error_log("Failed to prepare statement in fetchEmployees()");
             return [];
