@@ -36,14 +36,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         isset($data['region'], $data['province'], $data['city'], $data['barangay']) &&
         isset($data['latitude'], $data['longitude'])
     ) {
-        // Save data to session
+        // Save data to session only (no database updates here)
         AppointmentSession::saveStep('location', [
             'region' => $data['region'],
             'province' => $data['province'],
             'city' => $data['city'],
             'barangay' => $data['barangay'],
             'street_address' => $data['street_address'],
-            'landmark' => $data['landmark'] ?? null, // Add landmark
+            'landmark' => $data['landmark'] ?? null,
             'latitude' => $data['latitude'],
             'longitude' => $data['longitude'],
             'property_type' => $data['property_type'] ?? 'residential',
@@ -52,42 +52,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             'pest_concern' => $data['pest_concern'] ?? null
         ]);
         
-        // Update database
-        $query = "UPDATE appointments SET 
-                  region = :region, 
-                  province = :province, 
-                  city = :city, 
-                  barangay = :barangay, 
-                  street_address = :street_address,
-                  landmark = :landmark, 
-                  latitude = :latitude,
-                  longitude = :longitude,
-                  property_type = :property_type,
-                  establishment_name = :establishment_name,
-                  property_area = :property_area,
-                  pest_concern = :pest_concern
-                  WHERE user_id = :user_id AND service_id = :service_id
-                  ORDER BY created_at DESC
-                  LIMIT 1";
-
-        $stmt = $db->prepare($query);
-        $result = $stmt->execute([
-            ':region' => $data['region'],
-            ':province' => $data['province'],
-            ':city' => $data['city'],
-            ':barangay' => $data['barangay'],
-            ':street_address' => $data['street_address'],
-            ':landmark' => $data['landmark'] ?? null, // Add landmark
-            ':latitude' => $data['latitude'],
-            ':longitude' => $data['longitude'],
-            ':property_type' => $data['property_type'] ?? 'residential',
-            ':establishment_name' => $data['establishment_name'] ?? null,
-            ':property_area' => $data['property_area'] ? floatval($data['property_area']) : null,
-            ':pest_concern' => $data['pest_concern'] ?? null,
-            ':user_id' => $user_id,
-            ':service_id' => $service_id
-        ]);
-
         echo json_encode([
             "success" => true,
             "message" => "Location details saved.",
@@ -394,15 +358,28 @@ $locationData = AppointmentSession::getData('location', []);
   <!-- Leaflet JS + Our Map Logic -->
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
-    // 1) Next Button - Save to DB
+    // Navigation warning
+    window.onbeforeunload = function() {
+      // Check if user has entered any data
+      if (document.getElementById('street_address').value || 
+          document.getElementById('landmark').value || 
+          document.getElementById('barangay').value !== "") {
+        return "You haven't finished booking your appointment. Are you sure you want to leave?";
+      }
+    };
+
+    // 1) Next Button - Save to Session
     document.getElementById("nextButton").addEventListener("click", function() {
+      // Disable the navigation warning
+      window.onbeforeunload = null;
+      
       let formData = {
         region: document.getElementById("region").value,
         province: document.getElementById("province").value,
         city: document.getElementById("city").value,
         barangay: document.getElementById("barangay").value,
         street_address: document.getElementById("street_address").value,
-        landmark: document.getElementById("landmark").value, // Add landmark
+        landmark: document.getElementById("landmark").value,
         latitude: document.getElementById("latitude").value,
         longitude: document.getElementById("longitude").value,
         property_type: document.querySelector('input[name="property_type"]:checked').value,
@@ -500,6 +477,26 @@ $locationData = AppointmentSession::getData('location', []);
           } else {
             establishmentContainer.style.display = 'none';
           }
+        });
+      });
+
+      // Clear appointment session when clicking on navigation links
+      document.querySelectorAll('nav a:not(.btn-appointment)').forEach(link => {
+        link.addEventListener('click', function(event) {
+            // Don't show the native browser confirmation
+            window.onbeforeunload = null;
+            
+            // Show our custom confirmation
+            event.preventDefault();
+            if (confirm("You haven't finished booking your appointment. Are you sure you want to leave?")) {
+                // Clear the session via AJAX and then navigate
+                fetch('../PHP CODES/clear_appointment_session.php', {
+                    method: 'POST'
+                })
+                .then(() => {
+                    window.location.href = this.href;
+                });
+            }
         });
       });
     });

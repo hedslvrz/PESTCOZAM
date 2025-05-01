@@ -38,7 +38,7 @@
       $data = json_decode(file_get_contents("php://input"), true);
   
       if (isset($data['firstname'], $data['lastname'], $data['email'], $data['mobile_number'])) {
-          // Save to session
+          // Save to session only (no database updates here)
           AppointmentSession::saveStep('personal_info', [
               'firstname' => $data['firstname'],
               'lastname' => $data['lastname'],
@@ -46,24 +46,6 @@
               'mobile_number' => $data['mobile_number']
           ]);
           
-          // Update database
-          $query = "UPDATE appointments SET 
-                    firstname = :firstname, lastname = :lastname, 
-                    email = :email, mobile_number = :mobile_number 
-                    WHERE user_id = :user_id AND service_id = :service_id
-                    ORDER BY created_at DESC
-                    LIMIT 1";
-  
-          $stmt = $db->prepare($query);
-          $stmt->execute([
-              ':firstname' => $data['firstname'],
-              ':lastname' => $data['lastname'],
-              ':email' => $data['email'],
-              ':mobile_number' => $data['mobile_number'],
-              ':user_id' => $user_id,
-              ':service_id' => $service_id
-          ]);
-  
           echo json_encode(["success" => true, "message" => "Personal information saved."]);
           exit();
       } else {
@@ -193,7 +175,7 @@
             
             <div class="checkbox-container">
                 <input type="checkbox" id="agreement">
-                <label for="agreement">I agree to the collection and processing of my personal data in accordance with the Data Privacy Act of 2012 and the company's privacy policy.</label>
+                <label for="agreement">I agree to the collection and processing of my personal data in accordance with the <a href="https://www.privacy.gov.ph/data-privacy-act/" target="_blank">Data Privacy Act of 2012</a> and the company's privacy policy.</label>
             </div>
             
             <div class="navigation-buttons">
@@ -229,6 +211,17 @@
 </body>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
+    // Navigation warning
+    window.onbeforeunload = function() {
+        // Check if user has entered any data
+        if (document.getElementById("firstname").value || 
+            document.getElementById("lastname").value || 
+            document.getElementById("email").value || 
+            document.getElementById("mobile_number").value) {
+            return "You haven't finished booking your appointment. Are you sure you want to leave?";
+        }
+    };
+
     // Pre-populate form fields if data exists
     <?php if (!empty($personalInfo)): ?>
     document.getElementById("firstname").value = "<?php echo addslashes($personalInfo['firstname'] ?? ''); ?>";
@@ -236,9 +229,32 @@ document.addEventListener("DOMContentLoaded", function() {
     document.getElementById("email").value = "<?php echo addslashes($personalInfo['email'] ?? ''); ?>";
     document.getElementById("mobile_number").value = "<?php echo addslashes($personalInfo['mobile_number'] ?? ''); ?>";
     <?php endif; ?>
+    
+    // Clear appointment session when clicking on navigation links
+    document.querySelectorAll('nav a:not(.btn-appointment)').forEach(link => {
+        link.addEventListener('click', function(event) {
+            // Don't show the native browser confirmation
+            window.onbeforeunload = null;
+            
+            // Show our custom confirmation
+            event.preventDefault();
+            if (confirm("You haven't finished booking your appointment. Are you sure you want to leave?")) {
+                // Clear the session via AJAX and then navigate
+                fetch('../PHP CODES/clear_appointment_session.php', {
+                    method: 'POST'
+                })
+                .then(() => {
+                    window.location.href = this.href;
+                });
+            }
+        });
+    });
 });
 
 document.getElementById("nextButton").addEventListener("click", function(event) {
+    // Disable navigation warning when proceeding to next step
+    window.onbeforeunload = null;
+    
     event.preventDefault(); // Prevent immediate redirection
 
     // Simple form validation
@@ -308,6 +324,5 @@ document.getElementById("nextButton").addEventListener("click", function(event) 
     });
 });
 </script>
-
 
 </html>

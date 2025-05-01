@@ -1,7 +1,7 @@
 <?php
 session_start();
 require_once "../database.php";
-require_once "../PHP CODES/AppointmentSession.php"; // Add this line to include AppointmentSession class
+require_once "../PHP CODES/AppointmentSession.php";
 
 // Check if user is logged in and appointment exists in session
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['appointment'])) {
@@ -16,85 +16,138 @@ $db = $database->getConnection();
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (isset($_POST['confirm'])) {
         try {
-            // Get appointment data from AppointmentSession
-            $serviceData = AppointmentSession::getData('service', []);
-            $calendarData = AppointmentSession::getData('calendar', []);
-            $locationData = AppointmentSession::getData('location', []);
-            $personalInfo = AppointmentSession::getData('personal_info', []);
+            // Get all appointment data from AppointmentSession
+            $allData = AppointmentSession::getAllData();
             
-            // Debug log to check what data is available
-            error_log("Service data: " . print_r($serviceData, true));
-            error_log("Calendar data: " . print_r($calendarData, true));
-            
-            // Check if required data exists
-            if (empty($calendarData['appointment_date']) || empty($calendarData['appointment_time']) || empty($serviceData['service_id'])) {
-                error_log("Missing appointment data: Date=" . ($calendarData['appointment_date'] ?? 'missing') . 
-                          ", Time=" . ($calendarData['appointment_time'] ?? 'missing') . 
-                          ", Service ID=" . ($serviceData['service_id'] ?? 'missing'));
-                $_SESSION['error'] = "Missing appointment information. Please start over.";
+            if (!$allData) {
+                $_SESSION['error'] = "Missing appointment data. Please start over.";
                 header("Location: Appointment-service.php");
                 exit();
             }
             
-            // Update the appointment in the database
-            $query = "UPDATE appointments SET 
-                    appointment_date = :appointment_date,
-                    appointment_time = :appointment_time,
-                    service_id = :service_id,
-                    status = 'pending'
-                    WHERE user_id = :user_id 
-                    ORDER BY created_at DESC
-                    LIMIT 1";
-                    
-            $stmt = $db->prepare($query);
+            // Extract data from the session
+            $user_id = $allData['user_id'] ?? $_SESSION['user_id'];
+            $service_id = $allData['service_id'] ?? null;
+            
+            // Get original_service_id from session - this ensures we store the correct service
+            $original_service_id = $allData['original_service_id'] ?? $service_id;
+            
+            // Use original_service_id for database storage to ensure correct service info
+            $service_id_for_db = $original_service_id;
+            
+            $is_for_self = $allData['is_for_self'] ?? 1;
+            $service_type = $allData['service_type'] ?? null;
+            $appointment_date = $allData['appointment_date'] ?? null;
+            $appointment_time = $allData['appointment_time'] ?? null;
+            $region = $allData['region'] ?? '';
+            $province = $allData['province'] ?? '';
+            $city = $allData['city'] ?? '';
+            $barangay = $allData['barangay'] ?? '';
+            $street_address = $allData['street_address'] ?? '';
+            $landmark = $allData['landmark'] ?? null;
+            $latitude = $allData['latitude'] ?? null;
+            $longitude = $allData['longitude'] ?? null;
+            $property_type = $allData['property_type'] ?? 'residential';
+            $establishment_name = $allData['establishment_name'] ?? null;
+            $property_area = $allData['property_area'] ?? null;
+            $pest_concern = $allData['pest_concern'] ?? null;
+            
+            // For appointments not for self, get personal info
+            $firstname = null;
+            $lastname = null;
+            $email = null;
+            $mobile_number = null;
+            
+            if ($is_for_self == 0) {
+                $firstname = $allData['firstname'] ?? null;
+                $lastname = $allData['lastname'] ?? null;
+                $email = $allData['email'] ?? null;
+                $mobile_number = $allData['mobile_number'] ?? null;
+            }
+            
+            // Insert the appointment into the database now
+            $insertQuery = "INSERT INTO appointments (
+                user_id, service_id, is_for_self, status, service_type,
+                region, province, city, barangay, street_address, landmark, 
+                latitude, longitude, appointment_date, appointment_time,
+                firstname, lastname, email, mobile_number,
+                property_type, establishment_name, property_area, pest_concern
+            ) VALUES (
+                :user_id, :service_id, :is_for_self, :status, :service_type,
+                :region, :province, :city, :barangay, :street_address, :landmark,
+                :latitude, :longitude, :appointment_date, :appointment_time,
+                :firstname, :lastname, :email, :mobile_number,
+                :property_type, :establishment_name, :property_area, :pest_concern
+            )";
+            
+            $stmt = $db->prepare($insertQuery);
             $result = $stmt->execute([
-                ':appointment_date' => $calendarData['appointment_date'],
-                ':appointment_time' => $calendarData['appointment_time'],
-                ':service_id' => $serviceData['service_id'],
-                ':user_id' => $_SESSION['user_id']
+                ':user_id' => $user_id,
+                ':service_id' => $service_id_for_db, // Use the original service ID here
+                ':is_for_self' => $is_for_self,
+                ':status' => 'pending',
+                ':service_type' => $service_type,
+                ':region' => $region,
+                ':province' => $province,
+                ':city' => $city,
+                ':barangay' => $barangay,
+                ':street_address' => $street_address,
+                ':landmark' => $landmark,
+                ':latitude' => $latitude,
+                ':longitude' => $longitude,
+                ':appointment_date' => $appointment_date,
+                ':appointment_time' => $appointment_time,
+                ':firstname' => $firstname,
+                ':lastname' => $lastname,
+                ':email' => $email,
+                ':mobile_number' => $mobile_number,
+                ':property_type' => $property_type,
+                ':establishment_name' => $establishment_name,
+                ':property_area' => $property_area,
+                ':pest_concern' => $pest_concern
             ]);
             
             if ($result) {
                 $_SESSION['appointment_confirmed'] = true;
+                $_SESSION['appointment_id'] = $db->lastInsertId();
                 
                 // Send confirmation email
                 require_once "../PHP CODES/mailer.php";
                 require_once "../EMAIL TEMPLATES/email_functions.php";
                 
                 // Get user's email - send to the appropriate person based on appointment type
-                $isForSelf = $serviceData['is_for_self'] ?? 1;
-                $userEmail = $isForSelf ? $_SESSION['email'] : $personalInfo['email'];
+                $userEmail = $is_for_self ? $_SESSION['email'] : $email;
                 
-                // Get complete service details
+                // Get complete service details - use the original service ID
                 $serviceQuery = "SELECT service_name, starting_price FROM services WHERE service_id = :service_id";
                 $serviceStmt = $db->prepare($serviceQuery);
-                $serviceStmt->execute([':service_id' => $serviceData['service_id']]);
+                $serviceStmt->execute([':service_id' => $service_id_for_db]); // Use original service ID
                 $serviceDetails = $serviceStmt->fetch(PDO::FETCH_ASSOC);
                 
                 // Format the appointment date and time
-                $formattedDate = date('F d, Y', strtotime($calendarData['appointment_date']));
-                $formattedTime = date('h:i A', strtotime($calendarData['appointment_time']));
+                $formattedDate = date('F d, Y', strtotime($appointment_date));
+                $formattedTime = date('h:i A', strtotime($appointment_time));
                 
                 // Get user details for self-appointments
-                $query = "SELECT * FROM users WHERE id = :user_id";
-                $stmt = $db->prepare($query);
-                $stmt->execute([':user_id' => $_SESSION['user_id']]);
-                $user = $stmt->fetch(PDO::FETCH_ASSOC);
+                $userQuery = "SELECT * FROM users WHERE id = :user_id";
+                $userStmt = $db->prepare($userQuery);
+                $userStmt->execute([':user_id' => $user_id]);
+                $user = $userStmt->fetch(PDO::FETCH_ASSOC);
                 
                 // Determine name and contact details based on appointment type
-                $displayFirstname = $isForSelf ? $user['firstname'] : $personalInfo['firstname'];
-                $displayLastname = $isForSelf ? $user['lastname'] : $personalInfo['lastname'];
-                $displayEmail = $isForSelf ? $user['email'] : $personalInfo['email'];
-                $displayMobile = $isForSelf ? $user['mobile_number'] : $personalInfo['mobile_number'];
+                $displayFirstname = $is_for_self ? $user['firstname'] : $firstname;
+                $displayLastname = $is_for_self ? $user['lastname'] : $lastname;
+                $displayEmail = $is_for_self ? $user['email'] : $email;
+                $displayMobile = $is_for_self ? $user['mobile_number'] : $mobile_number;
                 $fullName = htmlspecialchars($displayFirstname . ' ' . $displayLastname);
                 
                 // Get full address
                 $fullAddress = htmlspecialchars(
-                    $locationData['street_address'] . ', ' . 
-                    $locationData['barangay'] . ', ' . 
-                    $locationData['city'] . ', ' . 
-                    $locationData['province'] . ', ' . 
-                    $locationData['region']
+                    $street_address . ', ' . 
+                    $barangay . ', ' . 
+                    $city . ', ' . 
+                    $province . ', ' . 
+                    $region
                 );
                 
                 // Prepare email data
@@ -130,37 +183,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     } elseif (isset($_POST['cancel'])) {
         try {
-            // Delete the appointment from the database
-            $query = "DELETE FROM appointments 
-                     WHERE user_id = :user_id 
-                     ORDER BY created_at DESC
-                     LIMIT 1";
-            
-            $stmt = $db->prepare($query);
-            $result = $stmt->execute([
-                ':user_id' => $_SESSION['user_id']
-            ]);
-            
-            if (!$result) {
-                $_SESSION['error'] = "Failed to cancel appointment. Please try again.";
-            }
-            
-            // User cancelled the appointment
-            unset($_SESSION['appointment']);
+            // User cancelled the appointment - simply clear the session
+            AppointmentSession::clearAllData();
             header("Location: Appointment-service.php");
             exit();
-        } catch (PDOException $e) {
-            error_log("Database Error: " . $e->getMessage());
+        } catch (Exception $e) {
+            error_log("Error: " . $e->getMessage());
             $_SESSION['error'] = "An error occurred while cancelling your appointment.";
             header("Location: Appointment-service.php");
             exit();
         }
     } elseif (isset($_POST['done'])) {
         // Clear all appointment related session data
-        unset($_SESSION['appointment']);
-        unset($_SESSION['appointment_confirmed']);
-        
-        // Clear all step data from AppointmentSession
         AppointmentSession::clearAllData();
         
         // Redirect to home page
@@ -171,7 +205,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 try {
     // Check if appointment was already confirmed
-    if (isset($_SESSION['appointment_confirmed']) && $_SESSION['appointment_confirmed']) {
+    if (isset($_SESSION['appointment_confirmed']) && $_SESSION['appointment_confirmed'] && isset($_SESSION['appointment_id'])) {
         // Get the confirmed appointment from the database
         $query = "SELECT 
                     a.*,
@@ -196,12 +230,10 @@ try {
                   FROM appointments a 
                   JOIN services s ON a.service_id = s.service_id 
                   JOIN users u ON a.user_id = u.id
-                  WHERE a.user_id = :user_id 
-                  ORDER BY a.created_at DESC 
-                  LIMIT 1";
+                  WHERE a.id = :appointment_id";
         
         $stmt = $db->prepare($query);
-        $stmt->execute([':user_id' => $_SESSION['user_id']]);
+        $stmt->execute([':appointment_id' => $_SESSION['appointment_id']]);
         $appointment = $stmt->fetch(PDO::FETCH_ASSOC);
         
         // Check if appointment data was found
@@ -210,46 +242,21 @@ try {
         }
     } else {
         // Get appointment details from session steps
-        // Get service data
-        $serviceData = AppointmentSession::getData('service', []);
-        if (!$serviceData) {
-            throw new Exception("Service data not found in session.");
+        // Get all data from the session
+        $allData = AppointmentSession::getAllData();
+        if (!$allData) {
+            throw new Exception("No appointment data found in session.");
         }
         
-        $service_id = $serviceData['service_id'] ?? null;
-        if (!$service_id) {
-            throw new Exception("Service ID not found in session data.");
-        }
-        
-        // Get service details from database
+        // Get service details from database - use original_service_id if available, otherwise use service_id
+        $service_id_to_query = $allData['original_service_id'] ?? $allData['service_id'];
         $query = "SELECT service_name, starting_price FROM services WHERE service_id = :service_id";
         $stmt = $db->prepare($query);
-        $stmt->execute([':service_id' => $service_id]);
+        $stmt->execute([':service_id' => $service_id_to_query]);
         $service = $stmt->fetch(PDO::FETCH_ASSOC);
         
         if (!$service) {
-            throw new Exception("Service details not found for ID: " . $service_id);
-        }
-        
-        // Get location data
-        $locationData = AppointmentSession::getData('location', []);
-        if (!$locationData) {
-            throw new Exception("Location data not found in session.");
-        }
-        
-        // Get calendar data (appointment date and time)
-        $calendarData = AppointmentSession::getData('calendar', []);
-        if (!$calendarData) {
-            throw new Exception("Calendar data not found in session.");
-        }
-        
-        // Get personal info data if appointment is not for self
-        $personalInfo = [];
-        if (isset($serviceData['is_for_self']) && $serviceData['is_for_self'] == 0) {
-            $personalInfo = AppointmentSession::getData('personal_info', []);
-            if (!$personalInfo) {
-                throw new Exception("Personal info data not found in session for someone else appointment.");
-            }
+            throw new Exception("Service details not found for ID: " . $service_id_to_query);
         }
         
         // Get user details for self-appointments
@@ -263,29 +270,31 @@ try {
         }
         
         // Check if appointment is for self or someone else
-        $isForSelf = $serviceData['is_for_self'] ?? 1;
+        $isForSelf = $allData['is_for_self'] ?? 1;
         
         // Combine all data to create appointment array
         $appointment = [
             'service_name' => $service['service_name'] ?? 'N/A',
             'starting_price' => $service['starting_price'] ?? 0,
-            'appointment_date' => $calendarData['appointment_date'] ?? date('Y-m-d'),
-            'appointment_time' => $calendarData['appointment_time'] ?? '12:00:00',
-            'street_address' => $locationData['street_address'] ?? '',
-            'landmark' => $locationData['landmark'] ?? '', // Add landmark
-            'barangay' => $locationData['barangay'] ?? '',
-            'city' => $locationData['city'] ?? 'Zamboanga City',
-            'province' => $locationData['province'] ?? 'Zamboanga Del Sur',
-            'region' => $locationData['region'] ?? 'Region IX',
-            'display_firstname' => $isForSelf ? ($user['firstname'] ?? '') : ($personalInfo['firstname'] ?? ''),
-            'display_lastname' => $isForSelf ? ($user['lastname'] ?? '') : ($personalInfo['lastname'] ?? ''),
-            'display_email' => $isForSelf ? ($user['email'] ?? '') : ($personalInfo['email'] ?? ''),
-            'display_mobile_number' => $isForSelf ? ($user['mobile_number'] ?? '') : ($personalInfo['mobile_number'] ?? ''),
-            'property_type' => $locationData['property_type'] ?? 'Residential',
-            'establishment_name' => $locationData['establishment_name'] ?? '',
-            'property_area' => $locationData['property_area'] ?? '',
-            'pest_concern' => $locationData['pest_concern'] ?? '',
-            'service_id' => $service_id
+            'appointment_date' => $allData['appointment_date'] ?? date('Y-m-d'),
+            'appointment_time' => $allData['appointment_time'] ?? '12:00:00',
+            'street_address' => $allData['street_address'] ?? '',
+            'landmark' => $allData['landmark'] ?? '',
+            'barangay' => $allData['barangay'] ?? '',
+            'city' => $allData['city'] ?? 'Zamboanga City',
+            'province' => $allData['province'] ?? 'Zamboanga Del Sur',
+            'region' => $allData['region'] ?? 'Region IX',
+            'display_firstname' => $isForSelf ? ($user['firstname'] ?? '') : ($allData['firstname'] ?? ''),
+            'display_lastname' => $isForSelf ? ($user['lastname'] ?? '') : ($allData['lastname'] ?? ''),
+            'display_email' => $isForSelf ? ($user['email'] ?? '') : ($allData['email'] ?? ''),
+            'display_mobile_number' => $isForSelf ? ($user['mobile_number'] ?? '') : ($allData['mobile_number'] ?? ''),
+            'property_type' => $allData['property_type'] ?? 'Residential',
+            'establishment_name' => $allData['establishment_name'] ?? '',
+            'property_area' => $allData['property_area'] ?? '',
+            'pest_concern' => $allData['pest_concern'] ?? '',
+            'service_id' => $allData['service_id'],
+            'original_service_id' => $allData['original_service_id'] ?? $allData['service_id'],
+            'service_type' => $allData['service_type'] ?? (($allData['service_id'] == 17) ? 'Ocular Inspection' : 'Treatment')
         ];
     }
 
@@ -331,6 +340,9 @@ try {
     <title>Appointment Successful</title>
     <link rel="stylesheet" href="../CSS CODES/Appointment-successful.css">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <!-- Add SweetAlert2 CSS and JS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
 </head>
 <body>
 
@@ -422,16 +434,45 @@ try {
                         <p>Could not load appointment details. Please go back to the appointment page.</p>
                     </div>
                 <?php else: ?>
+                    <?php
+                    // Get the original service name if it's an ocular inspection
+                    $original_service_name = $appointment['service_name'];
+                    $service_id_for_price = isset($appointment['original_service_id']) ? 
+                        $appointment['original_service_id'] : $appointment['service_id'];
+                    
+                    // If we need to fetch the original service price
+                    if (isset($appointment['service_id']) && $appointment['service_id'] == 17 && 
+                        isset($appointment['original_service_id']) && $appointment['original_service_id'] != 17) {
+                        // Look up the original service name and price
+                        try {
+                            $origServiceQuery = "SELECT service_name, starting_price FROM services WHERE service_id = :service_id";
+                            $origServiceStmt = $db->prepare($origServiceQuery);
+                            $origServiceStmt->execute([':service_id' => $appointment['original_service_id']]);
+                            $origService = $origServiceStmt->fetch(PDO::FETCH_ASSOC);
+                            if ($origService) {
+                                $original_service_name = $origService['service_name'];
+                                // Update the price in the appointment array
+                                $appointment['starting_price'] = $origService['starting_price'];
+                            }
+                        } catch (Exception $e) {
+                            // If there's an error, just use the current service name and price
+                        }
+                    }
+                    ?>
                     <div class="receipt-row">
                         <span class="label">Service Type:</span>
-                        <span class="value"><?php echo htmlspecialchars($appointment['service_name']); ?></span>
+                        <span class="value"><?php echo htmlspecialchars($original_service_name); ?></span>
                     </div>
                     <div class="receipt-row">
                         <span class="label">Appointment Type:</span>
                         <span class="value">
                             <?php 
                             // Check if this is an ocular inspection (service ID 17)
-                            if (isset($appointment['service_id']) && $appointment['service_id'] == 17) {
+                            if ((isset($appointment['service_id']) && $appointment['service_id'] == 17) || 
+                                (isset($appointment['service_type']) && strtolower($appointment['service_type']) == 'ocular inspection') ||
+                                (isset($allData['service_id']) && $allData['service_id'] == 17) ||
+                                (isset($allData['service_type']) && strtolower($allData['service_type']) == 'ocular inspection')
+                            ) {
                                 echo '<span class="service-badge ocular">Ocular Inspection</span>';
                             } else {
                                 echo '<span class="service-badge treatment">Treatment</span>';
@@ -517,13 +558,15 @@ try {
 
         <div class="thank-you-nav">
             <?php if (isset($_SESSION['appointment_confirmed']) && $_SESSION['appointment_confirmed']): ?>
-                <form method="post" style="width: 100%; text-align: center;">
-                    <button type="submit" name="done" class="done-btn">Done</button>
+                <form method="post" id="doneForm" style="width: 100%; text-align: center;">
+                    <button type="button" id="doneBtn" class="done-btn">Done</button>
+                    <input type="hidden" name="done" value="1">
                 </form>
             <?php else: ?>
-                <form method="post">
-                    <button type="submit" name="cancel" class="back-btn">Cancel</button>
-                    <button type="submit" name="confirm" class="next-btn">Confirm<br>Appointment</button>
+                <form method="post" id="actionForm">
+                    <button type="button" id="cancelBtn" class="back-btn">Cancel</button>
+                    <button type="button" id="confirmBtn" class="next-btn">Confirm<br>Appointment</button>
+                    <input type="hidden" name="action" id="formAction" value="">
                 </form>
             <?php endif; ?>
         </div>
@@ -554,5 +597,86 @@ try {
           </div>
         </div>
       </footer>
+
+    <script>
+        // For the "Done" button when appointment is confirmed
+        document.getElementById('doneBtn')?.addEventListener('click', function() {
+            Swal.fire({
+                title: 'Return to Homepage',
+                text: 'You will be redirected to the homepage. Continue?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#144578',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, continue',
+                cancelButtonText: 'No, stay here'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('doneForm').submit();
+                }
+            });
+        });
+
+        // For the "Cancel" button before confirmation
+        document.getElementById('cancelBtn')?.addEventListener('click', function() {
+            Swal.fire({
+                title: 'Cancel Appointment?',
+                text: 'Are you sure you want to cancel this appointment? This action cannot be undone.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, cancel appointment',
+                cancelButtonText: 'No, keep appointment'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('formAction').value = 'cancel';
+                    document.getElementById('actionForm').innerHTML += '<input type="hidden" name="cancel" value="1">';
+                    document.getElementById('actionForm').submit();
+                }
+            });
+        });
+
+        // For the "Confirm Appointment" button
+        document.getElementById('confirmBtn')?.addEventListener('click', function() {
+            Swal.fire({
+                title: 'Confirm Appointment?',
+                text: 'Are you sure you want to confirm this appointment? An email confirmation will be sent to you.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#144578',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, confirm appointment',
+                cancelButtonText: 'No, not yet'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('formAction').value = 'confirm';
+                    document.getElementById('actionForm').innerHTML += '<input type="hidden" name="confirm" value="1">';
+                    document.getElementById('actionForm').submit();
+                }
+            });
+        });
+        
+        // Clear appointment session when clicking on navigation links
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('nav a:not(.btn-appointment)').forEach(link => {
+                link.addEventListener('click', function(event) {
+                    // If appointment is already confirmed, no need to clear or warn
+                    <?php if (!isset($_SESSION['appointment_confirmed'])): ?>
+                    // Prevent default navigation
+                    event.preventDefault();
+                    
+                    // Clear the session via AJAX and then navigate
+                    fetch('../PHP CODES/clear_appointment_session.php', {
+                        method: 'POST'
+                    })
+                    .then(() => {
+                        window.location.href = this.href;
+                    });
+                    <?php endif; ?>
+                });
+            });
+        });
+    </script>
 </body>
 </html>

@@ -2,224 +2,258 @@
 session_start();
 require_once '../database.php';
 
-// Enable error logging
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
-// Log request data to help with debugging
-error_log("Schedule Follow-up request received: " . print_r($_POST, true));
-
-// Check if user is authorized - UPDATED TO ALLOW TECHNICIANS
-if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'supervisor' && $_SESSION['role'] !== 'admin' && $_SESSION['role'] !== 'technician')) {
-    error_log("Unauthorized access attempt. User ID: " . ($_SESSION['user_id'] ?? 'not set') . ", Role: " . ($_SESSION['role'] ?? 'not set'));
-    
-    // Check if this is an AJAX request
-    if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
-        header('Content-Type: application/json');
-        echo json_encode(['success' => false, 'message' => 'Unauthorized access']);
-    } else {
-        // Regular form submission - redirect to login
-        $_SESSION['error_message'] = 'Unauthorized access';
-        header("Location: login.php");
-    }
+// Check if user is logged in and is a technician
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'technician') {
+    header("Location: login.php");
     exit();
 }
 
-// Check if it's a POST request
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    error_log("Invalid request method: " . $_SERVER['REQUEST_METHOD']);
-    
-    // Check if this is an AJAX request
-    if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
-        header('Content-Type: application/json');
-        echo json_encode(['success' => false, 'message' => 'Invalid request method']);
-    } else {
-        // Regular form submission - redirect back with error
-        $_SESSION['error_message'] = 'Invalid request method';
-        header("Location: dashboard-pct.php#schedule-followup");
-    }
-    exit();
-}
-
-// Get form data
-$originalAppointmentId = isset($_POST['appointment_id']) ? $_POST['appointment_id'] : '';
-$serviceId = isset($_POST['service_id']) ? $_POST['service_id'] : '';
-$technicianIdsStr = isset($_POST['technician_id']) ? $_POST['technician_id'] : '';
-$followupDate = isset($_POST['followup_date']) ? $_POST['followup_date'] : '';
-$followupTime = isset($_POST['followup_time']) ? $_POST['followup_time'] : '';
-
-// Log received data for debug
-error_log("Form data received: " . 
-          "appointment_id=$originalAppointmentId, " . 
-          "service_id=$serviceId, " . 
-          "technician_id=$technicianIdsStr, " . 
-          "followup_date=$followupDate, " . 
-          "followup_time=$followupTime");
-
-// Validate required fields
-if (empty($originalAppointmentId) || empty($serviceId) || empty($technicianIdsStr) || empty($followupDate) || empty($followupTime)) {
-    error_log("Validation failed: appointment_id='$originalAppointmentId', service_id='$serviceId', technician_id='$technicianIdsStr', followup_date='$followupDate', followup_time='$followupTime'");
-    
-    // Check if this is an AJAX request
-    if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
-        header('Content-Type: application/json');
-        echo json_encode(['success' => false, 'message' => 'All required fields must be filled']);
-    } else {
-        // Regular form submission - redirect back with error
-        $_SESSION['error_message'] = 'All required fields must be filled';
-        header("Location: dashboard-pct.php#schedule-followup");
-    }
-    exit();
-}
-
-// Parse technician IDs into an array and get the first as main technician
-$technicianIds = array_filter(array_map('trim', explode(',', $technicianIdsStr)));
-if (empty($technicianIds)) {
-    error_log("No valid technician IDs found in string: '$technicianIdsStr'");
-    
-    // Check if this is an AJAX request
-    if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
-        header('Content-Type: application/json');
-        echo json_encode(['success' => false, 'message' => 'No valid technician selected']);
-    } else {
-        // Regular form submission - redirect back with error
-        $_SESSION['error_message'] = 'No valid technician selected';
-        header("Location: dashboard-pct.php#schedule-followup");
-    }
-    exit();
-}
-
-$mainTechnicianId = reset($technicianIds); // first technician
-error_log("Main technician ID: $mainTechnicianId, All technician IDs: " . implode(", ", $technicianIds));
-
+// Initialize database connection
 $database = new Database();
 $db = $database->getConnection();
 
-try {
-    // Begin transaction
-    $db->beginTransaction();
-    error_log("Database transaction started");
-    
-    // Get original appointment details to copy
-    $query = "SELECT 
-        user_id, region, province, city, barangay, street_address, 
-        is_for_self, firstname, lastname, email, mobile_number
-    FROM appointments 
-    WHERE id = :appointment_id";
-    
-    $stmt = $db->prepare($query);
-    $stmt->bindParam(':appointment_id', $originalAppointmentId);
-    $stmt->execute();
-    
-    $originalAppointment = $stmt->fetch(PDO::FETCH_ASSOC);
-    
-    if (!$originalAppointment) {
-        error_log("Original appointment not found with ID: $originalAppointmentId");
-        $db->rollBack();
-        
-        // Check if this is an AJAX request
-        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
-            header('Content-Type: application/json');
-            echo json_encode(['success' => false, 'message' => 'Original appointment not found']);
-        } else {
-            // Regular form submission - redirect back with error
-            $_SESSION['error_message'] = 'Original appointment not found';
-            header("Location: dashboard-pct.php#schedule-followup");
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    try {
+        // Make sure transaction is not already active
+        if ($db->inTransaction()) {
+            $db->commit(); // Close any existing transaction first
         }
+        
+        // Start a fresh transaction
+        $db->beginTransaction();
+        
+        // Get form data
+        $appointmentId = $_POST['appointment_id'] ?? null;
+        $serviceId = $_POST['service_id'] ?? null;
+        $technicianIds = isset($_POST['technician_id']) ? (is_array($_POST['technician_id']) ? $_POST['technician_id'] : [$_POST['technician_id']]) : [];
+        $followupDate = $_POST['followup_date'] ?? null;
+        $followupTime = $_POST['followup_time'] ?? null;
+        $planType = $_POST['plan_type'] ?? null;
+        $visitFrequency = $_POST['visit_frequency'] ?? 1;
+        $contractDuration = $_POST['contract_duration'] ?? 1;
+        $durationUnit = $_POST['duration_unit'] ?? 'months';
+        $notes = $_POST['notes'] ?? '';
+        
+        // Validate required fields
+        if (!$serviceId || !$followupDate || !$followupTime || empty($technicianIds) || !$planType) {
+            $_SESSION['followup_error'] = "Please fill in all required fields.";
+            header("Location: dashboard-pct.php#schedule-followup");
+            exit();
+        }
+        
+        // Get the original appointment details to copy customer information
+        $customerInfo = [];
+        if ($appointmentId) {
+            $stmt = $db->prepare("SELECT user_id, is_for_self, firstname, lastname, email, mobile_number, 
+                                 street_address, landmark, barangay, city, province, region, latitude, longitude 
+                                 FROM appointments WHERE id = ?");
+            $stmt->execute([$appointmentId]);
+            $customerInfo = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if (!$customerInfo) {
+                $_SESSION['followup_error'] = "Original appointment not found.";
+                header("Location: dashboard-pct.php#schedule-followup");
+                exit();
+            }
+        } else {
+            $_SESSION['followup_error'] = "Original appointment reference is required.";
+            header("Location: dashboard-pct.php#schedule-followup");
+            exit();
+        }
+        
+        // Calculate follow-up dates based on plan type and frequency
+        $followupDates = [];
+        $startDate = new DateTime($followupDate);
+        
+        // Add the initial follow-up date
+        $followupDates[] = $startDate->format('Y-m-d');
+        
+        // Calculate the interval based on plan type
+        switch ($planType) {
+            case 'weekly':
+                $intervalUnit = 'week';
+                break;
+            case 'monthly':
+                $intervalUnit = 'month';
+                break;
+            case 'quarterly':
+                $intervalUnit = 'month';
+                $visitFrequency = min($visitFrequency, 4); // Max 4 visits per year for quarterly
+                $intervalValue = 3; // Every 3 months
+                break;
+            case 'yearly':
+                $intervalUnit = 'year';
+                break;
+            default:
+                $intervalUnit = 'week';
+                break;
+        }
+        
+        // Calculate the end date based on contract duration
+        $endDate = clone $startDate;
+        switch ($durationUnit) {
+            case 'days':
+                $endDate->modify("+$contractDuration days");
+                break;
+            case 'weeks':
+                $endDate->modify("+$contractDuration weeks");
+                break;
+            case 'months':
+                $endDate->modify("+$contractDuration months");
+                break;
+            case 'years':
+                $endDate->modify("+$contractDuration years");
+                break;
+        }
+        
+        // Generate follow-up dates
+        $currentDate = clone $startDate;
+        $intervalValue = isset($intervalValue) ? $intervalValue : 1;
+        
+        for ($i = 1; $i < $visitFrequency; $i++) {
+            $currentDate->modify("+$intervalValue $intervalUnit");
+            
+            // Only add date if it's before or equal to the end date
+            if ($currentDate <= $endDate) {
+                $followupDates[] = $currentDate->format('Y-m-d');
+            } else {
+                break; // Stop if we've passed the end date
+            }
+        }
+        
+        // First, create the follow-up plan record
+        // Ensure tables exist before attempting to insert
+        $createFollowupPlanTable = "CREATE TABLE IF NOT EXISTS `followup_plan` (
+            `id` int(11) NOT NULL AUTO_INCREMENT,
+            `appointment_id` int(11) NOT NULL,
+            `plan_type` enum('weekly','monthly','quarterly','yearly') NOT NULL,
+            `visit_frequency` int(11) NOT NULL DEFAULT 1,
+            `contract_duration` int(11) NOT NULL DEFAULT 1,
+            `duration_unit` enum('days','weeks','months','years') NOT NULL DEFAULT 'months',
+            `notes` text DEFAULT NULL,
+            `created_by` int(11) NOT NULL,
+            `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+            `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+            PRIMARY KEY (`id`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci";
+        
+        $db->exec($createFollowupPlanTable);
+        
+        $createFollowupVisitsTable = "CREATE TABLE IF NOT EXISTS `followup_visits` (
+            `id` int(11) NOT NULL AUTO_INCREMENT,
+            `followup_plan_id` int(11) NOT NULL,
+            `appointment_id` int(11) NOT NULL,
+            `visit_date` date NOT NULL,
+            `visit_time` time NOT NULL,
+            `status` enum('Scheduled','Completed','Cancelled') NOT NULL DEFAULT 'Scheduled',
+            `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+            `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+            PRIMARY KEY (`id`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci";
+        
+        $db->exec($createFollowupVisitsTable);
+        
+        // Insert the plan
+        $planStmt = $db->prepare("INSERT INTO followup_plan 
+                                  (appointment_id, plan_type, visit_frequency, 
+                                   contract_duration, duration_unit, notes, created_by, created_at) 
+                                  VALUES (?, ?, ?, ?, ?, ?, ?, NOW())");
+        $planStmt->execute([
+            $appointmentId,
+            $planType,
+            $visitFrequency,
+            $contractDuration,
+            $durationUnit,
+            $notes,
+            $_SESSION['user_id']
+        ]);
+        $planId = $db->lastInsertId();
+        
+        // Now create the individual appointments for each follow-up date
+        $appointmentIds = [];
+        foreach ($followupDates as $date) {
+            // Get the name of the service
+            $serviceStmt = $db->prepare("SELECT service_name FROM services WHERE service_id = ?");
+            $serviceStmt->execute([$serviceId]);
+            $serviceName = $serviceStmt->fetchColumn();
+            
+            // Get the primary technician (first in the array)
+            $primaryTechnicianId = $technicianIds[0];
+            
+            // Insert the appointment
+            $stmt = $db->prepare("INSERT INTO appointments 
+                                 (user_id, service_id, service_type, region, province, city, barangay, 
+                                  street_address, landmark, appointment_date, appointment_time, status, 
+                                  created_at, is_for_self, firstname, lastname, email, mobile_number, 
+                                  technician_id, latitude, longitude, pest_concern) 
+                                 VALUES 
+                                 (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Scheduled', NOW(), ?, ?, ?, ?, ?, ?, ?, ?, 'Follow-up Visit')");
+            
+            $stmt->execute([
+                $customerInfo['user_id'],
+                $serviceId,
+                $serviceName,
+                $customerInfo['region'] ?? null,
+                $customerInfo['province'] ?? null,
+                $customerInfo['city'] ?? null,
+                $customerInfo['barangay'] ?? null,
+                $customerInfo['street_address'] ?? null,
+                $customerInfo['landmark'] ?? null,
+                $date,
+                $followupTime,
+                $customerInfo['is_for_self'] ?? 1,
+                $customerInfo['firstname'] ?? null,
+                $customerInfo['lastname'] ?? null,
+                $customerInfo['email'] ?? null,
+                $customerInfo['mobile_number'] ?? null,
+                $primaryTechnicianId,
+                $customerInfo['latitude'] ?? null,
+                $customerInfo['longitude'] ?? null
+            ]);
+            
+            $newAppointmentId = $db->lastInsertId();
+            $appointmentIds[] = $newAppointmentId;
+            
+            // Add additional technicians if there are more than one
+            if (count($technicianIds) > 1) {
+                foreach (array_slice($technicianIds, 1) as $techId) {
+                    $techStmt = $db->prepare("INSERT INTO appointment_technicians 
+                                             (appointment_id, technician_id, created_at) 
+                                             VALUES (?, ?, NOW())");
+                    $techStmt->execute([$newAppointmentId, $techId]);
+                }
+            }
+            
+            // Create a link in followup_visits table
+            $visitStmt = $db->prepare("INSERT INTO followup_visits 
+                                       (followup_plan_id, appointment_id, visit_date, visit_time, status, created_at) 
+                                       VALUES (?, ?, ?, ?, 'Scheduled', NOW())");
+            $visitStmt->execute([$planId, $newAppointmentId, $date, $followupTime]);
+        }
+        
+        // Commit transaction
+        if ($db->inTransaction()) {
+            $db->commit();
+        }
+        
+        $_SESSION['followup_success'] = "Follow-up plan created successfully with " . count($followupDates) . " scheduled visits.";
+        header("Location: dashboard-pct.php#schedule-followup");
+        exit();
+        
+    } catch (PDOException $e) {
+        // Rollback transaction on error
+        if ($db->inTransaction()) {
+            $db->rollBack();
+        }
+        
+        $_SESSION['followup_error'] = "Error creating follow-up plan: " . $e->getMessage();
+        error_log("Follow-up scheduling error: " . $e->getMessage());
+        header("Location: dashboard-pct.php#schedule-followup");
         exit();
     }
-    
-    error_log("Original appointment found: " . print_r($originalAppointment, true));
-    
-    // Insert new follow-up appointment with main technician ID
-    $insertQuery = "INSERT INTO appointments (
-        user_id, service_id, region, province, city, barangay, street_address,
-        appointment_date, appointment_time, status, technician_id, is_for_self,
-        firstname, lastname, email, mobile_number
-    ) VALUES (
-        :user_id, :service_id, :region, :province, :city, :barangay, :street_address,
-        :appointment_date, :appointment_time, 'Confirmed', :technician_id, :is_for_self,
-        :firstname, :lastname, :email, :mobile_number
-    )";
-    
-    $insertStmt = $db->prepare($insertQuery);
-    
-    // Bind parameters using $mainTechnicianId instead of $technicianId
-    $insertStmt->bindParam(':user_id', $originalAppointment['user_id']);
-    $insertStmt->bindParam(':service_id', $serviceId);
-    $insertStmt->bindParam(':region', $originalAppointment['region']);
-    $insertStmt->bindParam(':province', $originalAppointment['province']);
-    $insertStmt->bindParam(':city', $originalAppointment['city']);
-    $insertStmt->bindParam(':barangay', $originalAppointment['barangay']);
-    $insertStmt->bindParam(':street_address', $originalAppointment['street_address']);
-    $insertStmt->bindParam(':appointment_date', $followupDate);
-    $insertStmt->bindParam(':appointment_time', $followupTime);
-    $insertStmt->bindParam(':technician_id', $mainTechnicianId);
-    $insertStmt->bindParam(':is_for_self', $originalAppointment['is_for_self']);
-    $insertStmt->bindParam(':firstname', $originalAppointment['firstname']);
-    $insertStmt->bindParam(':lastname', $originalAppointment['lastname']);
-    $insertStmt->bindParam(':email', $originalAppointment['email']);
-    $insertStmt->bindParam(':mobile_number', $originalAppointment['mobile_number']);
-    
-    $insertResult = $insertStmt->execute();
-    if (!$insertResult) {
-        error_log("Error executing appointment insert: " . print_r($insertStmt->errorInfo(), true));
-        throw new PDOException("Failed to insert appointment");
-    }
-    
-    $newAppointmentId = $db->lastInsertId();
-    error_log("New appointment created with ID: $newAppointmentId");
-    
-    // Loop through each technician ID and insert into appointment_technicians
-    $techAssignQuery = "INSERT INTO appointment_technicians (appointment_id, technician_id) 
-                       VALUES (:appointment_id, :technician_id)";
-    $techAssignStmt = $db->prepare($techAssignQuery);
-    
-    foreach ($technicianIds as $techId) {
-        error_log("Adding technician ID: $techId to appointment ID: $newAppointmentId");
-        $techAssignStmt->bindParam(':appointment_id', $newAppointmentId);
-        $techAssignStmt->bindParam(':technician_id', $techId);
-        $techAssignResult = $techAssignStmt->execute();
-        
-        if (!$techAssignResult) {
-            error_log("Error assigning technician: " . print_r($techAssignStmt->errorInfo(), true));
-            throw new PDOException("Failed to assign technician ID: $techId");
-        }
-    }
-    
-    // Commit transaction
-    $db->commit();
-    error_log("Transaction committed successfully");
-    
-    // Check if this is an AJAX request
-    if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
-        header('Content-Type: application/json');
-        echo json_encode([
-            'success' => true, 
-            'message' => 'Follow-up scheduled successfully',
-            'appointment_id' => $newAppointmentId
-        ]);
-    } else {
-        // Regular form submission - redirect with success message
-        $_SESSION['success_message'] = 'Follow-up scheduled successfully';
-        header("Location: dashboard-pct.php#schedule-followup");
-    }
-    
-} catch (PDOException $e) {
-    // Rollback transaction on error
-    $db->rollBack();
-    error_log("Database error in schedule_followup.php: " . $e->getMessage());
-    
-    // Check if this is an AJAX request
-    if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
-        header('Content-Type: application/json');
-        echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
-    } else {
-        // Regular form submission - redirect with error
-        $_SESSION['error_message'] = 'Database error: ' . $e->getMessage();
-        header("Location: dashboard-pct.php#schedule-followup");
-    }
+} else {
+    // Not a POST request
+    header("Location: dashboard-pct.php#schedule-followup");
     exit();
 }
 ?>

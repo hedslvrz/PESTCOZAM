@@ -241,9 +241,14 @@ if (isset($_SESSION['current_appointment'])) {
           <p><strong>Client:</strong> <span id="modal-client-name"><?php echo htmlspecialchars($current_appointment['client_name']); ?> 
               <?php echo $current_appointment['is_for_self'] == 1 ? '(Self)' : '(Other)'; ?></span></p>
           <p><strong>Type of Service:</strong> <span id="modal-service-name"><?php echo htmlspecialchars($current_appointment['service_name']); ?></span></p>
+          <p><strong>Appointment Type:</strong> <span id="modal-appointment-type"><?php echo htmlspecialchars($current_appointment['service_type'] ?? 'N/A'); ?></span></p>
           <p><strong>Date:</strong> <span id="modal-app-date"><?php echo $current_appointment['appointment_date']; ?></span></p>
           <p><strong>Time:</strong> <span id="modal-app-time"><?php echo $current_appointment['appointment_time']; ?></span></p>
           <p><strong>Location:</strong> <span id="modal-location"><?php echo htmlspecialchars($current_appointment['street_address']); ?></span></p>
+          
+          <?php if(isset($current_appointment['landmark']) && !empty($current_appointment['landmark'])): ?>
+          <p><strong>Landmark:</strong> <span id="modal-landmark"><?php echo htmlspecialchars($current_appointment['landmark']); ?></span></p>
+          <?php endif; ?>
           
           <p><strong>Property Type:</strong> <span id="modal-property-type"><?php echo ucfirst(htmlspecialchars($current_appointment['property_type'] ?? 'residential')); ?>
             <?php if(isset($current_appointment['establishment_name']) && !empty($current_appointment['establishment_name'])): ?>
@@ -651,6 +656,7 @@ if (isset($_SESSION['current_appointment'])) {
       document.getElementById('modal-client-name').textContent = appointment.client_name + 
         (appointment.is_for_self == 1 ? ' (Self)' : ' (Other)');
       document.getElementById('modal-service-name').textContent = appointment.service_name;
+      document.getElementById('modal-appointment-type').textContent = appointment.service_type || 'N/A';
       document.getElementById('modal-app-date').textContent = appointment.appointment_date;
       document.getElementById('modal-app-time').textContent = appointment.appointment_time;
       document.getElementById('modal-location').textContent = appointment.street_address;
@@ -674,6 +680,11 @@ if (isset($_SESSION['current_appointment'])) {
       if (pestConcernElement) {
         pestConcernElement.innerHTML = appointment.pest_concern ? 
           appointment.pest_concern.replace(/\n/g, '<br>') : '';
+      }
+      
+      const landmarkElement = document.getElementById('modal-landmark');
+      if (landmarkElement) {
+        landmarkElement.textContent = appointment.landmark || '';
       }
       
       // Set email and phone based on whether appointment is for self or not
@@ -746,11 +757,17 @@ if (isset($_SESSION['current_appointment'])) {
       doc.text(`Appointment #: ${currentAppointment.id}`, 10, 50);
       doc.text(`Client: ${currentAppointment.client_name} ${currentAppointment.is_for_self == 1 ? '(Self)' : '(Other)'}`, 10, 60);
       doc.text(`Type of Service: ${currentAppointment.service_name}`, 10, 70);
-      doc.text(`Date: ${currentAppointment.appointment_date}`, 10, 80);
-      doc.text(`Time: ${currentAppointment.appointment_time}`, 10, 90);
-      doc.text(`Location: ${currentAppointment.street_address}`, 10, 100);
+      doc.text(`Appointment Type: ${currentAppointment.service_type || 'N/A'}`, 10, 80);
+      doc.text(`Date: ${currentAppointment.appointment_date}`, 10, 90);
+      doc.text(`Time: ${currentAppointment.appointment_time}`, 10, 100);
+      doc.text(`Location: ${currentAppointment.street_address}`, 10, 110);
       
-      let yPos = 110;
+      let yPos = 120;
+      
+      if (currentAppointment.landmark) {
+        doc.text(`Landmark: ${currentAppointment.landmark}`, 10, yPos);
+        yPos += 10;
+      }
       
       const propertyTypeText = `Property Type: ${currentAppointment.property_type ? currentAppointment.property_type.charAt(0).toUpperCase() + currentAppointment.property_type.slice(1) : 'Residential'}`;
       const establishmentText = currentAppointment.establishment_name ? ` (${currentAppointment.establishment_name})` : '';

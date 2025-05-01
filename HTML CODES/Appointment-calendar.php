@@ -31,35 +31,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Determine service type based on service_id
         $service_type = ($data['service_id'] == 17) ? 'Ocular Inspection' : 'Treatment';
         
-        // Store in session
+        // Store in session only (no database updates here)
         AppointmentSession::saveStep('calendar', [
             'appointment_date' => $data['appointment_date'],
             'appointment_time' => $data['appointment_time'],
             'service_id' => $data['service_id'],
+            'original_service_id' => $service_id, // Store the original service ID
             'service_type' => $service_type
         ]);
         
-        // Update database
-        $query = "UPDATE appointments SET 
-                  appointment_date = :appointment_date, 
-                  appointment_time = :appointment_time, 
-                  service_id = :service_id,
-                  service_type = :service_type
-                  WHERE user_id = :user_id AND id = :appointment_id";
-        
-        $stmt = $db->prepare($query);
-        $result = $stmt->execute([
-            ':appointment_date' => $data['appointment_date'],
-            ':appointment_time' => $data['appointment_time'],
-            ':service_id' => $data['service_id'],
-            ':service_type' => $service_type,
-            ':user_id' => $user_id,
-            ':appointment_id' => AppointmentSession::getAppointmentId()
-        ]);
-        
-        // Respond with success/error message
+        // Respond with success message
         header('Content-Type: application/json');
-        echo json_encode(['success' => $result]);
+        echo json_encode(['success' => true]);
         exit();
     }
 }
@@ -284,6 +267,14 @@ $calendarData = AppointmentSession::getData('calendar', []);
 </footer>
 
   <script>
+    // Navigation warning
+    window.onbeforeunload = function() {
+      // Check if user has selected a date/time
+      if (selectedDate || selectedTime) {
+        return "You haven't finished booking your appointment. Are you sure you want to leave?";
+      }
+    };
+
     const monthSelect = document.getElementById('month-select');
     const yearSelect = document.getElementById('year-select');
     const calendarDays = document.getElementById('calendar-days');
@@ -555,9 +546,32 @@ $calendarData = AppointmentSession::getData('calendar', []);
           });
       }, 100);
       <?php endif; ?>
+
+      // Clear appointment session when clicking on navigation links
+      document.querySelectorAll('nav a:not(.btn-appointment)').forEach(link => {
+        link.addEventListener('click', function(event) {
+          // Don't show the native browser confirmation
+          window.onbeforeunload = null;
+          
+          // Show our custom confirmation
+          event.preventDefault();
+          if (confirm("You haven't finished booking your appointment. Are you sure you want to leave?")) {
+            // Clear the session via AJAX and then navigate
+            fetch('../PHP CODES/clear_appointment_session.php', {
+              method: 'POST'
+            })
+            .then(() => {
+              window.location.href = this.href;
+            });
+          }
+        });
+      });
     });
 
     function saveDateTime() {
+      // Disable navigation warning when proceeding
+      window.onbeforeunload = null;
+      
       if (!selectedDate || !selectedTime) {
         Swal.fire({
           icon: 'warning',
