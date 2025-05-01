@@ -478,3 +478,77 @@ COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
+-- ========================================
+-- PATCH: Follow-up Scheduling Enhancements
+-- ========================================
+
+-- 1. Ensure visit_date column exists in followup_visits (skip if already there)
+ALTER TABLE followup_visits ADD COLUMN visit_date DATE;
+
+-- 2. View to track scheduled follow-up visits with their corresponding plans
+-- ========================================
+-- VIEW: scheduled_followups
+-- Purpose: Combine each follow-up plan with its associated visit records
+-- ========================================
+CREATE OR REPLACE VIEW scheduled_followups AS
+SELECT
+  fp.id                AS plan_id,           -- PK of the plan
+  fp.appointment_id    AS original_appt_id,  -- linked appointment
+  fp.plan_type         AS frequency_type,    -- e.g. 'weekly','monthly','quarterly','annually'
+  fp.frequency         AS frequency_value,   -- numeric value or descriptor
+  fp.contract_duration AS duration_months,   -- length of contract in months
+  fp.start_date        AS plan_start_date,   -- when the plan begins
+
+  fv.id                AS visit_id,          -- PK of the visit record
+  fv.followup_date     AS visit_date,        -- scheduled follow-up date
+  fv.followup_time     AS visit_time,        -- scheduled follow-up time
+  fv.visit_number      AS visit_seq,         -- sequence number of the visit
+  fv.status            AS visit_status,      -- e.g. 'Scheduled','Completed','Canceled'
+  fv.technician_id     AS tech_id,           -- assigned technician for this visit
+  fv.notes             AS visit_notes        -- outcome or remarks
+FROM followup_plan fp
+LEFT JOIN followup_visits fv 
+  ON fv.plan_id = fp.id
+ORDER BY fp.id, fv.visit_number;
+
+-- Drop existing followup tables if they exist, to avoid conflicts
+DROP TABLE IF EXISTS `followup_visits`;
+DROP TABLE IF EXISTS `followup_plan`;
+
+-- Create followup_plan table with the correct structure
+CREATE TABLE `followup_plan` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `appointment_id` int(11) NOT NULL,
+  `plan_type` enum('weekly','monthly','quarterly','yearly') NOT NULL,
+  `visit_frequency` int(11) NOT NULL DEFAULT 1,
+  `contract_duration` int(11) NOT NULL DEFAULT 1,
+  `duration_unit` enum('days','weeks','months','years') NOT NULL DEFAULT 'months',
+  `notes` text DEFAULT NULL,
+  `created_by` int(11) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `appointment_id` (`appointment_id`),
+  KEY `created_by` (`created_by`),
+  CONSTRAINT `followup_plan_ibfk_1` FOREIGN KEY (`appointment_id`) REFERENCES `appointments` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `followup_plan_ibfk_2` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- Create followup_visits table
+CREATE TABLE `followup_visits` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `followup_plan_id` int(11) NOT NULL,
+  `appointment_id` int(11) NOT NULL,
+  `visit_date` date NOT NULL,
+  `visit_time` time NOT NULL,
+  `status` enum('Scheduled','Completed','Cancelled') NOT NULL DEFAULT 'Scheduled',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `followup_plan_id` (`followup_plan_id`),
+  KEY `appointment_id` (`appointment_id`),
+  CONSTRAINT `followup_visits_ibfk_1` FOREIGN KEY (`followup_plan_id`) REFERENCES `followup_plan` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `followup_visits_ibfk_2` FOREIGN KEY (`appointment_id`) REFERENCES `appointments` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+

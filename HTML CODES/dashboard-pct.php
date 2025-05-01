@@ -282,12 +282,6 @@ try {
                             <i class='bx bx-search'></i>
                             <input type="text" id="assignment-search" placeholder="Search assignments...">
                         </div>
-                        <div class="tabs">
-                            <button type="button" class="filter-btn active" data-filter="all">All</button>
-                            <button type="button" class="filter-btn" data-filter="pending">Pending</button>
-                            <button type="button" class="filter-btn" data-filter="confirmed">Confirmed</button>
-                            <button type="button" class="filter-btn" data-filter="completed">Completed</button>
-                        </div>
                     </div>
 
                     <table>
@@ -700,6 +694,20 @@ try {
 
             <div class="followup-form-container">
                 <div class="followup-label">Schedule Follow-up Visit</div>
+                
+                <!-- Add success/error messages -->
+                <?php if(isset($_SESSION['followup_success'])): ?>
+                    <div class="alert alert-success">
+                        <?php echo $_SESSION['followup_success']; unset($_SESSION['followup_success']); ?>
+                    </div>
+                <?php endif; ?>
+                
+                <?php if(isset($_SESSION['followup_error'])): ?>
+                    <div class="alert alert-error">
+                        <?php echo $_SESSION['followup_error']; unset($_SESSION['followup_error']); ?>
+                    </div>
+                <?php endif; ?>
+                
                 <div class="followup-grid">
                     <!-- Main Schedule Content -->
                     <div class="calendar-container">
@@ -762,7 +770,6 @@ try {
                                                          . 'data-service="' . $customer['service_id'] . '" '
                                                          . 'data-location="' . htmlspecialchars($customer['location']) . '" '
                                                          . 'data-technician="' . $customer['technician_id'] . '" '
-                                                         . 'data-technician-name="' . htmlspecialchars($customer['technician_name']) . '" '
                                                          . 'data-all-technicians="' . htmlspecialchars($customer['all_technician_ids']) . '" '
                                                          . 'data-all-technician-names="' . htmlspecialchars($customer['all_technician_names']) . '">'
                                                          . htmlspecialchars($customer['customer_name']) . ' - ' 
@@ -815,12 +822,28 @@ try {
                                             <select id="technician-select" name="technician_id" required multiple class="enhanced-select">
                                                 <?php 
                                                 try {
+                                                    // Always include the current logged in technician first
+                                                    $currentTechId = $_SESSION['user_id'];
+                                                    $currentTechQuery = "SELECT id, firstname, lastname 
+                                                                        FROM users 
+                                                                        WHERE id = ?";
+                                                    $currentTechStmt = $db->prepare($currentTechQuery);
+                                                    $currentTechStmt->execute([$currentTechId]);
+                                                    $currentTech = $currentTechStmt->fetch(PDO::FETCH_ASSOC);
+                                                    
+                                                    if ($currentTech) {
+                                                        echo '<option value="' . htmlspecialchars($currentTech['id']) . '" selected>' . 
+                                                            htmlspecialchars($currentTech['firstname'] . ' ' . $currentTech['lastname']) . ' (You)</option>';
+                                                    }
+                                                    
+                                                    // Get all other technicians
                                                     $techQuery = "SELECT id, firstname, lastname 
                                                                 FROM users 
                                                                 WHERE role = 'technician' 
-                                                                AND status = 'verified'";
+                                                                AND status = 'verified'
+                                                                AND id != ?";
                                                     $techStmt = $db->prepare($techQuery);
-                                                    $techStmt->execute();
+                                                    $techStmt->execute([$currentTechId]);
                                                     $technicians = $techStmt->fetchAll(PDO::FETCH_ASSOC);
                                                     
                                                     if (!empty($technicians)) {
@@ -828,7 +851,10 @@ try {
                                                             echo '<option value="' . htmlspecialchars($tech['id']) . '">' . 
                                                                 htmlspecialchars($tech['firstname'] . ' ' . $tech['lastname']) . '</option>';
                                                         }
-                                                    } else {
+                                                    } 
+                                                    
+                                                    // If no techs found (other than current one)
+                                                    if (empty($technicians) && !$currentTech) {
                                                         echo '<option value="" disabled>No technicians available</option>';
                                                     }
                                                 } catch(PDOException $e) {
@@ -859,6 +885,53 @@ try {
                                         <option value="15:00:00">3:00 PM - 5:00 PM</option>
                                     </select>
                                 </div>
+                                
+                                <!-- Plan Type Selection -->
+                                <div class="form-group">
+                                    <label>Plan Type:</label>
+                                    <select id="plan-type" name="plan_type" required>
+                                        <option value="">Select Plan Type</option>
+                                        <option value="weekly">Weekly Visit</option>
+                                        <option value="monthly">Monthly Visit</option>
+                                        <option value="quarterly">Quarterly Visit</option>
+                                        <option value="yearly">Yearly Visit</option>
+                                    </select>
+                                </div>
+                                
+                                <!-- Frequency Selection -->
+                                <div class="form-group">
+                                    <label>Visit Frequency:</label>
+                                    <select id="visit-frequency" name="visit_frequency">
+                                        <option value="">Select Frequency</option>
+                                        <option value="1">Once</option>
+                                        <option value="2">Twice</option>
+                                        <option value="3">Three times</option>
+                                        <option value="4">Four times</option>
+                                        <option value="6">Six times</option>
+                                        <option value="12">Twelve times</option>
+                                        <option value="custom">Custom</option>
+                                    </select>
+                                </div>
+                                
+                                <!-- Contract Duration -->
+                                <div class="form-group">
+                                    <label>Contract Duration:</label>
+                                    <div class="duration-input-group">
+                                        <input type="number" id="contract-duration" name="contract_duration" min="1" placeholder="Duration">
+                                        <select id="duration-unit" name="duration_unit">
+                                            <option value="days">Days</option>
+                                            <option value="weeks">Weeks</option>
+                                            <option value="months" selected>Months</option>
+                                            <option value="years">Years</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <!-- Notes Field -->
+                                <div class="form-group">
+                                    <label>Notes:</label>
+                                    <textarea id="followup-notes" name="notes" rows="3" placeholder="Enter any special instructions or notes for this follow-up..."></textarea>
+                                </div>
                             </div>
                             <div class="schedule-actions-centered">
                                 <button type="submit" class="btn-submit" style="background: linear-gradient(135deg, #144578, #2a6db5); color: white; padding: 15px 30px; border-radius: 12px; font-weight: 600; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: all 0.3s ease; font-size: 16px; border: none; box-shadow: 0 6px 15px rgba(20, 69, 120, 0.2);">
@@ -878,100 +951,167 @@ try {
                                     <i class='bx bx-search'></i>
                                     <input type="text" id="followup-search" placeholder="Search follow-ups...">
                                 </div>
-                                <div class="filter-buttons">
-                                    <button type="button" class="filter-btn active" data-filter="all">All</button>
-                                    <button type="button" class="filter-btn" data-filter="thisweek">This Week</button>
-                                    <button type="button" class="filter-btn" data-filter="nextweek">Next Week</button>
-                                    <button type="button" class="filter-btn" data-filter="nextmonth">Next Month</button>
-                                </div>
                             </div>
                             <div class="table-wrapper scrollable-table">
                                 <table class="appointments-table">
                                     <thead>
                                         <tr>
-                                            <th>Date & Time</th>
                                             <th>Client</th>
                                             <th>Service</th>
-                                            <th>Technician</th>
                                             <th>Location</th>
-                                            <th>Status</th>
+                                            <th>Follow-ups</th>
+                                            <th>Action</th>
                                         </tr>
                                     </thead>
                                     <tbody id="followups-list">
                                         <?php
                                         try {
+                                            // Modified query to group by customer
                                             $followupsQuery = "SELECT 
-                                                a.id as appointment_id,
-                                                a.appointment_date,
-                                                a.appointment_time,
+                                                CASE 
+                                                    WHEN a.is_for_self = 1 THEN u.id
+                                                    ELSE CONCAT('guest_', a.id)
+                                                END as client_id,
                                                 CASE 
                                                     WHEN a.is_for_self = 1 THEN CONCAT(u.firstname, ' ', u.lastname)
                                                     ELSE CONCAT(a.firstname, ' ', a.lastname)
                                                 END as customer_name,
                                                 s.service_name,
-                                                GROUP_CONCAT(CONCAT(tech.firstname, ' ', tech.lastname) SEPARATOR ', ') as technician_names,
                                                 CONCAT(a.street_address, ', ', a.barangay, ', ', a.city) as location,
-                                                a.status
+                                                COUNT(DISTINCT a.id) as appointment_count
                                             FROM appointments a
                                             JOIN users u ON a.user_id = u.id
                                             JOIN services s ON a.service_id = s.service_id
                                             LEFT JOIN appointment_technicians at ON a.id = at.appointment_id
-                                            LEFT JOIN users tech ON at.technician_id = tech.id
-                                            WHERE a.status = 'Confirmed' 
+                                            LEFT JOIN users tech ON (at.technician_id = tech.id OR a.technician_id = tech.id)
+                                            LEFT JOIN followup_visits fv ON a.id = fv.appointment_id
+                                            LEFT JOIN followup_plan fp ON fv.followup_plan_id = fp.id
+                                            WHERE (a.status IN ('Confirmed', 'Scheduled') OR fv.id IS NOT NULL)
                                             AND a.appointment_date >= CURDATE()
                                             AND (a.technician_id = ? OR at.technician_id = ?)
-                                            GROUP BY a.id
-                                            ORDER BY a.appointment_date ASC, a.appointment_time ASC
+                                            GROUP BY client_id
+                                            ORDER BY customer_name ASC
                                             LIMIT 50";
                                             $stmt = $db->prepare($followupsQuery);
                                             $stmt->execute([$_SESSION['user_id'], $_SESSION['user_id']]);
-                                            $followups = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                                            $groupedFollowups = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                             
-                                            if (!empty($followups)) {
-                                                foreach ($followups as $followup) {
-                                                    $appointmentDate = strtotime($followup['appointment_date']);
-                                                    $dateClass = '';
+                                            // Now get the detailed appointments for each customer
+                                            $detailedFollowupsQuery = "SELECT 
+                                                a.id as appointment_id,
+                                                a.appointment_date,
+                                                a.appointment_time,
+                                                CASE 
+                                                    WHEN a.is_for_self = 1 THEN u.id
+                                                    ELSE CONCAT('guest_', a.id)
+                                                END as client_id,
+                                                CASE 
+                                                    WHEN a.is_for_self = 1 THEN CONCAT(u.firstname, ' ', u.lastname)
+                                                    ELSE CONCAT(a.firstname, ' ', a.lastname)
+                                                END as customer_name,
+                                                s.service_name,
+                                                s.service_id,
+                                                GROUP_CONCAT(DISTINCT CONCAT(tech.firstname, ' ', tech.lastname) SEPARATOR ', ') as technician_names,
+                                                CONCAT(a.street_address, ', ', a.barangay, ', ', a.city) as location,
+                                                IF(fv.id IS NOT NULL, 'Scheduled Follow-up', a.status) as status,
+                                                fp.id as plan_id,
+                                                fv.id as visit_id
+                                            FROM appointments a
+                                            JOIN users u ON a.user_id = u.id
+                                            JOIN services s ON a.service_id = s.service_id
+                                            LEFT JOIN appointment_technicians at ON a.id = at.appointment_id
+                                            LEFT JOIN users tech ON (at.technician_id = tech.id OR a.technician_id = tech.id)
+                                            LEFT JOIN followup_visits fv ON a.id = fv.appointment_id
+                                            LEFT JOIN followup_plan fp ON fv.followup_plan_id = fp.id
+                                            WHERE (a.status IN ('Confirmed', 'Scheduled') OR fv.id IS NOT NULL)
+                                            AND a.appointment_date >= CURDATE()
+                                            AND (a.technician_id = ? OR at.technician_id = ?)
+                                            GROUP BY a.id
+                                            ORDER BY a.appointment_date ASC, a.appointment_time ASC";
+                                            $stmt = $db->prepare($detailedFollowupsQuery);
+                                            $stmt->execute([$_SESSION['user_id'], $_SESSION['user_id']]);
+                                            $detailedFollowups = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                                            
+                                            // Create a lookup array for the detailed appointments
+                                            $clientAppointments = [];
+                                            foreach ($detailedFollowups as $appointment) {
+                                                $clientId = $appointment['client_id'];
+                                                if (!isset($clientAppointments[$clientId])) {
+                                                    $clientAppointments[$clientId] = [];
+                                                }
+                                                $clientAppointments[$clientId][] = $appointment;
+                                            }
+                                            
+                                            // Debug: Count the follow-ups
+                                            echo '<!-- Found ' . count($groupedFollowups) . ' unique clients with follow-ups -->';
+                                            
+                                            // Check if we have any follow-ups
+                                            if (!empty($groupedFollowups)) {
+                                                foreach ($groupedFollowups as $client) {
+                                                    $clientId = $client['client_id'];
+                                                    $appointments = $clientAppointments[$clientId] ?? [];
                                                     
-                                                    // Calculate if appointment is this week, next week, or this month
-                                                    $today = strtotime('today');
-                                                    $weekStart = strtotime('monday this week', $today);
-                                                    $weekEnd = strtotime('sunday this week', $today);
-                                                    $nextWeekStart = strtotime('monday next week', $today);
-                                                    $nextWeekEnd = strtotime('sunday next week', $today);
-                                                    $monthStart = strtotime('first day of this month', $today);
-                                                    $monthEnd = strtotime('last day of this month', $today);
+                                                    echo '<tr class="followup-row client-row" data-client-id="' . $clientId . '">';
+                                                    echo '<td>' . htmlspecialchars($client['customer_name']) . '</td>';
+                                                    echo '<td>' . htmlspecialchars($client['service_name']) . '</td>';
+                                                    echo '<td>' . htmlspecialchars($client['location']) . '</td>';
+                                                    echo '<td>' . count($appointments) . ' scheduled</td>';
+                                                    echo '<td><button class="view-details-btn" data-client-id="' . $clientId . '">View Details</button></td>';
+                                                    echo '</tr>';
                                                     
-                                                    if ($appointmentDate >= $weekStart && $appointmentDate <= $weekEnd) {
-                                                        $dateClass = 'thisweek';
-                                                    } elseif ($appointmentDate >= $nextWeekStart && $appointmentDate <= $nextWeekEnd) {
-                                                        $dateClass = 'nextweek';
-                                                    } elseif ($appointmentDate >= $monthStart && $appointmentDate <= $monthEnd) {
-                                                        $dateClass = 'thismonth';
+                                                    // Add a hidden row for the appointments
+                                                    echo '<tr class="appointment-details-row" id="details-' . $clientId . '" style="display: none;">';
+                                                    echo '<td colspan="5">';
+                                                    echo '<div class="appointment-details">';
+                                                    echo '<h4>Scheduled Follow-ups</h4>';
+                                                    echo '<table class="nested-appointments-table">';
+                                                    echo '<thead><tr><th>Date & Time</th><th>Service</th><th>Technician</th><th>Status</th></tr></thead>';
+                                                    echo '<tbody>';
+                                                    
+                                                    foreach ($appointments as $appointment) {
+                                                        $appointmentDate = strtotime($appointment['appointment_date']);
+                                                        
+                                                        // Determine time period for filtering
+                                                        $today = strtotime('today');
+                                                        $weekStart = strtotime('monday this week', $today);
+                                                        $weekEnd = strtotime('sunday this week', $today);
+                                                        $nextWeekStart = strtotime('monday next week', $today);
+                                                        $nextWeekEnd = strtotime('sunday next week', $today);
+                                                        $nextMonthStart = strtotime('first day of next month', $today);
+                                                        $nextMonthEnd = strtotime('last day of next month', $today);
+                                                        
+                                                        // Set period class
+                                                        if ($appointmentDate >= $weekStart && $appointmentDate <= $weekEnd) {
+                                                            $dateClass = 'thisweek';
+                                                        } elseif ($appointmentDate >= $nextWeekStart && $appointmentDate <= $nextWeekEnd) {
+                                                            $dateClass = 'nextweek';
+                                                        } elseif ($appointmentDate >= $nextMonthStart && $appointmentDate <= $nextMonthEnd) {
+                                                            $dateClass = 'nextmonth';
+                                                        } else {
+                                                            $dateClass = 'future';
+                                                        }
+                                                        
+                                                        echo '<tr class="nested-followup-row" data-period="' . $dateClass . '">';
+                                                        echo '<td>' . date('M d, Y', $appointmentDate) . ' ' . 
+                                                             date('h:i A', strtotime($appointment['appointment_time'])) . '</td>';
+                                                        echo '<td>' . htmlspecialchars($appointment['service_name']) . '</td>';
+                                                        echo '<td>' . htmlspecialchars($appointment['technician_names'] ?? 'Not Assigned') . '</td>';
+                                                        echo '<td><span class="status scheduled">' . 
+                                                             htmlspecialchars($appointment['status']) . '</span></td>';
+                                                        echo '</tr>';
                                                     }
                                                     
-                                                    echo '<tr class="followup-row" data-date="'.date('Y-m-d', $appointmentDate).'" data-period="'.$dateClass.'">';
-                                                    echo '<td>' . date('M d, Y', $appointmentDate) . ' ' . 
-                                                         date('h:i A', strtotime($followup['appointment_time'])) . '</td>';
-                                                    echo '<td>' . htmlspecialchars($followup['customer_name']) . '</td>';
-                                                    echo '<td>' . htmlspecialchars($followup['service_name']) . '</td>';
-                                                    echo '<td>' . htmlspecialchars($followup['technician_names'] ?? 'Not Assigned') . '</td>';
-                                                    echo '<td>' . htmlspecialchars($followup['location']) . '</td>';
-                                                    echo '<td><span class="status ' . strtolower($followup['status']) . '">' . 
-                                                         htmlspecialchars($followup['status']) . '</span></td>';
-                                                    echo '</tr>';
+                                                    echo '</tbody></table></div></td></tr>';
                                                 }
                                             } else {
-                                                echo '<tr><td colspan="6">No follow-ups scheduled</td></tr>';
+                                                echo '<tr><td colspan="5">No follow-ups scheduled</td></tr>';
                                             }
                                         } catch(PDOException $e) {
-                                            echo '<tr><td colspan="6">Error loading follow-ups</td></tr>';
+                                            echo '<tr><td colspan="5">Error loading follow-ups: ' . $e->getMessage() . '</td></tr>';
                                         }
                                         ?>
                                     </tbody>
                                 </table>
-                            </div>
-                            <div id="followups-pagination" class="pagination-controls">
-                                <!-- Pagination will be inserted via JavaScript -->
                             </div>
                         </div>
                     </div>
@@ -1096,7 +1236,6 @@ try {
     <script>
         // Function to handle filtering of assignment rows
         document.addEventListener('DOMContentLoaded', function() {
-            const filterButtons = document.querySelectorAll('.filter-btn');
             const assignmentRows = document.querySelectorAll('tr[data-status]');
             
             // Check if there's an appointment_id in the URL fragment
@@ -1138,28 +1277,273 @@ try {
             
             // Also check when hash changes
             window.addEventListener('hashchange', checkForAppointmentId);
+        });
+    </script>
+    
+    <script>
+        // Function to load customer details when customer is selected in follow-up form
+        function loadCustomerDetails(appointmentId) {
+            if (!appointmentId) {
+                // Clear fields if no appointment selected
+                document.getElementById('customer-location').value = '';
+                document.getElementById('service-type').value = '';
+                
+                // Clear technician selections
+                const techSelect = document.getElementById('technician-select');
+                if (techSelect) {
+                    Array.from(techSelect.options).forEach((option, index) => {
+                        // Keep the first option (current logged-in tech) selected
+                        option.selected = index === 0;
+                    });
+                }
+                return;
+            }
             
-            // Existing code for filter buttons
-            filterButtons.forEach(button => {
+            // Get the selected option
+            const selectedOption = document.querySelector(`#customer-select option[value="${appointmentId}"]`);
+            
+            if (selectedOption) {
+                // Get data from the data attributes
+                const serviceId = selectedOption.getAttribute('data-service');
+                const location = selectedOption.getAttribute('data-location');
+                const technicianId = selectedOption.getAttribute('data-technician');
+                const allTechnicianIds = selectedOption.getAttribute('data-all-technicians');
+                
+                // Set values in form
+                document.getElementById('customer-location').value = location || '';
+                document.getElementById('service-type').value = serviceId || '';
+                
+                // Select technicians in the multi-select dropdown
+                const techSelect = document.getElementById('technician-select');
+                if (techSelect) {
+                    // Parse technician IDs (they might be in format "1,2,3")
+                    let techIds = [];
+                    
+                    if (allTechnicianIds && allTechnicianIds.trim()) {
+                        techIds = allTechnicianIds.split(',').map(id => id.trim());
+                    } else if (technicianId) {
+                        techIds = [technicianId];
+                    }
+                    
+                    // First reset all selections except the first option (current user)
+                    Array.from(techSelect.options).forEach((option, index) => {
+                        // If it's the first option or if its value is in techIds
+                        option.selected = (index === 0) || techIds.includes(option.value);
+                    });
+                }
+            }
+        }
+        
+        // Setup the follow-up search functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Create a modal for displaying appointment details
+            const modalHTML = `
+                <div id="followup-modal" class="modal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3>Scheduled Follow-ups</h3>
+                            <span class="close" id="close-followup-modal">&times;</span>
+                        </div>
+                        <div class="modal-body">
+                            <div class="client-info-summary">
+                                <div><strong>Client:</strong> <span id="modal-client-name"></span></div>
+                                <div><strong>Service:</strong> <span id="modal-service-name"></span></div>
+                                <div><strong>Location:</strong> <span id="modal-location"></span></div>
+                            </div>
+                            <h4>Follow-up Appointments</h4>
+                            <div class="followup-list-container">
+                                <table class="nested-appointments-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Date & Time</th>
+                                            <th>Service</th>
+                                            <th>Technician</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="modal-followups-list">
+                                        <!-- Follow-up details will be inserted here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+            
+            // Add styles for the modal
+            const styleElement = document.createElement('style');
+            styleElement.textContent = `
+                #followup-modal {
+                    display: none;
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background-color: rgba(0,0,0,0.5);
+                    z-index: 1000;
+                    overflow: auto;
+                }
+                #followup-modal .modal-content {
+                    background-color: #fff;
+                    margin: 10% auto;
+                    padding: 0;
+                    width: 80%;
+                    max-width: 800px;
+                    border-radius: 8px;
+                    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+                }
+                #followup-modal .modal-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 15px 20px;
+                    background: linear-gradient(135deg, #144578, #2a6db5);
+                    color: white;
+                    border-radius: 8px 8px 0 0;
+                }
+                #followup-modal .modal-header h3 {
+                    margin: 0;
+                    font-weight: 600;
+                    color: white;
+                }
+                #followup-modal .close {
+                    color: white;
+                    font-size: 28px;
+                    font-weight: bold;
+                    cursor: pointer;
+                }
+                #followup-modal .modal-body {
+                    padding: 20px;
+                }
+                #followup-modal .client-info-summary {
+                    background-color: #f8f9fa;
+                    padding: 15px;
+                    border-radius: 6px;
+                    margin-bottom: 20px;
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                    gap: 10px;
+                }
+                #followup-modal h4 {
+                    margin-top: 0;
+                    margin-bottom: 15px;
+                    color: #144578;
+                }
+                #followup-modal .nested-appointments-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                }
+                #followup-modal .nested-appointments-table th,
+                #followup-modal .nested-appointments-table td {
+                    padding: 12px;
+                    text-align: left;
+                    border-bottom: 1px solid #e0e0e0;
+                }
+                #followup-modal .nested-appointments-table th {
+                    background-color: #f0f2f5;
+                    color: #333;
+                    font-weight: 600;
+                }
+                #followup-modal .nested-appointments-table tr:hover {
+                    background-color: #f9f9f9;
+                }
+                #followup-modal .status {
+                    padding: 5px 10px;
+                    border-radius: 20px;
+                    font-size: 0.8rem;
+                    display: inline-block;
+                    text-align: center;
+                    min-width: 80px;
+                }
+                #followup-modal .status.scheduled {
+                    background-color: #e3f2fd;
+                    color: #0d47a1;
+                }
+            `;
+            document.head.appendChild(styleElement);
+            
+            // Handle view details buttons for follow-up appointments
+            const viewDetailsButtons = document.querySelectorAll('.view-details-btn');
+            const followupModal = document.getElementById('followup-modal');
+            const closeModal = document.getElementById('close-followup-modal');
+            
+            // Close modal when clicking the X
+            if (closeModal) {
+                closeModal.onclick = function() {
+                    followupModal.style.display = "none";
+                }
+            }
+            
+            // Close modal when clicking outside
+            window.onclick = function(event) {
+                if (event.target == followupModal) {
+                    followupModal.style.display = "none";
+                }
+            }
+            
+            // Setup view details buttons
+            viewDetailsButtons.forEach(button => {
                 button.addEventListener('click', function() {
-                    // Remove active class from all buttons
-                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    const clientId = this.getAttribute('data-client-id');
+                    const clientRow = document.querySelector(`.client-row[data-client-id="${clientId}"]`);
+                    const detailsRow = document.getElementById('details-' + clientId);
                     
-                    // Add active class to clicked button
-                    this.classList.add('active');
+                    if (clientRow && detailsRow && followupModal) {
+                        // Get client information
+                        const clientName = clientRow.cells[0].textContent.trim();
+                        const serviceName = clientRow.cells[1].textContent.trim();
+                        const location = clientRow.cells[2].textContent.trim();
+                        
+                        // Set modal info
+                        document.getElementById('modal-client-name').textContent = clientName;
+                        document.getElementById('modal-service-name').textContent = serviceName;
+                        document.getElementById('modal-location').textContent = location;
+                        
+                        // Get and sort follow-ups
+                        const modalFollowupsList = document.getElementById('modal-followups-list');
+                        modalFollowupsList.innerHTML = '';
+                        
+                        // Get all follow-up rows
+                        const followupRows = detailsRow.querySelectorAll('.nested-followup-row');
+                        
+                        // Convert to array and sort by date (earliest first)
+                        const sortedFollowups = Array.from(followupRows).sort((a, b) => {
+                            const dateA = new Date(a.cells[0].textContent.trim());
+                            const dateB = new Date(b.cells[0].textContent.trim());
+                            return dateA - dateB;
+                        });
+                        
+                        // Add to modal
+                        sortedFollowups.forEach(row => {
+                            modalFollowupsList.appendChild(row.cloneNode(true));
+                        });
+                        
+                        // Show modal
+                        followupModal.style.display = "block";
+                    }
+                });
+            });
+            
+            // Handle follow-up search
+            const followupSearch = document.getElementById('followup-search');
+            if (followupSearch) {
+                followupSearch.addEventListener('keyup', function() {
+                    const searchTerm = this.value.toLowerCase();
+                    const rows = document.querySelectorAll('.client-row');
                     
-                    const filterValue = this.getAttribute('data-filter');
-                    
-                    // Show/hide rows based on filter
-                    assignmentRows.forEach(row => {
-                        if (filterValue === 'all' || row.getAttribute('data-status') === filterValue) {
+                    rows.forEach(row => {
+                        const text = row.textContent.toLowerCase();
+                        if (text.includes(searchTerm)) {
                             row.style.display = '';
                         } else {
                             row.style.display = 'none';
                         }
                     });
                 });
-            });
+            }
         });
     </script>
 </body>
