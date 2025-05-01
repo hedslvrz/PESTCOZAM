@@ -16,52 +16,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['next'])) {
     $service_id = $_POST['service_id'];
     $isForSelf = isset($_POST['is_for_self']) ? (int)$_POST['is_for_self'] : 1;
     
-    // Check if we have an existing appointment in progress
-    $appointment_id = AppointmentSession::getAppointmentId();
+    // Initialize appointment session
+    AppointmentSession::initialize($user_id);
     
-    if ($appointment_id) {
-        // Update existing appointment
-        $updateQuery = "UPDATE appointments SET 
-                        service_id = :service_id, 
-                        is_for_self = :is_for_self,
-                        service_type = :service_type
-                        WHERE id = :appointment_id AND user_id = :user_id";
-        $stmt = $db->prepare($updateQuery);
-        $stmt->execute([
-            ':service_id' => $service_id,
-            ':is_for_self' => $isForSelf,
-            ':service_type' => ($service_id == 17) ? 'Ocular Inspection' : 'Treatment',
-            ':appointment_id' => $appointment_id,
-            ':user_id' => $user_id
-        ]);
-    } else {
-        // Insert a new appointment
-        $insertQuery = "INSERT INTO appointments (user_id, service_id, is_for_self, status, service_type) 
-                        VALUES (:user_id, :service_id, :is_for_self, :status, :service_type)";
-        $stmt = $db->prepare($insertQuery);
-        $stmt->execute([
-            ':user_id' => $user_id,
-            ':service_id' => $service_id,
-            ':is_for_self' => $isForSelf,
-            ':status' => 'pending',
-            ':service_type' => ($service_id == 17) ? 'Ocular Inspection' : 'Treatment'
-        ]);
-        
-        // Get the newly created appointment ID
-        $appointment_id = $db->lastInsertId();
-    }
-    
-    // Initialize or update appointment session with the appointment ID
-    if (!AppointmentSession::isInProgress()) {
-        AppointmentSession::initialize($user_id, $appointment_id);
-    } else {
-        AppointmentSession::setAppointmentId($appointment_id);
-    }
-    
-    // Save data to session
+    // Save data to session only (no database updates here)
     AppointmentSession::saveStep('service', [
         'service_id' => $service_id,
-        'is_for_self' => $isForSelf
+        'is_for_self' => $isForSelf,
+        'service_type' => ($service_id == 17) ? 'Ocular Inspection' : 'Treatment'
     ]);
 
     header("Location: Appointment-loc.php");
@@ -306,6 +268,20 @@ $services = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </footer>
 
     <script>
+    // Navigation warning
+    window.onbeforeunload = function() {
+        // Only show warning if user has started making selections
+        const selectedService = document.getElementById('selectedService').value;
+        if (selectedService) {
+            return "You haven't finished booking your appointment. Are you sure you want to leave?";
+        }
+    };
+    
+    // Disable the warning when submitting the form
+    document.getElementById('serviceForm').addEventListener('submit', function() {
+        window.onbeforeunload = null;
+    });
+    
     // Track the previously selected button so we can remove the highlight
     let previousSelectedButton = null;
 
@@ -351,6 +327,29 @@ $services = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 document.getElementById('isForSelf').value = this.value;
                 document.getElementById('isForSelfHidden').value = this.value;
                 console.log("Updated isForSelf value to: " + this.value);
+            });
+        });
+        
+        // Clear appointment session when clicking on navigation links
+        document.querySelectorAll('nav a:not(.btn-appointment)').forEach(link => {
+            link.addEventListener('click', function(event) {
+                // Don't show the native browser confirmation
+                window.onbeforeunload = null;
+                
+                // Show our custom confirmation if needed
+                const selectedService = document.getElementById('selectedService').value;
+                if (selectedService) {
+                    event.preventDefault();
+                    if (confirm("You haven't finished booking your appointment. Are you sure you want to leave?")) {
+                        // Clear the session via AJAX and then navigate
+                        fetch('../PHP CODES/clear_appointment_session.php', {
+                            method: 'POST'
+                        })
+                        .then(() => {
+                            window.location.href = this.href;
+                        });
+                    }
+                }
             });
         });
     });

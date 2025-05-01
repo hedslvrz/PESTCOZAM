@@ -1,30 +1,23 @@
 <?php
 class AppointmentSession {
-    public static function initialize($user_id, $appointment_id = null) {
+    public static function initialize($user_id) {
         // Clear any existing appointment session data first
         self::clear();
         
         // Start a fresh appointment session
         $_SESSION['appointment'] = [
             'user_id' => $user_id,
-            'appointment_id' => $appointment_id, // Store appointment ID
             'data' => [],
-            'started_at' => time() // Add timestamp for tracking session age
+            'started_at' => time(), // Add timestamp for tracking session age
+            'temp_id' => uniqid('app_') // Temporary ID for the appointment
         ];
     }
 
-    // Get current appointment ID
-    public static function getAppointmentId() {
-        return isset($_SESSION['appointment']) && isset($_SESSION['appointment']['appointment_id']) 
-            ? $_SESSION['appointment']['appointment_id'] 
+    // Get session ID (temporary)
+    public static function getTempId() {
+        return isset($_SESSION['appointment']) && isset($_SESSION['appointment']['temp_id']) 
+            ? $_SESSION['appointment']['temp_id'] 
             : null;
-    }
-
-    // Set appointment ID
-    public static function setAppointmentId($appointment_id) {
-        if (isset($_SESSION['appointment'])) {
-            $_SESSION['appointment']['appointment_id'] = $appointment_id;
-        }
     }
 
     // Check if appointment is in progress
@@ -43,10 +36,6 @@ class AppointmentSession {
         return isset($_SESSION['appointment']) ? $_SESSION['appointment']['data'] : null;
     }
 
-    public static function getProgress() {
-        return true;
-    }
-
     // Get a specific piece of data from the appointment session
     public static function getData($key, $default = null) {
         if (!isset($_SESSION['appointment']) || !isset($_SESSION['appointment']['data'][$key])) {
@@ -58,12 +47,7 @@ class AppointmentSession {
 
     // Check if a user can access a particular step
     public static function canAccessStep($step) {
-        return true;
-    }
-
-    // Get the next step in the appointment flow
-    private static function getNextStep($currentStep) {
-        return true;
+        return true; // Simplified for now
     }
 
     public static function clear() {
@@ -76,16 +60,43 @@ class AppointmentSession {
      * Clear all appointment session data
      */
     public static function clearAllData() {
-        $steps = ['service', 'location', 'calendar', 'personal_info'];
+        self::clear();
         
-        foreach ($steps as $step) {
-            if (isset($_SESSION['appointment_' . $step])) {
-                unset($_SESSION['appointment_' . $step]);
-            }
+        // Also remove any appointment confirmation flags
+        if (isset($_SESSION['appointment_confirmed'])) {
+            unset($_SESSION['appointment_confirmed']);
+        }
+    }
+    
+    /**
+     * Get all appointment data ready for database insertion
+     */
+    public static function getAllData() {
+        if (!isset($_SESSION['appointment'])) {
+            return null;
         }
         
-        // Also clear the main appointment session
-        self::clear();
+        $allData = [];
+        $allData['user_id'] = $_SESSION['appointment']['user_id'];
+        
+        // Combine all appointment data from different steps
+        if (isset($_SESSION['appointment']['data']['service'])) {
+            $allData = array_merge($allData, $_SESSION['appointment']['data']['service']);
+        }
+        
+        if (isset($_SESSION['appointment']['data']['location'])) {
+            $allData = array_merge($allData, $_SESSION['appointment']['data']['location']);
+        }
+        
+        if (isset($_SESSION['appointment']['data']['personal_info'])) {
+            $allData = array_merge($allData, $_SESSION['appointment']['data']['personal_info']);
+        }
+        
+        if (isset($_SESSION['appointment']['data']['calendar'])) {
+            $allData = array_merge($allData, $_SESSION['appointment']['data']['calendar']);
+        }
+        
+        return $allData;
     }
 }
 ?>
