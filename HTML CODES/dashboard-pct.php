@@ -381,6 +381,11 @@ try {
                             <li><a class="active" href="#">Submit</a></li>
                         </ul>
                     </div>
+                    <div class="right">
+                        <a href="view_submitted_reports-pct.php" class="btn-submit" style="margin-top: 10px; text-decoration: none;">
+                            <i class='bx bx-show'></i> View Submitted Reports
+                        </a>
+                    </div>
                 </div>
 
                 <div class="report-form-container wide">
@@ -415,7 +420,8 @@ try {
                                                 data-client="<?php echo htmlspecialchars($appointment['client_firstname'] . ' ' . $appointment['client_lastname']); ?>"
                                                 data-location="<?php echo htmlspecialchars(implode(', ', array_filter([$appointment['street_address'], $appointment['barangay'], $appointment['city']]))); ?>"
                                                 data-service="<?php echo htmlspecialchars($appointment['service_name']); ?>"
-                                                data-contact="<?php echo htmlspecialchars($appointment['client_mobile'] ?? ''); ?>">
+                                                data-contact="<?php echo htmlspecialchars($appointment['client_mobile'] ?? ''); ?>"
+                                                data-time-in="<?php echo htmlspecialchars($appointment['appointment_time']); ?>">
                                             <?php echo date('M d, Y', strtotime($appointment['appointment_date'])) . ' - ' . 
                                                  $appointment['client_firstname'] . ' ' . $appointment['client_lastname'] . ' - ' . 
                                                  $appointment['service_name']; ?>
@@ -477,16 +483,13 @@ try {
                                     <input type="text" name="pest_count" id="pest_count" placeholder="e.g., 15 roaches, 3 rats">
                                 </div>
                                 <div class="field-group">
-                                    <label for="frequency_of_visits">Frequency of Visits</label>
-                                    <select name="frequency_of_visits" id="frequency_of_visits">
-                                        <option value="">Select Recommended Frequency</option>
-                                        <option value="One-time">One-time</option>
-                                        <option value="Weekly">Weekly</option>
-                                        <option value="Bi-weekly">Bi-weekly</option>
-                                        <option value="Monthly">Monthly</option>
-                                        <option value="Quarterly">Quarterly</option>
-                                        <option value="Semi-annually">Semi-annually</option>
-                                        <option value="Annually">Annually</option>
+                                    <label for="plan_type">Plan Type</label>
+                                    <select name="plan_type" id="plan_type" required>
+                                        <option value="">Select Plan Type</option>
+                                        <option value="weekly">Weekly Visit</option>
+                                        <option value="monthly">Monthly Visit</option>
+                                        <option value="quarterly">Quarterly Visit</option>
+                                        <option value="yearly">Yearly Visit</option>
                                     </select>
                                 </div>
                             </div>
@@ -553,35 +556,32 @@ try {
                     const location = selectedOption.getAttribute('data-location');
                     const treatmentType = selectedOption.getAttribute('data-service');
                     const contactNo = selectedOption.getAttribute('data-contact');
+                    const appointmentTime = selectedOption.getAttribute('data-time-in'); // Use appointment time as base
+                    
+                    // Split appointment time into time_in and calculate time_out (default duration: 2 hours)
+                    const timeIn = appointmentTime;
+                    const timeOut = calculateTimeOut(appointmentTime, 2); // Add 2 hours by default
                     
                     // Fill in the form fields
                     document.getElementById('account_name').value = clientName;
                     document.getElementById('location').value = location;
                     document.getElementById('contact_no').value = contactNo;
+                    document.getElementById('time_in').value = timeIn || '';
+                    document.getElementById('time_out').value = timeOut || '';
                     
                     // Handle dropdown for treatment type
                     const treatmentTypeSelect = document.getElementById('treatment_type');
-                    
-                    // Try to find a matching option
                     let optionFound = false;
-                    for (let i = 0; i < treatmentTypeSelect.options.length; i++) {
-                        if (treatmentTypeSelect.options[i].value === treatmentType || 
-                            treatmentTypeSelect.options[i].text === treatmentType) {
-                            treatmentTypeSelect.selectedIndex = i;
+                    Array.from(treatmentTypeSelect.options).forEach(option => {
+                        if (option.text.trim().toLowerCase() === treatmentType.trim().toLowerCase()) {
+                            option.selected = true;
                             optionFound = true;
-                            break;
                         }
-                    }
-                    
-                    // If no exact match found, look for a partial match
+                    });
+
+                    // If no exact match found, reset to default
                     if (!optionFound) {
-                        for (let i = 0; i < treatmentTypeSelect.options.length; i++) {
-                            if (treatmentTypeSelect.options[i].text.includes(treatmentType) || 
-                                treatmentType.includes(treatmentTypeSelect.options[i].text)) {
-                                treatmentTypeSelect.selectedIndex = i;
-                                break;
-                            }
-                        }
+                        treatmentTypeSelect.selectedIndex = 0;
                     }
                 } else {
                     // Clear fields if "Select an appointment" is chosen
@@ -589,9 +589,21 @@ try {
                     document.getElementById('location').value = '';
                     document.getElementById('contact_no').value = '';
                     document.getElementById('treatment_type').selectedIndex = 0;
+                    document.getElementById('time_in').value = '';
+                    document.getElementById('time_out').value = '';
                 }
             });
-            
+
+            // Helper function to calculate time_out based on time_in and duration in hours
+            function calculateTimeOut(timeIn, durationHours) {
+                if (!timeIn) return '';
+                const [hours, minutes] = timeIn.split(':').map(Number);
+                const date = new Date();
+                date.setHours(hours, minutes);
+                date.setHours(date.getHours() + durationHours); // Add duration
+                return date.toTimeString().slice(0, 5); // Return in HH:MM format
+            }
+
             // Handle file uploads and preview
             document.getElementById('photos').addEventListener('change', function(e) {
                 const previewContainer = document.getElementById('photo-preview-container');
@@ -673,6 +685,20 @@ try {
                 if (!timeOut.value) {
                     const later = new Date(now.getTime() + 2 * 60 * 60 * 1000); // 2 hours later
                     timeOut.value = formatTime(later);
+                }
+            });
+
+            document.getElementById('appointment').addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                const treatmentType = selectedOption.getAttribute('data-service');
+                const treatmentTypeSelect = document.getElementById('treatment_type');
+
+                if (treatmentType) {
+                    Array.from(treatmentTypeSelect.options).forEach(option => {
+                        option.selected = option.text === treatmentType;
+                    });
+                } else {
+                    treatmentTypeSelect.selectedIndex = 0; // Reset to default
                 }
             });
         </script>
@@ -933,7 +959,7 @@ try {
                                     <textarea id="followup-notes" name="notes" rows="3" placeholder="Enter any special instructions or notes for this follow-up..."></textarea>
                                 </div>
                             </div>
-                            <div class="schedule-actions-centered">
+                            <div class="schedule-actions-centered"></div>
                                 <button type="submit" class="btn-submit" style="background: linear-gradient(135deg, #144578, #2a6db5); color: white; padding: 15px 30px; border-radius: 12px; font-weight: 600; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: all 0.3s ease; font-size: 16px; border: none; box-shadow: 0 6px 15px rgba(20, 69, 120, 0.2);">
                                     <i class='bx bx-calendar-check'></i> Schedule Follow-up
                                 </button>
@@ -1169,7 +1195,7 @@ try {
                             <p><strong>Last Name:</strong> <span data-field="lastname"><?php echo htmlspecialchars($technician['lastname']); ?></span></p>
                             <p><strong>Date of Birth:</strong> <span><?php echo $technician['dob'] ? date('m-d-Y', strtotime($technician['dob'])) : 'Not set'; ?></span></p>
                         </div>
-                        <div class="info-row">
+                        <div class="info-row"></div>
                             <p><strong>Email:</strong> <span data-field="email"><?php echo htmlspecialchars($technician['email']); ?></span></p>
                             <p><strong>Phone Number:</strong> <span data-field="mobile_number"><?php echo htmlspecialchars($technician['mobile_number']); ?></span></p>
                         </div>
