@@ -3679,5 +3679,29 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('Calendar initialization attempted');
 });
 </script>
+
+<!-- Report Submission Form -->
+<form id="submitReportForm" method="POST" onsubmit="handleReportSubmission(event)">
+    <input type="hidden" name="technician_id" value="<?php echo $technicianId; ?>">
+    <input type="hidden" name="appointment_id" value="<?php echo $appointmentId; ?>">
+    <textarea name="report_data" required></textarea>
+    <button type="submit">Submit Report</button>
+</form>
+
+<script>
+function handleReportSubmission(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+
+    const reportData = {
+        technician_id: formData.get('technician_id'),
+        appointment_id: formData.get('appointment_id'),
+        report_data: formData.get('report_data'),
+    };
+
+    submitReport(reportData);
+}
+</script>
 </body>
 </html>

@@ -1912,6 +1912,30 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeSectionSearches();
 });
 
+function submitReport(reportData) {
+    fetch('../PHP CODES/submit_report.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(reportData),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            // Optionally refresh the reports list or update the UI
+            location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while submitting the report.');
+    });
+}
+
 
 
 
