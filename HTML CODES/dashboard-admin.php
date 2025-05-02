@@ -3663,5 +3663,21 @@ function updateReportStatus(status) {
     });
 }
 </script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize the time slot calendar
+    if (typeof initTimeSlotCalendar === 'function') {
+        initTimeSlotCalendar();
+    }
+    
+    // Also initialize the other calendar if needed
+    if (typeof initializeCalendar === 'function') {
+        initializeCalendar();
+    }
+    
+    console.log('Calendar initialization attempted');
+});
+</script>
 </body>
 </html>
