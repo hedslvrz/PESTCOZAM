@@ -243,6 +243,10 @@ $treatmentTypes = [
                                 <p><?php echo htmlspecialchars($appointment['service_name'] ?? 'N/A'); ?></p>
                             </div>
                             <div class="info-group">
+                                <label>Appointment Type</label>
+                                <p><?php echo htmlspecialchars(ucfirst($appointment['appointment_type'] ?? 'Treatment')); ?></p>
+                            </div>
+                            <div class="info-group">
                                 <label>Appointment Date</label>
                                 <p><?php echo date('F d, Y', strtotime($appointment['appointment_date'])); ?></p>
                             </div>
@@ -261,28 +265,9 @@ $treatmentTypes = [
                 </div>
             </div>
 
-            <!-- Time Slot Section - Middle -->
-            <div class="detail-section time-section">
-                <div class="section-header">
-                    <h3><i class='bx bx-time'></i> Time Information</h3>
-                </div>
-                <div class="section-content time-content">
-                    <div class="time-display-container">
-                        <div class="time-field">
-                            <label>Time In</label>
-                            <input type="time" name="time_in" class="time-input" value="<?php echo $appointment['time_in'] ?? ''; ?>">
-                        </div>
-                        <div class="time-field">
-                            <label>Time Out</label>
-                            <input type="time" name="time_out" class="time-input" value="<?php echo $appointment['time_out'] ?? ''; ?>">
-                        </div>
-                        <div class="time-field">
-                            <label>Duration</label>
-                            <input type="text" name="duration" class="time-input" readonly>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <!-- Add hidden fields to maintain backend functionality -->
+            <input type="hidden" name="time_in" value="<?php echo $appointment['time_in'] ?? ''; ?>">
+            <input type="hidden" name="time_out" value="<?php echo $appointment['time_out'] ?? ''; ?>">
 
             <!-- Property Details Section -->
             <div class="detail-section property-section">
