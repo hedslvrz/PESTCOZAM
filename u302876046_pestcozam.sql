@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 30, 2025 at 03:11 PM
+-- Generation Time: May 02, 2025 at 01:43 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -71,7 +71,7 @@ CREATE TABLE `appointments` (
 --
 
 INSERT INTO `appointments` (`id`, `user_id`, `service_id`, `service_type`, `region`, `province`, `city`, `barangay`, `street_address`, `landmark`, `appointment_date`, `appointment_time`, `status`, `created_at`, `is_for_self`, `firstname`, `lastname`, `email`, `mobile_number`, `technician_id`, `latitude`, `longitude`, `updated_at`, `treatment_methods`, `chemicals`, `chemical_quantities`, `pct`, `device_installation`, `chemical_consumables`, `visit_frequency`, `time_in`, `time_out`, `property_type`, `establishment_name`, `property_area`, `pest_concern`) VALUES
-(95, 52, 3, 'Ocular Inspection', 'Region IX', 'Zamboanga Del Sur', 'Zamboanga City', 'Canelar', 'Wee Siu Tuy Road', NULL, '2025-04-30', '09:00:00', 'Pending', '2025-04-30 13:02:02', 1, NULL, NULL, NULL, NULL, NULL, 6.913780, 122.074293, '2025-04-30 13:03:17', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'residential', '', 200.00, '');
+(95, 52, 3, 'Ocular Inspection', 'Region IX', 'Zamboanga Del Sur', 'Zamboanga City', 'Canelar', 'Wee Siu Tuy Road', NULL, '2025-04-30', '09:00:00', 'Completed', '2025-04-30 13:02:02', 1, NULL, NULL, NULL, NULL, 50, 6.913780, 122.074293, '2025-05-02 01:17:56', '[]', '[]', '[]', '', '', '', 'weekly', '00:00:00', '00:00:00', 'residential', '', 200.00, '');
 
 -- --------------------------------------------------------
 
@@ -86,6 +86,13 @@ CREATE TABLE `appointment_technicians` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `appointment_technicians`
+--
+
+INSERT INTO `appointment_technicians` (`id`, `appointment_id`, `technician_id`, `created_at`) VALUES
+(21, 95, 50, '2025-05-01 15:05:30');
+
 -- --------------------------------------------------------
 
 --
@@ -96,11 +103,12 @@ CREATE TABLE `followup_plan` (
   `id` int(11) NOT NULL,
   `appointment_id` int(11) NOT NULL,
   `plan_type` enum('weekly','monthly','quarterly','yearly') NOT NULL,
-  `frequency` varchar(20) NOT NULL,
-  `contract_duration` int(11) NOT NULL,
-  `start_date` date NOT NULL,
+  `visit_frequency` int(11) NOT NULL DEFAULT 1,
+  `contract_duration` int(11) NOT NULL DEFAULT 1,
+  `duration_unit` enum('days','weeks','months','years') NOT NULL DEFAULT 'months',
+  `notes` text DEFAULT NULL,
   `created_by` int(11) NOT NULL,
-  `created_at` datetime NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -112,15 +120,12 @@ CREATE TABLE `followup_plan` (
 
 CREATE TABLE `followup_visits` (
   `id` int(11) NOT NULL,
-  `plan_id` int(11) NOT NULL,
+  `followup_plan_id` int(11) NOT NULL,
   `appointment_id` int(11) NOT NULL,
-  `followup_date` date NOT NULL,
-  `followup_time` time NOT NULL,
-  `visit_number` int(11) NOT NULL,
-  `status` enum('Scheduled','Completed','Canceled') NOT NULL DEFAULT 'Scheduled',
-  `technician_id` int(11) DEFAULT NULL,
-  `notes` text DEFAULT NULL,
-  `created_at` datetime NOT NULL,
+  `visit_date` date NOT NULL,
+  `visit_time` time NOT NULL,
+  `status` enum('Scheduled','Completed','Cancelled') NOT NULL DEFAULT 'Scheduled',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -152,6 +157,15 @@ CREATE TABLE `reviews` (
 
 INSERT INTO `reviews` (`id`, `user_id`, `service_id`, `appointment_id`, `rating`, `review_text`, `service_rating`, `technician_rating`, `service_feedback`, `reported_issues`, `status`, `created_at`, `updated_at`) VALUES
 (7, 48, 2, NULL, 3, 'sadadsa', 3, 4, 'sdada', 'asdsadsa', 'pending', '2025-04-29 06:39:32', '2025-04-29 06:39:32');
+
+-- --------------------------------------------------------
+
+--
+-- Stand-in structure for view `scheduled_followups`
+-- (See below for the actual view)
+--
+CREATE TABLE `scheduled_followups` (
+);
 
 -- --------------------------------------------------------
 
@@ -221,7 +235,8 @@ CREATE TABLE `service_reports` (
 --
 
 INSERT INTO `service_reports` (`report_id`, `technician_id`, `appointment_id`, `date_of_treatment`, `time_in`, `time_out`, `treatment_type`, `treatment_method`, `pest_count`, `device_installation`, `consumed_chemicals`, `frequency_of_visits`, `photos`, `location`, `account_name`, `contact_no`, `status`, `created_at`, `updated_at`) VALUES
-(7, 50, NULL, '2025-04-29', '13:16:00', '15:16:00', 'Mound Demolition', 'kqml a', NULL, 'mklsamql', 'klzmqlq', NULL, NULL, 'Hector Suarez Avenue, Tumaga, Zamboanga City', 'Pestcozam Admin', '09234567431', 'approved', '2025-04-29 05:17:10', '2025-04-29 05:17:48');
+(7, 50, NULL, '2025-04-29', '13:16:00', '15:16:00', 'Mound Demolition', 'kqml a', NULL, 'mklsamql', 'klzmqlq', NULL, NULL, 'Hector Suarez Avenue, Tumaga, Zamboanga City', 'Pestcozam Admin', '09234567431', 'approved', '2025-04-29 05:17:10', '2025-04-29 05:17:48'),
+(8, 50, 95, '2025-05-01', '23:06:00', '01:06:00', 'Termite Control', 'asda', '20', 'sadasd', 'asda', NULL, NULL, 'Wee Siu Tuy Road, Canelar, Zamboanga City', 'Dunn Alvarez', '09759500123', 'rejected', '2025-05-01 15:06:20', '2025-05-02 01:18:05');
 
 -- --------------------------------------------------------
 
@@ -278,18 +293,30 @@ CREATE TABLE `users` (
   `sss_no` varchar(20) DEFAULT NULL,
   `pagibig_no` varchar(20) DEFAULT NULL,
   `philhealth_no` varchar(20) DEFAULT NULL,
-  `profile_pic` varchar(255) DEFAULT NULL
+  `profile_pic` varchar(255) DEFAULT NULL,
+  `deleted` tinyint(1) NOT NULL DEFAULT 0,
+  `deleted_reason` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `firstname`, `middlename`, `lastname`, `email`, `mobile_number`, `password`, `created_at`, `role`, `status`, `dob`, `employee_no`, `sss_no`, `pagibig_no`, `philhealth_no`, `profile_pic`) VALUES
-(48, 'Pestcozam', '', 'Admin', 'pestcozam2025@gmail.com', '09234567431', '$2y$10$BtHe06BusDhEpoLOk1V/LOAV0IEw/A8oJFuMOr2ect1E6o6a3YVLS', '2025-04-29 02:29:12', 'admin', 'active', NULL, NULL, NULL, NULL, NULL, NULL),
-(50, 'Hedrian', NULL, 'Alvarez', 'hedrianlvrz13@gmail.com', '09759500123', '$2y$10$2vSdbX.kbClrLtifajS9vOlb3HlBMCzanV8Ksb5JAgIfc.HuMIn8K', '2025-04-29 04:45:18', 'technician', 'active', '2004-04-13', 'EMP-0001', '', '', '', NULL),
-(51, 'Aldwin', NULL, 'Suarez', 'aldwinsuarez@gmail.com', '09786758943', '$2y$10$gg1ZDPNqQDZ3bXzcI.YMM.DfkEqnviVfXUlV0vJwmCp.dUYUuCZby', '2025-04-29 05:13:19', 'supervisor', 'active', '2004-04-13', 'EMP-0002', '', '', '', NULL),
-(52, 'Dunn', 'Pastores', 'Alvarez', 'dunnlvrz13@gmail.com', '09759500123', '$2y$10$ynB4RQ830MyNS2JoqT/c5.RDjPLcMp2dkciJIGtCAgJ5ndP.lfzGa', '2025-04-30 12:59:37', 'user', 'active', NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `users` (`id`, `firstname`, `middlename`, `lastname`, `email`, `mobile_number`, `password`, `created_at`, `role`, `status`, `dob`, `employee_no`, `sss_no`, `pagibig_no`, `philhealth_no`, `profile_pic`, `deleted`, `deleted_reason`) VALUES
+(48, 'Pestcozam', '', 'Admin', 'pestcozam2025@gmail.com', '09234567431', '$2y$10$BtHe06BusDhEpoLOk1V/LOAV0IEw/A8oJFuMOr2ect1E6o6a3YVLS', '2025-04-29 02:29:12', 'admin', 'active', NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL),
+(50, 'Hedrian', NULL, 'Alvarez', 'hedrianlvrz13@gmail.com', '09759500123', '$2y$10$2vSdbX.kbClrLtifajS9vOlb3HlBMCzanV8Ksb5JAgIfc.HuMIn8K', '2025-04-29 04:45:18', 'technician', 'active', '2004-04-13', 'EMP-0001', '', '', '', NULL, 0, NULL),
+(51, 'Aldwin', NULL, 'Suarez', 'aldwinsuarez@gmail.com', '09786758943', '$2y$10$gg1ZDPNqQDZ3bXzcI.YMM.DfkEqnviVfXUlV0vJwmCp.dUYUuCZby', '2025-04-29 05:13:19', 'supervisor', 'active', '2004-04-13', 'EMP-0002', '', '', '', NULL, 0, NULL),
+(52, 'Dunn', 'Pastores', 'Alvarez', 'dunnlvrz13@gmail.com', '09759500123', '$2y$10$ynB4RQ830MyNS2JoqT/c5.RDjPLcMp2dkciJIGtCAgJ5ndP.lfzGa', '2025-04-30 12:59:37', 'user', 'active', NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL),
+(54, 'Hannah', NULL, 'Alvarez', 'hannahlvrz26@gmail.com', '09758751934', '$2y$10$wLlQNjt3VZyV3XiPfTHH3eAzEC3c2D.bgDYsmsjULoTFja0aAS2ce', '2025-05-01 12:49:38', 'supervisor', 'active', '1998-06-26', 'EMP-0004', '', '', '', NULL, 0, 'FUCKER');
+
+-- --------------------------------------------------------
+
+--
+-- Structure for view `scheduled_followups`
+--
+DROP TABLE IF EXISTS `scheduled_followups`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `scheduled_followups`  AS SELECT `fp`.`id` AS `plan_id`, `fp`.`appointment_id` AS `original_appt_id`, `fp`.`plan_type` AS `frequency_type`, `fp`.`frequency` AS `frequency_value`, `fp`.`contract_duration` AS `duration_months`, `fp`.`start_date` AS `plan_start_date`, `fv`.`id` AS `visit_id`, `fv`.`followup_date` AS `visit_date`, `fv`.`followup_time` AS `visit_time`, `fv`.`visit_number` AS `visit_seq`, `fv`.`status` AS `visit_status`, `fv`.`technician_id` AS `tech_id`, `fv`.`notes` AS `visit_notes` FROM (`followup_plan` `fp` left join `followup_visits` `fv` on(`fv`.`plan_id` = `fp`.`id`)) ORDER BY `fp`.`id` ASC, `fv`.`visit_number` ASC ;
 
 --
 -- Indexes for dumped tables
@@ -326,9 +353,8 @@ ALTER TABLE `followup_plan`
 --
 ALTER TABLE `followup_visits`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `plan_id` (`plan_id`),
-  ADD KEY `appointment_id` (`appointment_id`),
-  ADD KEY `technician_id` (`technician_id`);
+  ADD KEY `followup_plan_id` (`followup_plan_id`),
+  ADD KEY `appointment_id` (`appointment_id`);
 
 --
 -- Indexes for table `reviews`
@@ -381,7 +407,7 @@ ALTER TABLE `appointments`
 -- AUTO_INCREMENT for table `appointment_technicians`
 --
 ALTER TABLE `appointment_technicians`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- AUTO_INCREMENT for table `followup_plan`
@@ -411,7 +437,7 @@ ALTER TABLE `services`
 -- AUTO_INCREMENT for table `service_reports`
 --
 ALTER TABLE `service_reports`
-  MODIFY `report_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `report_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `time_slots`
@@ -423,7 +449,7 @@ ALTER TABLE `time_slots`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=53;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=55;
 
 --
 -- Constraints for dumped tables
@@ -455,9 +481,8 @@ ALTER TABLE `followup_plan`
 -- Constraints for table `followup_visits`
 --
 ALTER TABLE `followup_visits`
-  ADD CONSTRAINT `followup_visits_ibfk_1` FOREIGN KEY (`plan_id`) REFERENCES `followup_plan` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `followup_visits_ibfk_2` FOREIGN KEY (`appointment_id`) REFERENCES `appointments` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `followup_visits_ibfk_3` FOREIGN KEY (`technician_id`) REFERENCES `users` (`id`) ON DELETE SET NULL;
+  ADD CONSTRAINT `followup_visits_ibfk_1` FOREIGN KEY (`followup_plan_id`) REFERENCES `followup_plan` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `followup_visits_ibfk_2` FOREIGN KEY (`appointment_id`) REFERENCES `appointments` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `reviews`
@@ -478,77 +503,3 @@ COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-
--- ========================================
--- PATCH: Follow-up Scheduling Enhancements
--- ========================================
-
--- 1. Ensure visit_date column exists in followup_visits (skip if already there)
-ALTER TABLE followup_visits ADD COLUMN visit_date DATE;
-
--- 2. View to track scheduled follow-up visits with their corresponding plans
--- ========================================
--- VIEW: scheduled_followups
--- Purpose: Combine each follow-up plan with its associated visit records
--- ========================================
-CREATE OR REPLACE VIEW scheduled_followups AS
-SELECT
-  fp.id                AS plan_id,           -- PK of the plan
-  fp.appointment_id    AS original_appt_id,  -- linked appointment
-  fp.plan_type         AS frequency_type,    -- e.g. 'weekly','monthly','quarterly','annually'
-  fp.frequency         AS frequency_value,   -- numeric value or descriptor
-  fp.contract_duration AS duration_months,   -- length of contract in months
-  fp.start_date        AS plan_start_date,   -- when the plan begins
-
-  fv.id                AS visit_id,          -- PK of the visit record
-  fv.followup_date     AS visit_date,        -- scheduled follow-up date
-  fv.followup_time     AS visit_time,        -- scheduled follow-up time
-  fv.visit_number      AS visit_seq,         -- sequence number of the visit
-  fv.status            AS visit_status,      -- e.g. 'Scheduled','Completed','Canceled'
-  fv.technician_id     AS tech_id,           -- assigned technician for this visit
-  fv.notes             AS visit_notes        -- outcome or remarks
-FROM followup_plan fp
-LEFT JOIN followup_visits fv 
-  ON fv.plan_id = fp.id
-ORDER BY fp.id, fv.visit_number;
-
--- Drop existing followup tables if they exist, to avoid conflicts
-DROP TABLE IF EXISTS `followup_visits`;
-DROP TABLE IF EXISTS `followup_plan`;
-
--- Create followup_plan table with the correct structure
-CREATE TABLE `followup_plan` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `appointment_id` int(11) NOT NULL,
-  `plan_type` enum('weekly','monthly','quarterly','yearly') NOT NULL,
-  `visit_frequency` int(11) NOT NULL DEFAULT 1,
-  `contract_duration` int(11) NOT NULL DEFAULT 1,
-  `duration_unit` enum('days','weeks','months','years') NOT NULL DEFAULT 'months',
-  `notes` text DEFAULT NULL,
-  `created_by` int(11) NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  PRIMARY KEY (`id`),
-  KEY `appointment_id` (`appointment_id`),
-  KEY `created_by` (`created_by`),
-  CONSTRAINT `followup_plan_ibfk_1` FOREIGN KEY (`appointment_id`) REFERENCES `appointments` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `followup_plan_ibfk_2` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- Create followup_visits table
-CREATE TABLE `followup_visits` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `followup_plan_id` int(11) NOT NULL,
-  `appointment_id` int(11) NOT NULL,
-  `visit_date` date NOT NULL,
-  `visit_time` time NOT NULL,
-  `status` enum('Scheduled','Completed','Cancelled') NOT NULL DEFAULT 'Scheduled',
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  PRIMARY KEY (`id`),
-  KEY `followup_plan_id` (`followup_plan_id`),
-  KEY `appointment_id` (`appointment_id`),
-  CONSTRAINT `followup_visits_ibfk_1` FOREIGN KEY (`followup_plan_id`) REFERENCES `followup_plan` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `followup_visits_ibfk_2` FOREIGN KEY (`appointment_id`) REFERENCES `appointments` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-

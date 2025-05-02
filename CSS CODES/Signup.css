@@ -74,17 +74,6 @@ body {
   object-fit: cover;
 }
 
-.tagline {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  color: #fff;
-  font-size: clamp(1.2rem, 3vw, 2rem);
-  font-weight: bold;
-  max-width: 70%;
-  margin-top: 5vh;
-}
-
 .right-column {
   width: 60%;
   padding: 2rem;
@@ -227,9 +216,5 @@ button:hover {
   
   .right-column {
     padding: 1rem;
-  }
-  
-  .tagline {
-    font-size: 1rem;
   }
 }

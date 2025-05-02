@@ -19,10 +19,8 @@
   <!-- Login Container-->
   <div class="login-container">
     <div class="left-column">
-      <img src="../Pictures/create_pic.jpg" alt="Pest Control Worker" class="pest-image" />
-      <div class="tagline">
-        Your one way <br> ticket to pest <br> eradication
-      </div>
+      <img src="../Pictures/login-pic.jpg" alt="Pest Control Worker" class="pest-image" />
+      <!-- Removed the tagline -->
     </div>
 
     <div class="right-column">

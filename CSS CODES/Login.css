@@ -73,17 +73,6 @@ body {
   object-fit: cover;
 }
 
-.tagline {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  color: #fff;
-  font-size: clamp(1.2rem, 3vw, 2rem);
-  font-weight: bold;
-  max-width: 70%;
-  margin-top: 5vh;
-}
-
 .right-column {
   width: 60%;
   padding: 2rem;
@@ -150,16 +139,17 @@ body {
 
 .bottom-row {
   display: flex;
+  flex-direction: column; /* Stack elements vertically */
   align-items: center;
-  justify-content: space-between;
-  margin-top: 2rem;
-  flex-wrap: wrap;
-  gap: 1rem;
+  justify-content: center;
+  margin-top: 1.5rem; /* Adjusted spacing */
+  gap: 1rem; /* Consistent spacing between elements */
 }
 
 .signup-text {
   font-size: 14px;
   color: #333;
+  text-align: center; /* Center-align text */
 }
 
 .signup-text a {
@@ -181,6 +171,8 @@ body {
   font-size: 16px;
   cursor: pointer;
   transition: 0.3s ease;
+  width: 100%; /* Full width for consistency */
+  max-width: 300px; /* Limit button width */
 }
 
 .login-btn:hover {
@@ -226,9 +218,5 @@ body {
   
   .login-form {
     margin-top: 1.5rem;
-  }
-  
-  .tagline {
-    font-size: 1rem;
   }
 }

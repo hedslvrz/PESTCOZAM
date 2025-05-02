@@ -19,8 +19,7 @@
   <!-- Signup Container -->
   <div class="signup-container">
     <div class="left-column">
-      <img src="../Pictures/create_pic.jpg" alt="Pest Control Worker" class="pest-image" />
-      <div class="tagline">Your one way <br> ticket to pest <br> eradication</div>
+      <img src="../Pictures/signup-pic.jpg" alt="Pest Control Worker" class="pest-image" />
     </div>
 
     <div class="right-column">
