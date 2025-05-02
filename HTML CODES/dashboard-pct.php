@@ -52,7 +52,7 @@ try {
     $stmt->execute([$_SESSION['user_id']]);
     $assignments = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // Get only confirmed appointments for the report dropdown
+    // Get only completed appointments for the report dropdown
     $confirmedAppointmentsQuery = "SELECT 
         a.id as appointment_id,
         a.appointment_date,
@@ -78,11 +78,13 @@ try {
     FROM appointments a
     INNER JOIN services s ON a.service_id = s.service_id
     INNER JOIN users u ON a.user_id = u.id
-    WHERE a.technician_id = ? AND LOWER(a.status) = 'confirmed'
+    LEFT JOIN appointment_technicians at ON a.id = at.appointment_id
+    WHERE (a.technician_id = ? OR at.technician_id = ?)
+    AND LOWER(a.status) = 'completed'
     ORDER BY a.appointment_date ASC, a.appointment_time ASC";
     
     $stmt = $db->prepare($confirmedAppointmentsQuery);
-    $stmt->execute([$_SESSION['user_id']]);
+    $stmt->execute([$_SESSION['user_id'], $_SESSION['user_id']]);
     $confirmedAppointments = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     // Get statistics for dashboard
