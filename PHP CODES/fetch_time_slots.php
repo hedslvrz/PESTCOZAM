@@ -24,10 +24,11 @@ $slotOrder = [
     'evening_slot' => 5,     // 03:00 PM - 05:00 PM
 ];
 
-// Standard time slots if not configured in database
+// Define DEFAULT slot configuration - these will be used if not set by admin
 $defaultTimeSlots = [
     'morning_slot_1' => [
         'name' => 'morning_slot_1',
+        'slot_name' => 'morning_slot_1',
         'time_range' => '07:00 AM - 09:00 AM',
         'slot_limit' => 3,
         'available_slots' => 3,
@@ -35,6 +36,7 @@ $defaultTimeSlots = [
     ],
     'morning_slot_2' => [
         'name' => 'morning_slot_2',
+        'slot_name' => 'morning_slot_2',
         'time_range' => '09:00 AM - 11:00 AM',
         'slot_limit' => 3,
         'available_slots' => 3,
@@ -42,6 +44,7 @@ $defaultTimeSlots = [
     ],
     'afternoon_slot_1' => [
         'name' => 'afternoon_slot_1',
+        'slot_name' => 'afternoon_slot_1',
         'time_range' => '11:00 AM - 01:00 PM',
         'slot_limit' => 3,
         'available_slots' => 3,
@@ -49,6 +52,7 @@ $defaultTimeSlots = [
     ],
     'afternoon_slot_2' => [
         'name' => 'afternoon_slot_2',
+        'slot_name' => 'afternoon_slot_2',
         'time_range' => '01:00 PM - 03:00 PM',
         'slot_limit' => 3,
         'available_slots' => 3,
@@ -56,6 +60,7 @@ $defaultTimeSlots = [
     ],
     'evening_slot' => [
         'name' => 'evening_slot',
+        'slot_name' => 'evening_slot',
         'time_range' => '03:00 PM - 05:00 PM',
         'slot_limit' => 3,
         'available_slots' => 3,
@@ -70,22 +75,26 @@ try {
     $stmt->execute([$date]);
     $configuredTimeSlots = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // Convert to associative array by slot_name
-    $timeSlots = [];
-    foreach ($configuredTimeSlots as $slot) {
-        $slot['order'] = $slotOrder[$slot['slot_name']] ?? 999; // Default high order if unknown
-        $timeSlots[$slot['slot_name']] = $slot;
-    }
+    // Start with the default time slots
+    $timeSlots = $defaultTimeSlots;
     
-    // If no configured slots for this date, use defaults
-    if (empty($timeSlots)) {
-        $timeSlots = $defaultTimeSlots;
+    // If we have configured slots, override the defaults
+    if (!empty($configuredTimeSlots)) {
+        foreach ($configuredTimeSlots as $slot) {
+            if (isset($timeSlots[$slot['slot_name']])) {
+                // Override default values with configured values
+                $timeSlots[$slot['slot_name']]['slot_limit'] = (int)$slot['slot_limit'];
+                $timeSlots[$slot['slot_name']]['time_range'] = $slot['time_range'];
+                // Set the order for sorting
+                $timeSlots[$slot['slot_name']]['order'] = $slotOrder[$slot['slot_name']] ?? 999;
+            }
+        }
     }
     
     // For each time slot, count existing appointments to determine availability
     foreach ($timeSlots as $slotName => &$slotData) {
         // Extract start time from time range (e.g. "07:00 AM" from "07:00 AM - 09:00 AM")
-        $timeRange = $slotData['time_range'] ?? $defaultTimeSlots[$slotName]['time_range'];
+        $timeRange = $slotData['time_range'];
         $startTime = explode(' - ', $timeRange)[0];
         
         // Convert to 24-hour format for database comparison
@@ -103,13 +112,12 @@ try {
             $appointmentCount = $appointmentStmt->fetch(PDO::FETCH_ASSOC)['count'] ?? 0;
             
             // Calculate available slots
-            $slotLimit = $slotData['slot_limit'] ?? $defaultTimeSlots[$slotName]['slot_limit'];
-            $slotData['available_slots'] = max(0, $slotLimit - $appointmentCount);
+            $slotData['available_slots'] = max(0, $slotData['slot_limit'] - $appointmentCount);
         }
     }
     
     // Sort time slots by order
-    usort($timeSlots, function($a, $b) {
+    uasort($timeSlots, function($a, $b) {
         return $a['order'] <=> $b['order'];
     });
     
