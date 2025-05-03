@@ -1845,7 +1845,7 @@ try {
                         </div>
                         <div class="filter-options">
                         
-                            <a href="../employee/forms/archive.php" class="btn">
+                            <a href="../employee/forms/archive.php" class="btn-archive">
                                 <i class='bx bx-archive'></i>
                                 <span class="text">View Archive</span>
                             </a>
@@ -3492,6 +3492,51 @@ function clearGlobalSearch() {
 
 #globalSearchForm .form-input input:not(:focus):placeholder-shown::before {
     opacity: 1;
+}
+
+/* Archive Button Styling */
+.btn-archive {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #f0f0f0;
+    color: #144578;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.btn-archive:hover {
+    background-color: #e0e0e0;
+    color: #0d2f5a;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+    border-color: #ccc;
+}
+
+.btn-archive i {
+    font-size: 1.1rem;
+}
+
+@media screen and (max-width: 768px) {
+    .btn-archive .text {
+        display: none;
+    }
+    
+    .btn-archive {
+        padding: 8px;
+    }
+    
+    .btn-archive i {
+        font-size: 1.3rem;
+        margin: 0;
+    }
 }
 </style>
 
