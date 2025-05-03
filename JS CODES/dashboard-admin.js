@@ -942,14 +942,22 @@ document.getElementById('incidentForm')?.addEventListener('submit', async functi
 
 // Calendar and Time Slot Management
 function initTimeSlotCalendar() {
+    console.log("Initializing time slot calendar...");
     const monthSelect = document.getElementById('monthSelect');
     const yearSelect = document.getElementById('yearSelect');
     const calendarDays = document.getElementById('calendar-days');
     const selectedDatesInput = document.getElementById('selectedDatesInput');
     const selectedDatesList = document.getElementById('selectedDatesList');
     
+    if (!monthSelect || !yearSelect || !calendarDays) {
+        console.error("Calendar elements not found!");
+        return;
+    }
+    
     // Set up year select options
     const currentYear = new Date().getFullYear();
+    yearSelect.innerHTML = ''; // Clear existing options
+    
     for (let year = currentYear; year <= currentYear + 2; year++) {
         const option = document.createElement('option');
         option.value = year;
@@ -964,11 +972,26 @@ function initTimeSlotCalendar() {
     
     // Store selected dates
     let selectedDates = [];
+    try {
+        if (selectedDatesInput && selectedDatesInput.value) {
+            selectedDates = JSON.parse(selectedDatesInput.value);
+        }
+    } catch (e) {
+        console.error("Error parsing selected dates:", e);
+        selectedDates = [];
+    }
+    
     // Track the last selected date to clear its time slot inputs when a new date is selected
     let lastSelectedDate = null;
     
     // Render calendar
     function renderCalendar() {
+        console.log("Rendering calendar...");
+        if (!calendarDays) {
+            console.error("Calendar days container not found!");
+            return;
+        }
+        
         const month = parseInt(monthSelect.value);
         const year = parseInt(yearSelect.value);
         const firstDay = new Date(year, month, 1);
@@ -976,13 +999,15 @@ function initTimeSlotCalendar() {
         const daysInMonth = lastDay.getDate();
         const today = new Date();
         
+        console.log(`Rendering calendar for ${month + 1}/${year} - ${daysInMonth} days`);
+        
         // Clear previous calendar days
         calendarDays.innerHTML = '';
         
         // Add empty cells for days before the first day of the month
         for (let i = 0; i < firstDay.getDay(); i++) {
             const emptyDay = document.createElement('div');
-            emptyDay.className = 'day';
+            emptyDay.className = 'day empty';
             calendarDays.appendChild(emptyDay);
         }
         
@@ -996,7 +1021,7 @@ function initTimeSlotCalendar() {
             const dateString = `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
             dayElement.setAttribute('data-date', dateString);
             
-            // Check if this is today's date
+            // Check if day is today
             if (today.getDate() === day && 
                 today.getMonth() === month && 
                 today.getFullYear() === year) {
@@ -1012,8 +1037,6 @@ function initTimeSlotCalendar() {
             const dayDate = new Date(year, month, day);
             if (dayDate < new Date(new Date().setHours(0,0,0,0))) {
                 dayElement.classList.add('past');
-                dayElement.style.opacity = '0.5';
-                dayElement.style.cursor = 'not-allowed';
             } else {
                 // Add click event for selectable days
                 dayElement.addEventListener('click', function() {
@@ -1023,10 +1046,13 @@ function initTimeSlotCalendar() {
             
             calendarDays.appendChild(dayElement);
         }
+        
+        console.log("Calendar rendered.");
     }
     
     // Toggle date selection
     function toggleDateSelection(dateString, dayElement) {
+        console.log("Toggle date selection:", dateString);
         const index = selectedDates.indexOf(dateString);
         
         if (index === -1) {
@@ -1079,6 +1105,8 @@ function initTimeSlotCalendar() {
     
     // Update the display of selected dates
     function updateSelectedDatesDisplay() {
+        if (!selectedDatesList) return;
+        
         selectedDatesList.innerHTML = '';
         
         if (selectedDates.length === 0) {
@@ -1141,23 +1169,10 @@ function initTimeSlotCalendar() {
     
     // Fetch time slots for a selected date
     function fetchTimeSlots(date) {
-        // Show loading indicator
-        const timeSlotContainers = document.querySelectorAll('.time-slot');
-        timeSlotContainers.forEach(container => {
-            const loadingIndicator = document.createElement('div');
-            loadingIndicator.className = 'loading-indicator';
-            loadingIndicator.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i> Loading...';
-            container.appendChild(loadingIndicator);
-        });
-        
-        fetch(`../PHP CODES/fetch_timeslot.php?date=${date}`)
+        console.log("Fetching time slots for", date);
+        fetch(`../PHP CODES/fetch_time_slots.php?date=${date}`)
             .then(response => response.json())
             .then(data => {
-                // Remove loading indicators
-                document.querySelectorAll('.loading-indicator').forEach(indicator => {
-                    indicator.remove();
-                });
-                
                 if (data.error) {
                     console.error('Error fetching time slots:', data.error);
                     return;
@@ -1167,8 +1182,8 @@ function initTimeSlotCalendar() {
                 resetTimeSlotValues();
                 
                 // Update the slot limits with fetched data
-                if (data.slots && data.slots.length > 0) {
-                    data.slots.forEach(slot => {
+                if (data.time_slots && data.time_slots.length > 0) {
+                    data.time_slots.forEach(slot => {
                         const inputElement = document.querySelector(`input[name="time_slots[${slot.slot_name}]"]`);
                         if (inputElement) {
                             inputElement.value = slot.slot_limit;
@@ -1177,10 +1192,6 @@ function initTimeSlotCalendar() {
                 }
             })
             .catch(error => {
-                // Remove loading indicators on error
-                document.querySelectorAll('.loading-indicator').forEach(indicator => {
-                    indicator.remove();
-                });
                 console.error('Error fetching time slots:', error);
             });
     }
@@ -1192,11 +1203,36 @@ function initTimeSlotCalendar() {
     // Initial render
     renderCalendar();
     updateSelectedDatesDisplay();
+    
+    console.log("Time slot calendar initialized");
 }
 
-// Initialize time slot calendar when page loads
+// Initialize time slot calendar when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
     initTimeSlotCalendar();
+    
+    // Show success or error messages for time slot management
+    const urlParams = new URLSearchParams(window.location.search);
+    const successMsg = urlParams.get('timeslot_success');
+    const errorMsg = urlParams.get('timeslot_error');
+    
+    if (successMsg) {
+        Swal.fire({
+            icon: 'success',
+            title: 'Success',
+            text: successMsg,
+            timer: 3000,
+            timerProgressBar: true
+        });
+    }
+    
+    if (errorMsg) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: errorMsg
+        });
+    }
 });
 
 // PROFILE SECTION FUNCTIONS - Added from dashboard-aos.js

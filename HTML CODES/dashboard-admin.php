@@ -609,6 +609,109 @@ try {
 
         </form><!-- End dashboard form -->
 
+        <!-- Time Slot Management Section -->
+        <div class="time-slot-management">
+            <div class="section-header">
+                <h2><i class='bx bx-time'></i> Time Slot Management</h2>
+                <p>Configure available appointment slots for specific dates.</p>
+            </div>
+            
+            <form id="time-slot-form" method="POST" action="../PHP CODES/process_timeslot.php">
+                <div class="slot-configuration">
+                    <div class="date-selection">
+                        <h3>Select Dates</h3>
+                        <div class="calendar-container">
+                            <div class="calendar">
+                                <div class="calendar-header">
+                                    <select id="monthSelect">
+                                        <option value="0">January</option>
+                                        <option value="1">February</option>
+                                        <option value="2">March</option>
+                                        <option value="3">April</option>
+                                        <option value="4">May</option>
+                                        <option value="5">June</option>
+                                        <option value="6">July</option>
+                                        <option value="7">August</option>
+                                        <option value="8">September</option>
+                                        <option value="9">October</option>
+                                        <option value="10">November</option>
+                                        <option value="11">December</option>
+                                    </select>
+                                    <select id="yearSelect"></select>
+                                </div>
+                                <div class="day-names">
+                                    <div>Sun</div>
+                                    <div>Mon</div>
+                                    <div>Tue</div>
+                                    <div>Wed</div>
+                                    <div>Thu</div>
+                                    <div>Fri</div>
+                                    <div>Sat</div>
+                                </div>
+                                <div class="calendar-days" id="calendar-days"></div>
+                            </div>
+                            <div class="selected-dates">
+                                <h4>Selected Dates</h4>
+                                <div class="selected-dates-list" id="selectedDatesList"></div>
+                                <input type="hidden" name="selected_dates" id="selectedDatesInput" value="[]">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="time-slots">
+                        <h3>Configure Time Slots</h3>
+                        <p>Set the maximum number of appointments for each time slot.</p>
+                        
+                        <div class="slot-item">
+                            <label>
+                                <span>Morning (7:00 AM - 9:00 AM)</span>
+                                <input type="number" name="time_slots[morning_slot_1]" min="0" max="10" value="3">
+                                <input type="hidden" name="time_ranges[morning_slot_1]" value="07:00 AM - 09:00 AM">
+                            </label>
+                        </div>
+                        
+                        <div class="slot-item">
+                            <label>
+                                <span>Morning (9:00 AM - 11:00 AM)</span>
+                                <input type="number" name="time_slots[morning_slot_2]" min="0" max="10" value="3">
+                                <input type="hidden" name="time_ranges[morning_slot_2]" value="09:00 AM - 11:00 AM">
+                            </label>
+                        </div>
+                        
+                        <div class="slot-item">
+                            <label>
+                                <span>Afternoon (11:00 AM - 1:00 PM)</span>
+                                <input type="number" name="time_slots[afternoon_slot_1]" min="0" max="10" value="3">
+                                <input type="hidden" name="time_ranges[afternoon_slot_1]" value="11:00 AM - 01:00 PM">
+                            </label>
+                        </div>
+                        
+                        <div class="slot-item">
+                            <label>
+                                <span>Afternoon (1:00 PM - 3:00 PM)</span>
+                                <input type="number" name="time_slots[afternoon_slot_2]" min="0" max="10" value="3">
+                                <input type="hidden" name="time_ranges[afternoon_slot_2]" value="01:00 PM - 03:00 PM">
+                            </label>
+                        </div>
+                        
+                        <div class="slot-item">
+                            <label>
+                                <span>Evening (3:00 PM - 5:00 PM)</span>
+                                <input type="number" name="time_slots[evening_slot]" min="0" max="10" value="3">
+                                <input type="hidden" name="time_ranges[evening_slot]" value="03:00 PM - 05:00 PM">
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn-save">
+                        <i class='bx bx-save'></i> Save Configuration
+                    </button>
+                </div>
+            </form>
+        </div>
+
         <!-- Add JavaScript functions for report modal and PDF download -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -3569,6 +3672,14 @@ function handleReportSubmission(event) {
 
     submitReport(reportData);
 }
+</script>
+
+<script>
+// Initialize the calendar when the page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize time slot calendar
+    initTimeSlotCalendar();
+});
 </script>
 </body>
 </html>

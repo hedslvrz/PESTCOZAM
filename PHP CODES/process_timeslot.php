@@ -8,27 +8,17 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     exit();
 }
 
-// Check if form was submitted
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Get the database connection
-    $database = new Database();
-    $db = $database->getConnection();
-    
+// Initialize database connection
+$database = new Database();
+$db = $database->getConnection();
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Get selected dates
-    $selected_dates = [];
-    if (isset($_POST['selected_dates']) && !empty($_POST['selected_dates'])) {
-        $selected_dates = json_decode($_POST['selected_dates'], true);
-        
-        if (!is_array($selected_dates)) {
-            $_SESSION['timeslot_error'] = "Invalid date format";
-            header("Location: ../HTML CODES/dashboard-admin.php");
-            exit();
-        }
-    }
+    $selected_dates_json = $_POST['selected_dates'] ?? '[]';
+    $selected_dates = json_decode($selected_dates_json, true);
     
-    // If no dates selected, show error
     if (empty($selected_dates)) {
-        $_SESSION['timeslot_error'] = "Please select at least one date";
+        $_SESSION['timeslot_error'] = "No dates selected";
         header("Location: ../HTML CODES/dashboard-admin.php");
         exit();
     }
@@ -84,27 +74,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
         }
         
-        // Commit the transaction
+        // Commit transaction
         $db->commit();
         
-        // Set success message
-        $_SESSION['timeslot_success'] = "Time slots have been updated successfully";
-    } catch (PDOException $e) {
-        // Rollback transaction on error
+        $_SESSION['timeslot_success'] = "Time slot configuration saved successfully";
+    } catch (Exception $e) {
+        // Roll back transaction
         $db->rollBack();
-        
-        // Set error message
-        $_SESSION['timeslot_error'] = "Database error: " . $e->getMessage();
-        
-        // Log the error
-        error_log("Time Slot Error: " . $e->getMessage());
+        $_SESSION['timeslot_error'] = "Error: " . $e->getMessage();
     }
     
-    // Redirect back to dashboard
-    header("Location: ../HTML CODES/dashboard-admin.php");
-    exit();
-} else {
-    // If not POST request, redirect to dashboard
     header("Location: ../HTML CODES/dashboard-admin.php");
     exit();
 }
+
+// If not POST method, redirect
+header("Location: ../HTML CODES/dashboard-admin.php");
+exit();
+?>
