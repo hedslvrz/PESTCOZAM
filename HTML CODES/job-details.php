@@ -87,11 +87,17 @@ try {
     }
     
     // Parse saved treatment methods, chemicals, and devices using the safe decode function
-    $savedMethods = safeJsonDecode($appointment['treatment_methods']);
-    $savedChemicals = safeJsonDecode($appointment['chemicals']);
-    $savedQuantities = safeJsonDecode($appointment['chemical_quantities']);
-    $savedDevices = safeJsonDecode($appointment['devices']);
-    $savedDeviceQuantities = safeJsonDecode($appointment['device_quantities']);
+    $savedMethods = safeJsonDecode($appointment['treatment_methods'] ?? '[]');
+    $savedChemicals = safeJsonDecode($appointment['chemicals'] ?? '[]');
+    $savedQuantities = safeJsonDecode($appointment['chemical_quantities'] ?? '[]');
+    
+    // Check if the columns exist in the result before trying to access them
+    $deviceColumnExists = isset($appointment['devices']);
+    $deviceQuantityColumnExists = isset($appointment['device_quantities']);
+    
+    // Only try to decode if the columns exist, otherwise use empty arrays
+    $savedDevices = $deviceColumnExists ? safeJsonDecode($appointment['devices']) : [];
+    $savedDeviceQuantities = $deviceQuantityColumnExists ? safeJsonDecode($appointment['device_quantities']) : [];
 
     // Ensure the decoded data is an array
     $savedMethods = is_array($savedMethods) ? $savedMethods : [];
@@ -143,73 +149,69 @@ try {
     $technicians = [];
 }
 
-// Define chemical categories and items with the updated structure
-$treatmentTypes = [
-    'general_pest_control' => [
-        'name' => 'General Pest Control',
-        'methods' => [
-            'surface_spraying' => [
-                'name' => 'Surface Spraying',
-                'chemicals' => ['Cymflex', 'Permitor', 'Pervade', 'Cyflux']
-            ],
-            'space_spraying' => [
-                'name' => 'Space Spraying',
-                'chemicals' => ['Demand CS', 'Fendona', 'Fipro', 'Cyflux']
-            ],
-            'rodent_control' => [
-                'name' => 'Rodent Control',
-                'chemicals' => ['Bosny Rat Glue']
-            ]
-        ]
-    ],
-    'termite_treatment' => [
-        'name' => 'Termite Treatment',
-        'methods' => [
-            'post_construction' => [
-                'name' => 'Post-Construction (Soil Injection Treatment)',
-                'chemicals' => ['Termidor', 'Optigard Termite Liquid', 'Revancha 10 EC']
-            ],
-            'pre_construction' => [
-                'name' => 'Pre-Construction (Massive Spraying)',
-                'chemicals' => ['Termidor', 'Optigard Termite Liquid', 'Revancha 10 EC']
-            ],
-            'reticulation' => [
-                'name' => 'Reticulation',
-                'chemicals' => ['Termipipes', 'PVC Pipes']
-            ],
-            'termite_mound' => [
-                'name' => 'Termite Mound',
+// Fetch treatment types, methods, chemicals, and devices from database
+try {
+    // Fetch treatment types
+    $typeStmt = $db->prepare("SELECT id, slug, name FROM treatment_types");
+    $typeStmt->execute();
+    $treatmentTypes = [];
+    
+    while ($type = $typeStmt->fetch(PDO::FETCH_ASSOC)) {
+        $treatmentTypes[$type['id']] = [
+            'slug' => $type['slug'],
+            'name' => $type['name'],
+            'methods' => []
+        ];
+    }
+    
+    // Fetch treatment methods and link to their types
+    $methodStmt = $db->prepare("SELECT id, treatment_type_id, slug, name FROM treatment_methods");
+    $methodStmt->execute();
+    
+    while ($method = $methodStmt->fetch(PDO::FETCH_ASSOC)) {
+        if (isset($treatmentTypes[$method['treatment_type_id']])) {
+            $treatmentTypes[$method['treatment_type_id']]['methods'][$method['id']] = [
+                'slug' => $method['slug'],
+                'name' => $method['name'],
                 'chemicals' => []
-            ],
-            'above_ground' => [
-                'name' => 'Above-Ground Termite Treatment',
-                'chemicals' => ['Termite Box']
-            ],
-            'in_ground' => [
-                'name' => 'In-Ground Termite',
-                'chemicals' => ['Inground Bait']
-            ],
-            'dusting' => [
-                'name' => 'Dusting',
-                'chemicals' => ['Fipronil', 'Exterminex Powder']
-            ],
-            'vapor_barrier' => [
-                'name' => 'Vapor Barrier Installation',
-                'chemicals' => ['6 Mil Polyethylene Sheet', '8 Mil Polyethylene Sheet']
-            ]
-        ]
-    ]
-];
-
-// Define devices as an array for easier management
-$devicesList = [
-    ['value' => 'rodent_bait_station', 'label' => 'Rodent Bait Station'],
-    ['value' => 'cage_trap', 'label' => 'Cage Trap'],
-    ['value' => 'glue_trap', 'label' => 'Glue Trap'],
-    ['value' => 'insect_light_trap', 'label' => 'Insect Light Trap'],
-    ['value' => 'fly_trap', 'label' => 'Fly Trap'],
-    ['value' => 'bird_scare', 'label' => 'Bird Scare'],
-];
+            ];
+        }
+    }
+    
+    // Fetch chemicals and link to their methods
+    $chemicalStmt = $db->prepare("SELECT id, method_id, name FROM treatment_chemicals");
+    $chemicalStmt->execute();
+    
+    while ($chemical = $chemicalStmt->fetch(PDO::FETCH_ASSOC)) {
+        foreach ($treatmentTypes as &$type) {
+            if (isset($type['methods'][$chemical['method_id']])) {
+                $type['methods'][$chemical['method_id']]['chemicals'][] = $chemical['name'];
+            }
+        }
+    }
+    
+    // Fetch devices
+    $deviceStmt = $db->prepare("SELECT id, slug, name FROM devices");
+    $deviceStmt->execute();
+    $devicesList = [];
+    
+    while ($device = $deviceStmt->fetch(PDO::FETCH_ASSOC)) {
+        $devicesList[] = [
+            'value' => $device['slug'],
+            'label' => $device['name']
+        ];
+    }
+    
+    // Debug output
+    error_log("Loaded treatment types: " . json_encode(array_keys($treatmentTypes)));
+    error_log("Loaded devices: " . json_encode($devicesList));
+    
+} catch (PDOException $e) {
+    error_log("Error fetching treatment data: " . $e->getMessage());
+    // Set fallback empty arrays
+    $treatmentTypes = [];
+    $devicesList = [];
+}
 ?>
 
 <!DOCTYPE html>
@@ -338,7 +340,7 @@ $devicesList = [
                             </div>
                             <div class="info-group">
                                 <label>Appointment Type</label>
-                                <p><?php echo htmlspecialchars(ucfirst($appointment['appointment_type'] ?? 'Treatment')); ?></p>
+                                <p><?php echo htmlspecialchars(ucfirst($appointment['service_type'] ?? 'Treatment')); ?></p>
                             </div>
                             <div class="info-group">
                                 <label>Appointment Date</label>
@@ -443,24 +445,23 @@ $devicesList = [
                                 </label>
                             </div>
                         </div>
-                        <button type="button" class="add-method-btn"><i class='bx bx-plus'></i> Add Method</button>
                     </div>
 
                     <!-- Chemical Categories Section -->
                     <div class="chemicals-section">
                         <h4>Treatment Types & Chemicals</h4>
                         
-                        <?php foreach ($treatmentTypes as $typeKey => $treatmentType): ?>
-                            <div class="treatment-type" data-type="<?php echo $typeKey; ?>">
+                        <?php foreach ($treatmentTypes as $typeId => $treatmentType): ?>
+                            <div class="treatment-type" data-type="<?php echo htmlspecialchars($treatmentType['slug']); ?>">
                                 <div class="treatment-type-header">
-                                    <h4><?php echo $treatmentType['name']; ?></h4>
+                                    <h4><?php echo htmlspecialchars($treatmentType['name']); ?></h4>
                                     <i class='bx bx-chevron-down toggle-icon'></i>
                                 </div>
                                 <div class="treatment-type-content">
-                                    <?php foreach ($treatmentType['methods'] as $methodKey => $method): ?>
+                                    <?php foreach ($treatmentType['methods'] as $methodId => $method): ?>
                                         <div class="treatment-method">
                                             <div class="treatment-method-header">
-                                                <h5><?php echo $method['name']; ?></h5>
+                                                <h5><?php echo htmlspecialchars($method['name']); ?></h5>
                                                 <i class='bx bx-chevron-down toggle-icon'></i>
                                             </div>
                                             <div class="treatment-method-content">
@@ -533,11 +534,6 @@ $devicesList = [
                             </div>
                         </div>
                     </div>
-
-                    <!-- Move Add Custom Chemical Button Below Devices -->
-                    <div class="add-chemical-btn-container">
-                        <button type="button" class="add-chemical-btn">+ Add Custom Chemical</button>
-                    </div>
                 </div>
             </div>
 
@@ -601,138 +597,6 @@ $devicesList = [
             </div>
         </form>
     </div>
-    <script>
-    // Updated toggle functions (removed preventDefault/stopPropagation)
-    function toggleTreatmentType(event) {
-        const header = event.currentTarget;
-        const type = header.closest('.treatment-type');
-        const content = type.querySelector('.treatment-type-content');
-        const icon = header.querySelector('.toggle-icon');
-        type.classList.toggle('active');
-        if (type.classList.contains('active')) {
-            content.style.display = 'block';
-            icon.classList.remove('bx-chevron-down');
-            icon.classList.add('bx-chevron-up');
-        } else {
-            content.style.display = 'none';
-            icon.classList.remove('bx-chevron-up');
-            icon.classList.add('bx-chevron-down');
-        }
-    }
-    function toggleTreatmentMethod(event) {
-        const header = event.currentTarget;
-        const method = header.closest('.treatment-method');
-        const content = method.querySelector('.treatment-method-content');
-        const icon = header.querySelector('.toggle-icon');
-        method.classList.toggle('active');
-        if (method.classList.contains('active')) {
-            content.style.display = 'block';
-            icon.classList.remove('bx-chevron-down');
-            icon.classList.add('bx-chevron-up');
-        } else {
-            content.style.display = 'none';
-            icon.classList.remove('bx-chevron-up');
-            icon.classList.add('bx-chevron-down');
-        }
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-        // Attach event listeners for treatment type and method headers
-        document.querySelectorAll('.treatment-type-header').forEach(header => {
-            header.addEventListener('click', toggleTreatmentType);
-        });
-        document.querySelectorAll('.treatment-method-header').forEach(header => {
-            header.addEventListener('click', toggleTreatmentMethod);
-        });
-        
-        document.getElementById('jobDetailsForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            // Show loading indicator
-            const saveButton = document.querySelector('.save-btn');
-            const originalButtonText = saveButton.innerHTML;
-            saveButton.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i> Saving...';
-            saveButton.disabled = true;
-            
-            // Use FormData to get form data, which will properly capture all fields
-            const formData = new FormData(this);
-            
-            // Submit form
-            fetch('../PHP CODES/process_job_details.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Restore button
-                saveButton.innerHTML = originalButtonText;
-                saveButton.disabled = false;     
-                if (data.success) {
-                    // Show success message using SweetAlert2
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Saved!',
-                        text: data.message,
-                        timer: 3000,
-                        showConfirmButton: false
-                    });
-                    
-                    // Reload the page to show updated data
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 1500);
-                } else {
-                    // Show error message using SweetAlert2
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: data.message || 'Unknown error'
-                    });
-                }
-            })
-            .catch(error => {
-                // Restore button
-                saveButton.innerHTML = originalButtonText;
-                saveButton.disabled = false;
-                
-                console.error('Error:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'An error occurred while saving'
-                });
-            });
-        });
-        
-        // Auto-expand sections with checked items
-        document.querySelectorAll('input[name="chemicals[]"]:checked').forEach(checkbox => {
-            // Find and expand parent treatment method
-            const method = checkbox.closest('.treatment-method');
-            if (method) {
-                method.classList.add('active');
-                const methodContent = method.querySelector('.treatment-method-content');
-                const methodIcon = method.querySelector('.treatment-method-header .toggle-icon');
-                if (methodContent) methodContent.style.display = 'block';
-                if (methodIcon) {
-                    methodIcon.classList.remove('bx-chevron-down');
-                    methodIcon.classList.add('bx-chevron-up');
-                }
-            }
-            
-            // Find and expand parent treatment type
-            const type = checkbox.closest('.treatment-type');
-            if (type) {
-                type.classList.add('active');
-                const typeContent = type.querySelector('.treatment-type-content');
-                const typeIcon = type.querySelector('.treatment-type-header .toggle-icon');
-                if (typeContent) typeContent.style.display = 'block';
-                if (typeIcon) {
-                    typeIcon.classList.remove('bx-chevron-down');
-                    typeIcon.classList.add('bx-chevron-up');
-                }
-            }
-        });
-    });
-    </script>
+    <script src="../JS CODES/job-details.js"></script>
 </body>
 </html>

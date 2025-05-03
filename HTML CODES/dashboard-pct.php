@@ -19,12 +19,15 @@ try {
     $stmt->execute([$_SESSION['user_id']]);
     $technician = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // Get technician's assigned appointments with full details
+    // Updated appointments query with optimized join to followup_visits
     $appointmentsQuery = "SELECT 
         a.id as appointment_id,
         a.appointment_date,
         a.appointment_time,
-        a.status,
+        CASE 
+            WHEN fv.id IS NOT NULL THEN 'followup'
+            ELSE a.status
+        END as status,
         a.street_address,
         a.barangay,
         a.city,
@@ -41,23 +44,29 @@ try {
             ELSE a.mobile_number
         END as client_mobile,
         s.service_name,
-        s.service_id
+        s.service_id,
+        fv.id IS NOT NULL as is_followup
     FROM appointments a
     INNER JOIN services s ON a.service_id = s.service_id
     INNER JOIN users u ON a.user_id = u.id
-    WHERE a.technician_id = ?
+    LEFT JOIN followup_visits fv ON a.id = fv.appointment_id
+    LEFT JOIN appointment_technicians at ON a.id = at.appointment_id
+    WHERE a.technician_id = ? OR at.technician_id = ?
     ORDER BY a.appointment_date ASC, a.appointment_time ASC";
 
     $stmt = $db->prepare($appointmentsQuery);
-    $stmt->execute([$_SESSION['user_id']]);
+    $stmt->execute([$_SESSION['user_id'], $_SESSION['user_id']]);
     $assignments = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // Get only completed appointments for the report dropdown
+    // Get appointments eligible for reports - modified to include confirmed, pending, and follow-up visits
     $confirmedAppointmentsQuery = "SELECT 
         a.id as appointment_id,
         a.appointment_date,
         a.appointment_time,
-        a.status,
+        CASE 
+            WHEN fv.id IS NOT NULL THEN 'followup'
+            ELSE a.status
+        END as status,
         a.street_address,
         a.barangay,
         a.city,
@@ -74,13 +83,15 @@ try {
             ELSE a.mobile_number
         END as client_mobile,
         s.service_name,
-        s.service_id
+        s.service_id,
+        fv.id IS NOT NULL as is_followup
     FROM appointments a
     INNER JOIN services s ON a.service_id = s.service_id
     INNER JOIN users u ON a.user_id = u.id
+    LEFT JOIN followup_visits fv ON a.id = fv.appointment_id
     LEFT JOIN appointment_technicians at ON a.id = at.appointment_id
     WHERE (a.technician_id = ? OR at.technician_id = ?)
-    AND LOWER(a.status) = 'completed'
+    AND (LOWER(a.status) IN ('pending', 'completed', 'confirmed') OR fv.id IS NOT NULL)
     ORDER BY a.appointment_date ASC, a.appointment_time ASC";
     
     $stmt = $db->prepare($confirmedAppointmentsQuery);
@@ -120,6 +131,36 @@ try {
     $stmt = $db->prepare($followupsQuery);
     $stmt->execute([$_SESSION['user_id'], $_SESSION['user_id']]);
     $scheduledFollowups = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
+    
+    // Fetch treatment methods, devices, and chemicals for dropdowns
+    $treatmentMethods = [];
+    $devices = [];
+    $chemicals = [];
+    try {
+        // Treatment Methods
+        $stmt = $db->prepare("SELECT id, name FROM treatment_methods ORDER BY name");
+        $stmt->execute();
+        $treatmentMethods = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Devices - Make sure to use the correct columns from the devices table
+        $stmt = $db->prepare("SELECT id, name FROM devices ORDER BY name");
+        $stmt->execute();
+        $devices = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Debug info
+        error_log("Found " . count($devices) . " devices");
+
+        // Chemicals - Correctly select name column from treatment_chemicals
+        $stmt = $db->prepare("SELECT id, name FROM treatment_chemicals ORDER BY name");
+        $stmt->execute();
+        $chemicals = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Debug info
+        error_log("Found " . count($chemicals) . " chemicals");
+        
+    } catch(PDOException $e) {
+        error_log("Error fetching dropdown data: " . $e->getMessage());
+    }
     
 } catch(PDOException $e) {
     error_log("Error: " . $e->getMessage());
@@ -349,7 +390,13 @@ try {
                                         <td>
                                             <div class="status-view-container">
                                                 <span class="status <?php echo strtolower($assignment['status']); ?>">
-                                                    <?php echo htmlspecialchars($assignment['status']); ?>
+                                                    <?php 
+                                                    if ($assignment['is_followup']) {
+                                                        echo 'Follow-up Visit';
+                                                    } else {
+                                                        echo htmlspecialchars($assignment['status']);
+                                                    }
+                                                    ?>
                                                 </span>
                                                 <a href="view_job_details-pct.php?id=<?php echo $assignment['appointment_id']; ?>" class="view-btn">
                                                     <i class='bx bx-show'></i> View Details
@@ -370,7 +417,7 @@ try {
         </main>
     </section>
 
-    <!-- Submit Report Section -->
+    <!-- Submit Service Report Section -->
     <section id="submit-report" class="section">
         <main>
             <div class="form-container">
@@ -418,15 +465,29 @@ try {
                                 <select name="appointment_id" id="appointment">
                                     <option value="">Select an appointment (or leave blank for non-appointment service)</option>
                                     <?php foreach ($confirmedAppointments as $appointment): ?>
-                                        <option value="<?php echo $appointment['appointment_id']; ?>" 
-                                                data-client="<?php echo htmlspecialchars($appointment['client_firstname'] . ' ' . $appointment['client_lastname']); ?>"
-                                                data-location="<?php echo htmlspecialchars(implode(', ', array_filter([$appointment['street_address'], $appointment['barangay'], $appointment['city']]))); ?>"
-                                                data-service="<?php echo htmlspecialchars($appointment['service_name']); ?>"
-                                                data-contact="<?php echo htmlspecialchars($appointment['client_mobile'] ?? ''); ?>"
-                                                data-time-in="<?php echo htmlspecialchars($appointment['appointment_time']); ?>">
-                                            <?php echo date('M d, Y', strtotime($appointment['appointment_date'])) . ' - ' . 
-                                                 $appointment['client_firstname'] . ' ' . $appointment['client_lastname'] . ' - ' . 
-                                                 $appointment['service_name']; ?>
+                                        <option
+                                            value="<?php echo $appointment['appointment_id']; ?>"
+                                            data-client="<?php echo htmlspecialchars($appointment['client_firstname'] . ' ' . $appointment['client_lastname']); ?>"
+                                            data-location="<?php echo htmlspecialchars(implode(', ', array_filter([$appointment['street_address'], $appointment['barangay'], $appointment['city']]))); ?>"
+                                            data-service="<?php echo htmlspecialchars($appointment['service_name']); ?>"
+                                            data-contact="<?php echo htmlspecialchars($appointment['client_mobile'] ?? ''); ?>"
+                                            data-time-in="<?php echo htmlspecialchars(substr($appointment['appointment_time'], 0, 5)); ?>"
+                                            <?php
+                                                // Fetch extra fields for this appointment
+                                                $stmtExtra = $db->prepare("SELECT treatment_methods, device_installation, chemical_consumables, chemical_quantities FROM appointments WHERE id = ?");
+                                                $stmtExtra->execute([$appointment['appointment_id']]);
+                                                $extra = $stmtExtra->fetch(PDO::FETCH_ASSOC);
+                                                // Prepare JSON for JS
+                                                $treatments = $extra && $extra['treatment_methods'] ? htmlspecialchars($extra['treatment_methods']) : '';
+                                                $devices = $extra && $extra['device_installation'] ? htmlspecialchars($extra['device_installation']) : '';
+                                                $chemicals = $extra && $extra['chemical_consumables'] ? htmlspecialchars($extra['chemical_consumables']) : '';
+                                                $chemQty = $extra && $extra['chemical_quantities'] ? htmlspecialchars($extra['chemical_quantities']) : '';
+                                                echo "data-treatments='$treatments' data-devices='$devices' data-chemicals='$chemicals' data-chemical-qty='$chemQty'";
+                                            ?>
+                                        >
+                                            <?php echo date('M d, Y', strtotime($appointment['appointment_date'])) . ' - ' .
+                                                $appointment['client_firstname'] . ' ' . $appointment['client_lastname'] . ' - ' .
+                                                $appointment['service_name']; ?>
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
@@ -464,50 +525,101 @@ try {
                                     <label for="time_out">Time Out</label>
                                     <input type="time" name="time_out" id="time_out" required>
                                 </div>
-                                <div class="field-group">
+                                <div class="field-group dropdown-down">
                                     <label for="treatment_type">Treatment Type</label>
-                                    <select name="treatment_type" id="treatment_type" required>
-                                        <option value="">Select Treatment Type</option>
-                                        <option value="Soil Poisoning">Soil Poisoning</option>
-                                        <option value="Mound Demolition">Mound Demolition</option>
-                                        <option value="Termite Control">Termite Control</option>
-                                        <option value="General Pest Control">General Pest Control</option>
-                                        <option value="Mosquito Control">Mosquito Control</option>
-                                        <option value="Rat Control">Rat Control</option>
-                                        <option value="Flying & Crawling Insect Control">Flying & Crawling Insect Control</option>
-                                        <option value="Extraction">Extraction</option>
-                                        <option value="Ocular Inspection">Ocular Inspection</option>
-                                        <option value="Other">Other (specify in treatment method)</option>
-                                    </select>
+                                    <div class="custom-dropdown">
+                                        <select name="treatment_type" id="treatment_type" required>
+                                            <option value="">Select Treatment Type</option>
+                                            <option value="Soil Poisoning">Soil Poisoning</option>
+                                            <option value="Mound Demolition">Mound Demolition</option>
+                                            <option value="Termite Control">Termite Control</option>
+                                            <option value="General Pest Control">General Pest Control</option>
+                                            <option value="Mosquito Control">Mosquito Control</option>
+                                            <option value="Rat Control">Rat Control</option>
+                                            <option value="Flying & Crawling Insect Control">Flying & Crawling Insect Control</option>
+                                            <option value="Extraction">Extraction</option>
+                                            <option value="Ocular Inspection">Ocular Inspection</option>
+                                            <option value="Other">Other (specify in treatment method)</option>
+                                        </select>
+                                    </div>
                                 </div>
                                 <div class="field-group">
                                     <label for="pest_count">Pest Count (if applicable)</label>
                                     <input type="text" name="pest_count" id="pest_count" placeholder="e.g., 15 roaches, 3 rats">
                                 </div>
-                                <div class="field-group">
+                                <div class="field-group dropdown-down">
                                     <label for="plan_type">Plan Type</label>
-                                    <select name="plan_type" id="plan_type" required>
-                                        <option value="">Select Plan Type</option>
-                                        <option value="weekly">Weekly Visit</option>
-                                        <option value="monthly">Monthly Visit</option>
-                                        <option value="quarterly">Quarterly Visit</option>
-                                        <option value="yearly">Yearly Visit</option>
-                                    </select>
+                                    <div class="custom-dropdown">
+                                        <select name="plan_type" id="plan_type" required>
+                                            <option value="">Select Plan Type</option>
+                                            <option value="weekly">Weekly Visit</option>
+                                            <option value="monthly">Monthly Visit</option>
+                                            <option value="quarterly">Quarterly Visit</option>
+                                            <option value="yearly">Yearly Visit</option>
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
                             
                             <div class="report-grid-2col">
-                                <div class="field-group">
-                                    <label for="treatment_method">Treatment Method/Description</label>
-                                    <textarea name="treatment_method" id="treatment_method" rows="3" required placeholder="Describe the treatment methods used in detail..."></textarea>
+                                <!-- Treatment Method Dropdown -->
+                                <div class="field-group dropdown-down">
+                                    <label for="treatment_method">Treatment Method</label>
+                                    <div style="display: flex; gap: 8px;">
+                                        <div class="custom-dropdown" style="flex:1;">
+                                            <select name="treatment_method" id="treatment_method" required>
+                                                <option value="">Select Treatment Method</option>
+                                                <?php foreach ($treatmentMethods as $method): ?>
+                                                    <option value="<?php echo htmlspecialchars($method['name']); ?>">
+                                                        <?php echo htmlspecialchars($method['name']); ?>
+                                                    </option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                        </div>
+                                        <input type="text" name="treatment_method_qty" id="treatment_method_qty" placeholder="Qty" style="width:60px;" autocomplete="off">
+                                    </div>
                                 </div>
-                                <div class="field-group">
-                                    <label for="device_installation">Device Installation (if any)</label>
-                                    <textarea name="device_installation" id="device_installation" rows="3" placeholder="Describe any devices installed or set..."></textarea>
+                                <!-- Device Installation Dropdown -->
+                                <div class="field-group dropdown-down">
+                                    <label for="device_installation">Select device</label>
+                                    <div style="display: flex; gap: 8px;">
+                                        <div class="custom-dropdown" style="flex:1;">
+                                            <select name="device_installation" id="device_installation">
+                                                <option value="">Select Device</option>
+                                                <?php if (!empty($devices)): ?>
+                                                    <?php foreach ($devices as $device): ?>
+                                                        <option value="<?php echo htmlspecialchars($device['name']); ?>">
+                                                            <?php echo htmlspecialchars($device['name']); ?>
+                                                        </option>
+                                                    <?php endforeach; ?>
+                                                <?php else: ?>
+                                                    <option value="">No devices available</option>
+                                                <?php endif; ?>
+                                            </select>
+                                        </div>
+                                        <input type="text" name="device_installation_qty" id="device_installation_qty" placeholder="Qty" style="width:60px;" autocomplete="off">
+                                    </div>
                                 </div>
-                                <div class="field-group">
-                                    <label for="consumed_chemicals">Consumed Chemicals/Products</label>
-                                    <textarea name="consumed_chemicals" id="consumed_chemicals" rows="3" placeholder="List chemicals used with quantities..."></textarea>
+                                <!-- Consumed Chemicals Dropdown -->
+                                <div class="field-group dropdown-down">
+                                    <label for="consumed_chemicals">Consumed Chemicals</label>
+                                    <div style="display: flex; gap: 8px;">
+                                        <div class="custom-dropdown" style="flex:1;">
+                                            <select name="consumed_chemicals" id="consumed_chemicals">
+                                                <option value="">Select Chemical/Product</option>
+                                                <?php if (!empty($chemicals)): ?>
+                                                    <?php foreach ($chemicals as $chemical): ?>
+                                                        <option value="<?php echo htmlspecialchars($chemical['name']); ?>">
+                                                            <?php echo htmlspecialchars($chemical['name']); ?>
+                                                        </option>
+                                                    <?php endforeach; ?>
+                                                <?php else: ?>
+                                                    <option value="">No chemicals available</option>
+                                                <?php endif; ?>
+                                            </select>
+                                        </div>
+                                        <input type="text" name="consumed_chemicals_qty" id="consumed_chemicals_qty" placeholder="Qty" style="width:60px;" autocomplete="off">
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -525,7 +637,7 @@ try {
                                     <span>or</span>
                                     <label for="photos" class="upload-btn">Choose Files</label>
                                     <input type="file" name="photos[]" id="photos" multiple accept="image/*">
-                                    <small>Upload up to 5 photos (Max 2MB each). Include before/after photos if available.</small>
+                                    <small>Upload up to 5 photos. Include before/after photos if available.</small>
                                 </div>
                                 <div class="photo-preview" id="photo-preview-container">
                                     <!-- Preview images will appear here -->
@@ -546,6 +658,22 @@ try {
                 </div>
             </div>
         </main>
+        
+        <style>
+        /* Force dropdowns to open downward */
+        .field-group.dropdown-down {
+            position: relative;
+            overflow: visible;
+        }
+        .field-group.dropdown-down select[dropdown-direction="down"] {
+            position: relative;
+            overflow: visible;
+            max-height: 44px;
+        }
+        .field-group.dropdown-down select[dropdown-direction="down"]:focus {
+            z-index: 9999;
+        }
+        </style>
         
         <script>
             // Auto-fill form when appointment is selected
@@ -585,6 +713,128 @@ try {
                     if (!optionFound) {
                         treatmentTypeSelect.selectedIndex = 0;
                     }
+
+                    // --- Treatment Method, Device, Chemicals autofill with qty ---
+                    // Treatment Method (assume single select, JSON array or string)
+                    const treatmentMethodData = selectedOption.getAttribute('data-treatments');
+                    let method = '';
+                    try {
+                        const parsed = JSON.parse(treatmentMethodData);
+                        if (Array.isArray(parsed) && parsed.length > 0) method = parsed[0];
+                        else if (typeof parsed === 'string') method = parsed;
+                    } catch { method = treatmentMethodData; }
+                    const methodSelect = document.getElementById('treatment_method');
+                    if (methodSelect) {
+                        let found = false;
+                        Array.from(methodSelect.options).forEach(option => {
+                            if (
+                                method &&
+                                option.value.trim().toLowerCase() === method.trim().toLowerCase()
+                            ) {
+                                option.selected = true;
+                                found = true;
+                            } else {
+                                option.selected = false;
+                            }
+                        });
+                        // If not found, select the first option (the "Select..." message)
+                        if (!found) methodSelect.selectedIndex = 0;
+                    }
+                    let methodQty = '';
+                    const chemQtyData = selectedOption.getAttribute('data-chemical-qty');
+                    if (chemQtyData) {
+                        try {
+                            const parsedQty = JSON.parse(chemQtyData);
+                            if (Array.isArray(parsedQty) && parsedQty.length > 0) methodQty = parsedQty[0];
+                            else if (typeof parsedQty === 'string') methodQty = parsedQty;
+                        } catch { methodQty = chemQtyData; }
+                    }
+                    if (document.getElementById('treatment_method_qty')) {
+                        document.getElementById('treatment_method_qty').value = methodQty;
+                    }
+
+                    // Device Installation (assume string or JSON array)
+                    const deviceData = selectedOption.getAttribute('data-devices');
+                    let device = '';
+                    try {
+                        const parsed = JSON.parse(deviceData);
+                        if (Array.isArray(parsed) && parsed.length > 0) device = parsed[0];
+                        else if (typeof parsed === 'string') device = parsed;
+                    } catch { device = deviceData; }
+                    const deviceSelect = document.getElementById('device_installation');
+                    if (deviceSelect) {
+                        let found = false;
+                        Array.from(deviceSelect.options).forEach(option => {
+                            if (
+                                device &&
+                                option.value.trim().toLowerCase() === device.trim().toLowerCase()
+                            ) {
+                                option.selected = true;
+                                found = true;
+                            } else {
+                                option.selected = false;
+                            }
+                        });
+                        if (!found) deviceSelect.selectedIndex = 0;
+                    }
+                    let deviceQty = '';
+                    if (chemQtyData) {
+                        try {
+                            const parsedQty = JSON.parse(chemQtyData);
+                            if (Array.isArray(parsedQty) && parsedQty.length > 1) deviceQty = parsedQty[1];
+                            else if (typeof parsedQty === 'string') deviceQty = parsedQty;
+                        } catch { deviceQty = chemQtyData; }
+                    }
+                    if (document.getElementById('device_installation_qty')) {
+                        document.getElementById('device_installation_qty').value = deviceQty;
+                    }
+
+                    // Consumed Chemicals (assume string or JSON array)
+                    const chemicalData = selectedOption.getAttribute('data-chemicals');
+                    let chemical = '';
+                    try {
+                        const parsed = JSON.parse(chemicalData);
+                        if (Array.isArray(parsed) && parsed.length > 0) chemical = parsed[0];
+                        else if (typeof parsed === 'string') chemical = parsed;
+                    } catch { chemical = chemicalData; }
+                    const chemicalSelect = document.getElementById('consumed_chemicals');
+                    if (chemicalSelect) {
+                        let found = false;
+                        Array.from(chemicalSelect.options).forEach(option => {
+                            if (
+                                chemical &&
+                                option.value.trim().toLowerCase() === chemical.trim().toLowerCase()
+                            ) {
+                                option.selected = true;
+                                found = true;
+                            } else {
+                                option.selected = false;
+                            }
+                        });
+                        if (!found) chemicalSelect.selectedIndex = 0;
+                    }
+                    // Fix: Consumed Chemicals Qty should always use the first value if only one, or the correct index if multiple
+                    let chemQty = '';
+                    if (chemQtyData) {
+                        try {
+                            const parsedQty = JSON.parse(chemQtyData);
+                            // If only one value, use [0], if multiple, use [2] (for chemicals)
+                            if (Array.isArray(parsedQty)) {
+                                if (parsedQty.length === 1) {
+                                    chemQty = parsedQty[0];
+                                } else if (parsedQty.length > 2) {
+                                    chemQty = parsedQty[2];
+                                } else if (parsedQty.length > 0) {
+                                    chemQty = parsedQty[parsedQty.length - 1];
+                                }
+                            } else if (typeof parsedQty === 'string') {
+                                chemQty = parsedQty;
+                            }
+                        } catch { chemQty = chemQtyData; }
+                    }
+                    if (document.getElementById('consumed_chemicals_qty')) {
+                        document.getElementById('consumed_chemicals_qty').value = chemQty;
+                    }
                 } else {
                     // Clear fields if "Select an appointment" is chosen
                     document.getElementById('account_name').value = '';
@@ -593,6 +843,9 @@ try {
                     document.getElementById('treatment_type').selectedIndex = 0;
                     document.getElementById('time_in').value = '';
                     document.getElementById('time_out').value = '';
+                    if (document.getElementById('treatment_method_qty')) document.getElementById('treatment_method_qty').value = '';
+                    if (document.getElementById('device_installation_qty')) document.getElementById('device_installation_qty').value = '';
+                    if (document.getElementById('consumed_chemicals_qty')) document.getElementById('consumed_chemicals_qty').value = '';
                 }
             });
 
@@ -625,44 +878,21 @@ try {
                 for (let i = 0; i < this.files.length; i++) {
                     const file = this.files[i];
                     
-                    // Check file size (max 2MB)
-                    if (file.size > 2 * 1024 * 1024) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'File too large',
-                            text: `File ${file.name} exceeds 2MB. Please select a smaller file.`,
-                            confirmButtonColor: '#144578'
-                        });
-                        continue;
-                    }
-                    
                     // Create preview element
                     const preview = document.createElement('div');
-                    preview.className = 'preview-item';
+                    preview.className = 'photo-item';
                     
                     const img = document.createElement('img');
                     img.src = URL.createObjectURL(file);
+                    img.style.width = '100%';
+                    img.style.height = '100%';
+                    img.style.objectFit = 'cover';
+                    img.style.display = 'block';
                     img.onload = function() {
                         URL.revokeObjectURL(this.src); // Free memory
                     };
                     
-                    const caption = document.createElement('span');
-                    caption.className = 'file-name';
-                    caption.textContent = file.name;
-                    
-                    const removeBtn = document.createElement('button');
-                    removeBtn.type = 'button';
-                    removeBtn.className = 'remove-file';
-                    removeBtn.innerHTML = '<i class="bx bx-x"></i>';
-                    removeBtn.onclick = function() {
-                        preview.remove();
-                        // Note: This doesn't actually remove the file from the input
-                        // You would need a more complex solution to truly remove a single file
-                    };
-                    
                     preview.appendChild(img);
-                    preview.appendChild(caption);
-                    preview.appendChild(removeBtn);
                     previewContainer.appendChild(preview);
                 }
             });
@@ -703,8 +933,21 @@ try {
                     treatmentTypeSelect.selectedIndex = 0; // Reset to default
                 }
             });
+
+            // Optional: Show selected items as tags for multi-selects
+            function enhanceMultiSelect(selectId) {
+                const select = document.getElementById(selectId);
+                if (!select) return;
+                select.addEventListener('change', function() {
+                    // No-op: browser default multi-select is used, but you can enhance here if needed
+                });
+            }
+            enhanceMultiSelect('treatment_method');
+            enhanceMultiSelect('device_installation');
+            enhanceMultiSelect('consumed_chemicals');
         </script>
     </section>
+    <!--SUBMIT SERVICE REPORT SECTION-->
 
     <!-- Schedule Follow-up Section -->
     <section id="schedule-followup" class="section">
@@ -1197,9 +1440,9 @@ try {
                             <p><strong>Last Name:</strong> <span data-field="lastname"><?php echo htmlspecialchars($technician['lastname']); ?></span></p>
                             <p><strong>Date of Birth:</strong> <span><?php echo $technician['dob'] ? date('m-d-Y', strtotime($technician['dob'])) : 'Not set'; ?></span></p>
                         </div>
-                        <div class="info-row"></div>
+                        <div class="info-row">
                             <p><strong>Email:</strong> <span data-field="email"><?php echo htmlspecialchars($technician['email']); ?></span></p>
-                            <p><strong>Phone Number:</strong> <span data-field="mobile_number"><?php echo htmlspecialchars($technician['mobile_number']); ?></span></p>
+                            <p><strong>Phone Number:</strong> <span data-field="mobile_number"><?php echo htmlspecialchars($technician['mobile_number'] ?? 'Not set'); ?></span></p>
                         </div>
                     </div>
                 </div>
@@ -1310,7 +1553,7 @@ try {
     
     <script>
         // Function to load customer details when customer is selected in follow-up form
-        function loadCustomerDetails(appointmentId) {
+     function loadCustomerDetails(appointmentId) {
             if (!appointmentId) {
                 // Clear fields if no appointment selected
                 document.getElementById('customer-location').value = '';
