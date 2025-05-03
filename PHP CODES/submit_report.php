@@ -107,46 +107,84 @@ try {
     $photosJson = !empty($photos) ? json_encode($photos) : null;
     error_log("Photos JSON: " . ($photosJson ?? 'null'));
     
-    // Insert into service_reports table
-    $sql = "INSERT INTO service_reports (
-                technician_id, appointment_id, date_of_treatment, time_in, time_out,
-                treatment_type, treatment_method, pest_count, device_installation,
-                consumed_chemicals, frequency_of_visits, photos, location,
-                account_name, contact_no, status, created_at, updated_at
-            ) VALUES (
-                :technician_id, :appointment_id, :date_of_treatment, :time_in, :time_out,
-                :treatment_type, :treatment_method, :pest_count, :device_installation,
-                :consumed_chemicals, :frequency_of_visits, :photos, :location,
-                :account_name, :contact_no, 'pending', NOW(), NOW()
-            )";
-    
-    $stmt = $db->prepare($sql);
-    
-    $stmt->bindParam(':technician_id', $technician_id);
-    $stmt->bindParam(':appointment_id', $appointment_id);
-    $stmt->bindParam(':date_of_treatment', $date_of_treatment);
-    $stmt->bindParam(':time_in', $time_in);
-    $stmt->bindParam(':time_out', $time_out);
-    $stmt->bindParam(':treatment_type', $treatment_type);
-    $stmt->bindParam(':treatment_method', $treatment_method);
-    $stmt->bindParam(':pest_count', $pest_count);
-    $stmt->bindParam(':device_installation', $device_installation);
-    $stmt->bindParam(':consumed_chemicals', $consumed_chemicals);
-    $stmt->bindParam(':frequency_of_visits', $frequency_of_visits);
-    $stmt->bindParam(':photos', $photosJson);
-    $stmt->bindParam(':location', $location);
-    $stmt->bindParam(':account_name', $account_name);
-    $stmt->bindParam(':contact_no', $contact_no);
-    
-    if ($stmt->execute()) {
-        $report_id = $db->lastInsertId();
-        error_log("Report saved successfully, ID: $report_id");
-        
-        // Removed automatic appointment status update
-        $_SESSION['report_success'] = "Service report #$report_id submitted successfully! Your report is pending review by admin.";
+    // Check if a rejected report already exists for this technician and appointment
+    $stmt = $db->prepare("SELECT report_id FROM service_reports WHERE technician_id = ? AND appointment_id = ? AND status = 'rejected'");
+    $stmt->execute([$technician_id, $appointment_id]);
+    $existingReport = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($existingReport) {
+        // Update the existing rejected report
+        $updateStmt = $db->prepare("
+            UPDATE service_reports 
+            SET date_of_treatment = :date_of_treatment, time_in = :time_in, time_out = :time_out,
+                treatment_type = :treatment_type, treatment_method = :treatment_method, pest_count = :pest_count,
+                device_installation = :device_installation, consumed_chemicals = :consumed_chemicals,
+                frequency_of_visits = :frequency_of_visits, photos = :photos, location = :location,
+                account_name = :account_name, contact_no = :contact_no, status = 'pending', updated_at = NOW()
+            WHERE report_id = :report_id
+        ");
+        $updateStmt->bindParam(':date_of_treatment', $date_of_treatment);
+        $updateStmt->bindParam(':time_in', $time_in);
+        $updateStmt->bindParam(':time_out', $time_out);
+        $updateStmt->bindParam(':treatment_type', $treatment_type);
+        $updateStmt->bindParam(':treatment_method', $treatment_method);
+        $updateStmt->bindParam(':pest_count', $pest_count);
+        $updateStmt->bindParam(':device_installation', $device_installation);
+        $updateStmt->bindParam(':consumed_chemicals', $consumed_chemicals);
+        $updateStmt->bindParam(':frequency_of_visits', $frequency_of_visits);
+        $updateStmt->bindParam(':photos', $photosJson);
+        $updateStmt->bindParam(':location', $location);
+        $updateStmt->bindParam(':account_name', $account_name);
+        $updateStmt->bindParam(':contact_no', $contact_no);
+        $updateStmt->bindParam(':report_id', $existingReport['report_id']);
+
+        if ($updateStmt->execute()) {
+            error_log("Report updated successfully, ID: " . $existingReport['report_id']);
+            $_SESSION['report_success'] = "Service report #" . $existingReport['report_id'] . " updated successfully! Your report is pending review by admin.";
+        } else {
+            error_log("Error executing update statement: " . implode(", ", $updateStmt->errorInfo()));
+            $_SESSION['report_error'] = "Error updating report. Please try again.";
+        }
     } else {
-        error_log("Error executing insert statement: " . implode(", ", $stmt->errorInfo()));
-        $_SESSION['report_error'] = "Error submitting report. Please try again.";
+        // Insert into service_reports table
+        $sql = "INSERT INTO service_reports (
+                    technician_id, appointment_id, date_of_treatment, time_in, time_out,
+                    treatment_type, treatment_method, pest_count, device_installation,
+                    consumed_chemicals, frequency_of_visits, photos, location,
+                    account_name, contact_no, status, created_at, updated_at
+                ) VALUES (
+                    :technician_id, :appointment_id, :date_of_treatment, :time_in, :time_out,
+                    :treatment_type, :treatment_method, :pest_count, :device_installation,
+                    :consumed_chemicals, :frequency_of_visits, :photos, :location,
+                    :account_name, :contact_no, 'pending', NOW(), NOW()
+                )";
+        
+        $stmt = $db->prepare($sql);
+        
+        $stmt->bindParam(':technician_id', $technician_id);
+        $stmt->bindParam(':appointment_id', $appointment_id);
+        $stmt->bindParam(':date_of_treatment', $date_of_treatment);
+        $stmt->bindParam(':time_in', $time_in);
+        $stmt->bindParam(':time_out', $time_out);
+        $stmt->bindParam(':treatment_type', $treatment_type);
+        $stmt->bindParam(':treatment_method', $treatment_method);
+        $stmt->bindParam(':pest_count', $pest_count);
+        $stmt->bindParam(':device_installation', $device_installation);
+        $stmt->bindParam(':consumed_chemicals', $consumed_chemicals);
+        $stmt->bindParam(':frequency_of_visits', $frequency_of_visits);
+        $stmt->bindParam(':photos', $photosJson);
+        $stmt->bindParam(':location', $location);
+        $stmt->bindParam(':account_name', $account_name);
+        $stmt->bindParam(':contact_no', $contact_no);
+        
+        if ($stmt->execute()) {
+            $report_id = $db->lastInsertId();
+            error_log("Report saved successfully, ID: $report_id");
+            $_SESSION['report_success'] = "Service report #$report_id submitted successfully! Your report is pending review by admin.";
+        } else {
+            error_log("Error executing insert statement: " . implode(", ", $stmt->errorInfo()));
+            $_SESSION['report_error'] = "Error submitting report. Please try again.";
+        }
     }
     
     // Redirect back to dashboard

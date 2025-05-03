@@ -77,7 +77,7 @@ try {
     ];
 }
 
-// Replace the existing appointments query with this updated version that includes multiple technicians
+// Fetch appointments with follow-up visit status
 try {
     $appointmentsQuery = "SELECT 
         a.id as appointment_id,
@@ -103,7 +103,11 @@ try {
         (SELECT GROUP_CONCAT(CONCAT(u2.firstname, ' ', u2.lastname) SEPARATOR ', ') 
          FROM appointment_technicians at 
          JOIN users u2 ON at.technician_id = u2.id 
-         WHERE at.appointment_id = a.id) as all_technicians
+         WHERE at.appointment_id = a.id) as all_technicians,
+        (SELECT fv.status 
+         FROM followup_visits fv 
+         WHERE fv.appointment_id = a.id 
+         ORDER BY fv.id DESC LIMIT 1) as followup_status
     FROM appointments a
     JOIN services s ON a.service_id = s.service_id
     JOIN users u ON a.user_id = u.id
@@ -206,7 +210,6 @@ try {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../CSS CODES/dashboard-admin.css">
-    <link rel="stylesheet" href="../CSS CODES/timeslot.css">
     <!-- Add SweetAlert2 CSS and JS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
@@ -604,133 +607,110 @@ try {
                 </div>
             </div>
 
-        </form><!-- End dashboard form BEFORE time slot management section -->
-        
-        <!-- Time Slot Management Section - Now outside the dashboard form -->
+        </form><!-- End dashboard form -->
+
+        <!-- Time Slot Management Section -->
         <div class="time-slot-management">
-            <h2>Time Slot Management</h2>
-            
-            <!-- Notification Messages -->
-            <?php if (isset($_SESSION['timeslot_success'])): ?>
-            <div class="alert alert-success">
-                <?php echo htmlspecialchars($_SESSION['timeslot_success']); ?>
-                <?php unset($_SESSION['timeslot_success']); ?>
+            <div class="section-header">
+                <h2><i class='bx bx-time'></i> Time Slot Management</h2>
+                <p>Configure available appointment slots for specific dates.</p>
             </div>
-            <?php endif; ?>
             
-            <?php if (isset($_SESSION['timeslot_error'])): ?>
-            <div class="alert alert-error">
-                <?php echo htmlspecialchars($_SESSION['timeslot_error']); ?>
-                <?php unset($_SESSION['timeslot_error']); ?>
-            </div>
-            <?php endif; ?>
-            
-            <form id="timeSlotForm" method="POST" action="../PHP CODES/process_timeslot.php">
-                <div class="calendar-container">
-                    <!-- Calendar Section - Left Side -->
-                    <div class="calendar">
-                        <div class="calendar-header">
-                            <select id="monthSelect">
-                                <option value="0">January</option>
-                                <option value="1">February</option>
-                                <option value="2">March</option>
-                                <option value="3">April</option>
-                                <option value="4">May</option>
-                                <option value="5">June</option>
-                                <option value="6">July</option>
-                                <option value="7">August</option>
-                                <option value="8">September</option>
-                                <option value="9">October</option>
-                                <option value="10">November</option>
-                                <option value="11">December</option>
-                            </select>
-                            <select id="yearSelect">
-                                <!-- Will be populated by JavaScript -->
-                            </select>
-                        </div>
-                        <div class="calendar-grid">
-                            <div class="day-name">Sun</div>
-                            <div class="day-name">Mon</div>
-                            <div class="day-name">Tue</div>
-                            <div class="day-name">Wed</div>
-                            <div class="day-name">Thu</div>
-                            <div class="day-name">Fri</div>
-                            <div class="day-name">Sat</div>
-                            <div id="calendar-days" class="calendar-days"></div>
-                        </div>
-                        
-                        <!-- Selected dates display -->
-                        <div id="selectedDatesContainer" class="selected-dates">
-                            <h4>Selected Dates</h4>
-                            <div id="selectedDatesList"></div>
-                            <!-- Hidden input to store selected dates -->
-                            <input type="hidden" name="selected_dates" id="selectedDatesInput">
+            <form id="time-slot-form" method="POST" action="../PHP CODES/process_timeslot.php">
+                <div class="slot-configuration">
+                    <div class="date-selection">
+                        <h3>Select Dates</h3>
+                        <div class="calendar-container">
+                            <div class="calendar">
+                                <div class="calendar-header">
+                                    <select id="monthSelect">
+                                        <option value="0">January</option>
+                                        <option value="1">February</option>
+                                        <option value="2">March</option>
+                                        <option value="3">April</option>
+                                        <option value="4">May</option>
+                                        <option value="5">June</option>
+                                        <option value="6">July</option>
+                                        <option value="7">August</option>
+                                        <option value="8">September</option>
+                                        <option value="9">October</option>
+                                        <option value="10">November</option>
+                                        <option value="11">December</option>
+                                    </select>
+                                    <select id="yearSelect"></select>
+                                </div>
+                                <div class="day-names">
+                                    <div>Sun</div>
+                                    <div>Mon</div>
+                                    <div>Tue</div>
+                                    <div>Wed</div>
+                                    <div>Thu</div>
+                                    <div>Fri</div>
+                                    <div>Sat</div>
+                                </div>
+                                <div class="calendar-days" id="calendar-days"></div>
+                            </div>
+                            <div class="selected-dates">
+                                <h4>Selected Dates</h4>
+                                <div class="selected-dates-list" id="selectedDatesList"></div>
+                                <input type="hidden" name="selected_dates" id="selectedDatesInput" value="[]">
+                            </div>
                         </div>
                     </div>
                     
-                    <!-- Time Slots Section - Right Side -->
-                    <div class="time-slots-container">
-                        <div class="time-slots">
-                            <!-- Morning Slots -->
-                            <div class="time-slot">
-                                <label><i class='bx bx-time'></i>Morning Slot (7:00 AM - 9:00 AM)</label>
-                                <div class="slot-limit">
-                                    <label class="small-label">Slot Limit:</label>
-                                    <input type="number" name="time_slots[morning_slot_1]" min="1" max="10" value="3" class="limit-input">
-                                    <input type="hidden" name="time_ranges[morning_slot_1]" value="07:00 AM - 09:00 AM">
-                                </div>
-                            </div>
-                            
-                            <div class="time-slot">
-                                <label><i class='bx bx-time'></i>Morning Slot (9:00 AM - 11:00 AM)</label>
-                                <div class="slot-limit">
-                                    <label class="small-label">Slot Limit:</label>
-                                    <input type="number" name="time_slots[morning_slot_2]" min="1" max="10" value="3" class="limit-input">
-                                    <input type="hidden" name="time_ranges[morning_slot_2]" value="09:00 AM - 11:00 AM">
-                                </div>
-                            </div>
-                            
-                            <!-- Afternoon Slots -->
-                            <div class="time-slot">
-                                <label><i class='bx bx-time'></i>Afternoon Slot (11:00 AM - 1:00 PM)</label>
-                                <div class="slot-limit">
-                                    <label class="small-label">Slot Limit:</label>
-                                    <input type="number" name="time_slots[afternoon_slot_1]" min="1" max="10" value="3" class="limit-input">
-                                    <input type="hidden" name="time_ranges[afternoon_slot_1]" value="11:00 AM - 01:00 PM">
-                                </div>
-                            </div>
-                            
-                            <div class="time-slot">
-                                <label><i class='bx bx-time'></i>Afternoon Slot (1:00 PM - 3:00 PM)</label>
-                                <div class="slot-limit">
-                                    <label class="small-label">Slot Limit:</label>
-                                    <input type="number" name="time_slots[afternoon_slot_2]" min="1" max="10" value="3" class="limit-input">
-                                    <input type="hidden" name="time_ranges[afternoon_slot_2]" value="01:00 PM - 03:00 PM">
-                                </div>
-                            </div>
-                            
-                            <!-- Evening Slot -->
-                            <div class="time-slot">
-                                <label><i class='bx bx-time'></i>Evening Slot (3:00 PM - 5:00 PM)</label>
-                                <div class="slot-limit">
-                                    <label class="small-label">Slot Limit:</label>
-                                    <input type="number" name="time_slots[evening_slot]" min="1" max="10" value="3" class="limit-input">
-                                    <input type="hidden" name="time_ranges[evening_slot]" value="03:00 PM - 05:00 PM">
-                                </div>
-                            </div>
+                    <div class="time-slots">
+                        <h3>Configure Time Slots</h3>
+                        <p>Set the maximum number of appointments for each time slot.</p>
+                        
+                        <div class="slot-item">
+                            <label>
+                                <span>Morning (7:00 AM - 9:00 AM)</span>
+                                <input type="number" name="time_slots[morning_slot_1]" min="0" max="10" value="3">
+                                <input type="hidden" name="time_ranges[morning_slot_1]" value="07:00 AM - 09:00 AM">
+                            </label>
                         </div>
                         
-                        <div class="form-actions">
-                            <button type="submit" class="save-btn">
-                                <i class='bx bx-save'></i>
-                                Save Time Slots
-                            </button>
+                        <div class="slot-item">
+                            <label>
+                                <span>Morning (9:00 AM - 11:00 AM)</span>
+                                <input type="number" name="time_slots[morning_slot_2]" min="0" max="10" value="3">
+                                <input type="hidden" name="time_ranges[morning_slot_2]" value="09:00 AM - 11:00 AM">
+                            </label>
+                        </div>
+                        
+                        <div class="slot-item">
+                            <label>
+                                <span>Afternoon (11:00 AM - 1:00 PM)</span>
+                                <input type="number" name="time_slots[afternoon_slot_1]" min="0" max="10" value="3">
+                                <input type="hidden" name="time_ranges[afternoon_slot_1]" value="11:00 AM - 01:00 PM">
+                            </label>
+                        </div>
+                        
+                        <div class="slot-item">
+                            <label>
+                                <span>Afternoon (1:00 PM - 3:00 PM)</span>
+                                <input type="number" name="time_slots[afternoon_slot_2]" min="0" max="10" value="3">
+                                <input type="hidden" name="time_ranges[afternoon_slot_2]" value="01:00 PM - 03:00 PM">
+                            </label>
+                        </div>
+                        
+                        <div class="slot-item">
+                            <label>
+                                <span>Evening (3:00 PM - 5:00 PM)</span>
+                                <input type="number" name="time_slots[evening_slot]" min="0" max="10" value="3">
+                                <input type="hidden" name="time_ranges[evening_slot]" value="03:00 PM - 05:00 PM">
+                            </label>
                         </div>
                     </div>
                 </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn-save">
+                        <i class='bx bx-save'></i> Save Configuration
+                    </button>
+                </div>
             </form>
         </div>
-        <!-- End Time Slot Management Section -->
 
         <!-- Add JavaScript functions for report modal and PDF download -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -1326,7 +1306,14 @@ try {
                         <tbody>
                             <?php if (!empty($appointments)): ?>
                                 <?php foreach ($appointments as $appointment): ?>
-                                    <tr data-status="<?php echo strtolower(trim($appointment['status'])); ?>" data-date="<?php echo date('Y-m-d', strtotime($appointment['appointment_date'])); ?>">
+                                    <?php 
+                                        // Determine the status to display
+                                        $displayStatus = strtolower(trim($appointment['followup_status'] ?? $appointment['status']));
+                                        if ($displayStatus === 'unknown' && !empty($appointment['followup_status'])) {
+                                            $displayStatus = strtolower(trim($appointment['followup_status']));
+                                        }
+                                    ?>
+                                    <tr data-status="<?php echo $displayStatus; ?>" data-date="<?php echo date('Y-m-d', strtotime($appointment['appointment_date'])); ?>">
                                         <td>#<?php echo htmlspecialchars($appointment['appointment_id']); ?></td>
                                         <td>
                                             <div class="schedule-info">
@@ -1340,8 +1327,7 @@ try {
                                         <td>
                                             <div class="customer-info">
                                                 <i class='bx bx-user'></i>
-                                                <span><?php echo htmlspecialchars($appointment['client_firstname'] . ' ' . 
-                                                    $appointment['client_lastname']); ?></span>
+                                                <span><?php echo htmlspecialchars($appointment['client_firstname'] . ' ' . $appointment['client_lastname']); ?></span>
                                             </div>
                                         </td>
                                         <td>
@@ -1371,8 +1357,8 @@ try {
                                             </div>
                                         </td>
                                         <td>
-                                            <span class="status <?php echo strtolower($appointment['status']); ?>">
-                                                <?php echo htmlspecialchars($appointment['status']); ?>
+                                            <span class="status <?php echo $displayStatus; ?>">
+                                                <?php echo ucfirst($displayStatus); ?>
                                             </span>
                                         </td>
                                         <td>
@@ -1380,7 +1366,7 @@ try {
                                                 <a href="job-details.php?id=<?php echo $appointment['appointment_id']; ?>" class="view-btn">
                                                     <i class='bx bx-show'></i> View Details
                                                 </a>
-                                                <?php if ($appointment['status'] === 'Completed'): ?>
+                                                <?php if ($displayStatus === 'completed'): ?>
                                                     <button href="#" class="review-btn" onclick="loadReviewData(<?php echo $appointment['appointment_id']; ?>); return false;">
                                                         <i class='bx bx-message-square-check'></i> Check Review
                                                     </button>
@@ -1859,7 +1845,7 @@ try {
                         </div>
                         <div class="filter-options">
                         
-                            <a href="../employee/forms/archive.php" class="btn">
+                            <a href="../employee/forms/archive.php" class="btn-archive">
                                 <i class='bx bx-archive'></i>
                                 <span class="text">View Archive</span>
                             </a>
@@ -3507,6 +3493,51 @@ function clearGlobalSearch() {
 #globalSearchForm .form-input input:not(:focus):placeholder-shown::before {
     opacity: 1;
 }
+
+/* Archive Button Styling */
+.btn-archive {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #f0f0f0;
+    color: #144578;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.btn-archive:hover {
+    background-color: #e0e0e0;
+    color: #0d2f5a;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+    border-color: #ccc;
+}
+
+.btn-archive i {
+    font-size: 1.1rem;
+}
+
+@media screen and (max-width: 768px) {
+    .btn-archive .text {
+        display: none;
+    }
+    
+    .btn-archive {
+        padding: 8px;
+    }
+    
+    .btn-archive i {
+        font-size: 1.3rem;
+        margin: 0;
+    }
+}
 </style>
 
 <!-- Add this right before the closing body tag -->
@@ -3662,6 +3693,38 @@ function updateReportStatus(status) {
         }
     });
 }
+</script>
+
+<!-- Report Submission Form -->
+<form id="submitReportForm" method="POST" onsubmit="handleReportSubmission(event)">
+    <input type="hidden" name="technician_id" value="<?php echo $technicianId; ?>">
+    <input type="hidden" name="appointment_id" value="<?php echo $appointmentId; ?>">
+    <textarea name="report_data" required></textarea>
+    <button type="submit">Submit Report</button>
+</form>
+
+<script>
+function handleReportSubmission(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+
+    const reportData = {
+        technician_id: formData.get('technician_id'),
+        appointment_id: formData.get('appointment_id'),
+        report_data: formData.get('report_data'),
+    };
+
+    submitReport(reportData);
+}
+</script>
+
+<script>
+// Initialize the calendar when the page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize time slot calendar
+    initTimeSlotCalendar();
+});
 </script>
 </body>
 </html>

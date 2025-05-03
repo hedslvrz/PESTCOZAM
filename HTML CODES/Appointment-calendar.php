@@ -415,9 +415,9 @@ $calendarData = AppointmentSession::getData('calendar', []);
         availabilityCell.classList.add('slot-status');
         
         if (slot.is_available) {
-          availabilityCell.textContent = `Open (${slot.available_slots} ${slot.available_slots === 1 ? 'slot' : 'slots'} left)`;
+          availabilityCell.textContent = `Open (${slot.available_slots} of ${slot.slot_limit} slots available)`;
         } else {
-          availabilityCell.textContent = 'Closed (0 slots)';
+          availabilityCell.textContent = `Closed (0 of ${slot.slot_limit} slots)`;
         }
         row.appendChild(availabilityCell);
         

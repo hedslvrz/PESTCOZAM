@@ -947,6 +947,11 @@ function viewJobDetails(assignmentId) {
     }
 }
 
+// Function to handle viewing submitted reports
+function viewSubmittedReports() {
+    window.location.href = 'view_submitted_reports-pct.php';
+}
+
 // Function to handle assignment search
 function initAssignmentSearch() {
     const searchInput = document.getElementById('assignment-search');

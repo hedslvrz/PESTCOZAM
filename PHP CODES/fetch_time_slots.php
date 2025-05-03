@@ -1,38 +1,34 @@
 <?php
 session_start();
-require_once "../database.php";
+require_once '../database.php';
 
-header('Content-Type: application/json');
-
-// Check if user is logged in
-if (!isset($_SESSION['user_id'])) {
-    echo json_encode(['success' => false, 'message' => 'User not logged in']);
+// Check if a date was provided
+if (!isset($_GET['date'])) {
+    header('Content-Type: application/json');
+    echo json_encode(['success' => false, 'message' => 'No date provided']);
     exit();
 }
 
-// Check if date is provided
-if (!isset($_GET['date']) || empty($_GET['date'])) {
-    echo json_encode(['success' => false, 'message' => 'Date parameter is required']);
-    exit();
-}
-
-$date = $_GET['date'];
+// Initialize database connection
 $database = new Database();
 $db = $database->getConnection();
 
-// Define slot order for consistent sorting
+$date = $_GET['date'];
+
+// Default slot order
 $slotOrder = [
-    'morning_slot_1' => 1,  // 07:00 AM - 09:00 AM
-    'morning_slot_2' => 2,  // 09:00 AM - 11:00 AM
-    'afternoon_slot_1' => 3, // 11:00 AM - 01:00 PM
-    'afternoon_slot_2' => 4, // 01:00 PM - 03:00 PM
+    'morning_slot_1' => 1,    // 07:00 AM - 09:00 AM
+    'morning_slot_2' => 2,    // 09:00 AM - 11:00 AM
+    'afternoon_slot_1' => 3,  // 11:00 AM - 01:00 PM
+    'afternoon_slot_2' => 4,  // 01:00 PM - 03:00 PM
     'evening_slot' => 5,     // 03:00 PM - 05:00 PM
 ];
 
-// Standard time slots if not configured in database
+// Define DEFAULT slot configuration - these will be used if not set by admin
 $defaultTimeSlots = [
     'morning_slot_1' => [
         'name' => 'morning_slot_1',
+        'slot_name' => 'morning_slot_1',
         'time_range' => '07:00 AM - 09:00 AM',
         'slot_limit' => 3,
         'available_slots' => 3,
@@ -40,6 +36,7 @@ $defaultTimeSlots = [
     ],
     'morning_slot_2' => [
         'name' => 'morning_slot_2',
+        'slot_name' => 'morning_slot_2',
         'time_range' => '09:00 AM - 11:00 AM',
         'slot_limit' => 3,
         'available_slots' => 3,
@@ -47,6 +44,7 @@ $defaultTimeSlots = [
     ],
     'afternoon_slot_1' => [
         'name' => 'afternoon_slot_1',
+        'slot_name' => 'afternoon_slot_1',
         'time_range' => '11:00 AM - 01:00 PM',
         'slot_limit' => 3,
         'available_slots' => 3,
@@ -54,6 +52,7 @@ $defaultTimeSlots = [
     ],
     'afternoon_slot_2' => [
         'name' => 'afternoon_slot_2',
+        'slot_name' => 'afternoon_slot_2',
         'time_range' => '01:00 PM - 03:00 PM',
         'slot_limit' => 3,
         'available_slots' => 3,
@@ -61,6 +60,7 @@ $defaultTimeSlots = [
     ],
     'evening_slot' => [
         'name' => 'evening_slot',
+        'slot_name' => 'evening_slot',
         'time_range' => '03:00 PM - 05:00 PM',
         'slot_limit' => 3,
         'available_slots' => 3,
@@ -75,22 +75,26 @@ try {
     $stmt->execute([$date]);
     $configuredTimeSlots = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // Convert to associative array by slot_name
-    $timeSlots = [];
-    foreach ($configuredTimeSlots as $slot) {
-        $slot['order'] = $slotOrder[$slot['slot_name']] ?? 999; // Default high order if unknown
-        $timeSlots[$slot['slot_name']] = $slot;
-    }
+    // Start with the default time slots
+    $timeSlots = $defaultTimeSlots;
     
-    // If no configured slots for this date, use defaults
-    if (empty($timeSlots)) {
-        $timeSlots = $defaultTimeSlots;
+    // If we have configured slots, override the defaults
+    if (!empty($configuredTimeSlots)) {
+        foreach ($configuredTimeSlots as $slot) {
+            if (isset($timeSlots[$slot['slot_name']])) {
+                // Override default values with configured values
+                $timeSlots[$slot['slot_name']]['slot_limit'] = (int)$slot['slot_limit'];
+                $timeSlots[$slot['slot_name']]['time_range'] = $slot['time_range'];
+                // Set the order for sorting
+                $timeSlots[$slot['slot_name']]['order'] = $slotOrder[$slot['slot_name']] ?? 999;
+            }
+        }
     }
     
     // For each time slot, count existing appointments to determine availability
     foreach ($timeSlots as $slotName => &$slotData) {
         // Extract start time from time range (e.g. "07:00 AM" from "07:00 AM - 09:00 AM")
-        $timeRange = $slotData['time_range'] ?? $defaultTimeSlots[$slotName]['time_range'];
+        $timeRange = $slotData['time_range'];
         $startTime = explode(' - ', $timeRange)[0];
         
         // Convert to 24-hour format for database comparison
@@ -108,34 +112,38 @@ try {
             $appointmentCount = $appointmentStmt->fetch(PDO::FETCH_ASSOC)['count'] ?? 0;
             
             // Calculate available slots
-            $slotLimit = $slotData['slot_limit'] ?? $defaultTimeSlots[$slotName]['slot_limit'];
-            $slotData['available_slots'] = max(0, $slotLimit - $appointmentCount);
-            $slotData['is_available'] = $slotData['available_slots'] > 0;
-        } else {
-            // Fallback if time parsing fails
-            $slotData['available_slots'] = $slotData['slot_limit'] ?? $defaultTimeSlots[$slotName]['slot_limit'];
-            $slotData['is_available'] = true;
+            $slotData['available_slots'] = max(0, $slotData['slot_limit'] - $appointmentCount);
         }
     }
     
-    // Convert to array and sort by order
-    $sortedSlots = array_values($timeSlots);
-    usort($sortedSlots, function($a, $b) {
-        return ($a['order'] ?? 999) - ($b['order'] ?? 999);
+    // Sort time slots by order
+    uasort($timeSlots, function($a, $b) {
+        return $a['order'] <=> $b['order'];
     });
     
-    // Return slots with availability info
+    // Format the data for the frontend
+    $formattedSlots = [];
+    foreach ($timeSlots as $slot) {
+        $formattedSlots[] = [
+            'slot_name' => $slot['slot_name'],
+            'time_range' => $slot['time_range'],
+            'slot_limit' => (int)$slot['slot_limit'],
+            'available_slots' => (int)$slot['available_slots'],
+            'is_available' => (int)$slot['available_slots'] > 0,
+        ];
+    }
+    
+    header('Content-Type: application/json');
     echo json_encode([
         'success' => true, 
-        'date' => $date,
-        'time_slots' => $sortedSlots
+        'time_slots' => $formattedSlots,
     ]);
     
-} catch (PDOException $e) {
+} catch (Exception $e) {
+    header('Content-Type: application/json');
     echo json_encode([
-        'success' => false, 
-        'message' => 'Database error: ' . $e->getMessage()
+        'success' => false,
+        'message' => 'Error retrieving time slots: ' . $e->getMessage()
     ]);
-    exit();
 }
 ?>
