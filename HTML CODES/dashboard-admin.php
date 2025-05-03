@@ -210,7 +210,6 @@ try {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../CSS CODES/dashboard-admin.css">
-    <link rel="stylesheet" href="../CSS CODES/timeslot.css">
     <!-- Add SweetAlert2 CSS and JS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
@@ -608,133 +607,7 @@ try {
                 </div>
             </div>
 
-        </form><!-- End dashboard form BEFORE time slot management section -->
-        
-        <!-- Time Slot Management Section - Now outside the dashboard form -->
-        <div class="time-slot-management">
-            <h2>Time Slot Management</h2>
-            
-            <!-- Notification Messages -->
-            <?php if (isset($_SESSION['timeslot_success'])): ?>
-            <div class="alert alert-success">
-                <?php echo htmlspecialchars($_SESSION['timeslot_success']); ?>
-                <?php unset($_SESSION['timeslot_success']); ?>
-            </div>
-            <?php endif; ?>
-            
-            <?php if (isset($_SESSION['timeslot_error'])): ?>
-            <div class="alert alert-error">
-                <?php echo htmlspecialchars($_SESSION['timeslot_error']); ?>
-                <?php unset($_SESSION['timeslot_error']); ?>
-            </div>
-            <?php endif; ?>
-            
-            <form id="timeSlotForm" method="POST" action="../PHP CODES/process_timeslot.php">
-                <div class="calendar-container">
-                    <!-- Calendar Section - Left Side -->
-                    <div class="calendar">
-                        <div class="calendar-header">
-                            <select id="monthSelect">
-                                <option value="0">January</option>
-                                <option value="1">February</option>
-                                <option value="2">March</option>
-                                <option value="3">April</option>
-                                <option value="4">May</option>
-                                <option value="5">June</option>
-                                <option value="6">July</option>
-                                <option value="7">August</option>
-                                <option value="8">September</option>
-                                <option value="9">October</option>
-                                <option value="10">November</option>
-                                <option value="11">December</option>
-                            </select>
-                            <select id="yearSelect">
-                                <!-- Will be populated by JavaScript -->
-                            </select>
-                        </div>
-                        <div class="calendar-grid">
-                            <div class="day-name">Sun</div>
-                            <div class="day-name">Mon</div>
-                            <div class="day-name">Tue</div>
-                            <div class="day-name">Wed</div>
-                            <div class="day-name">Thu</div>
-                            <div class="day-name">Fri</div>
-                            <div class="day-name">Sat</div>
-                            <div id="calendar-days" class="calendar-days"></div>
-                        </div>
-                        
-                        <!-- Selected dates display -->
-                        <div id="selectedDatesContainer" class="selected-dates">
-                            <h4>Selected Dates</h4>
-                            <div id="selectedDatesList"></div>
-                            <!-- Hidden input to store selected dates -->
-                            <input type="hidden" name="selected_dates" id="selectedDatesInput">
-                        </div>
-                    </div>
-                    
-                    <!-- Time Slots Section - Right Side -->
-                    <div class="time-slots-container">
-                        <div class="time-slots">
-                            <!-- Morning Slots -->
-                            <div class="time-slot">
-                                <label><i class='bx bx-time'></i>Morning Slot (7:00 AM - 9:00 AM)</label>
-                                <div class="slot-limit">
-                                    <label class="small-label">Slot Limit:</label>
-                                    <input type="number" name="time_slots[morning_slot_1]" min="1" max="10" value="3" class="limit-input">
-                                    <input type="hidden" name="time_ranges[morning_slot_1]" value="07:00 AM - 09:00 AM">
-                                </div>
-                            </div>
-                            
-                            <div class="time-slot">
-                                <label><i class='bx bx-time'></i>Morning Slot (9:00 AM - 11:00 AM)</label>
-                                <div class="slot-limit">
-                                    <label class="small-label">Slot Limit:</label>
-                                    <input type="number" name="time_slots[morning_slot_2]" min="1" max="10" value="3" class="limit-input">
-                                    <input type="hidden" name="time_ranges[morning_slot_2]" value="09:00 AM - 11:00 AM">
-                                </div>
-                            </div>
-                            
-                            <!-- Afternoon Slots -->
-                            <div class="time-slot">
-                                <label><i class='bx bx-time'></i>Afternoon Slot (11:00 AM - 1:00 PM)</label>
-                                <div class="slot-limit">
-                                    <label class="small-label">Slot Limit:</label>
-                                    <input type="number" name="time_slots[afternoon_slot_1]" min="1" max="10" value="3" class="limit-input">
-                                    <input type="hidden" name="time_ranges[afternoon_slot_1]" value="11:00 AM - 01:00 PM">
-                                </div>
-                            </div>
-                            
-                            <div class="time-slot">
-                                <label><i class='bx bx-time'></i>Afternoon Slot (1:00 PM - 3:00 PM)</label>
-                                <div class="slot-limit">
-                                    <label class="small-label">Slot Limit:</label>
-                                    <input type="number" name="time_slots[afternoon_slot_2]" min="1" max="10" value="3" class="limit-input">
-                                    <input type="hidden" name="time_ranges[afternoon_slot_2]" value="01:00 PM - 03:00 PM">
-                                </div>
-                            </div>
-                            
-                            <!-- Evening Slot -->
-                            <div class="time-slot">
-                                <label><i class='bx bx-time'></i>Evening Slot (3:00 PM - 5:00 PM)</label>
-                                <div class="slot-limit">
-                                    <label class="small-label">Slot Limit:</label>
-                                    <input type="number" name="time_slots[evening_slot]" min="1" max="10" value="3" class="limit-input">
-                                    <input type="hidden" name="time_ranges[evening_slot]" value="03:00 PM - 05:00 PM">
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="form-actions">
-                            <button type="submit" class="save-btn">
-                                <i class='bx bx-save'></i>
-                                Save Time Slots
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </form>
-        </div>
-        <!-- End Time Slot Management Section -->
+        </form><!-- End dashboard form -->
 
         <!-- Add JavaScript functions for report modal and PDF download -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -3672,22 +3545,6 @@ function updateReportStatus(status) {
         }
     });
 }
-</script>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize the time slot calendar
-    if (typeof initTimeSlotCalendar === 'function') {
-        initTimeSlotCalendar();
-    }
-    
-    // Also initialize the other calendar if needed
-    if (typeof initializeCalendar === 'function') {
-        initializeCalendar();
-    }
-    
-    console.log('Calendar initialization attempted');
-});
 </script>
 
 <!-- Report Submission Form -->
