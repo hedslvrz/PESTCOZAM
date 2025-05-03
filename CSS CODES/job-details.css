@@ -127,18 +127,19 @@
 /* Method section and chemical section adjustments */
 .method-section,
 .chemicals-section {
-    padding: 6px 8px; /* Minimal padding */
-    margin: 0;
-    width: 100%;
+    padding: 10px; /* Reduced from 16px */
+    border-radius: 8px;
 }
 
-.method-section h4,
-.chemicals-section h4 {
-    font-size: 14px; /* Smaller font */
-    margin-top: 0;
-    margin-bottom: 6px; /* Less margin after header */
-    color: #344767;
-    font-weight: 600;
+/* Ensure consistent treatment type header typography */
+.treatment-type-header h4 {
+    color: #144578;
+    margin: 0;
+    font-size: 17px !important;
+    font-weight: 600 !important;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 /* Make treatment options more compact */
@@ -262,7 +263,6 @@ select.form-input {
 
 .method-section,
 .chemicals-section {
-    background: #f8f9fa;
     padding: 10px; /* Reduced from 16px */
     border-radius: 8px;
 }
@@ -355,6 +355,12 @@ select.form-input {
 .add-method-btn:hover,
 .add-chemical-btn:hover {
     background: #e6f3ff;
+}
+
+/* Add Custom Chemical Button Container */
+.add-chemical-btn-container {
+    margin-top: 15px;
+    text-align: center;
 }
 
 /* Additional Info Grid */
@@ -860,8 +866,9 @@ select.form-input {
 }
 
 .treatment-type-header {
-    background-color: #eef2f7;
-    padding: 14px 18px;
+    margin-bottom: 0 !important;
+    background-color: #eef2f7 !important;
+    padding: 14px 18px !important;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -877,8 +884,8 @@ select.form-input {
 .treatment-type-header h4 {
     color: #144578;
     margin: 0;
-    font-size: 17px;
-    font-weight: 600;
+    font-size: 17px !important;
+    font-weight: 600 !important;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -893,14 +900,15 @@ select.form-input {
     border-radius: 3px;
 }
 
+/* Ensure dropdown functionality for treatment types and devices */
 .treatment-type-content {
-    display: none;
-    padding: 0;
+    display: none !important;
+    padding: 15px;
     background-color: #fcfcfd;
 }
 
 .treatment-type.active .treatment-type-content {
-    display: block;
+    display: block !important; /* Force display when active */
 }
 
 .treatment-method {
@@ -917,6 +925,7 @@ select.form-input {
 }
 
 .treatment-method-header {
+    margin-bottom: 0 !important;
     background-color: #f6f9fc;
     padding: 12px 18px;
     cursor: pointer;
@@ -951,7 +960,7 @@ select.form-input {
 }
 
 .treatment-method-content {
-    display: none;
+    display: none !important;
     padding: 15px;
     background-color: #fff;
 }
@@ -966,7 +975,7 @@ select.form-input {
 }
 
 .treatment-method.active .treatment-method-content {
-    display: block;
+    display: block !important; /* Force display when active */
 }
 
 .toggle-icon {
@@ -1232,4 +1241,149 @@ select.form-input {
     border-left: 3px solid #144578;
     border-radius: 4px;
     line-height: 1.5;
+}
+
+/* Devices Section Styling */
+.devices-section {
+    margin-bottom: 15px;
+}
+
+.devices-section .treatment-type {
+    margin-bottom: 18px;
+    border: 1px solid #dde1e7;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    transition: all 0.3s ease;
+}
+
+.devices-section .treatment-type:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.devices-section .treatment-type-header {
+    background-color: #eef2f7;
+    padding: 14px 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid #dde1e7;
+}
+
+.devices-section .treatment-type-header:hover {
+    background-color: #e3ecf7;
+}
+
+.devices-section .treatment-type-header h4 {
+    color: #144578;
+    margin: 0;
+    font-size: 17px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.devices-section .treatment-type-header h4::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 18px;
+    background: #144578;
+    border-radius: 3px;
+}
+
+.devices-section .treatment-type-content {
+    display: none;
+    padding: 15px;
+    background-color: #fcfcfd;
+}
+
+.devices-section .treatment-type.active .treatment-type-content {
+    display: block;
+}
+
+.devices-section .chemical-items {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+.devices-section .chemical-item {
+    background: white;
+    padding: 10px 14px;
+    border-radius: 6px;
+    border: 1px solid #e0e7ef;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.2s ease;
+}
+
+.devices-section .chemical-item:hover {
+    background-color: #f9fbfe;
+    border-color: #c4d5e9;
+}
+
+.devices-section .chemical-item label {
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+    margin-right: 10px;
+    cursor: pointer;
+    color: #455766;
+    font-size: 14px;
+}
+
+.devices-section .chemical-item input[type="checkbox"] {
+    margin-right: 10px;
+    width: 16px;
+    height: 16px;
+    accent-color: #3498db;
+    cursor: pointer;
+}
+
+/* Fix dropdown functionality for all treatment types and devices */
+.treatment-type-content {
+    display: none !important;
+    padding: 15px;
+    background-color: #fcfcfd;
+}
+
+.treatment-type.active .treatment-type-content {
+    display: block !important;
+}
+
+.treatment-method-content {
+    display: none !important;
+    padding: 15px;
+    background-color: #fff;
+}
+
+.treatment-method.active .treatment-method-content {
+    display: block !important;
+}
+
+/* Special treatment for devices section */
+.devices-section {
+    margin-bottom: 15px;
+}
+
+.devices-section .treatment-type-header {
+    position: relative;
+    z-index: 1; /* Ensure it's above content */
+}
+
+.devices-section .treatment-type-content {
+    position: relative;
+    z-index: 0; /* Ensure it's below header */
+}
+
+/* Hover state for clickable headers */
+.treatment-type-header:hover,
+.treatment-method-header:hover {
+    background-color: #e3ecf7;
+    cursor: pointer;
 }

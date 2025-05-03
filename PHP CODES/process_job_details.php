@@ -3,8 +3,9 @@ session_start();
 require_once '../database.php';
 require_once 'mailer.php';
 
-// Set content type to JSON
+// Set content type to JSON and disable output buffering
 header('Content-Type: application/json');
+ob_start();
 
 // Check if user is authorized
 if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'], ['admin', 'supervisor'])) {
@@ -32,12 +33,41 @@ try {
     $db = $database->getConnection();
     $db->beginTransaction();
 
-    // Store treatment details
+    // Get basic form data
     $methods = $_POST['method'] ?? [];
-    $methods = is_array($methods) ? $methods : [];
+    $chemicals = $_POST['chemicals'] ?? [];
+    $devices = $_POST['devices'] ?? [];
     
-    $chemicals = json_decode($_POST['chemicals'] ?? '[]', true);
-    $chemical_qty = json_decode($_POST['chemical_qty'] ?? '[]', true);
+    // Create arrays to store the quantities
+    $chemical_qty = [];
+    $device_qty = [];
+    
+    // Process chemical quantities - collect them directly from form data
+    foreach ($chemicals as $chemical) {
+        $qty = isset($_POST['chemical_qty'][$chemical]) ? (int)$_POST['chemical_qty'][$chemical] : 0;
+        $chemical_qty[] = $qty;
+    }
+    
+    // Process device quantities - simplified and direct approach
+    if (!empty($devices) && isset($_POST['device_qty']) && is_array($_POST['device_qty'])) {
+        foreach ($devices as $device) {
+            // Try to get the quantity directly from the POST array
+            $qty = 0;
+            if (isset($_POST['device_qty'][$device])) {
+                $qty = (int)$_POST['device_qty'][$device];
+            }
+            
+            // Add the quantity to our ordered array
+            $device_qty[] = $qty;
+        }
+    }
+
+    // Encode data as JSON for storage
+    $methodsJson = !empty($methods) ? json_encode($methods) : null;
+    $chemicalsJson = !empty($chemicals) ? json_encode($chemicals) : null;
+    $quantitiesJson = !empty($chemical_qty) ? json_encode($chemical_qty) : null;
+    $devicesJson = !empty($devices) ? json_encode($devices) : null;
+    $deviceQuantitiesJson = !empty($device_qty) ? json_encode($device_qty) : null;
     
     // Process other form data
     $pct = $_POST['pct'] ?? '';
@@ -69,12 +99,14 @@ try {
         $updateStmt = $db->prepare("UPDATE appointments SET technician_id = ?, status = 'Confirmed' WHERE id = ?");
         $updateStmt->execute([$technicianIds[0], $appointmentId]);
     }
-    
+
     // Save treatment details to appointment
     $updateStmt = $db->prepare("UPDATE appointments SET 
         treatment_methods = ?, 
         chemicals = ?, 
         chemical_quantities = ?,
+        devices = ?, 
+        device_quantities = ?, 
         pct = ?,
         device_installation = ?,
         chemical_consumables = ?,
@@ -84,22 +116,22 @@ try {
         updated_at = CURRENT_TIMESTAMP
         WHERE id = ?");
         
-    $methodsJson = json_encode($methods);
-    $chemicalsJson = json_encode($chemicals);
-    $quantitiesJson = json_encode($chemical_qty);
-    
-    $updateStmt->execute([
+    $params = [
         $methodsJson,
         $chemicalsJson,
         $quantitiesJson,
-        $pct,
-        $deviceInstallation,
-        $chemicalConsumables,
-        $visitFrequency,
-        $timeIn,
-        $timeOut,
+        $devicesJson,
+        $deviceQuantitiesJson,
+        $_POST['pct'] ?? null,
+        $_POST['device_installation'] ?? null,
+        $_POST['chemical_consumables'] ?? null,
+        $_POST['visit_frequency'] ?? null,
+        $_POST['time_in'] ?? null,
+        $_POST['time_out'] ?? null,
         $appointmentId
-    ]);
+    ];
+    
+    $updateStmt->execute($params);
     
     // Commit transaction
     $db->commit();
@@ -231,14 +263,11 @@ try {
             
             // Send the email
             $emailResult = sendEmail($appointment['customer_email'], $emailSubject, $emailBody);
-            
-            // Log email status
-            if (!$emailResult['success']) {
-                error_log("Failed to send technician assignment email: " . $emailResult['message']);
-            }
         }
     }
     
+    // Clear output buffer and send JSON response
+    ob_end_clean();
     echo json_encode([
         'success' => true, 
         'message' => !empty($technicianIds) ? 
@@ -250,13 +279,13 @@ try {
     if ($db->inTransaction()) {
         $db->rollBack();
     }
-    error_log("Database error in process_job_details.php: " . $e->getMessage());
+    ob_end_clean();
     echo json_encode(['success' => false, 'message' => 'Database error occurred: ' . $e->getMessage()]);
 } catch (Exception $e) {
     if ($db->inTransaction()) {
         $db->rollBack();
     }
-    error_log("General error in process_job_details.php: " . $e->getMessage());
+    ob_end_clean();
     echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
 }
 ?>
