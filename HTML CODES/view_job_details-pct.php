@@ -182,6 +182,20 @@ try {
                                 <p><?php echo htmlspecialchars($appointment['service_name'] ?? 'N/A'); ?></p>
                             </div>
                             <div class="info-group">
+                                <label>Appointment Type</label>
+                                <p>
+                                    <?php 
+                                    if (isset($appointment['service_name']) && $appointment['service_name'] == 'Ocular Inspection' || 
+                                        isset($appointment['service_id']) && $appointment['service_id'] == 17 ||
+                                        isset($appointment['service_type']) && strtolower($appointment['service_type']) == 'ocular inspection') {
+                                        echo 'Ocular Inspection';
+                                    } else {
+                                        echo 'Treatment';
+                                    } 
+                                    ?>
+                                </p>
+                            </div>
+                            <div class="info-group">
                                 <label>Appointment Date</label>
                                 <p><?php echo date('F d, Y', strtotime($appointment['appointment_date'])); ?></p>
                             </div>
@@ -195,40 +209,6 @@ try {
                                     <?php echo htmlspecialchars($appointment['status']); ?>
                                 </span>
                             </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Time Slot Section - Middle -->
-            <div class="detail-section time-section">
-                <div class="section-header">
-                    <h3><i class='bx bx-time'></i> Time Information</h3>
-                </div>
-                <div class="section-content time-content">
-                    <div class="time-display-container">
-                        <div class="time-field">
-                            <label>Time In</label>
-                            <p><?php echo !empty($appointment['time_in']) ? date('h:i A', strtotime($appointment['time_in'])) : 'Not recorded'; ?></p>
-                        </div>
-                        <div class="time-field">
-                            <label>Time Out</label>
-                            <p><?php echo !empty($appointment['time_out']) ? date('h:i A', strtotime($appointment['time_out'])) : 'Not recorded'; ?></p>
-                        </div>
-                        <div class="time-field">
-                            <label>Duration</label>
-                            <p>
-                                <?php 
-                                if(!empty($appointment['time_in']) && !empty($appointment['time_out'])) {
-                                    $startTime = new DateTime($appointment['time_in']);
-                                    $endTime = new DateTime($appointment['time_out']);
-                                    $diff = $startTime->diff($endTime);
-                                    echo $diff->format('%h hour(s) %i minute(s)');
-                                } else {
-                                    echo 'Not available';
-                                }
-                                ?>
-                            </p>
                         </div>
                     </div>
                 </div>
