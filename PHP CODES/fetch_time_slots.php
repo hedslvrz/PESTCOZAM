@@ -111,6 +111,9 @@ try {
             $slotLimit = $slotData['slot_limit'] ?? $defaultTimeSlots[$slotName]['slot_limit'];
             $slotData['available_slots'] = max(0, $slotLimit - $appointmentCount);
             $slotData['is_available'] = $slotData['available_slots'] > 0;
+            
+            // Make sure slot_limit is explicitly included in the response
+            $slotData['slot_limit'] = $slotLimit;
         } else {
             // Fallback if time parsing fails
             $slotData['available_slots'] = $slotData['slot_limit'] ?? $defaultTimeSlots[$slotName]['slot_limit'];
