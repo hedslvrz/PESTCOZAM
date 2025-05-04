@@ -95,20 +95,11 @@ try {
         ];
     }
     
-    // Generate recurrence dates based on the plan
+    // Generate recurrence dates based on the actual visit dates instead of calculating them
     $recurrenceDates = [];
-    $startDate = new DateTime($visits[0]['visit_date'] ?? $plan['created_at']);
-    $interval = match ($plan['plan_type']) {
-        'weekly' => new DateInterval('P7D'),
-        'monthly' => new DateInterval('P1M'),
-        'quarterly' => new DateInterval('P3M'),
-        'yearly' => new DateInterval('P1Y'),
-        default => null
-    };
-    if ($interval) {
-        $period = new DatePeriod($startDate, $interval, $plan['contract_duration']);
-        foreach ($period as $date) {
-            $recurrenceDates[] = $date->format('M d, Y');
+    foreach($visits as $visit) {
+        if (isset($visit['visit_date'])) {
+            $recurrenceDates[] = date('M d, Y', strtotime($visit['visit_date']));
         }
     }
 
