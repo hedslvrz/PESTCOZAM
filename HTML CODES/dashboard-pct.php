@@ -1359,6 +1359,8 @@ try {
                                             <div class="preview-visits-container" id="preview-container" style="display:none;">
                                                 <h4>Visit Schedule Preview</h4>
                                                 <div id="visits-preview" class="visits-preview-list"></div>
+                                                <!-- Add hidden input to store all generated visit dates -->
+                                                <input type="hidden" name="visit_dates" id="visit-dates-json">
                                             </div>
                                         </div>
                                     </div>
@@ -1989,6 +1991,9 @@ try {
                         visitItem.innerHTML = `<strong>Visit ${index + 1}:</strong> ${formattedDate} at ${formatTimeDisplay(visit.time)}`;
                         visitsPreview.appendChild(visitItem);
                     });
+                    
+                    // Store all visit dates in the hidden input as JSON
+                    document.getElementById('visit-dates-json').value = JSON.stringify(visits);
                 }
                 
                 previewContainer.style.display = 'block';
