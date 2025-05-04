@@ -55,7 +55,19 @@ try {
     
     $stmt->execute([$appointmentId]);
     $appointment = $stmt->fetch(PDO::FETCH_ASSOC);
-    
+
+    // Fetch latest follow-up status for this appointment
+    $followupStmt = $db->prepare("SELECT status FROM followup_visits WHERE appointment_id = ? ORDER BY id DESC LIMIT 1");
+    $followupStmt->execute([$appointmentId]);
+    $followupStatusRow = $followupStmt->fetch(PDO::FETCH_ASSOC);
+    $followupStatus = $followupStatusRow['status'] ?? null;
+
+    // Determine which status to display
+    $displayStatus = strtolower(trim($followupStatus ?? $appointment['status']));
+    if ($displayStatus === 'unknown' && !empty($followupStatus)) {
+        $displayStatus = strtolower(trim($followupStatus));
+    }
+
     // Fetch all technicians assigned to this appointment from appointment_technicians table
     $techStmt = $db->prepare("SELECT technician_id FROM appointment_technicians WHERE appointment_id = ?");
     $techStmt->execute([$appointmentId]);
@@ -352,8 +364,8 @@ try {
                             </div>
                             <div class="info-group">
                                 <label>Status</label>
-                                <span class="status <?php echo strtolower($appointment['status']); ?>">
-                                    <?php echo htmlspecialchars($appointment['status']); ?>
+                                <span class="status <?php echo $displayStatus; ?>">
+                                    <?php echo ucfirst($displayStatus); ?>
                                 </span>
                             </div>
                         </div>
