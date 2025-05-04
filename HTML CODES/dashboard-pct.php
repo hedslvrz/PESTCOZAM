@@ -1299,7 +1299,6 @@ try {
                                             <label>Plan Type:</label>
                                             <select id="rec-plan-type" name="plan_type" required onchange="updateFrequencyOptions()">
                                                 <option value="">Select Plan Type</option>
-                                                <option value="weekly">Weekly Visit</option>
                                                 <option value="monthly">Monthly Visit</option>
                                                 <option value="quarterly">Quarterly Visit</option>
                                                 <option value="yearly">Yearly Visit</option>
@@ -1428,7 +1427,7 @@ try {
                                                 JOIN services s ON a.service_id = s.service_id
                                                 LEFT JOIN appointment_technicians att ON a.id = att.appointment_id
                                                 WHERE (fp.created_by = :user_id OR a.technician_id = :tech_id OR att.technician_id = :tech_id2)
-                                                AND fp.plan_type IN ('weekly', 'monthly', 'quarterly', 'yearly')
+                                                AND fp.plan_type IN ('monthly', 'quarterly', 'yearly')
                                                 GROUP BY fp.id
                                                 ORDER BY fp.created_at DESC";
                                                 
@@ -1914,12 +1913,6 @@ try {
                 if (planType) {
                     // Add appropriate options based on plan type
                     switch (planType) {
-                        case 'weekly':
-                            addFrequencyOptions(frequencySelect, [
-                                { value: 1, text: 'Once a week' },
-                                { value: 2, text: 'Twice a week' }
-                            ]);
-                            break;
                         case 'monthly':
                             addFrequencyOptions(frequencySelect, [
                                 { value: 1, text: 'Once a month' },
@@ -2011,12 +2004,6 @@ try {
                 if (planType === 'monthly' && durationUnit === 'months') {
                     // Frequency is visits per month
                     totalVisits = duration * frequency;
-                } else if (planType === 'weekly' && durationUnit === 'weeks') {
-                    // Frequency is visits per week
-                    totalVisits = duration * frequency;
-                } else if (planType === 'daily' && durationUnit === 'days') {
-                    // Frequency is visits per day
-                    totalVisits = duration * frequency;
                 } else if (planType === 'quarterly' && durationUnit === 'months') {
                     // Frequency is visits per quarter (3 months)
                     totalVisits = Math.floor(duration / 3) * frequency;
@@ -2026,8 +2013,6 @@ try {
                 } else {
                     // Handle mixed units by converting to days
                     const periodLengthInDays = {
-                        'daily': 1,
-                        'weekly': 7,
                         'monthly': 30,
                         'quarterly': 90,
                         'yearly': 365
@@ -2110,40 +2095,6 @@ try {
                             time: time
                         });
                     }
-                } else if (planType === 'weekly') {
-                    // For weekly plans, distribute visits evenly across the week
-                    // First visit is start date
-                    visits.push({
-                        date: startDateObj.toISOString().split('T')[0],
-                        time: time
-                    });
-                    
-                    let currentDay = startDateObj.getDay();
-                    let dayIncrement = Math.floor(7 / frequency);
-                    let currentDate = new Date(startDateObj);
-                    
-                    // Calculate subsequent visits
-                    for (let i = 1; i < totalVisits; i++) {
-                        if (i % frequency === 0) {
-                            // Move to beginning of next week (Monday)
-                            currentDate = new Date(currentDate);
-                            currentDate.setDate(currentDate.getDate() + (8 - currentDate.getDay()));
-                        } else {
-                            // Move forward by the day increment within the week
-                            currentDate = new Date(currentDate);
-                            currentDate.setDate(currentDate.getDate() + dayIncrement);
-                        }
-                        
-                        // Skip Sundays
-                        if (currentDate.getDay() === 0) {
-                            currentDate.setDate(currentDate.getDate() + 1);
-                        }
-                        
-                        visits.push({
-                            date: currentDate.toISOString().split('T')[0],
-                            time: time
-                        });
-                    }
                 } else {
                     // For other plan types, distribute visits evenly
                     let visitDates = [];
@@ -2153,8 +2104,7 @@ try {
                     
                     // Calculate period length and interval between visits
                     let periodLength;
-                    if (planType === 'daily') periodLength = 1;
-                    else if (planType === 'quarterly') periodLength = 90;
+                    if (planType === 'quarterly') periodLength = 90;
                     else if (planType === 'yearly') periodLength = 365;
                     
                     const intervalDays = Math.floor(periodLength / frequency);
