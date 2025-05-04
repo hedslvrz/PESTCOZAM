@@ -585,20 +585,12 @@ $calendarData = AppointmentSession::getData('calendar', []);
         return;
       }
 
+      let serviceIdValue;
       <?php if ($service_id != 17): ?>
-      const serviceId = document.querySelector('input[name="service_id"]:checked');
-      if (!serviceId) {
-        Swal.fire({
-          icon: 'warning',
-          title: 'Service Type Missing',
-          text: 'Please select a service type',
-        });
-        return;
-      }
-      const serviceIdValue = serviceId.value;
+            serviceIdValue = document.querySelector('input[name="service_id"]:checked').value;
       <?php else: ?>
-      // Ocular Inspection only
-      const serviceIdValue = '17';
+            // Ocular Inspection only
+            serviceIdValue = '17';
       <?php endif; ?>
 
       // Disable the button to prevent multiple submissions

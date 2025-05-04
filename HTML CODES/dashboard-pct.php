@@ -998,6 +998,7 @@ try {
                                 <!-- FOLLOW-UP FORM -->
                                 <form action="../HTML CODES/schedule_followup-pct.php" method="POST" class="settings-card no-hover">
                                     <input type="hidden" name="is_recurrence" value="0">
+                                    <input type="hidden" name="plan_type" value="one-time">
                                     <div class="card-header">
                                         <i class='bx bx-calendar-edit'></i>
                                         <h4>Follow-up Appointment</h4>
@@ -1424,7 +1425,8 @@ try {
                                                 JOIN users u ON a.user_id = u.id
                                                 JOIN services s ON a.service_id = s.service_id
                                                 LEFT JOIN appointment_technicians att ON a.id = att.appointment_id
-                                                WHERE fp.created_by = :user_id OR a.technician_id = :tech_id OR att.technician_id = :tech_id2
+                                                WHERE (fp.created_by = :user_id OR a.technician_id = :tech_id OR att.technician_id = :tech_id2)
+                                                AND fp.plan_type IN ('weekly', 'monthly', 'quarterly', 'yearly')
                                                 GROUP BY fp.id
                                                 ORDER BY fp.created_at DESC";
                                                 
