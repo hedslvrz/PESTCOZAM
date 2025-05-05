@@ -1200,8 +1200,6 @@ try {
                                             <div class="duration-input-group">
                                                 <input type="number" id="rec-contract-duration" name="contract_duration" min="1" value="6" required>
                                                 <select id="rec-duration-unit" name="duration_unit">
-                                                    <option value="days">Days</option>
-                                                    <option value="weeks">Weeks</option>
                                                     <option value="months" selected>Months</option>
                                                     <option value="years">Years</option>
                                                 </select>
