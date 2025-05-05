@@ -184,6 +184,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize profile editor functionality
     initProfileEditor();
+
+    const modal = document.getElementById('reportModal');
+    if (modal) {
+        modal.style.display = 'none'; // Ensure it is hidden by default
+    }
 });
 
 // Technician Assignment Functions
@@ -199,7 +204,7 @@ function closeAssignModal() {
 }
 
 // Handle technician assignment form submission
-document.getElementById('assignTechForm').addEventListener('submit', handleAssignSubmit);
+document.getElementById('assignTechForm')?.addEventListener('submit', handleAssignSubmit);
 
 function handleAssignSubmit(e) {
     e.preventDefault();
@@ -349,48 +354,29 @@ function showSection(sectionId) {
     // Hide all sections
     document.querySelectorAll('.section').forEach(section => {
         section.classList.remove('active');
-        section.style.display = 'none'; // Ensure all sections are hidden
-        section.style.pointerEvents = 'none'; // Disable interaction with hidden sections
-        section.style.opacity = '0'; // Make hidden sections invisible
-        section.style.zIndex = '-1'; // Push hidden sections behind the active section
     });
-
-    // Hide all modals when changing sections
-    hideAllModals();
 
     // Show the selected section
     const targetSection = document.getElementById(sectionId);
     if (targetSection) {
-        targetSection.style.display = 'block'; // Display the selected section
-        targetSection.style.pointerEvents = 'auto'; // Enable interaction with the active section
-        targetSection.style.opacity = '1'; // Make the active section visible
-        targetSection.style.zIndex = '10'; // Bring the active section to the front
-        targetSection.classList.add('active'); // Mark it as active
-
-        // Update the active menu item in the sidebar
-        document.querySelectorAll('#sidebar .side-menu.top li').forEach(item => {
-            item.classList.remove('active');
-        });
-        const menuItem = document.querySelector(`#sidebar .side-menu.top li a[href="#${sectionId}"]`).parentElement;
-        if (menuItem) {
-            menuItem.classList.add('active');
-        }
-
-        // Scroll back to top when changing sections
-        window.scrollTo(0, 0);
-        
-        // Initialize section-specific components
-        if (sectionId === 'reports') {
-            console.log('Initializing reports section');
-            initializeReportCards();
-            initializeReportFilters();
-        }
+        targetSection.classList.add('active');
     }
+
+    // Update the URL hash
+    window.location.hash = sectionId;
 }
 
 // Ensure the dashboard section is shown by default on page load
-document.addEventListener('DOMContentLoaded', function() {
-    showSection('content'); // Default section to show
+document.addEventListener('DOMContentLoaded', function () {
+    const defaultSection = 'content'; // Default to the dashboard section
+    const hash = window.location.hash.substring(1); // Get the hash without the `#`
+
+    // Show the section based on the hash or default to the dashboard
+    if (hash) {
+        showSection(hash);
+    } else {
+        showSection(defaultSection);
+    }
 });
 
 // Updated Report Modal Functions
@@ -465,45 +451,15 @@ function closeReportModal() {
 }
 
 function initializeReportCards() {
-    console.log('Initializing report cards...');
-    
-    // First, ensure the report modal is hidden
-    const reportModal = document.getElementById('reportModal');
-    if (reportModal) {
-        reportModal.style.display = 'none';
-        reportModal.classList.remove('show');
-    }
-    
     const reportCards = document.querySelectorAll('.report-card');
-
-    if (reportCards.length > 0) {
-        console.log(`Found ${reportCards.length} report cards.`);
-        reportCards.forEach(card => {
-            // Remove any existing click listeners to avoid duplicates
-            const newCard = card.cloneNode(true);
-            card.parentNode.replaceChild(newCard, card);
-
-            newCard.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                const reportId = this.getAttribute('data-report-id');
-                console.log('Report card clicked, ID:', reportId);
+    reportCards.forEach(card => {
+        card.addEventListener('click', function () {
+            const reportId = this.getAttribute('data-report-id');
+            if (reportId) {
                 openReportModal(reportId);
-            });
+            }
         });
-        
-        // Initialize the filter functionality
-        initializeReportFilters();
-        
-        // Run an initial filter to match any URL parameters or show all by default
-        if (typeof filterReports === 'function') {
-            filterReports();
-        } else if (window.filterReports) {
-            window.filterReports();
-        }
-    } else {
-        console.log('No report cards found.');
-    }
+    });
 }
 
 // Create a dedicated function for report search without affecting other code
@@ -780,7 +736,7 @@ function showSection(sectionId) {
         document.querySelectorAll('#sidebar .side-menu.top li').forEach(item => {
             item.classList.remove('active');
         });
-        const menuItem = document.querySelector(`#sidebar .side-menu.top li a[href="#${sectionId}"]`).parentElement;
+        const menuItem = document.querySelector(`#sidebar .side-menu.top li a[href="#${sectionId}"]`)?.parentElement;
         if (menuItem) {
             menuItem.classList.add('active');
         }
@@ -1971,6 +1927,413 @@ function submitReport(reportData) {
         alert('An error occurred while submitting the report.');
     });
 }
+
+// Fetch recurrence plans and populate the table
+function fetchRecurrencePlans() {
+    const tableBody = document.getElementById('recurrencePlanTableBody');
+    const searchInput = document.getElementById('recurrencePlanSearch');
+    
+    if (!tableBody) {
+        console.error('Element with ID "recurrencePlanTableBody" not found.');
+        return;
+    }
+
+    // Show loading spinner
+    tableBody.innerHTML = '<tr><td colspan="6" class="loading-cell"><div class="spinner"></div></td></tr>';
+    
+    fetch('../PHP CODES/get_recurrence_plan.php?action=fetch')
+        .then(response => response.json())
+        .then(data => {
+            tableBody.innerHTML = '';
+            
+            if (data.length === 0) {
+                showNoPlansMessage(tableBody);
+                return;
+            }
+            
+            // Store the data for filtering
+            window.recurrencePlansData = data;
+            
+            // Display all plans initially
+            renderRecurrencePlans(data, tableBody);
+            
+            // Initialize search functionality if not already done
+            if (searchInput && !searchInput.hasSearchInitialized) {
+                searchInput.addEventListener('input', function() {
+                    const searchTerm = this.value.toLowerCase();
+                    filterRecurrencePlans(searchTerm);
+                });
+                searchInput.hasSearchInitialized = true;
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching recurrence plans:', error);
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="error-cell">
+                        <i class='bx bx-error-circle'></i>
+                        <p>Failed to load recurrence plans. Please try again later.</p>
+                    </td>
+                </tr>
+            `;
+        });
+}
+
+function filterRecurrencePlans(searchTerm) {
+    const tableBody = document.getElementById('recurrencePlanTableBody');
+    
+    if (!window.recurrencePlansData) {
+        return;
+    }
+    
+    if (!searchTerm) {
+        renderRecurrencePlans(window.recurrencePlansData, tableBody);
+        return;
+    }
+    
+    const filteredData = window.recurrencePlansData.filter(plan => {
+        return (
+            (plan.customer_name && plan.customer_name.toLowerCase().includes(searchTerm)) ||
+            (plan.technician_name && plan.technician_name.toLowerCase().includes(searchTerm)) ||
+            (plan.plan_type && plan.plan_type.toLowerCase().includes(searchTerm))
+        );
+    });
+    
+    if (filteredData.length === 0) {
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="6" class="no-results-cell">
+                    <i class='bx bx-search-alt'></i>
+                    <p>No recurrence plans match your search</p>
+                </td>
+            </tr>
+        `;
+    } else {
+        renderRecurrencePlans(filteredData, tableBody);
+    }
+}
+
+function renderRecurrencePlans(plans, tableBody) {
+    tableBody.innerHTML = '';
+    
+    plans.forEach(plan => {
+        const row = document.createElement('tr');
+        
+        // Format next schedule date if exists
+        const nextSchedule = plan.next_schedule 
+            ? new Date(plan.next_schedule).toLocaleDateString() 
+            : 'No upcoming schedule';
+        
+        // Count number of schedules
+        const scheduleCount = plan.schedule_count || '0';
+        
+        row.innerHTML = `
+            <td>${plan.customer_name || 'Unknown Customer'}</td>
+            <td>${plan.technician_name || '<span class="no-tech">No technician assigned</span>'}</td>
+            <td>${plan.plan_type || 'Standard Plan'}</td>
+            <td>${scheduleCount} visits</td>
+            <td>${nextSchedule}</td>
+            <td>
+                <div class="action-buttons">
+                    <button class="btn-edit" onclick="openRecurrencePlanModal(${plan.plan_id})">
+                        <i class='bx bx-edit'></i> Edit
+                    </button>
+                    <button class="btn-view" onclick="viewRecurrencePlanDetails(${plan.plan_id})">
+                        <i class='bx bx-detail'></i> View Details
+                    </button>
+                </div>
+            </td>
+        `;
+        
+        tableBody.appendChild(row);
+    });
+}
+
+function showNoPlansMessage(tableBody) {
+    tableBody.innerHTML = `
+        <tr>
+            <td colspan="6" class="no-plans-cell">
+                <div class="no-plans">
+                    <i class='bx bx-calendar-x'></i>
+                    <p>No Recurrence Plans Found</p>
+                    <span>There are currently no active recurrence plans in the system.</span>
+                </div>
+            </td>
+        </tr>
+    `;
+}
+
+function openRecurrencePlanModal(planId) {
+    // Show loading state in the modal
+    document.getElementById('recurrencePlanModalContent').innerHTML = '<div class="modal-loading"><div class="spinner"></div></div>';
+    document.getElementById('recurrencePlanModal').style.display = 'block';
+    
+    fetch(`../PHP CODES/get_recurrence_plan.php?action=details&plan_id=${planId}`)
+        .then(response => response.json())
+        .then(data => {
+            // Populate modal content with plan details
+            populateRecurrencePlanModal(data, planId);
+        })
+        .catch(error => {
+            console.error('Error fetching plan details:', error);
+            document.getElementById('recurrencePlanModalContent').innerHTML = `
+                <div class="modal-error">
+                    <i class='bx bx-error-circle'></i>
+                    <p>Failed to load plan details. Please try again.</p>
+                    <button onclick="closeRecurrencePlanModal()" class="btn-secondary">Close</button>
+                </div>
+            `;
+        });
+}
+
+function populateRecurrencePlanModal(data, planId) {
+    const modalContent = document.getElementById('recurrencePlanModalContent');
+    
+    // Reset and build modal content
+    modalContent.innerHTML = `
+        <div class="modal-header">
+            <h3>Edit Recurrence Plan</h3>
+            <span class="close-modal" onclick="closeRecurrencePlanModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form id="updateRecurrencePlanForm">
+                <input type="hidden" id="recurrencePlanId" name="plan_id" value="${planId}">
+                
+                <div class="form-group">
+                    <label for="technicianSelect">Assigned Technician:</label>
+                    <select id="technicianSelect" name="technician_id" class="form-control">
+                        <option value="">Select Technician</option>
+                        ${data.technicians.map(tech => `
+                            <option value="${tech.id}" ${tech.id == data.assigned_technician_id ? 'selected' : ''}>
+                                ${tech.name}
+                            </option>
+                        `).join('')}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="planType">Plan Type:</label>
+                    <select id="planType" name="plan_type" class="form-control">
+                        <option value="Weekly" ${data.plan_type === 'Weekly' ? 'selected' : ''}>Weekly</option>
+                        <option value="Bi-Weekly" ${data.plan_type === 'Bi-Weekly' ? 'selected' : ''}>Bi-Weekly</option>
+                        <option value="Monthly" ${data.plan_type === 'Monthly' ? 'selected' : ''}>Monthly</option>
+                        <option value="Quarterly" ${data.plan_type === 'Quarterly' ? 'selected' : ''}>Quarterly</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="visitFrequency">Number of Visits:</label>
+                    <input type="number" id="visitFrequency" name="visit_frequency" class="form-control" 
+                           value="${data.visit_frequency || '1'}" min="1" max="52">
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeRecurrencePlanModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    `;
+    
+    // Attach submit handler to the new form
+    document.getElementById('updateRecurrencePlanForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        updateRecurrencePlan(new FormData(this));
+    });
+}
+
+function updateRecurrencePlan(formData) {
+    // Show loading state
+    const submitButton = document.querySelector('#updateRecurrencePlanForm button[type="submit"]');
+    const originalText = submitButton.textContent;
+    submitButton.textContent = 'Saving...';
+    submitButton.disabled = true;
+    
+    fetch('../PHP CODES/update_recurrence_plan.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Success notification
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: 'Recurrence plan updated successfully!',
+                timer: 2000,
+                showConfirmButton: false
+            }).then(() => {
+                closeRecurrencePlanModal();
+                fetchRecurrencePlans(); // Refresh the table
+            });
+        } else {
+            // Error notification
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: data.message || 'Failed to update recurrence plan'
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error updating recurrence plan:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'An unexpected error occurred. Please try again.'
+        });
+    })
+    .finally(() => {
+        // Reset button state
+        submitButton.textContent = originalText;
+        submitButton.disabled = false;
+    });
+}
+
+function closeRecurrencePlanModal() {
+    document.getElementById('recurrencePlanModal').style.display = 'none';
+}
+
+function viewRecurrencePlanDetails(planId) {
+    if (!planId) {
+        console.error('Plan ID is null or undefined.');
+        return;
+    }
+
+    // Redirect to the view-recurrence-plan.php page with the plan ID as a query parameter
+    window.location.href = `view-recurrence-plan.php?plan_id=${planId}`;
+}
+
+function closeRecurrencePlanDetailsModal() {
+    document.getElementById('recurrencePlanDetailsModal').style.display = 'none';
+}
+
+function formatTime(timeString) {
+    if (!timeString) return 'Not set';
+    
+    try {
+        const [hours, minutes] = timeString.split(':');
+        const hour = parseInt(hours);
+        const period = hour >= 12 ? 'PM' : 'AM';
+        const formattedHour = hour % 12 || 12;
+        
+        return `${formattedHour}:${minutes} ${period}`;
+    } catch (e) {
+        return timeString;
+    }
+}
+
+// Initialize recurrence plan functionality
+document.addEventListener('DOMContentLoaded', function () {
+    const tableBody = document.getElementById('recurrencePlanTableBody');
+    if (!tableBody) {
+        console.error('Element with ID "recurrencePlanTableBody" not found. Ensure the table exists in the DOM.');
+        return;
+    }
+
+    fetch('../PHP CODES/get_recurrence_plan.php?action=fetch')
+        .then(response => response.json())
+        .then(data => {
+            tableBody.innerHTML = '';
+            
+            if (data.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="8" class="no-results-cell">No recurrence plans found</td></tr>';
+                return;
+            }
+
+            data.forEach(plan => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>
+                        <div class="customer-name">${plan.customer_name}</div>
+                        <div class="customer-details">ID: #${plan.plan_id}</div>
+                    </td>
+                    <td>
+                        <div>${plan.customer_email || 'N/A'}</div>
+                        <div>${plan.customer_phone || 'N/A'}</div>
+                    </td>
+                    <td>${plan.service_name || 'N/A'}</td>
+                    <td>${plan.location || 'N/A'}</td>
+                    <td>${plan.technician_name || 'Unassigned'}</td>
+                    <td>${plan.visit_frequency || '0'} visits (${plan.plan_type || 'N/A'})</td>
+                    <td>${plan.next_schedule ? new Date(plan.next_schedule).toLocaleDateString() : 'N/A'}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="view-recurrence-plan.php?plan_id=${plan.plan_id}" class="btn-view">
+                                <i class='bx bx-calendar'></i> View Details
+                            </a>
+                        </div>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching recurrence plans:', error);
+            tableBody.innerHTML = '<tr><td colspan="8" class="error-cell">Error loading recurrence plans</td></tr>';
+        });
+});
+
+function viewRecurrencePlanDetails(planId) {
+    if (!planId) {
+        console.error('Plan ID is null or undefined.');
+        return;
+    }
+
+    // Redirect to the view-recurrence-plan.php page with the plan ID as a query parameter
+    window.location.href = `view-recurrence-plan.php?plan_id=${planId}`;
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    const tableBody = document.getElementById('recurrencePlanTableBody');
+    if (!tableBody) {
+        console.error('Element with ID "recurrencePlanTableBody" not found. Ensure the table exists in the DOM.');
+        return;
+    }
+
+    fetch('../PHP CODES/get_recurrence_plan.php?action=fetch')
+        .then(response => response.json())
+        .then(data => {
+            tableBody.innerHTML = '';
+            
+            if (data.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="8" class="no-results-cell">No recurrence plans found</td></tr>';
+                return;
+            }
+
+            data.forEach(plan => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>
+                        <div class="customer-name">${plan.customer_name}</div>
+                        <div class="customer-details">ID: #${plan.plan_id}</div>
+                    </td>
+                    <td>
+                        <div>${plan.customer_email || 'N/A'}</div>
+                        <div>${plan.customer_phone || 'N/A'}</div>
+                    </td>
+                    <td>${plan.service_name || 'N/A'}</td>
+                    <td>${plan.location || 'N/A'}</td>
+                    <td>${plan.technician_name || 'Unassigned'}</td>
+                    <td>${plan.visit_frequency || '0'} visits (${plan.plan_type || 'N/A'})</td>
+                    <td>${plan.next_schedule ? new Date(plan.next_schedule).toLocaleDateString() : 'N/A'}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="view-recurrence-plan.php?plan_id=${plan.id}" class="btn-view">
+                                <i class='bx bx-calendar'></i> View Details
+                            </a>
+                        </div>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching recurrence plans:', error);
+            tableBody.innerHTML = '<tr><td colspan="8" class="error-cell">Error loading recurrence plans</td></tr>';
+        });
+});
 
 
 

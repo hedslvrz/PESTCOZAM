@@ -236,6 +236,12 @@ try {
                 </a>
             </li>
             <li>
+                <a href="#recurrence-plan" onclick="showSection('recurrence-plan')">
+                    <i class='bx bx-repeat'></i>
+                    <span class="text">Manage Recurrence Plan</span>
+                </a>
+            </li>
+            <li>
                 <a href="#employees" onclick="showSection('employees')">
                     <i class='bx bx-child'></i>
                     <span class="text">Manage Employees</span>
@@ -710,6 +716,79 @@ try {
                     </button>
                 </div>
             </form>
+        </div>
+
+        <!-- Recurrence Plan View Modal -->
+        <div id="recurrencePlanDetailsModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Recurrence Plan Details</h2>
+                    <span class="close" onclick="closeRecurrencePlanDetailsModal()">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <div class="customer-info">
+                        <h3>Customer Information</h3>
+                        <p><strong>Name:</strong> <span id="customerName"></span></p>
+                        <p><strong>Email:</strong> <span id="customerEmail"></span></p>
+                        <p><strong>Phone:</strong> <span id="customerPhone"></span></p>
+                    </div>
+                    <div class="service-info">
+                        <h3>Service Details</h3>
+                        <p><strong>Service:</strong> <span id="serviceName"></span></p>
+                        <p><strong>Location:</strong> <span id="location"></span></p>
+                    </div>
+                    <div class="visit-schedule">
+                        <h3>Visit Schedule</h3>
+                        <table class="schedule-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Status</th>
+                                    <th>Assigned Technician</th>
+                                </tr>
+                            </thead>
+                            <tbody id="visitSchedule">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recurrence Plan Edit Modal -->
+        <div id="recurrencePlanModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Update Recurrence Plan</h2>
+                    <span class="close" onclick="closeRecurrencePlanModal()">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <form id="updateRecurrencePlanForm">
+                        <input type="hidden" id="recurrencePlanId" name="plan_id">
+                        
+                        <div class="form-section">
+                            <h3>Bulk Assignment</h3>
+                            <div class="form-group">
+                                <label for="bulkTechnicianSelect">Assign Technician to All Visits</label>
+                                <select id="bulkTechnicianSelect" name="bulk_technician_id">
+                                    <option value="">Select Technician</option>
+                                </select>
+                            </div>
+                            <button type="button" class="btn-secondary" onclick="assignBulkTechnician()">
+                                Update All Visits
+                            </button>
+                        </div>
+
+                        <div class="form-section individual-visits">
+                            <h3>Individual Visit Assignments</h3>
+                            <div id="individualAssignments">
+                                <!-- Individual visit assignments will be populated here -->
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
 
         <!-- Add JavaScript functions for report modal and PDF download -->
@@ -1388,6 +1467,103 @@ try {
     </main>
 </section>
 
+<!-- RECURRENCE SECTION-->
+<section id="recurrence-plan" class="section">
+    <main>
+        <div class="head-title">
+            <div class="left">
+                <h1>Manage Recurrence Plan</h1>
+                <ul class="breadcrumb">
+                    <li><a href="#">Dashboard</a></li>
+                    <li><i class='bx bx-chevron-right'></i></li>
+                    <li><a class="active" href="#">Recurrence Plan</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="recurrence-plan-container">
+            <div class="table-data">
+                <div class="table-header">
+                    <div class="search-box">
+                        <i class='bx bx-search'></i>
+                        <input type="text" id="searchRecurrencePlans" placeholder="Search recurrence plans...">
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="recurrence-plan-table">
+                        <thead>
+                            <tr>
+                                <th>Customer Name</th>
+                                <th>Contact Info</th>
+                                <th>Service</th>
+                                <th>Location</th>
+                                <th>Current Technician</th>
+                                <th>Visit Frequency</th>
+                                <th>Next Schedule</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recurrencePlanTableBody">
+                            <!-- Data will be loaded dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script>
+document.addEventListener('DOMContentLoaded', function () {
+    const tableBody = document.getElementById('recurrencePlanTableBody');
+    if (!tableBody) {
+        console.error('Element with ID "recurrencePlanTableBody" not found. Ensure the table exists in the DOM.');
+        return;
+    }
+
+    fetch('../PHP CODES/get_recurrence_plan.php?action=fetch')
+        .then(response => response.json())
+        .then(data => {
+            tableBody.innerHTML = '';
+            
+            if (data.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="8" class="no-results-cell">No recurrence plans found</td></tr>';
+                return;
+            }
+
+            data.forEach(plan => {
+                const nextDate = plan.next_schedule ? new Date(plan.next_schedule).toLocaleDateString() : 'N/A';
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>
+                        <div class="customer-name">${plan.customer_name}</div>
+                        <div class="customer-details">ID: #${plan.plan_id}</div>
+                    </td>
+                    <td>
+                        <div>${plan.customer_email || 'N/A'}</div>
+                        <div>${plan.customer_phone || 'N/A'}</div>
+                    </td>
+                    <td>${plan.service_name || 'N/A'}</td>
+                    <td>${plan.location || 'N/A'}</td>
+                    <td>${plan.technician_name || 'Unassigned'}</td>
+                    <td>${plan.visit_frequency || '0'} visits (${plan.plan_type || 'N/A'})</td>
+                    <td>${nextDate}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="view-recurrence-plan.php?id=${plan.id}" class="btn-view">
+                                <i class='bx bx-calendar'></i> View Details
+                            </a>
+                        </div>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching recurrence plans:', error);
+            tableBody.innerHTML = '<tr><td colspan="8" class="error-cell">Error loading recurrence plans</td></tr>';
+        });
+});
+</script>
+</section>
+
 <!-- Review Modal -->
 <div class="modal" id="reviewModal">
     <div class="review-modal-content">
@@ -1559,7 +1735,7 @@ try {
     </main>
 
     <!-- Report Details Modal -->
-    <div id="reportModal" class="modal">
+    <div id="reportModal" class="modal" style="display: none;">
         <div class="report-modal-content">
             <span class="close-modal" onclick="closeReportModal()">&times;</span>
             <form id="reportForm" class="report-form">
@@ -2689,7 +2865,7 @@ try {
 
             <!-- Personal Information -->
             <div class="info-section">
-                <div class="section-header">
+                <div class="section-header"></div>
                     <h3>Personal Information</h3>
                 </div>
                 <div class="info-content">
@@ -2815,7 +2991,6 @@ try {
                     // Close modal when clicking outside the modal content
                     window.addEventListener('click', function(event) {
                         if (event.target === profileModal) {
-                            closeProfileModal();
                         }
                     });
                     
