@@ -1,71 +1,47 @@
 <?php
-session_start();
+header('Content-Type: application/json');
+require_once '../database.php';
 
-// Check if user is logged in
-if (!isset($_SESSION['user_id'])) {
-    header('Content-Type: application/json');
-    echo json_encode(['success' => false, 'message' => 'User not logged in']);
-    exit();
-}
-
-// Check if appointment ID is provided
 if (!isset($_GET['id'])) {
-    header('Content-Type: application/json');
-    echo json_encode(['success' => false, 'message' => 'Appointment ID not provided']);
-    exit();
+    echo json_encode(['success' => false, 'message' => 'No appointment ID provided.']);
+    exit;
 }
 
-// Database connection
-$conn = new mysqli("localhost", "u302876046_root", "Pestcozam@2025", "u302876046_pestcozam");
+$appointment_id = intval($_GET['id']);
+$database = new Database();
+$db = $database->getConnection();
 
-if ($conn->connect_error) {
-    header('Content-Type: application/json');
-    echo json_encode(['success' => false, 'message' => 'Database connection failed']);
-    exit();
-}
-
-$appointment_id = $_GET['id'];
-$user_id = $_SESSION['user_id'];
-
-// Get appointment details and user details
-$sql = "SELECT a.*, s.service_name,
+$stmt = $db->prepare("
+    SELECT 
+        a.*, 
+        s.service_name,
+        COALESCE(fv.status, a.status) AS display_status,
+        fv.status AS followup_status,
+        fv.id AS followup_visit_id,
         CASE 
             WHEN a.is_for_self = 1 THEN CONCAT(u.firstname, ' ', u.lastname)
             ELSE CONCAT(a.firstname, ' ', a.lastname)
         END as client_name,
         CONCAT(t.firstname, ' ', t.lastname) as technician_name,
-        a.is_for_self,
-        s.service_id,
         u.email as user_email,
         u.mobile_number as user_mobile
-        FROM appointments a 
-        JOIN services s ON a.service_id = s.service_id 
-        JOIN users u ON a.user_id = u.id
-        LEFT JOIN users t ON a.technician_id = t.id
-        WHERE a.id = ? AND a.user_id = ?";
-        
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("ii", $appointment_id, $user_id);
+    FROM appointments a
+    JOIN services s ON a.service_id = s.service_id
+    JOIN users u ON a.user_id = u.id
+    LEFT JOIN users t ON a.technician_id = t.id
+    LEFT JOIN followup_visits fv ON fv.appointment_id = a.id
+    WHERE a.id = ?
+    LIMIT 1
+");
+$stmt->bindParam(1, $appointment_id);
 $stmt->execute();
-$result = $stmt->get_result();
+$appointment = $stmt->fetch(PDO::FETCH_ASSOC);
 
-if ($result->num_rows === 0) {
-    header('Content-Type: application/json');
-    echo json_encode(['success' => false, 'message' => 'Appointment not found']);
-    exit();
+if ($appointment) {
+    // Format date/time for JS modal
+    $appointment['appointment_date'] = date('F d, Y', strtotime($appointment['appointment_date']));
+    $appointment['appointment_time'] = date('h:i A', strtotime($appointment['appointment_time']));
+    echo json_encode(['success' => true, 'appointment' => $appointment]);
+} else {
+    echo json_encode(['success' => false, 'message' => 'Appointment not found.']);
 }
-
-$appointment = $result->fetch_assoc();
-
-// Format dates and times for display
-$appointment['appointment_date'] = date('F d, Y', strtotime($appointment['appointment_date']));
-$appointment['appointment_time'] = date('h:i A', strtotime($appointment['appointment_time']));
-
-// Return the appointment data as JSON
-header('Content-Type: application/json');
-echo json_encode([
-    'success' => true, 
-    'appointment' => $appointment
-]);
-exit();
-?>
