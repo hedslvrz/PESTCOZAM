@@ -19,6 +19,47 @@ try {
     $stmt->execute([$_SESSION['user_id']]);
     $technician = $stmt->fetch(PDO::FETCH_ASSOC);
 
+    // Fetch treatment methods, devices, and chemicals for dropdowns
+    try {
+        // Treatment Methods
+        $stmt = $db->prepare("SELECT id, name FROM treatment_methods ORDER BY name");
+        $stmt->execute();
+        $treatmentMethods = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if (!$treatmentMethods) {
+            $treatmentMethods = [];
+        }
+
+        // Devices
+        $stmt = $db->prepare("SELECT id, name FROM devices ORDER BY name");
+        $stmt->execute();
+        $devices = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        // ensure it’s always an array
+        if (!is_array($devices)) {
+            $devices = [];
+        }
+
+        // Chemicals
+        $stmt = $db->prepare("SELECT id, name FROM treatment_chemicals ORDER BY name");
+        $stmt->execute();
+        $chemicals = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        // ensure it’s always an array
+        if (!is_array($chemicals)) {
+            $chemicals = [];
+        }
+
+        // Debug info
+        error_log("Found " . count($treatmentMethods) . " treatment methods");
+        error_log("Found " . count($devices) . " devices");
+        error_log("Found " . count($chemicals) . " chemicals");
+        
+    } catch(PDOException $e) {
+        error_log("Error fetching dropdown data: " . $e->getMessage());
+        $treatmentMethods = [];
+        $devices = [];
+        $chemicals = [];
+    }
+
+
     // Updated appointments query with optimized join to followup_visits
     $appointmentsQuery = "SELECT 
         a.id as appointment_id,
@@ -417,7 +458,6 @@ try {
         </main>
     </section>
 
-    <!-- Submit Service Report Section -->
     <section id="submit-report" class="section">
         <main>
             <div class="form-container">
@@ -561,66 +601,95 @@ try {
                                 </div>
                             </div>
                             
-                            <div class="report-grid-2col">
-                                <!-- Treatment Method Dropdown -->
-                                <div class="field-group dropdown-down">
-                                    <label for="treatment_method">Treatment Method</label>
-                                    <div style="display: flex; gap: 8px;">
-                                        <div class="custom-dropdown" style="flex:1;">
-                                            <select name="treatment_method" id="treatment_method" required>
-                                                <option value="">Select Treatment Method</option>
-                                                <?php foreach ($treatmentMethods as $method): ?>
-                                                    <option value="<?php echo htmlspecialchars($method['name']); ?>">
-                                                        <?php echo htmlspecialchars($method['name']); ?>
-                                                    </option>
-                                                <?php endforeach; ?>
-                                            </select>
-                                        </div>
-                                        <input type="text" name="treatment_method_qty" id="treatment_method_qty" placeholder="Qty" style="width:60px;" autocomplete="off">
-                                    </div>
+                            <div class="form-section">
+                                <div class="section-header">
+                                    <i class='bx bx-list-plus'></i>
+                                    <h3>Treatment Details</h3>
                                 </div>
-                                <!-- Device Installation Dropdown -->
-                                <div class="field-group dropdown-down">
-                                    <label for="device_installation">Select device</label>
-                                    <div style="display: flex; gap: 8px;">
-                                        <div class="custom-dropdown" style="flex:1;">
-                                            <select name="device_installation" id="device_installation">
-                                                <option value="">Select Device</option>
-                                                <?php if (!empty($devices)): ?>
-                                                    <?php foreach ($devices as $device): ?>
-                                                        <option value="<?php echo htmlspecialchars($device['name']); ?>">
-                                                            <?php echo htmlspecialchars($device['name']); ?>
-                                                        </option>
-                                                    <?php endforeach; ?>
-                                                <?php else: ?>
-                                                    <option value="">No devices available</option>
-                                                <?php endif; ?>
-                                            </select>
+                                
+                                <!-- Selected Items Container -->
+                                <div class="selected-items-container">
+                                    <!-- Treatment Methods Box -->
+                                    <div class="items-box">
+                                        <div class="box-header">
+                                            <i class='bx bx-spray-can'></i>
+                                            <h4>Treatment Methods</h4>
                                         </div>
-                                        <input type="text" name="device_installation_qty" id="device_installation_qty" placeholder="Qty" style="width:60px;" autocomplete="off">
-                                    </div>
-                                </div>
-                                <!-- Consumed Chemicals Dropdown -->
-                                <div class="field-group dropdown-down">
-                                    <label for="consumed_chemicals">Consumed Chemicals</label>
-                                    <div style="display: flex; gap: 8px;">
-                                        <div class="custom-dropdown" style="flex:1;">
-                                            <select name="consumed_chemicals" id="consumed_chemicals">
-                                                <option value="">Select Chemical/Product</option>
-                                                <?php if (!empty($chemicals)): ?>
-                                                    <?php foreach ($chemicals as $chemical): ?>
-                                                        <option value="<?php echo htmlspecialchars($chemical['name']); ?>">
-                                                            <?php echo htmlspecialchars($chemical['name']); ?>
-                                                        </option>
-                                                    <?php endforeach; ?>
-                                                <?php else: ?>
-                                                    <option value="">No chemicals available</option>
-                                                <?php endif; ?>
-                                            </select>
+                                        <div class="selected-items" id="selected-treatments">
+                                            <?php foreach ($treatmentMethods as $method): ?>
+                                                <div class="item-row">
+                                                    <div class="item-name"><?php echo htmlspecialchars($method['name']); ?></div>
+                                                    <div class="item-value">
+                                                        <input type="number" 
+                                                               name="treatment_qty[<?php echo $method['id']; ?>]" 
+                                                               class="quantity-input" 
+                                                               value="0" 
+                                                               min="0">
+                                                    </div>
+                                                </div>
+                                            <?php endforeach; ?>
                                         </div>
-                                        <input type="text" name="consumed_chemicals_qty" id="consumed_chemicals_qty" placeholder="Qty" style="width:60px;" autocomplete="off">
                                     </div>
-                                </div>
+
+                                <!-- Devices Box -->
+<div class="items-box">
+  <div class="box-header">
+    <i class='bx bx-devices'></i>
+    <h4>Devices</h4>
+  </div>
+  <div class="selected-items" id="selected-devices">
+    <?php if (is_array($devices) && count($devices)): ?>
+      <?php foreach ($devices as $device): ?>
+        <div class="item-row">
+          <div class="item-name"><?= htmlspecialchars($device['name']) ?></div>
+          <div class="item-value">
+            <input type="number"
+                   name="device_qty[<?= $device['id'] ?>]"
+                   class="quantity-input"
+                   value="0"
+                   min="0">
+          </div>
+        </div>
+      <?php endforeach; ?>
+    <?php else: ?>
+      <p class="no-items">No devices available.</p>
+    <?php endif; ?>
+  </div>
+</div>
+
+                             <!-- Chemicals Box -->
+<div class="items-box">
+  <div class="box-header">
+    <i class='bx bx-vial'></i>
+    <h4>Chemicals</h4>
+  </div>
+  <div class="selected-items" id="selected-chemicals">
+    <?php if (is_array($chemicals) && count($chemicals)): ?>
+      <?php foreach ($chemicals as $chemical): ?>
+        <div class="item-row">
+          <div class="item-name"><?= htmlspecialchars($chemical['name']) ?></div>
+          <div class="item-value">
+            <input type="number"
+                   name="chemical_qty[<?= $chemical['id'] ?>]"
+                   class="quantity-input"
+                   value="0"
+                   min="0">
+          </div>
+        </div>
+      <?php endforeach; ?>
+    <?php else: ?>
+      <p class="no-items">No chemicals available.</p>
+    <?php endif; ?>
+  </div>
+</div>
+
+                                <!-- Hidden inputs to store the selected items -->
+                                <input type="hidden" name="treatment_methods" id="treatment-methods-input">
+                                <input type="hidden" name="treatment_method_quantities" id="treatment-quantities-input">
+                                <input type="hidden" name="devices" id="devices-input">
+                                <input type="hidden" name="device_quantities" id="device-quantities-input">
+                                <input type="hidden" name="chemicals" id="chemicals-input">
+                                <input type="hidden" name="chemical_quantities" id="chemical-quantities-input">
                             </div>
                         </div>
 

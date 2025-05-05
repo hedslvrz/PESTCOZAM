@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 03, 2025 at 12:38 PM
+-- Generation Time: May 05, 2025 at 05:26 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -53,7 +53,9 @@ CREATE TABLE `appointments` (
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `treatment_methods` text DEFAULT NULL,
   `chemicals` text DEFAULT NULL,
+  `devices` text DEFAULT NULL,
   `chemical_quantities` text DEFAULT NULL,
+  `device_quantities` text DEFAULT NULL,
   `pct` varchar(255) DEFAULT NULL,
   `device_installation` text DEFAULT NULL,
   `chemical_consumables` text DEFAULT NULL,
@@ -70,8 +72,14 @@ CREATE TABLE `appointments` (
 -- Dumping data for table `appointments`
 --
 
-INSERT INTO `appointments` (`id`, `user_id`, `service_id`, `service_type`, `region`, `province`, `city`, `barangay`, `street_address`, `landmark`, `appointment_date`, `appointment_time`, `status`, `created_at`, `is_for_self`, `firstname`, `lastname`, `email`, `mobile_number`, `technician_id`, `latitude`, `longitude`, `updated_at`, `treatment_methods`, `chemicals`, `chemical_quantities`, `pct`, `device_installation`, `chemical_consumables`, `visit_frequency`, `time_in`, `time_out`, `property_type`, `establishment_name`, `property_area`, `pest_concern`) VALUES
-(95, 52, 3, 'Ocular Inspection', 'Region IX', 'Zamboanga Del Sur', 'Zamboanga City', 'Canelar', 'Wee Siu Tuy Road', NULL, '2025-04-30', '09:00:00', 'Completed', '2025-04-30 13:02:02', 1, NULL, NULL, NULL, NULL, 50, 6.913780, 122.074293, '2025-05-02 01:17:56', '[]', '[]', '[]', '', '', '', 'weekly', '00:00:00', '00:00:00', 'residential', '', 200.00, '');
+INSERT INTO `appointments` (`id`, `user_id`, `service_id`, `service_type`, `region`, `province`, `city`, `barangay`, `street_address`, `landmark`, `appointment_date`, `appointment_time`, `status`, `created_at`, `is_for_self`, `firstname`, `lastname`, `email`, `mobile_number`, `technician_id`, `latitude`, `longitude`, `updated_at`, `treatment_methods`, `chemicals`, `devices`, `chemical_quantities`, `device_quantities`, `pct`, `device_installation`, `chemical_consumables`, `visit_frequency`, `time_in`, `time_out`, `property_type`, `establishment_name`, `property_area`, `pest_concern`) VALUES
+(95, 52, 3, 'Ocular Inspection', 'Region IX', 'Zamboanga Del Sur', 'Zamboanga City', 'Canelar', 'Wee Siu Tuy Road', NULL, '2025-04-30', '09:00:00', 'Completed', '2025-04-30 13:02:02', 1, NULL, NULL, NULL, NULL, 50, 6.913780, 122.074293, '2025-05-03 13:25:04', '[\"spraying\"]', '[\"Cymflex\",\"Revancha 10 EC\",\"Termidor\"]', '[\"rodent_bait_station\"]', '[2,3,2]', '[3]', '', '', '', 'weekly', '00:00:00', '00:00:00', 'residential', '', 200.00, ''),
+(98, 51, 17, 'Ocular Inspection', 'Region IX', 'Zamboanga Del Sur', 'Zamboanga City', 'Ayala', 'Zamboanga City-Labuan-Limpapa Road', 'Budgetwise', '2025-05-14', '09:00:00', 'Completed', '2025-05-04 06:18:30', 1, NULL, NULL, NULL, NULL, NULL, 6.958470, 121.950313, '2025-05-04 06:27:58', '[\"baiting\"]', '[\"Permitor\"]', '[\"insect_light_trap\"]', '[3]', '[2]', NULL, NULL, NULL, NULL, NULL, NULL, 'residential', '', 10.00, 'fwe'),
+(99, 51, 8, 'Treatment', 'Region IX', 'Zamboanga Del Sur', 'Zamboanga City', 'Calarian', 'Ruby Drive', 'Ebenezer School', '2025-05-07', '13:00:00', 'Pending', '2025-05-04 06:20:14', 1, NULL, NULL, NULL, NULL, NULL, 6.928395, 122.025657, '2025-05-04 06:20:14', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'residential', '', 40.00, 'dfwedw'),
+(113, 51, 17, 'Ocular Inspection', 'Region IX', 'Zamboanga Del Sur', 'Zamboanga City', 'Ayala', 'Zamboanga City-Labuan-Limpapa Road', 'Budgetwise', '2025-05-05', '11:00:00', '', '2025-05-05 02:37:30', 1, NULL, NULL, NULL, NULL, 55, 6.958470, 121.950313, '2025-05-05 02:37:30', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'residential', NULL, NULL, 'Follow-up Visit'),
+(114, 51, 17, 'Ocular Inspection', 'Region IX', 'Zamboanga Del Sur', 'Zamboanga City', 'Ayala', 'Zamboanga City-Labuan-Limpapa Road', 'Budgetwise', '2025-06-04', '11:00:00', '', '2025-05-05 02:37:30', 1, NULL, NULL, NULL, NULL, 55, 6.958470, 121.950313, '2025-05-05 03:23:04', '[\"fogging\"]', '[\"Cyflux\",\"Termidor\"]', '[\"rodent_bait_station\"]', '[3,2]', '[4]', NULL, NULL, NULL, NULL, NULL, NULL, 'residential', NULL, NULL, 'Follow-up Visit'),
+(115, 51, 17, 'Ocular Inspection', 'Region IX', 'Zamboanga Del Sur', 'Zamboanga City', 'Ayala', 'Zamboanga City-Labuan-Limpapa Road', 'Budgetwise', '2025-07-04', '11:00:00', '', '2025-05-05 02:37:30', 1, NULL, NULL, NULL, NULL, 55, 6.958470, 121.950313, '2025-05-05 03:22:07', '[\"spraying\"]', '[\"Permitor\",\"Revancha 10 EC\"]', '[\"cage_trap\"]', '[12,5]', '[3]', NULL, NULL, NULL, NULL, NULL, NULL, 'residential', NULL, NULL, 'Follow-up Visit'),
+(116, 51, 17, 'Ocular Inspection', 'Region IX', 'Zamboanga Del Sur', 'Zamboanga City', 'Ayala', 'Zamboanga City-Labuan-Limpapa Road', 'Budgetwise', '2025-05-13', '13:00:00', '', '2025-05-05 02:38:02', 1, NULL, NULL, NULL, NULL, 55, 6.958470, 121.950313, '2025-05-05 02:38:02', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'residential', NULL, NULL, 'Follow-up Visit');
 
 -- --------------------------------------------------------
 
@@ -91,7 +99,10 @@ CREATE TABLE `appointment_technicians` (
 --
 
 INSERT INTO `appointment_technicians` (`id`, `appointment_id`, `technician_id`, `created_at`) VALUES
-(21, 95, 50, '2025-05-01 15:05:30');
+(26, 95, 50, '2025-05-03 13:25:04'),
+(30, 98, 55, '2025-05-04 06:22:38'),
+(31, 115, 55, '2025-05-05 03:22:07'),
+(32, 114, 55, '2025-05-05 03:23:04');
 
 -- --------------------------------------------------------
 
@@ -136,6 +147,14 @@ CREATE TABLE `followup_plan` (
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `followup_plan`
+--
+
+INSERT INTO `followup_plan` (`id`, `appointment_id`, `plan_type`, `visit_frequency`, `contract_duration`, `duration_unit`, `notes`, `created_by`, `created_at`, `updated_at`) VALUES
+(10, 98, 'monthly', 1, 3, 'months', 'wacawc', 55, '2025-05-05 02:37:30', '2025-05-05 02:37:30'),
+(11, 98, '', 1, 1, 'months', 'adwadwaca', 55, '2025-05-05 02:38:02', '2025-05-05 02:38:02');
+
 -- --------------------------------------------------------
 
 --
@@ -153,17 +172,15 @@ CREATE TABLE `followup_visits` (
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- --------------------------------------------------------
-
 --
--- Table structure for table `method_devices`
+-- Dumping data for table `followup_visits`
 --
 
-CREATE TABLE `method_devices` (
-  `id` int(11) NOT NULL,
-  `method_id` int(11) NOT NULL,
-  `device_id` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+INSERT INTO `followup_visits` (`id`, `followup_plan_id`, `appointment_id`, `visit_date`, `visit_time`, `status`, `created_at`, `updated_at`) VALUES
+(14, 10, 113, '2025-05-05', '11:00:00', 'Scheduled', '2025-05-05 02:37:30', '2025-05-05 02:37:30'),
+(15, 10, 114, '2025-06-04', '11:00:00', 'Scheduled', '2025-05-05 02:37:30', '2025-05-05 02:37:30'),
+(16, 10, 115, '2025-07-04', '11:00:00', 'Scheduled', '2025-05-05 02:37:30', '2025-05-05 02:37:30'),
+(17, 11, 116, '2025-05-13', '13:00:00', 'Scheduled', '2025-05-05 02:38:02', '2025-05-05 02:38:02');
 
 -- --------------------------------------------------------
 
@@ -260,8 +277,7 @@ CREATE TABLE `service_reports` (
 --
 
 INSERT INTO `service_reports` (`report_id`, `technician_id`, `appointment_id`, `date_of_treatment`, `time_in`, `time_out`, `treatment_type`, `treatment_method`, `pest_count`, `device_installation`, `consumed_chemicals`, `frequency_of_visits`, `photos`, `location`, `account_name`, `contact_no`, `status`, `created_at`, `updated_at`) VALUES
-(7, 50, NULL, '2025-04-29', '13:16:00', '15:16:00', 'Mound Demolition', 'kqml a', NULL, 'mklsamql', 'klzmqlq', NULL, NULL, 'Hector Suarez Avenue, Tumaga, Zamboanga City', 'Pestcozam Admin', '09234567431', 'approved', '2025-04-29 05:17:10', '2025-04-29 05:17:48'),
-(8, 50, 95, '2025-05-01', '23:06:00', '01:06:00', 'Termite Control', 'asda', '20', 'sadasd', 'asda', NULL, NULL, 'Wee Siu Tuy Road, Canelar, Zamboanga City', 'Dunn Alvarez', '09759500123', 'rejected', '2025-05-01 15:06:20', '2025-05-02 01:18:05');
+(7, 50, NULL, '2025-04-29', '13:16:00', '15:16:00', 'Mound Demolition', 'kqml a', NULL, 'mklsamql', 'klzmqlq', NULL, NULL, 'Hector Suarez Avenue, Tumaga, Zamboanga City', 'Pestcozam Admin', '09234567431', 'approved', '2025-04-29 05:17:10', '2025-04-29 05:17:48');
 
 -- --------------------------------------------------------
 
@@ -420,10 +436,11 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`id`, `firstname`, `middlename`, `lastname`, `email`, `mobile_number`, `password`, `created_at`, `role`, `status`, `dob`, `employee_no`, `sss_no`, `pagibig_no`, `philhealth_no`, `profile_pic`, `deleted`, `deleted_reason`) VALUES
 (48, 'Pestcozam', '', 'Admin', 'pestcozam2025@gmail.com', '09234567431', '$2y$10$BtHe06BusDhEpoLOk1V/LOAV0IEw/A8oJFuMOr2ect1E6o6a3YVLS', '2025-04-29 02:29:12', 'admin', 'active', NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL),
-(50, 'Hedrian', NULL, 'Alvarez', 'hedrianlvrz13@gmail.com', '09759500123', '$2y$10$2vSdbX.kbClrLtifajS9vOlb3HlBMCzanV8Ksb5JAgIfc.HuMIn8K', '2025-04-29 04:45:18', 'technician', 'active', '2004-04-13', 'EMP-0001', '', '', '', NULL, 0, NULL),
-(51, 'Aldwin', NULL, 'Suarez', 'aldwinsuarez@gmail.com', '09786758943', '$2y$10$gg1ZDPNqQDZ3bXzcI.YMM.DfkEqnviVfXUlV0vJwmCp.dUYUuCZby', '2025-04-29 05:13:19', 'supervisor', 'active', '2004-04-13', 'EMP-0002', '', '', '', NULL, 0, NULL),
+(50, 'Hedrian', '', 'Alvarez', 'hedrianlvrz13@gmail.com', '09759500123', '$2y$10$2vSdbX.kbClrLtifajS9vOlb3HlBMCzanV8Ksb5JAgIfc.HuMIn8K', '2025-04-29 04:45:18', 'supervisor', 'active', '2004-04-13', 'EMP-0001', '', '', '', NULL, 0, NULL),
+(51, 'Aldwin', NULL, 'Suarez', 'aldwinsuarez@gmail.com', '09786758943', '$2y$10$gg1ZDPNqQDZ3bXzcI.YMM.DfkEqnviVfXUlV0vJwmCp.dUYUuCZby', '2025-04-29 05:13:19', 'user', 'active', '2004-04-13', 'EMP-0002', '', '', '', NULL, 0, NULL),
 (52, 'Dunn', 'Pastores', 'Alvarez', 'dunnlvrz13@gmail.com', '09759500123', '$2y$10$ynB4RQ830MyNS2JoqT/c5.RDjPLcMp2dkciJIGtCAgJ5ndP.lfzGa', '2025-04-30 12:59:37', 'user', 'active', NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL),
-(54, 'Hannah', NULL, 'Alvarez', 'hannahlvrz26@gmail.com', '09758751934', '$2y$10$wLlQNjt3VZyV3XiPfTHH3eAzEC3c2D.bgDYsmsjULoTFja0aAS2ce', '2025-05-01 12:49:38', 'supervisor', 'active', '1998-06-26', 'EMP-0004', '', '', '', NULL, 0, 'FUCKER');
+(54, 'Hannah', NULL, 'Alvarez', 'hannahlvrz26@gmail.com', '09758751934', '$2y$10$wLlQNjt3VZyV3XiPfTHH3eAzEC3c2D.bgDYsmsjULoTFja0aAS2ce', '2025-05-01 12:49:38', 'supervisor', 'active', '1998-06-26', 'EMP-0004', '', '', '', NULL, 0, 'FUCKER'),
+(55, 'testing', '', 'testing', 'testing@gmail.com', '09383383893', '$2y$10$mL6ZG1Z0cfQRSGaIb1oLze4I8e4F1dcdGtv0XSEtsFcT72SoLoKca', '2025-05-03 11:39:25', 'technician', 'active', NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL);
 
 --
 -- Indexes for dumped tables
@@ -469,14 +486,6 @@ ALTER TABLE `followup_visits`
   ADD PRIMARY KEY (`id`),
   ADD KEY `followup_plan_id` (`followup_plan_id`),
   ADD KEY `appointment_id` (`appointment_id`);
-
---
--- Indexes for table `method_devices`
---
-ALTER TABLE `method_devices`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `method_device_pair` (`method_id`,`device_id`),
-  ADD KEY `device_id` (`device_id`);
 
 --
 -- Indexes for table `reviews`
@@ -544,13 +553,13 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `appointments`
 --
 ALTER TABLE `appointments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=96;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=117;
 
 --
 -- AUTO_INCREMENT for table `appointment_technicians`
 --
 ALTER TABLE `appointment_technicians`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
 -- AUTO_INCREMENT for table `devices`
@@ -562,19 +571,13 @@ ALTER TABLE `devices`
 -- AUTO_INCREMENT for table `followup_plan`
 --
 ALTER TABLE `followup_plan`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `followup_visits`
 --
 ALTER TABLE `followup_visits`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `method_devices`
---
-ALTER TABLE `method_devices`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT for table `reviews`
@@ -592,7 +595,7 @@ ALTER TABLE `services`
 -- AUTO_INCREMENT for table `service_reports`
 --
 ALTER TABLE `service_reports`
-  MODIFY `report_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `report_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `time_slots`
@@ -622,7 +625,7 @@ ALTER TABLE `treatment_types`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=55;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=56;
 
 --
 -- Constraints for dumped tables
@@ -656,13 +659,6 @@ ALTER TABLE `followup_plan`
 ALTER TABLE `followup_visits`
   ADD CONSTRAINT `followup_visits_ibfk_1` FOREIGN KEY (`followup_plan_id`) REFERENCES `followup_plan` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `followup_visits_ibfk_2` FOREIGN KEY (`appointment_id`) REFERENCES `appointments` (`id`) ON DELETE CASCADE;
-
---
--- Constraints for table `method_devices`
---
-ALTER TABLE `method_devices`
-  ADD CONSTRAINT `method_devices_ibfk_1` FOREIGN KEY (`method_id`) REFERENCES `treatment_methods` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `method_devices_ibfk_2` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `reviews`
