@@ -27,18 +27,26 @@ $profile_pic = isset($user['profile_pic']) && !empty($user['profile_pic'])
 // Store profile pic in session for use across site
 $_SESSION['profile_pic'] = $profile_pic;
 
-// Get user appointments
-$stmt = $db->prepare("SELECT a.*, s.service_name,
+// Get user appointments (include followup_visits for status)
+$stmt = $db->prepare("
+    SELECT 
+        a.*, 
+        s.service_name,
+        COALESCE(fv.status, a.status) AS display_status,
+        fv.status AS followup_status,
+        fv.id AS followup_visit_id,
         CASE 
             WHEN a.is_for_self = 1 THEN CONCAT(u.firstname, ' ', u.lastname)
             ELSE CONCAT(a.firstname, ' ', a.lastname)
         END as client_name
-        FROM appointments a 
-        JOIN services s ON a.service_id = s.service_id 
-        JOIN users u ON a.user_id = u.id
-        WHERE a.user_id = ? 
-        ORDER BY a.appointment_date DESC 
-        LIMIT 10");
+    FROM appointments a
+    JOIN services s ON a.service_id = s.service_id
+    JOIN users u ON a.user_id = u.id
+    LEFT JOIN followup_visits fv ON fv.appointment_id = a.id
+    WHERE a.user_id = ?
+    ORDER BY a.appointment_date DESC 
+    LIMIT 10
+");
 $stmt->bindParam(1, $user_id);
 $stmt->execute();
 $appointments = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -48,21 +56,29 @@ $current_appointment = null;
 if (isset($_SESSION['current_appointment'])) {
     $current_appointment = $_SESSION['current_appointment'];
 } else {
-    // Get user's most recent appointment
-    $stmt = $db->prepare("SELECT a.*, s.service_name,
+    // Get user's most recent appointment (include followup_visits for status)
+    $stmt = $db->prepare("
+        SELECT 
+            a.*, 
+            s.service_name,
+            COALESCE(fv.status, a.status) AS display_status,
+            fv.status AS followup_status,
+            fv.id AS followup_visit_id,
             CASE 
                 WHEN a.is_for_self = 1 THEN CONCAT(u.firstname, ' ', u.lastname)
                 ELSE CONCAT(a.firstname, ' ', a.lastname)
             END as client_name,
             CONCAT(t.firstname, ' ', t.lastname) as technician_name,
             a.is_for_self
-            FROM appointments a 
-            JOIN services s ON a.service_id = s.service_id 
-            JOIN users u ON a.user_id = u.id
-            LEFT JOIN users t ON a.technician_id = t.id
-            WHERE a.user_id = ? 
-            ORDER BY a.appointment_date DESC, a.appointment_time DESC 
-            LIMIT 1");
+        FROM appointments a
+        JOIN services s ON a.service_id = s.service_id
+        JOIN users u ON a.user_id = u.id
+        LEFT JOIN users t ON a.technician_id = t.id
+        LEFT JOIN followup_visits fv ON fv.appointment_id = a.id
+        WHERE a.user_id = ?
+        ORDER BY a.appointment_date DESC, a.appointment_time DESC 
+        LIMIT 1
+    ");
     $stmt->bindParam(1, $user_id);
     $stmt->execute();
     $current_appointment = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -215,11 +231,15 @@ if (isset($_SESSION['current_appointment'])) {
               <tr class="history-row" 
                   data-appointment-id="<?php echo $appointment['id']; ?>" 
                   data-appointment-date="<?php echo $appointment['appointment_date']; ?>"
-                  data-status="<?php echo strtolower($appointment['status']); ?>">
+                  data-status="<?php echo strtolower($appointment['display_status']); ?>">
                 <td><?php echo $appointment['id']; ?></td>
                 <td><?php echo htmlspecialchars($appointment['service_name']); ?></td>
                 <td><?php echo date('m/d/y', strtotime($appointment['appointment_date'])); ?></td>
-                <td><span class="history-badge <?php echo strtolower($appointment['status']); ?>"><?php echo $appointment['status']; ?></span></td>
+                <td>
+                  <span class="history-badge <?php echo strtolower($appointment['display_status']); ?>">
+                    <?php echo $appointment['display_status'] ? $appointment['display_status'] : 'N/A'; ?>
+                  </span>
+                </td>
               </tr>
               <?php endforeach; ?>
             </tbody>
@@ -278,7 +298,9 @@ if (isset($_SESSION['current_appointment'])) {
           <p><strong>Technician:</strong> <span id="modal-technician"><?php echo $current_appointment['technician_name'] ? htmlspecialchars($current_appointment['technician_name']) : 'Not assigned'; ?></span></p>
           <p>
             <strong>Status:</strong> 
-            <span id="modal-status" class="appointment-status <?php echo strtolower($current_appointment['status']); ?>"><?php echo $current_appointment['status']; ?></span>
+            <span id="modal-status" class="appointment-status <?php echo strtolower($current_appointment['display_status']); ?>">
+              <?php echo $current_appointment['display_status'] ? $current_appointment['display_status'] : 'N/A'; ?>
+            </span>
           </p>
         <?php endif; ?>
       </div>
@@ -700,12 +722,12 @@ if (isset($_SESSION['current_appointment'])) {
       
       // Status with proper class
       const statusElement = document.getElementById('modal-status');
-      statusElement.textContent = appointment.status;
-      statusElement.className = 'appointment-status ' + appointment.status.toLowerCase();
+      statusElement.textContent = appointment.display_status;
+      statusElement.className = 'appointment-status ' + appointment.display_status.toLowerCase();
       
       // Show/hide feedback button based on status
       const feedbackContainer = document.getElementById('feedbackButtonContainer');
-      if (appointment.status === 'Completed') {
+      if (appointment.display_status === 'Completed') {
         feedbackContainer.style.display = 'block';
       } else {
         feedbackContainer.style.display = 'none';
@@ -803,7 +825,7 @@ if (isset($_SESSION['current_appointment'])) {
       
       doc.text(`Technician: ${currentAppointment.technician_name || 'Not yet assigned'}`, 10, yPos);
       yPos += 10;
-      doc.text(`Status: ${currentAppointment.status}`, 10, yPos);
+      doc.text(`Status: ${currentAppointment.display_status}`, 10, yPos);
 
       doc.setFontSize(10);
       doc.text("Thank you for choosing PESTCOZAM!", 105, 280, { align: "center" });

@@ -728,6 +728,14 @@ tbody tr:hover {
   border: 1px solid #BBDEFB;
 }
 
+/* Add green for scheduled status */
+.history-badge.scheduled,
+.appointment-status.scheduled {
+  background-color: #E8F5E9;
+  color: #2E7D32;
+  border: 1px solid #C8E6C9;
+}
+
 /* Status Badge Containers */
 td:has(.status-badge) {
   text-align: center;
@@ -1072,6 +1080,14 @@ table td:last-child {
   background-color: #E3F2FD;
   color: #1976D2;
   border: 1px solid #BBDEFB;
+}
+
+/* Add green for scheduled status */
+.history-badge.scheduled,
+.appointment-status.scheduled {
+  background-color: #E8F5E9;
+  color: #2E7D32;
+  border: 1px solid #C8E6C9;
 }
 
 /* Table column alignment */
