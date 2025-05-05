@@ -602,10 +602,6 @@ try {
                                 <div class="info-label">Pest Count</div>
                                 <div class="info-value"><?php echo htmlspecialchars($report['pest_count'] ?: 'Not specified'); ?></div>
                             </div>
-                            <div class="info-item">
-                                <div class="info-label">Recommended Frequency</div>
-                                <div class="info-value"><?php echo htmlspecialchars($report['frequency_of_visits'] ?: 'Not specified'); ?></div>
-                            </div>
                         </div>
                         
                         <div class="treatment-description">

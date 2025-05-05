@@ -474,15 +474,14 @@ try {
                                             data-time-in="<?php echo htmlspecialchars(substr($appointment['appointment_time'], 0, 5)); ?>"
                                             <?php
                                                 // Fetch extra fields for this appointment
-                                                $stmtExtra = $db->prepare("SELECT treatment_methods, device_installation, chemical_consumables, chemical_quantities FROM appointments WHERE id = ?");
+                                                $stmtExtra = $db->prepare("SELECT treatment_methods, device_installation, chemical_consumables FROM appointments WHERE id = ?");
                                                 $stmtExtra->execute([$appointment['appointment_id']]);
                                                 $extra = $stmtExtra->fetch(PDO::FETCH_ASSOC);
                                                 // Prepare JSON for JS
                                                 $treatments = $extra && $extra['treatment_methods'] ? htmlspecialchars($extra['treatment_methods']) : '';
                                                 $devices = $extra && $extra['device_installation'] ? htmlspecialchars($extra['device_installation']) : '';
                                                 $chemicals = $extra && $extra['chemical_consumables'] ? htmlspecialchars($extra['chemical_consumables']) : '';
-                                                $chemQty = $extra && $extra['chemical_quantities'] ? htmlspecialchars($extra['chemical_quantities']) : '';
-                                                echo "data-treatments='$treatments' data-devices='$devices' data-chemicals='$chemicals' data-chemical-qty='$chemQty'";
+                                                echo "data-treatments='$treatments' data-devices='$devices' data-chemicals='$chemicals'";
                                             ?>
                                         >
                                             <?php echo date('M d, Y', strtotime($appointment['appointment_date'])) . ' - ' .
@@ -547,79 +546,23 @@ try {
                                     <label for="pest_count">Pest Count (if applicable)</label>
                                     <input type="text" name="pest_count" id="pest_count" placeholder="e.g., 15 roaches, 3 rats">
                                 </div>
-                                <div class="field-group dropdown-down">
-                                    <label for="plan_type">Plan Type</label>
-                                    <div class="custom-dropdown">
-                                        <select name="plan_type" id="plan_type" required>
-                                            <option value="">Select Plan Type</option>
-                                            <option value="weekly">Weekly Visit</option>
-                                            <option value="monthly">Monthly Visit</option>
-                                            <option value="quarterly">Quarterly Visit</option>
-                                            <option value="yearly">Yearly Visit</option>
-                                        </select>
-                                    </div>
-                                </div>
                             </div>
                             
                             <div class="report-grid-2col">
-                                <!-- Treatment Method Dropdown -->
-                                <div class="field-group dropdown-down">
+                                <!-- Treatment Method Text Input -->
+                                <div class="field-group">
                                     <label for="treatment_method">Treatment Method</label>
-                                    <div style="display: flex; gap: 8px;">
-                                        <div class="custom-dropdown" style="flex:1;">
-                                            <select name="treatment_method" id="treatment_method" required>
-                                                <option value="">Select Treatment Method</option>
-                                                <?php foreach ($treatmentMethods as $method): ?>
-                                                    <option value="<?php echo htmlspecialchars($method['name']); ?>">
-                                                        <?php echo htmlspecialchars($method['name']); ?>
-                                                    </option>
-                                                <?php endforeach; ?>
-                                            </select>
-                                        </div>
-                                        <input type="text" name="treatment_method_qty" id="treatment_method_qty" placeholder="Qty" style="width:60px;" autocomplete="off">
-                                    </div>
+                                    <input type="text" name="treatment_method" id="treatment_method" required placeholder="Enter treatment method">
                                 </div>
-                                <!-- Device Installation Dropdown -->
-                                <div class="field-group dropdown-down">
-                                    <label for="device_installation">Select device</label>
-                                    <div style="display: flex; gap: 8px;">
-                                        <div class="custom-dropdown" style="flex:1;">
-                                            <select name="device_installation" id="device_installation">
-                                                <option value="">Select Device</option>
-                                                <?php if (!empty($devices)): ?>
-                                                    <?php foreach ($devices as $device): ?>
-                                                        <option value="<?php echo htmlspecialchars($device['name']); ?>">
-                                                            <?php echo htmlspecialchars($device['name']); ?>
-                                                        </option>
-                                                    <?php endforeach; ?>
-                                                <?php else: ?>
-                                                    <option value="">No devices available</option>
-                                                <?php endif; ?>
-                                            </select>
-                                        </div>
-                                        <input type="text" name="device_installation_qty" id="device_installation_qty" placeholder="Qty" style="width:60px;" autocomplete="off">
-                                    </div>
+                                <!-- Device Installation Text Input -->
+                                <div class="field-group">
+                                    <label for="device_installation">Device Installation</label>
+                                    <input type="text" name="device_installation" id="device_installation" placeholder="Enter device name">
                                 </div>
-                                <!-- Consumed Chemicals Dropdown -->
-                                <div class="field-group dropdown-down">
+                                <!-- Consumed Chemicals Text Input -->
+                                <div class="field-group">
                                     <label for="consumed_chemicals">Consumed Chemicals</label>
-                                    <div style="display: flex; gap: 8px;">
-                                        <div class="custom-dropdown" style="flex:1;">
-                                            <select name="consumed_chemicals" id="consumed_chemicals">
-                                                <option value="">Select Chemical/Product</option>
-                                                <?php if (!empty($chemicals)): ?>
-                                                    <?php foreach ($chemicals as $chemical): ?>
-                                                        <option value="<?php echo htmlspecialchars($chemical['name']); ?>">
-                                                            <?php echo htmlspecialchars($chemical['name']); ?>
-                                                        </option>
-                                                    <?php endforeach; ?>
-                                                <?php else: ?>
-                                                    <option value="">No chemicals available</option>
-                                                <?php endif; ?>
-                                            </select>
-                                        </div>
-                                        <input type="text" name="consumed_chemicals_qty" id="consumed_chemicals_qty" placeholder="Qty" style="width:60px;" autocomplete="off">
-                                    </div>
+                                    <input type="text" name="consumed_chemicals" id="consumed_chemicals" placeholder="Enter chemical name">
                                 </div>
                             </div>
                         </div>
@@ -714,8 +657,8 @@ try {
                         treatmentTypeSelect.selectedIndex = 0;
                     }
 
-                    // --- Treatment Method, Device, Chemicals autofill with qty ---
-                    // Treatment Method (assume single select, JSON array or string)
+                    // --- Treatment Method, Device, Chemicals autofill without qty ---
+                    // Treatment Method
                     const treatmentMethodData = selectedOption.getAttribute('data-treatments');
                     let method = '';
                     try {
@@ -725,32 +668,7 @@ try {
                     } catch { method = treatmentMethodData; }
                     const methodSelect = document.getElementById('treatment_method');
                     if (methodSelect) {
-                        let found = false;
-                        Array.from(methodSelect.options).forEach(option => {
-                            if (
-                                method &&
-                                option.value.trim().toLowerCase() === method.trim().toLowerCase()
-                            ) {
-                                option.selected = true;
-                                found = true;
-                            } else {
-                                option.selected = false;
-                            }
-                        });
-                        // If not found, select the first option (the "Select..." message)
-                        if (!found) methodSelect.selectedIndex = 0;
-                    }
-                    let methodQty = '';
-                    const chemQtyData = selectedOption.getAttribute('data-chemical-qty');
-                    if (chemQtyData) {
-                        try {
-                            const parsedQty = JSON.parse(chemQtyData);
-                            if (Array.isArray(parsedQty) && parsedQty.length > 0) methodQty = parsedQty[0];
-                            else if (typeof parsedQty === 'string') methodQty = parsedQty;
-                        } catch { methodQty = chemQtyData; }
-                    }
-                    if (document.getElementById('treatment_method_qty')) {
-                        document.getElementById('treatment_method_qty').value = methodQty;
+                        methodSelect.value = method || '';
                     }
 
                     // Device Installation (assume string or JSON array)
@@ -763,30 +681,7 @@ try {
                     } catch { device = deviceData; }
                     const deviceSelect = document.getElementById('device_installation');
                     if (deviceSelect) {
-                        let found = false;
-                        Array.from(deviceSelect.options).forEach(option => {
-                            if (
-                                device &&
-                                option.value.trim().toLowerCase() === device.trim().toLowerCase()
-                            ) {
-                                option.selected = true;
-                                found = true;
-                            } else {
-                                option.selected = false;
-                            }
-                        });
-                        if (!found) deviceSelect.selectedIndex = 0;
-                    }
-                    let deviceQty = '';
-                    if (chemQtyData) {
-                        try {
-                            const parsedQty = JSON.parse(chemQtyData);
-                            if (Array.isArray(parsedQty) && parsedQty.length > 1) deviceQty = parsedQty[1];
-                            else if (typeof parsedQty === 'string') deviceQty = parsedQty;
-                        } catch { deviceQty = chemQtyData; }
-                    }
-                    if (document.getElementById('device_installation_qty')) {
-                        document.getElementById('device_installation_qty').value = deviceQty;
+                        deviceSelect.value = device || '';
                     }
 
                     // Consumed Chemicals (assume string or JSON array)
@@ -799,41 +694,7 @@ try {
                     } catch { chemical = chemicalData; }
                     const chemicalSelect = document.getElementById('consumed_chemicals');
                     if (chemicalSelect) {
-                        let found = false;
-                        Array.from(chemicalSelect.options).forEach(option => {
-                            if (
-                                chemical &&
-                                option.value.trim().toLowerCase() === chemical.trim().toLowerCase()
-                            ) {
-                                option.selected = true;
-                                found = true;
-                            } else {
-                                option.selected = false;
-                            }
-                        });
-                        if (!found) chemicalSelect.selectedIndex = 0;
-                    }
-                    // Fix: Consumed Chemicals Qty should always use the first value if only one, or the correct index if multiple
-                    let chemQty = '';
-                    if (chemQtyData) {
-                        try {
-                            const parsedQty = JSON.parse(chemQtyData);
-                            // If only one value, use [0], if multiple, use [2] (for chemicals)
-                            if (Array.isArray(parsedQty)) {
-                                if (parsedQty.length === 1) {
-                                    chemQty = parsedQty[0];
-                                } else if (parsedQty.length > 2) {
-                                    chemQty = parsedQty[2];
-                                } else if (parsedQty.length > 0) {
-                                    chemQty = parsedQty[parsedQty.length - 1];
-                                }
-                            } else if (typeof parsedQty === 'string') {
-                                chemQty = parsedQty;
-                            }
-                        } catch { chemQty = chemQtyData; }
-                    }
-                    if (document.getElementById('consumed_chemicals_qty')) {
-                        document.getElementById('consumed_chemicals_qty').value = chemQty;
+                        chemicalSelect.value = chemical || '';
                     }
                 } else {
                     // Clear fields if "Select an appointment" is chosen
@@ -843,9 +704,9 @@ try {
                     document.getElementById('treatment_type').selectedIndex = 0;
                     document.getElementById('time_in').value = '';
                     document.getElementById('time_out').value = '';
-                    if (document.getElementById('treatment_method_qty')) document.getElementById('treatment_method_qty').value = '';
-                    if (document.getElementById('device_installation_qty')) document.getElementById('device_installation_qty').value = '';
-                    if (document.getElementById('consumed_chemicals_qty')) document.getElementById('consumed_chemicals_qty').value = '';
+                    document.getElementById('treatment_method').value = '';
+                    document.getElementById('device_installation').value = '';
+                    document.getElementById('consumed_chemicals').value = '';
                 }
             });
 

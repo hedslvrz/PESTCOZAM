@@ -1142,3 +1142,145 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// Initialize arrays to store selected items
+let selectedTreatments = [];
+let selectedDevices = [];
+let selectedChemicals = [];
+
+function addTreatmentMethod() {
+    const select = document.getElementById('treatment-method-select');
+    const qty = document.getElementById('treatment-method-qty');
+    
+    if (select.value && qty.value > 0) {
+        const treatment = {
+            name: select.value,
+            quantity: parseInt(qty.value)
+        };
+        
+        selectedTreatments.push(treatment);
+        updateTreatmentsList();
+        updateHiddenInputs();
+        
+        // Reset inputs
+        select.value = '';
+        qty.value = '';
+    }
+}
+
+function addDevice() {
+    const select = document.getElementById('device-select');
+    const qty = document.getElementById('device-qty');
+    
+    if (select.value && qty.value > 0) {
+        const device = {
+            name: select.value,
+            quantity: parseInt(qty.value)
+        };
+        
+        selectedDevices.push(device);
+        updateDevicesList();
+        updateHiddenInputs();
+        
+        // Reset inputs
+        select.value = '';
+        qty.value = '';
+    }
+}
+
+function addChemical() {
+    const select = document.getElementById('chemical-select');
+    const qty = document.getElementById('chemical-qty');
+    
+    if (select.value && qty.value > 0) {
+        const chemical = {
+            name: select.value,
+            quantity: parseInt(qty.value)
+        };
+        
+        selectedChemicals.push(chemical);
+        updateChemicalsList();
+        updateHiddenInputs();
+        
+        // Reset inputs
+        select.value = '';
+        qty.value = '';
+    }
+}
+
+function removeTreatment(index) {
+    selectedTreatments.splice(index, 1);
+    updateTreatmentsList();
+    updateHiddenInputs();
+}
+
+function removeDevice(index) {
+    selectedDevices.splice(index, 1);
+    updateDevicesList();
+    updateHiddenInputs();
+}
+
+function removeChemical(index) {
+    selectedChemicals.splice(index, 1);
+    updateChemicalsList();
+    updateHiddenInputs();
+}
+
+function updateTreatmentsList() {
+    const container = document.getElementById('selected-treatments');
+    container.innerHTML = selectedTreatments.map((treatment, index) => `
+        <div class="selected-item">
+            <div class="item-details">
+                <span class="item-name">${treatment.name}</span>
+                <span class="item-qty">Qty: ${treatment.quantity}</span>
+            </div>
+            <i class='bx bx-x remove-item' onclick="removeTreatment(${index})"></i>
+        </div>
+    `).join('');
+}
+
+function updateDevicesList() {
+    const container = document.getElementById('selected-devices');
+    container.innerHTML = selectedDevices.map((device, index) => `
+        <div class="selected-item">
+            <div class="item-details">
+                <span class="item-name">${device.name}</span>
+                <span class="item-qty">Qty: ${device.quantity}</span>
+            </div>
+            <i class='bx bx-x remove-item' onclick="removeDevice(${index})"></i>
+        </div>
+    `).join('');
+}
+
+function updateChemicalsList() {
+    const container = document.getElementById('selected-chemicals');
+    container.innerHTML = selectedChemicals.map((chemical, index) => `
+        <div class="selected-item">
+            <div class="item-details">
+                <span class="item-name">${chemical.name}</span>
+                <span class="item-qty">Qty: ${chemical.quantity}</span>
+            </div>
+            <i class='bx bx-x remove-item' onclick="removeChemical(${index})"></i>
+        </div>
+    `).join('');
+}
+
+function updateHiddenInputs() {
+    // Update treatment methods
+    document.getElementById('treatment-methods-input').value = 
+        JSON.stringify(selectedTreatments.map(t => t.name));
+    document.getElementById('treatment-quantities-input').value = 
+        JSON.stringify(selectedTreatments.map(t => t.quantity));
+    
+    // Update devices
+    document.getElementById('devices-input').value = 
+        JSON.stringify(selectedDevices.map(d => d.name));
+    document.getElementById('device-quantities-input').value = 
+        JSON.stringify(selectedDevices.map(d => d.quantity));
+    
+    // Update chemicals
+    document.getElementById('chemicals-input').value = 
+        JSON.stringify(selectedChemicals.map(c => c.name));
+    document.getElementById('chemical-quantities-input').value = 
+        JSON.stringify(selectedChemicals.map(c => c.quantity));
+}

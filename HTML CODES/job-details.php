@@ -610,5 +610,86 @@ try {
         </form>
     </div>
     <script src="../JS CODES/job-details.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Form submission
+            const jobDetailsForm = document.getElementById('job-details-form');
+            if (jobDetailsForm) {
+                jobDetailsForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    // Show loading indicator
+                    const submitBtn = this.querySelector('button[type="submit"]');
+                    const originalBtnText = submitBtn.innerHTML;
+                    submitBtn.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i> Saving...';
+                    submitBtn.disabled = true;
+                    
+                    // Get selected technicians (if any)
+                    const selectedTechs = [];
+                    document.querySelectorAll('input[name="technician_ids[]"]:checked').forEach(tech => {
+                        selectedTechs.push(tech.value);
+                    });
+                    
+                    // Build form data
+                    const formData = new FormData(this);
+                    
+                    // Add explicit flag for status update if technicians are assigned
+                    if (selectedTechs.length > 0) {
+                        formData.append('update_status', 'confirmed');
+                    }
+                    
+                    // Send form data
+                    fetch('../HTML CODES/process_job_details.php', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Response:', data);
+                        
+                        if (data.success) {
+                            // Show success message
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success!',
+                                text: 'Job details saved successfully',
+                                confirmButtonColor: '#144578'
+                            }).then(() => {
+                                // Redirect back to the job orders page
+                                window.location.href = '<?php echo $returnPage; ?>';
+                            });
+                        } else {
+                            // Show error message
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: data.message || 'Failed to save job details',
+                                confirmButtonColor: '#144578'
+                            });
+                            
+                            // Reset button
+                            submitBtn.innerHTML = originalBtnText;
+                            submitBtn.disabled = false;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        
+                        // Show error message
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'An error occurred while saving job details',
+                            confirmButtonColor: '#144578'
+                        });
+                        
+                        // Reset button
+                        submitBtn.innerHTML = originalBtnText;
+                        submitBtn.disabled = false;
+                    });
+                });
+            }
+        });
+    </script>
 </body>
 </html>

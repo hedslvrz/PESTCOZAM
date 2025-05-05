@@ -489,11 +489,17 @@ try {
                                         <?php 
                                             // Use followup_status if available, otherwise use status
                                             $displayStatus = strtolower(trim($appointment['followup_status'] ?? $appointment['status']));
-                                            if ($displayStatus === 'unknown' && !empty($appointment['followup_status'])) {
-                                                $displayStatus = strtolower(trim($appointment['followup_status']));
+                                            
+                                            // Force status to be "confirmed" if technician is assigned
+                                            $hasTechnician = !empty($appointment['technician_id']) || !empty($appointment['all_technicians']);
+                                            if ($hasTechnician && $displayStatus === 'pending') {
+                                                $displayStatus = 'confirmed';
+                                                
+                                                // Log this scenario for debugging
+                                                error_log("AOS Dashboard: Forcing status to 'confirmed' for appointment #{$appointment['appointment_id']} because technician is assigned but status was 'pending'");
                                             }
                                         ?>
-                                        <tr data-status="<?php echo $displayStatus; ?>" data-date="<?php echo date('Y-m-d', strtotime($appointment['appointment_date'])); ?>">
+                                        <tr data-status="<?php echo $displayStatus; ?>" data-date="<?php echo date('Y-m-d', strtotime($appointment['appointment_date'])); ?>" data-appointment-id="<?php echo $appointment['appointment_id']; ?>">
                                             <td>#<?php echo htmlspecialchars($appointment['appointment_id']); ?></td>
                                             <td>
                                                 <div class="schedule-info">
@@ -1036,14 +1042,8 @@ try {
                             </div>
                         </div>
                         <div class="form-group full-width">
-                            <label>Chemicals Consumed</label>
-                            <textarea id="chemicalsField" readonly></textarea>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Frequency of Visits</label>
-                                <input type="text" id="frequencyField" readonly>
-                            </div>
+                            <label>Chemicals/Products Used</label>
+                            <textarea id="chemicalsField" readonly rows="3"></textarea>
                         </div>
                     </div>
 
@@ -1176,7 +1176,6 @@ try {
             document.getElementById('pestCountField').value = report.pest_count;
             document.getElementById('deviceInstallationField').value = report.device_installation;
             document.getElementById('chemicalsField').value = report.consumed_chemicals;
-            document.getElementById('frequencyField').value = report.frequency_of_visits;
             
             // Handle photos (if available)
             const imageGallery = document.getElementById('imageGallery');

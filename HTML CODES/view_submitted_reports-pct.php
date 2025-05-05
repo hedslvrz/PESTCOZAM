@@ -545,12 +545,6 @@ try {
                         <label>Chemicals Consumed</label>
                         <textarea id="chemicalsField" readonly rows="3"></textarea>
                     </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Frequency of Visits</label>
-                            <input type="text" id="frequencyField" readonly>
-                        </div>
-                    </div>
                 </div>
 
                 <div class="form-section" id="photosSection">
@@ -626,7 +620,6 @@ try {
             document.getElementById('pestCountField').value = report.pest_count || 'N/A';
             document.getElementById('deviceInstallationField').value = report.device_installation || 'N/A';
             document.getElementById('chemicalsField').value = report.consumed_chemicals || 'N/A';
-            document.getElementById('frequencyField').value = report.frequency_of_visits || 'N/A';
             
             // Set status display
             const statusDisplay = document.getElementById('statusDisplay');
