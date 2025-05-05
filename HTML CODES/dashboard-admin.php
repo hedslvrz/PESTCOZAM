@@ -1657,13 +1657,6 @@ try {
                         <label>Chemicals Consumed</label>
                         <textarea id="chemicalsField" readonly></textarea>
                     </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Frequency of Visits</label>
-                            <input type="text" id="frequencyField" readonly>
-                        </div>
-                    </div>
-                </div>
 
                 <div class="form-section" id="photosSection">
                     <h3>Documentation</h3>

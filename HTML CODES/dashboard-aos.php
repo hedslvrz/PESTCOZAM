@@ -1042,14 +1042,8 @@ try {
                             </div>
                         </div>
                         <div class="form-group full-width">
-                            <label>Chemicals Consumed</label>
-                            <textarea id="chemicalsField" readonly></textarea>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Frequency of Visits</label>
-                                <input type="text" id="frequencyField" readonly>
-                            </div>
+                            <label>Chemicals/Products Used</label>
+                            <textarea id="chemicalsField" readonly rows="3"></textarea>
                         </div>
                     </div>
 
@@ -1182,7 +1176,6 @@ try {
             document.getElementById('pestCountField').value = report.pest_count;
             document.getElementById('deviceInstallationField').value = report.device_installation;
             document.getElementById('chemicalsField').value = report.consumed_chemicals;
-            document.getElementById('frequencyField').value = report.frequency_of_visits;
             
             // Handle photos (if available)
             const imageGallery = document.getElementById('imageGallery');

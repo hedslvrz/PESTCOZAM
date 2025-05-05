@@ -383,7 +383,6 @@ function openReportModal(reportId) {
             document.getElementById('pestCountField').value = report.pest_count || 'N/A';
             document.getElementById('deviceInstallationField').value = report.device_installation || 'N/A';
             document.getElementById('chemicalsField').value = report.consumed_chemicals || 'N/A';
-            document.getElementById('frequencyField').value = report.frequency_of_visits || 'N/A';
             
             // Handle approval buttons based on status
             const approveBtn = document.getElementById('approveBtn');

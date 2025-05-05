@@ -426,7 +426,6 @@ function openReportModal(reportId) {
     document.getElementById('pestCountField').value = reportData.pest_count || 'N/A';
     document.getElementById('deviceInstallationField').value = reportData.device_installation || 'N/A';
     document.getElementById('chemicalsField').value = reportData.consumed_chemicals || 'N/A';
-    document.getElementById('frequencyField').value = reportData.frequency_of_visits || 'N/A';
 
     // Handle photos
     const photosContainer = document.getElementById('photosContainer');
@@ -1621,7 +1620,6 @@ function openReportModal(reportId) {
     document.getElementById('pestCountField').value = reportData.pest_count || 'N/A';
     document.getElementById('deviceInstallationField').value = reportData.device_installation || 'N/A';
     document.getElementById('chemicalsField').value = reportData.consumed_chemicals || 'N/A';
-    document.getElementById('frequencyField').value = reportData.frequency_of_visits || 'N/A';
 
     // Handle photos
     const photosContainer = document.getElementById('photosContainer');
