@@ -698,10 +698,21 @@ body {
 
 .status {
     display: inline-block;
-    padding: 4px 8px;
-    border-radius: 4px;
+    padding: 6px 14px;
+    border-radius: 6px;
     font-weight: 500;
-    margin-top: 8px;
+    font-size: 0.95rem;
+    width: 100%;
+    text-align: center;
+    min-width: 110px;
+    box-sizing: border-box;
+}
+
+/* Add follow-up status styling */
+.status.followup {
+    background-color: #e3f2fd;
+    color: #1565c0;
+    border: 1px solid #bbdefb;
 }
 
 .status.pending {
@@ -1653,6 +1664,7 @@ td span {
     flex-wrap: wrap;
     gap: 8px;
     margin-top: 10px;
+    max-width: 100%;
 }
 
 .photo-item {
@@ -1661,12 +1673,52 @@ td span {
     border-radius: 4px;
     overflow: hidden;
     position: relative;
+    background: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .photo-item img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid #e5e9f2;
+}
+
+.btn-reset, 
+.btn-submit {
+    padding: 8px 15px;
+    border-radius: 4px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    border: none;
+}
+
+.btn-reset {
+    background-color: #f8f9fa;
+    color: #344767;
+    border: 1px solid #d2d6da;
+}
+
+.btn-submit {
+    background-color: #144578;
+    color: white;
 }
 
 /* Improved overflow handling for form container */
@@ -2700,5 +2752,113 @@ tr.hidden-by-search {
         width: 100%;
         text-align: center;
         justify-content: center;
+    }
+}
+
+/* Custom dropdown for submit service report (smaller, job-details style, no overflow) */
+.dropdown-down {
+    margin-bottom: 8px;
+    position: relative;
+    z-index: 1;
+}
+.dropdown-down .custom-dropdown {
+    position: relative;
+    width: 95%;
+    min-width: 0;
+    background: #f8faff;
+    border-radius: 8px;
+    border: 1.5px solid #d0e1fd;
+    box-shadow: 0 2px 8px rgba(20, 69, 120, 0.04);
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.95rem;
+    color: #333;
+    margin-bottom: 0;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    z-index: 2;
+    overflow: visible;
+}
+.dropdown-down .custom-dropdown:focus-within,
+.dropdown-down .custom-dropdown.active {
+    border-color: #144578;
+    box-shadow: 0 0 0 2px rgba(20, 69, 120, 0.08);
+}
+.dropdown-down .custom-dropdown select {
+    border: none !important;
+    background: transparent;
+    font-size: 0.95rem;
+    width: 100%;
+    outline: none;
+    padding: 8px 0 8px 0;
+    appearance: none;
+    cursor: pointer;
+    color: #333;
+    height: 38px;
+    z-index: 2;
+}
+.dropdown-down .custom-dropdown select:focus {
+    outline: none;
+    border: none !important; /* Remove border on focus */
+    box-shadow: none !important; /* Remove any browser default shadow */
+}
+.dropdown-down .custom-dropdown::after {
+    content: '';
+    display: block;
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 7px solid #144578;
+    transform: translateY(-50%);
+    z-index: 3;
+}
+.dropdown-down .custom-dropdown select option {
+    background: #fff;
+    color: #333;
+    font-size: 0.95rem;
+    z-index: 2;
+}
+
+/* Prevent dropdowns from overlapping each other */
+.report-grid-3col .dropdown-down,
+.report-grid-2col .dropdown-down {
+    margin-bottom: 10px;
+    z-index: 1;
+}
+.report-grid-3col .dropdown-down .custom-dropdown,
+.report-grid-2col .dropdown-down .custom-dropdown {
+    z-index: 2;
+}
+
+/* Fix for dropdown overflow: always open above other elements */
+.dropdown-down {
+    overflow: visible;
+}
+.dropdown-down .custom-dropdown {
+    overflow: visible;
+}
+
+/* Add spacing between dropdowns in grid */
+.report-grid-3col .dropdown-down:not(:last-child),
+.report-grid-2col .dropdown-down:not(:last-child) {
+    margin-right: 8px;
+}
+
+/* Responsive: stack dropdowns vertically on small screens */
+@media (max-width: 768px) {
+    .report-grid-3col,
+    .report-grid-2col {
+        grid-template-columns: 1fr;
+    }
+    .dropdown-down {
+        margin-right: 0 !important;
     }
 }

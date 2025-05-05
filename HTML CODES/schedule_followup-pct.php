@@ -61,63 +61,227 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit();
         }
         
-        // Calculate follow-up dates based on plan type and frequency
-        $followupDates = [];
-        $startDate = new DateTime($followupDate);
-        
-        // Add the initial follow-up date
-        $followupDates[] = $startDate->format('Y-m-d');
-        
-        // Calculate the interval based on plan type
-        switch ($planType) {
-            case 'weekly':
-                $intervalUnit = 'week';
-                break;
-            case 'monthly':
-                $intervalUnit = 'month';
-                break;
-            case 'quarterly':
-                $intervalUnit = 'month';
-                $visitFrequency = min($visitFrequency, 4); // Max 4 visits per year for quarterly
-                $intervalValue = 3; // Every 3 months
-                break;
-            case 'yearly':
-                $intervalUnit = 'year';
-                break;
-            default:
-                $intervalUnit = 'week';
-                break;
-        }
-        
-        // Calculate the end date based on contract duration
-        $endDate = clone $startDate;
-        switch ($durationUnit) {
-            case 'days':
-                $endDate->modify("+$contractDuration days");
-                break;
-            case 'weeks':
-                $endDate->modify("+$contractDuration weeks");
-                break;
-            case 'months':
-                $endDate->modify("+$contractDuration months");
-                break;
-            case 'years':
-                $endDate->modify("+$contractDuration years");
-                break;
-        }
-        
-        // Generate follow-up dates
-        $currentDate = clone $startDate;
-        $intervalValue = isset($intervalValue) ? $intervalValue : 1;
-        
-        for ($i = 1; $i < $visitFrequency; $i++) {
-            $currentDate->modify("+$intervalValue $intervalUnit");
+        // When processing a recurrence plan:
+        if ($_POST['is_recurrence'] === '1') {
+            // Get the visit dates from the JSON data
+            $visitDatesJson = $_POST['visit_dates'] ?? '[]';
+            $followupDates = [];
             
-            // Only add date if it's before or equal to the end date
-            if ($currentDate <= $endDate) {
-                $followupDates[] = $currentDate->format('Y-m-d');
-            } else {
-                break; // Stop if we've passed the end date
+            try {
+                // Parse the JSON data containing all visit dates
+                $visitDates = json_decode($visitDatesJson, true);
+                
+                if (!empty($visitDates)) {
+                    // Extract just the dates from the visit objects
+                    foreach ($visitDates as $visit) {
+                        if (isset($visit['date']) && isset($visit['time'])) {
+                            $followupDates[] = [
+                                'date' => $visit['date'],
+                                'time' => $visit['time']
+                            ];
+                        }
+                    }
+                } else {
+                    // Fallback to the old method if no JSON data is provided
+                    // Calculate follow-up dates based on plan type and frequency
+                    $followupDates = [];
+                    $startDate = new DateTime($followupDate);
+                    
+                    // Add the initial follow-up date
+                    $followupDates[] = [
+                        'date' => $startDate->format('Y-m-d'),
+                        'time' => $followupTime
+                    ];
+                    
+                    // Calculate the interval based on plan type
+                    switch ($planType) {
+                        case 'weekly':
+                            $intervalUnit = 'week';
+                            break;
+                        case 'monthly':
+                            $intervalUnit = 'month';
+                            break;
+                        case 'quarterly':
+                            $intervalUnit = 'month';
+                            $visitFrequency = min($visitFrequency, 4); // Max 4 visits per year for quarterly
+                            $intervalValue = 3; // Every 3 months
+                            break;
+                        case 'yearly':
+                            $intervalUnit = 'year';
+                            break;
+                        default:
+                            $intervalUnit = 'week';
+                            break;
+                    }
+                    
+                    // Calculate the end date based on contract duration
+                    $endDate = clone $startDate;
+                    switch ($durationUnit) {
+                        case 'days':
+                            $endDate->modify("+$contractDuration days");
+                            break;
+                        case 'weeks':
+                            $endDate->modify("+$contractDuration weeks");
+                            break;
+                        case 'months':
+                            $endDate->modify("+$contractDuration months");
+                            break;
+                        case 'years':
+                            $endDate->modify("+$contractDuration years");
+                            break;
+                    }
+                    
+                    // Generate follow-up dates
+                    $currentDate = clone $startDate;
+                    $intervalValue = isset($intervalValue) ? $intervalValue : 1;
+                    
+                    for ($i = 1; $i < $visitFrequency; $i++) {
+                        $currentDate->modify("+$intervalValue $intervalUnit");
+                        
+                        // Only add date if it's before or equal to the end date
+                        if ($currentDate <= $endDate) {
+                            $followupDates[] = [
+                                'date' => $currentDate->format('Y-m-d'),
+                                'time' => $followupTime
+                            ];
+                        } else {
+                            break; // Stop if we've passed the end date
+                        }
+                    }
+                }
+            } catch (Exception $e) {
+                error_log("Error parsing visit dates JSON: " . $e->getMessage());
+                // Fallback to the old method
+                $followupDates = [];
+                $startDate = new DateTime($followupDate);
+                
+                // Add the initial follow-up date
+                $followupDates[] = [
+                    'date' => $startDate->format('Y-m-d'),
+                    'time' => $followupTime
+                ];
+                
+                // Calculate the interval based on plan type
+                switch ($planType) {
+                    case 'weekly':
+                        $intervalUnit = 'week';
+                        break;
+                    case 'monthly':
+                        $intervalUnit = 'month';
+                        break;
+                    case 'quarterly':
+                        $intervalUnit = 'month';
+                        $visitFrequency = min($visitFrequency, 4); // Max 4 visits per year for quarterly
+                        $intervalValue = 3; // Every 3 months
+                        break;
+                    case 'yearly':
+                        $intervalUnit = 'year';
+                        break;
+                    default:
+                        $intervalUnit = 'week';
+                        break;
+                }
+                
+                // Calculate the end date based on contract duration
+                $endDate = clone $startDate;
+                switch ($durationUnit) {
+                    case 'days':
+                        $endDate->modify("+$contractDuration days");
+                        break;
+                    case 'weeks':
+                        $endDate->modify("+$contractDuration weeks");
+                        break;
+                    case 'months':
+                        $endDate->modify("+$contractDuration months");
+                        break;
+                    case 'years':
+                        $endDate->modify("+$contractDuration years");
+                        break;
+                }
+                
+                // Generate follow-up dates
+                $currentDate = clone $startDate;
+                $intervalValue = isset($intervalValue) ? $intervalValue : 1;
+                
+                for ($i = 1; $i < $visitFrequency; $i++) {
+                    $currentDate->modify("+$intervalValue $intervalUnit");
+                    
+                    // Only add date if it's before or equal to the end date
+                    if ($currentDate <= $endDate) {
+                        $followupDates[] = [
+                            'date' => $currentDate->format('Y-m-d'),
+                            'time' => $followupTime
+                        ];
+                    } else {
+                        break; // Stop if we've passed the end date
+                    }
+                }
+            }
+        } else {
+            // Fallback to the old method
+            $followupDates = [];
+            $startDate = new DateTime($followupDate);
+            
+            // Add the initial follow-up date
+            $followupDates[] = [
+                'date' => $startDate->format('Y-m-d'),
+                'time' => $followupTime
+            ];
+            
+            // Calculate the interval based on plan type
+            switch ($planType) {
+                case 'weekly':
+                    $intervalUnit = 'week';
+                    break;
+                case 'monthly':
+                    $intervalUnit = 'month';
+                    break;
+                case 'quarterly':
+                    $intervalUnit = 'month';
+                    $visitFrequency = min($visitFrequency, 4); // Max 4 visits per year for quarterly
+                    $intervalValue = 3; // Every 3 months
+                    break;
+                case 'yearly':
+                    $intervalUnit = 'year';
+                    break;
+                default:
+                    $intervalUnit = 'week';
+                    break;
+            }
+            
+            // Calculate the end date based on contract duration
+            $endDate = clone $startDate;
+            switch ($durationUnit) {
+                case 'days':
+                    $endDate->modify("+$contractDuration days");
+                    break;
+                case 'weeks':
+                    $endDate->modify("+$contractDuration weeks");
+                    break;
+                case 'months':
+                    $endDate->modify("+$contractDuration months");
+                    break;
+                case 'years':
+                    $endDate->modify("+$contractDuration years");
+                    break;
+            }
+            
+            // Generate follow-up dates
+            $currentDate = clone $startDate;
+            $intervalValue = isset($intervalValue) ? $intervalValue : 1;
+            
+            for ($i = 1; $i < $visitFrequency; $i++) {
+                $currentDate->modify("+$intervalValue $intervalUnit");
+                
+                // Only add date if it's before or equal to the end date
+                if ($currentDate <= $endDate) {
+                    $followupDates[] = [
+                        'date' => $currentDate->format('Y-m-d'),
+                        'time' => $followupTime
+                    ];
+                } else {
+                    break; // Stop if we've passed the end date
+                }
             }
         }
         
@@ -171,7 +335,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         // Now create the individual appointments for each follow-up date
         $appointmentIds = [];
-        foreach ($followupDates as $date) {
+        foreach ($followupDates as $followup) {
+            $date = $followup['date'];
+            $time = $followup['time'];
+            
             // Get the name of the service
             $serviceStmt = $db->prepare("SELECT service_name FROM services WHERE service_id = ?");
             $serviceStmt->execute([$serviceId]);
@@ -200,7 +367,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $customerInfo['street_address'] ?? null,
                 $customerInfo['landmark'] ?? null,
                 $date,
-                $followupTime,
+                $time,
                 $customerInfo['is_for_self'] ?? 1,
                 $customerInfo['firstname'] ?? null,
                 $customerInfo['lastname'] ?? null,
@@ -228,7 +395,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $visitStmt = $db->prepare("INSERT INTO followup_visits 
                                        (followup_plan_id, appointment_id, visit_date, visit_time, status, created_at) 
                                        VALUES (?, ?, ?, ?, 'Scheduled', NOW())");
-            $visitStmt->execute([$planId, $newAppointmentId, $date, $followupTime]);
+            $visitStmt->execute([$planId, $newAppointmentId, $date, $time]);
         }
         
         // Commit transaction

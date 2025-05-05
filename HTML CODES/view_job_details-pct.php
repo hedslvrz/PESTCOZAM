@@ -45,7 +45,7 @@ try {
     exit;
 }
 
-// Fetch appointment details with assigned technicians
+// Fetch appointment details with assigned technicians, including follow-up status
 try {
     $stmt = $db->prepare("SELECT 
         a.*,
@@ -54,11 +54,13 @@ try {
         u.email as customer_email,
         u.mobile_number as customer_phone,
         t.firstname as tech_firstname,
-        t.lastname as tech_lastname
+        t.lastname as tech_lastname,
+        fv.id IS NOT NULL as is_followup
     FROM appointments a
     JOIN services s ON a.service_id = s.service_id
     JOIN users u ON a.user_id = u.id
     LEFT JOIN users t ON a.technician_id = t.id
+    LEFT JOIN followup_visits fv ON a.id = fv.appointment_id
     WHERE a.id = ?");
     
     $stmt->execute([$appointmentId]);
@@ -92,12 +94,19 @@ try {
         $chemicalQuantities[$chemical] = $savedQuantities[$index] ?? 0;
     }
     
+    // Parse devices if they exist
+    $savedDevices = [];
+    if (!empty($appointment['devices'])) {
+        $savedDevices = json_decode($appointment['devices'], true) ?? [];
+    }
+    
 } catch(PDOException $e) {
     error_log("Error fetching appointment data: " . $e->getMessage());
     $appointment = null;
     $assignedTechs = [];
     $savedMethods = [];
     $chemicalQuantities = [];
+    $savedDevices = [];
 }
 
 // Fetch available technicians
@@ -185,7 +194,9 @@ try {
                                 <label>Appointment Type</label>
                                 <p>
                                     <?php 
-                                    if (isset($appointment['service_name']) && $appointment['service_name'] == 'Ocular Inspection' || 
+                                    if ($appointment['is_followup']) {
+                                        echo 'Follow-up Visit';
+                                    } elseif (isset($appointment['service_name']) && $appointment['service_name'] == 'Ocular Inspection' || 
                                         isset($appointment['service_id']) && $appointment['service_id'] == 17 ||
                                         isset($appointment['service_type']) && strtolower($appointment['service_type']) == 'ocular inspection') {
                                         echo 'Ocular Inspection';
@@ -205,8 +216,8 @@ try {
                             </div>
                             <div class="info-group">
                                 <label>Status</label>
-                                <span class="status <?php echo strtolower($appointment['status']); ?>">
-                                    <?php echo htmlspecialchars($appointment['status']); ?>
+                                <span class="status <?php echo $appointment['is_followup'] ? 'followup' : strtolower($appointment['status']); ?>">
+                                    <?php echo $appointment['is_followup'] ? 'Follow-up Visit' : htmlspecialchars($appointment['status']); ?>
                                 </span>
                             </div>
                         </div>
@@ -283,32 +294,22 @@ try {
                             <p>No chemicals specified yet.</p>
                         <?php endif; ?>
                     </div>
-
-                    <div class="additional-info">
-                        <div class="info-group">
-                            <label>PCT</label>
-                            <p><?php echo htmlspecialchars($appointment['pct'] ?? 'Not specified'); ?></p>
-                        </div>
-                        <div class="info-group">
-                            <label>Device Installation</label>
-                            <p><?php echo htmlspecialchars($appointment['device_installation'] ?? 'Not specified'); ?></p>
-                        </div>
-                        <div class="info-group">
-                            <label>Chemical Consumables</label>
-                            <p><?php echo htmlspecialchars($appointment['chemical_consumables'] ?? 'Not specified'); ?></p>
-                        </div>
-                        <div class="info-group">
-                            <label>Frequency of Visit</label>
-                            <p><?php 
-                                $frequencyMap = [
-                                    'weekly' => 'Weekly',
-                                    'biweekly' => 'Bi-weekly',
-                                    'monthly' => 'Monthly',
-                                    'quarterly' => 'Quarterly'
-                                ];
-                                echo $frequencyMap[$appointment['visit_frequency'] ?? ''] ?? 'Not specified'; 
-                            ?></p>
-                        </div>
+                    
+                    <!-- Devices Section -->
+                    <div class="devices-section">
+                        <h4>Devices</h4>
+                        <?php if(!empty($savedDevices)): ?>
+                            <div class="device-list">
+                                <?php foreach($savedDevices as $device): ?>
+                                    <div class="device-item">
+                                        <span><?php echo htmlspecialchars(ucwords(str_replace('_', ' ', $device))); ?></span>
+                                        <span class="device-qty"><?php echo htmlspecialchars($appointment['device_quantities'] ?? '0'); ?></span>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php else: ?>
+                            <p>No devices specified for this appointment.</p>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
@@ -348,7 +349,7 @@ try {
 
             <!-- Action Buttons -->
             <div class="action-buttons">
-                <?php if ($appointment['status'] === 'Confirmed'): ?>
+                <?php if ($appointment['status'] === 'Confirmed' || $appointment['is_followup']): ?>
                     <a href="dashboard-pct.php#submit-report?appointment_id=<?php echo $appointmentId; ?>" class="btn-submit-report">
                         <i class='bx bx-file'></i> Submit Service Report
                     </a>

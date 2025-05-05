@@ -190,6 +190,7 @@ $calendarData = AppointmentSession::getData('calendar', []);
         </form>
       </div>
 
+      <?php if ($service_id != 17): ?>
       <!-- Service Type Selection -->
       <div class="service-type-form">
         <h3>Select Service Type</h3>
@@ -210,6 +211,7 @@ $calendarData = AppointmentSession::getData('calendar', []);
           </label>
         </div>
       </div>
+      <?php endif; ?>
 
       <!-- Navigation Buttons -->
       <div class="calendar-nav">
@@ -466,6 +468,7 @@ $calendarData = AppointmentSession::getData('calendar', []);
 
     // Initialize service type radios with event listeners
     document.addEventListener('DOMContentLoaded', function() {
+      <?php if ($service_id != 17): ?>
       // Treatment selection confirmation
       const treatmentRadio = document.getElementById('treatment');
       const ocularRadio = document.getElementById('ocular');
@@ -524,6 +527,7 @@ $calendarData = AppointmentSession::getData('calendar', []);
           serviceRadio.checked = true;
       }
       <?php endif; ?>
+      <?php endif; ?>
       
       // If date is pre-selected
       <?php if (!empty($calendarData['appointment_date'])): ?>
@@ -581,15 +585,13 @@ $calendarData = AppointmentSession::getData('calendar', []);
         return;
       }
 
-      const serviceId = document.querySelector('input[name="service_id"]:checked');
-      if (!serviceId) {
-        Swal.fire({
-          icon: 'warning',
-          title: 'Service Type Missing',
-          text: 'Please select a service type',
-        });
-        return;
-      }
+      let serviceIdValue;
+      <?php if ($service_id != 17): ?>
+            serviceIdValue = document.querySelector('input[name="service_id"]:checked').value;
+      <?php else: ?>
+            // Ocular Inspection only
+            serviceIdValue = '17';
+      <?php endif; ?>
 
       // Disable the button to prevent multiple submissions
       document.getElementById('nextButton').disabled = true;
@@ -601,7 +603,7 @@ $calendarData = AppointmentSession::getData('calendar', []);
         body: JSON.stringify({
           appointment_date: selectedDate,
           appointment_time: selectedTime,
-          service_id: serviceId.value
+          service_id: serviceIdValue
         })
       })
       .then(response => {

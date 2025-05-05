@@ -1,262 +1,99 @@
 <?php
 session_start();
 require_once '../database.php';
-require_once 'mailer.php';
 
-// Set content type to JSON
 header('Content-Type: application/json');
 
-// Check if user is authorized
-if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'], ['admin', 'supervisor'])) {
-    echo json_encode(['success' => false, 'message' => 'Unauthorized access']);
-    exit();
-}
-
-// Check if this is a POST request
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(['success' => false, 'message' => 'Invalid request method']);
-    exit();
-}
-
-// Get appointment ID from the form
-$appointmentId = $_POST['appointment_id'] ?? null;
-
-if (!$appointmentId) {
+// Check for required data
+if (!isset($_POST['appointment_id'])) {
     echo json_encode(['success' => false, 'message' => 'Missing appointment ID']);
-    exit();
+    exit;
 }
+
+$appointmentId = $_POST['appointment_id'];
+$database = new Database();
+$db = $database->getConnection();
 
 try {
-    // Initialize database
-    $database = new Database();
-    $db = $database->getConnection();
-    $db->beginTransaction();
-
-    // Store treatment details
-    $methods = $_POST['method'] ?? [];
-    $methods = is_array($methods) ? $methods : [];
+    // First check if the columns exist in the database
+    $columnsStmt = $db->prepare("SHOW COLUMNS FROM appointments");
+    $columnsStmt->execute();
+    $columns = $columnsStmt->fetchAll(PDO::FETCH_COLUMN);
     
-    $chemicals = json_decode($_POST['chemicals'] ?? '[]', true);
-    $chemical_qty = json_decode($_POST['chemical_qty'] ?? '[]', true);
+    $hasDevicesColumn = in_array('devices', $columns);
+    $hasDeviceQuantitiesColumn = in_array('device_quantities', $columns);
     
-    // Process other form data
-    $pct = $_POST['pct'] ?? '';
-    $deviceInstallation = $_POST['device_installation'] ?? '';
-    $chemicalConsumables = $_POST['chemical_consumables'] ?? '';
-    $visitFrequency = $_POST['visit_frequency'] ?? '';
+    // Get form data
+    $methods = isset($_POST['method']) ? $_POST['method'] : [];
+    $chemicals = isset($_POST['chemicals']) ? $_POST['chemicals'] : [];
+    $chemicalQty = isset($_POST['chemical_qty']) ? $_POST['chemical_qty'] : [];
+    $devices = isset($_POST['devices']) ? $_POST['devices'] : [];
+    $deviceQty = isset($_POST['device_qty']) ? $_POST['device_qty'] : [];
+    $technicianIds = isset($_POST['technician_ids']) ? $_POST['technician_ids'] : [];
     
-    // Process time information
-    $timeIn = $_POST['time_in'] ?? null;
-    $timeOut = $_POST['time_out'] ?? null;
+    // Process chemical quantities into format for storage
+    $chemicalQuantities = [];
+    foreach ($chemicals as $chemical) {
+        $chemicalQuantities[] = isset($chemicalQty[$chemical]) ? intval($chemicalQty[$chemical]) : 0;
+    }
     
-    // Get selected technician IDs
-    $technicianIds = $_POST['technician_ids'] ?? [];
-    $technicianIds = is_array($technicianIds) ? $technicianIds : [];
+    // Process device quantities into format for storage
+    $deviceQuantities = [];
+    foreach ($devices as $device) {
+        $deviceQuantities[] = isset($deviceQty[$device]) ? intval($deviceQty[$device]) : 0;
+    }
     
-    // Clear existing technicians first
-    $clearStmt = $db->prepare("DELETE FROM appointment_technicians WHERE appointment_id = ?");
-    $clearStmt->execute([$appointmentId]);
+    // JSON encode data for storage
+    $methodsJSON = json_encode($methods);
+    $chemicalsJSON = json_encode($chemicals);
+    $chemicalQuantitiesJSON = json_encode($chemicalQuantities);
+    $devicesJSON = json_encode($devices);
+    $deviceQuantitiesJSON = json_encode($deviceQuantities);
     
-    // Insert new technician assignments
-    if (!empty($technicianIds)) {
-        $insertStmt = $db->prepare("INSERT INTO appointment_technicians (appointment_id, technician_id) VALUES (?, ?)");
+    // Create the update SQL based on whether the columns exist
+    $sql = "UPDATE appointments SET treatment_methods = ?, chemicals = ?, chemical_quantities = ?";
+    $params = [$methodsJSON, $chemicalsJSON, $chemicalQuantitiesJSON];
+    
+    // Add devices columns to SQL if they exist
+    if ($hasDevicesColumn) {
+        $sql .= ", devices = ?";
+        $params[] = $devicesJSON;
+    }
+    
+    if ($hasDeviceQuantitiesColumn) {
+        $sql .= ", device_quantities = ?";
+        $params[] = $deviceQuantitiesJSON;
+    }
+    
+    $sql .= " WHERE id = ?";
+    $params[] = $appointmentId;
+    
+    $stmt = $db->prepare($sql);
+    $updateSuccess = $stmt->execute($params);
+    
+    // Update technician assignments
+    if ($updateSuccess) {
+        // First, delete existing assignments
+        $deleteStmt = $db->prepare("DELETE FROM appointment_technicians WHERE appointment_id = ?");
+        $deleteStmt->execute([$appointmentId]);
         
-        foreach ($technicianIds as $techId) {
-            $insertStmt->execute([$appointmentId, $techId]);
+        // Then, insert new assignments
+        if (!empty($technicianIds)) {
+            $insertSql = "INSERT INTO appointment_technicians (appointment_id, technician_id) VALUES (?, ?)";
+            $insertStmt = $db->prepare($insertSql);
+            
+            foreach ($technicianIds as $techId) {
+                $insertStmt->execute([$appointmentId, $techId]);
+            }
         }
         
-        // Update the main technician in the appointments table (first technician as primary)
-        $updateStmt = $db->prepare("UPDATE appointments SET technician_id = ?, status = 'Confirmed' WHERE id = ?");
-        $updateStmt->execute([$technicianIds[0], $appointmentId]);
+        echo json_encode(['success' => true, 'message' => 'Job details saved successfully']);
+    } else {
+        throw new Exception("Failed to update appointment data");
     }
     
-    // Save treatment details to appointment
-    $updateStmt = $db->prepare("UPDATE appointments SET 
-        treatment_methods = ?, 
-        chemicals = ?, 
-        chemical_quantities = ?,
-        pct = ?,
-        device_installation = ?,
-        chemical_consumables = ?,
-        visit_frequency = ?,
-        time_in = ?,
-        time_out = ?,
-        updated_at = CURRENT_TIMESTAMP
-        WHERE id = ?");
-        
-    $methodsJson = json_encode($methods);
-    $chemicalsJson = json_encode($chemicals);
-    $quantitiesJson = json_encode($chemical_qty);
-    
-    $updateStmt->execute([
-        $methodsJson,
-        $chemicalsJson,
-        $quantitiesJson,
-        $pct,
-        $deviceInstallation,
-        $chemicalConsumables,
-        $visitFrequency,
-        $timeIn,
-        $timeOut,
-        $appointmentId
-    ]);
-    
-    // Commit transaction
-    $db->commit();
-    
-    // Send technician notification email if technicians were assigned
-    if (!empty($technicianIds)) {
-        // Get appointment details
-        $stmt = $db->prepare("SELECT 
-            a.*,
-            s.service_name,
-            CONCAT(u.firstname, ' ', u.lastname) as customer_name,
-            u.email as customer_email,
-            u.mobile_number as customer_phone
-        FROM appointments a
-        JOIN services s ON a.service_id = s.service_id
-        JOIN users u ON a.user_id = u.id
-        WHERE a.id = ?");
-        
-        $stmt->execute([$appointmentId]);
-        $appointment = $stmt->fetch(PDO::FETCH_ASSOC);
-        
-        // Get technician details
-        $techStmt = $db->prepare("SELECT t.firstname, t.lastname, t.mobile_number 
-                                FROM users t 
-                                WHERE t.id IN (" . implode(',', array_fill(0, count($technicianIds), '?')) . ")");
-        $techStmt->execute($technicianIds);
-        $technicians = $techStmt->fetchAll(PDO::FETCH_ASSOC);
-        
-        // Only send email if we have customer email and technician data
-        if (!empty($appointment['customer_email']) && !empty($technicians)) {
-            // Format the appointment date and time
-            $formattedDate = date('F d, Y', strtotime($appointment['appointment_date']));
-            $formattedTime = date('h:i A', strtotime($appointment['appointment_time']));
-            
-            // Build technicians list HTML
-            $techniciansList = '';
-            foreach ($technicians as $tech) {
-                $techniciansList .= '<li>' . htmlspecialchars($tech['firstname'] . ' ' . $tech['lastname']) . ' - ' . 
-                                    htmlspecialchars($tech['mobile_number']) . '</li>';
-            }
-            
-            // Get customer name
-            $customerName = $appointment['customer_name'];
-            if (empty($customerName)) {
-                $customerName = $appointment['is_for_self'] ? 'Client' : ($appointment['firstname'] . ' ' . $appointment['lastname']);
-            }
-            
-            // Build treatments and chemicals list for email (if any)
-            $treatmentMethodsList = '';
-            if (!empty($methods)) {
-                $treatmentMethodsList .= '<h4>Treatment Methods:</h4><ul>';
-                foreach ($methods as $method) {
-                    $treatmentMethodsList .= '<li>' . ucfirst(htmlspecialchars($method)) . '</li>';
-                }
-                $treatmentMethodsList .= '</ul>';
-            }
-            
-            $chemicalsList = '';
-            if (!empty($chemicals)) {
-                $chemicalsList .= '<h4>Chemicals & Materials to be Used:</h4><ul>';
-                foreach ($chemicals as $index => $chemical) {
-                    $quantity = $chemical_qty[$index] ?? 0;
-                    $chemicalsList .= '<li>' . htmlspecialchars($chemical) . 
-                                    ($quantity > 0 ? ' (' . $quantity . ')' : '') . '</li>';
-                }
-                $chemicalsList .= '</ul>';
-            }
-            
-            // Prepare email content
-            $emailSubject = "PESTCOZAM - Technician Assigned to Your Appointment";
-            $emailBody = "
-                <html>
-                <head>
-                    <style>
-                        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-                        .container { max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff; }
-                        .header { background-color: #1e88e5; color: white; padding: 15px; text-align: center; border-radius: 5px 5px 0 0; }
-                        .content { padding: 20px; border: 1px solid #e0e0e0; border-top: none; }
-                        .footer { font-size: 12px; text-align: center; margin-top: 20px; color: #757575; padding: 10px; background-color: #f5f5f5; }
-                        .technician-info { background-color: #e3f2fd; padding: 15px; border-left: 4px solid #1e88e5; margin: 15px 0; }
-                        .treatment-info { background-color: #f9f9f9; padding: 15px; border-left: 4px solid #4caf50; margin: 15px 0; }
-                        ul { padding-left: 20px; }
-                        li { margin-bottom: 8px; }
-                        h4 { margin: 10px 0; color: #333; }
-                    </style>
-                </head>
-                <body>
-                    <div class='container'>
-                        <div class='header'>
-                            <h2>Technician Assignment Notification</h2>
-                        </div>
-                        <div class='content'>
-                            <p>Dear " . htmlspecialchars($customerName) . ",</p>
-                            <p>We are pleased to inform you that technicians have been assigned to your upcoming appointment with PESTCOZAM:</p>
-                            <ul>
-                                <li><strong>Service:</strong> " . htmlspecialchars($appointment['service_name']) . "</li>
-                                <li><strong>Date:</strong> " . $formattedDate . "</li>
-                                <li><strong>Time:</strong> " . $formattedTime . "</li>
-                                <li><strong>Location:</strong> " . htmlspecialchars($appointment['street_address'] . ', ' . 
-                                    $appointment['barangay'] . ', ' . $appointment['city']) . "</li>
-                            </ul>
-                            
-                            <div class='technician-info'>
-                                <h3>Your Assigned Technician(s):</h3>
-                                <ul>
-                                    $techniciansList
-                                </ul>
-                            </div>";
-                            
-            // Only include treatment details if they exist
-            if (!empty($treatmentMethodsList) || !empty($chemicalsList)) {
-                $emailBody .= "<div class='treatment-info'>
-                                <h3>Treatment Details:</h3>
-                                $treatmentMethodsList
-                                $chemicalsList
-                              </div>";
-            }
-                            
-            $emailBody .= "<p>Our technician(s) will arrive at your location during the scheduled time. If you need to make any changes to your appointment or have any questions, please contact us at 0905-177-5662.</p>
-                            <p>Thank you for choosing PESTCOZAM for your pest control needs!</p>
-                        </div>
-                        <div class='footer'>
-                            <p>© 2025 PESTCOZAM. All rights reserved.</p>
-                        </div>
-                    </div>
-                </body>
-                </html>
-            ";
-            
-            // Send the email
-            $emailResult = sendEmail($appointment['customer_email'], $emailSubject, $emailBody);
-            
-            // Log email status
-            if (!$emailResult['success']) {
-                error_log("Failed to send technician assignment email: " . $emailResult['message']);
-            }
-        }
-    }
-    
-    echo json_encode([
-        'success' => true, 
-        'message' => !empty($technicianIds) ? 
-            'Job details saved and customer notified of technician assignment.' : 
-            'Job details saved successfully.'
-    ]);
-    
-} catch (PDOException $e) {
-    if ($db->inTransaction()) {
-        $db->rollBack();
-    }
-    error_log("Database error in process_job_details.php: " . $e->getMessage());
-    echo json_encode(['success' => false, 'message' => 'Database error occurred: ' . $e->getMessage()]);
 } catch (Exception $e) {
-    if ($db->inTransaction()) {
-        $db->rollBack();
-    }
-    error_log("General error in process_job_details.php: " . $e->getMessage());
-    echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+    error_log("Error processing job details: " . $e->getMessage());
+    echo json_encode(['success' => false, 'message' => 'An error occurred: ' . $e->getMessage()]);
 }
 ?>

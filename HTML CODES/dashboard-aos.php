@@ -8,7 +8,7 @@ $db = $database->getConnection();
 
 // Update the appointments query at the top of the file
 try {
-    // Improved query to get appointments with ALL assigned technicians
+    // Improved query to get appointments with ALL assigned technicians and follow-up status
     $appointmentsQuery = "SELECT 
         a.id as appointment_id,
         a.appointment_date,
@@ -34,7 +34,11 @@ try {
         (SELECT GROUP_CONCAT(CONCAT(u2.firstname, ' ', u2.lastname) SEPARATOR ', ') 
          FROM appointment_technicians at 
          JOIN users u2 ON at.technician_id = u2.id 
-         WHERE at.appointment_id = a.id) as all_technicians
+         WHERE at.appointment_id = a.id) as all_technicians,
+        (SELECT fv.status 
+         FROM followup_visits fv 
+         WHERE fv.appointment_id = a.id 
+         ORDER BY fv.id DESC LIMIT 1) as followup_status
     FROM appointments a
     INNER JOIN services s ON a.service_id = s.service_id
     INNER JOIN users u ON a.user_id = u.id
@@ -482,7 +486,14 @@ try {
                             <tbody>
                                 <?php if (!empty($appointments)): ?>
                                     <?php foreach ($appointments as $appointment): ?>
-                                        <tr data-status="<?php echo strtolower(trim($appointment['status'])); ?>" data-date="<?php echo date('Y-m-d', strtotime($appointment['appointment_date'])); ?>">
+                                        <?php 
+                                            // Use followup_status if available, otherwise use status
+                                            $displayStatus = strtolower(trim($appointment['followup_status'] ?? $appointment['status']));
+                                            if ($displayStatus === 'unknown' && !empty($appointment['followup_status'])) {
+                                                $displayStatus = strtolower(trim($appointment['followup_status']));
+                                            }
+                                        ?>
+                                        <tr data-status="<?php echo $displayStatus; ?>" data-date="<?php echo date('Y-m-d', strtotime($appointment['appointment_date'])); ?>">
                                             <td>#<?php echo htmlspecialchars($appointment['appointment_id']); ?></td>
                                             <td>
                                                 <div class="schedule-info">
@@ -521,8 +532,8 @@ try {
                                                 </div>
                                             </td>
                                             <td>
-                                                <span class="status <?php echo strtolower($appointment['status']); ?>">
-                                                    <?php echo htmlspecialchars($appointment['status']); ?>
+                                                <span class="status <?php echo $displayStatus; ?>">
+                                                    <?php echo ucfirst($displayStatus); ?>
                                                 </span>
                                             </td>
                                             <td>
@@ -530,7 +541,7 @@ try {
                                                     <a href="job-details.php?id=<?php echo $appointment['appointment_id']; ?>" class="view-btn">
                                                         <i class='bx bx-show'></i> View
                                                     </a>
-                                                    <?php if ($appointment['status'] === 'Completed'): ?>
+                                                    <?php if ($displayStatus === 'completed'): ?>
                                                         <a href="#" class="review-btn" onclick="loadReviewData(<?php echo $appointment['appointment_id']; ?>); return false;">
                                                             <i class='bx bx-message-square-check'></i> Check Review
                                                         </a>
