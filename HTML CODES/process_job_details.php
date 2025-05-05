@@ -55,6 +55,11 @@ try {
         $stmt = $db->prepare("UPDATE appointments SET technician_id = ? WHERE id = ?");
         $stmt->execute([$primaryTechId, $appointmentId]);
         error_log("Set primary technician $primaryTechId for appointment $appointmentId");
+        
+        // Always update status to confirmed when technicians are assigned
+        $stmt = $db->prepare("UPDATE appointments SET status = 'Confirmed' WHERE id = ?");
+        $stmt->execute([$appointmentId]);
+        error_log("Updated status to Confirmed for appointment $appointmentId with technicians assigned");
     } else {
         // If no technicians are selected, set primary technician to NULL
         $stmt = $db->prepare("UPDATE appointments SET technician_id = NULL WHERE id = ?");
@@ -119,12 +124,6 @@ try {
         $_POST['chemical_consumables'] ?? '',
         $_POST['visit_frequency'] ?? ''
     ]);
-
-    // Update status to confirmed if technicians were assigned
-    if (!empty($technicianIds)) {
-        $stmt = $db->prepare("UPDATE appointments SET status = 'Confirmed' WHERE id = ? AND status = 'Pending'");
-        $stmt->execute([$appointmentId]);
-    }
 
     $db->commit();
     echo json_encode([

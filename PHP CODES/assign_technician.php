@@ -17,7 +17,7 @@ if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'], ['admin', 'supe
 $data = json_decode(file_get_contents("php://input"), true);
 
 // Debug log
-error_log('Received data: ' . print_r($data, true));
+error_log('Received data for technician assignment: ' . print_r($data, true));
 
 // Validate input data
 if (!isset($data['appointment_id']) || !isset($data['technician_id'])) {
@@ -44,7 +44,20 @@ try {
         throw new Exception("Invalid or unverified technician");
     }
 
-    // Update appointment
+    // First, add the technician to appointment_technicians table
+    $insertTechStmt = $db->prepare("INSERT INTO appointment_technicians (appointment_id, technician_id) 
+                                   VALUES (?, ?) 
+                                   ON DUPLICATE KEY UPDATE technician_id = VALUES(technician_id)");
+    $insertSuccess = $insertTechStmt->execute([
+        $data['appointment_id'],
+        $data['technician_id']
+    ]);
+    
+    if (!$insertSuccess) {
+        throw new Exception("Failed to insert into appointment_technicians");
+    }
+
+    // Then update the main appointment record
     $updateStmt = $db->prepare("UPDATE appointments 
                                SET technician_id = ?, 
                                    status = 'Confirmed' 
@@ -58,12 +71,22 @@ try {
     if (!$success) {
         throw new Exception("Failed to update appointment");
     }
+    
+    // Get the technician details to return in the response
+    $techStmt = $db->prepare("SELECT firstname, lastname FROM users WHERE id = ?");
+    $techStmt->execute([$data['technician_id']]);
+    $technician = $techStmt->fetch(PDO::FETCH_ASSOC);
 
     $db->commit();
     
+    // Log success
+    error_log("Successfully assigned technician {$data['technician_id']} to appointment {$data['appointment_id']} and updated status to Confirmed");
+    
     echo json_encode([
         'success' => true,
-        'message' => 'Technician assigned successfully'
+        'message' => 'Technician assigned successfully',
+        'technician' => $technician,
+        'updated_status' => 'Confirmed'
     ]);
 
 } catch (Exception $e) {
@@ -73,16 +96,7 @@ try {
     error_log("Error assigning technician: " . $e->getMessage());
     echo json_encode([
         'success' => false,
-        'message' => $e->getMessage()
-    ]);
-} catch (PDOException $e) {
-    if ($db->inTransaction()) {
-        $db->rollBack();
-    }
-    error_log("Database error: " . $e->getMessage());
-    echo json_encode([
-        'success' => false,
-        'message' => 'Database error occurred'
+        'message' => 'Error: ' . $e->getMessage()
     ]);
 }
 ?>

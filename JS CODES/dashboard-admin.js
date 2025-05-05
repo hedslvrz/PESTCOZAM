@@ -1972,6 +1972,65 @@ function submitReport(reportData) {
     });
 }
 
+// Function to handle technician assignment and status update
+function handleTechnicianAssignment(appointmentId, technicianId, technicianName) {
+    // Show loading indicator
+    const row = document.querySelector(`tr[data-appointment-id="${appointmentId}"]`);
+    const statusCell = row ? row.querySelector('.status') : null;
+    const originalStatus = statusCell ? statusCell.innerHTML : '';
+    
+    if (statusCell) {
+        statusCell.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i> Updating...';
+    }
+    
+    // Send the assignment request
+    fetch('../PHP CODES/assign_technician.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            appointment_id: appointmentId,
+            technician_id: technicianId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Technician assignment response:', data);
+        
+        if (data.success) {
+            // Update the UI
+            if (statusCell) {
+                statusCell.className = 'status confirmed';
+                statusCell.innerHTML = 'Confirmed';
+            }
+            
+            // Show success message
+            const modal = new CustomModal();
+            modal.showUpdateSuccess(`Technician ${technicianName} has been assigned successfully.`);
+        } else {
+            // Restore original status
+            if (statusCell) {
+                statusCell.innerHTML = originalStatus;
+            }
+            
+            // Show error message
+            alert(data.message || 'Failed to assign technician');
+        }
+    })
+    .catch(error => {
+        console.error('Error assigning technician:', error);
+        
+        // Restore original status
+        if (statusCell) {
+            statusCell.innerHTML = originalStatus;
+        }
+        
+        // Show error message
+        alert('An error occurred while assigning technician');
+    });
+}
+
 
 
 
