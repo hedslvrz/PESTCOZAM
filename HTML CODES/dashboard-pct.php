@@ -2459,52 +2459,234 @@ try {
                         }
 
                         // Format the visits into an HTML table
-                        const visitsHtml = data.visits.map(visit => `
-                            <tr>
-                                <td>${visit.visit_date}</td>
-                                <td>${visit.visit_time}</td>
-                                <td>${visit.technician_name}</td>
-                                <td>${visit.status}</td>
-                            </tr>
-                        `).join('');
+                        const visitsHtml = data.visits.map(visit => {
+                            // Create status badge with appropriate color
+                            let statusClass = 'badge-primary';
+                            if (visit.status.toLowerCase() === 'completed') statusClass = 'badge-success';
+                            if (visit.status.toLowerCase() === 'cancelled') statusClass = 'badge-danger';
+                            
+                            return `
+                                <tr>
+                                    <td><i class='bx bx-calendar'></i> ${visit.visit_date}</td>
+                                    <td><i class='bx bx-time'></i> ${visit.visit_time}</td>
+                                    <td><i class='bx bx-user'></i> ${visit.technician_name}</td>
+                                    <td><span class="status-badge ${statusClass}">${visit.status}</span></td>
+                                </tr>
+                            `;
+                        }).join('');
 
-                        // Format the recurrence dates into a list
-                        const recurrenceHtml = data.recurrence_dates.map(date => `
-                            <li>${date}</li>
-                        `).join('');
+                        // Format the plan type with appropriate icon
+                        let planTypeIcon = 'bx-calendar';
+                        if (data.plan.plan_type === 'monthly') planTypeIcon = 'bx-calendar-check';
+                        if (data.plan.plan_type === 'quarterly') planTypeIcon = 'bx-calendar-star';
+                        if (data.plan.plan_type === 'yearly') planTypeIcon = 'bx-calendar-event';
 
-                        // Show the plan details and visits in a SweetAlert2 modal
+                        // Show the plan details and visits in a SweetAlert2 modal with improved design
                         Swal.fire({
-                            title: 'Plan Schedule',
+                            title: '<i class="bx bx-list-check"></i> Maintenance Plan Schedule',
                             html: `
-                                <h4>Plan Details</h4>
-                                <p><strong>Client:</strong> ${data.plan.customer_name}</p>
-                                <p><strong>Service:</strong> ${data.plan.service_name}</p>
-                                <p><strong>Location:</strong> ${data.plan.location}</p>
-                                <p><strong>Plan Type:</strong> ${data.plan.plan_type}</p>
-                                <p><strong>Frequency:</strong> ${data.plan.visit_frequency} visits</p>
-                                <p><strong>Duration:</strong> ${data.plan.contract_duration} ${data.plan.duration_unit}</p>
-                                <p><strong>Notes:</strong> ${data.plan.notes || 'None'}</p>
-                                <h4>Scheduled Visits</h4>
-                                <table style="width: 100%; border-collapse: collapse;">
-                                    <thead>
-                                        <tr>
-                                            <th style="border: 1px solid #ddd; padding: 8px;">Date</th>
-                                            <th style="border: 1px solid #ddd; padding: 8px;">Time</th>
-                                            <th style="border: 1px solid #ddd; padding: 8px;">Technician</th>
-                                            <th style="border: 1px solid #ddd; padding: 8px;">Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${visitsHtml || '<tr><td colspan="4" style="text-align: center;">No visits scheduled</td></tr>'}
-                                    </tbody>
-                                </table>
-                                <h4>Recurrence Dates</h4>
-                                <ul>${recurrenceHtml || '<li>No recurrence dates available</li>'}</ul>
+                                <div class="plan-schedule-modal">
+                                    <div class="plan-details-card">
+                                        <div class="card-header">
+                                            <i class='bx bx-info-circle'></i>
+                                            <h4>Plan Details</h4>
+                                        </div>
+                                        <div class="plan-details-content">
+                                            <div class="details-row">
+                                                <div class="detail-item">
+                                                    <span class="detail-label"><i class='bx bx-user'></i> Client:</span>
+                                                    <span class="detail-value">${data.plan.customer_name}</span>
+                                                </div>
+                                                <div class="detail-item">
+                                                    <span class="detail-label"><i class='bx bx-package'></i> Service:</span>
+                                                    <span class="detail-value">${data.plan.service_name}</span>
+                                                </div>
+                                            </div>
+                                            <div class="details-row">
+                                                <div class="detail-item">
+                                                    <span class="detail-label"><i class='bx bx-map'></i> Location:</span>
+                                                    <span class="detail-value">${data.plan.location}</span>
+                                                </div>
+                                            </div>
+                                            <div class="details-row">
+                                                <div class="detail-item">
+                                                    <span class="detail-label"><i class='bx ${planTypeIcon}'></i> Plan Type:</span>
+                                                    <span class="detail-value">${data.plan.plan_type.charAt(0).toUpperCase() + data.plan.plan_type.slice(1)}</span>
+                                                </div>
+                                                <div class="detail-item">
+                                                    <span class="detail-label"><i class='bx bx-time'></i> Frequency:</span>
+                                                    <span class="detail-value">${data.plan.visit_frequency} visits</span>
+                                                </div>
+                                            </div>
+                                            <div class="details-row">
+                                                <div class="detail-item">
+                                                    <span class="detail-label"><i class='bx bx-calendar-alt'></i> Duration:</span>
+                                                    <span class="detail-value">${data.plan.contract_duration} ${data.plan.duration_unit}</span>
+                                                </div>
+                                            </div>
+                                            ${data.plan.notes ? `
+                                            <div class="details-row notes-row">
+                                                <div class="detail-item full-width">
+                                                    <span class="detail-label"><i class='bx bx-note'></i> Notes:</span>
+                                                    <span class="detail-value notes">${data.plan.notes}</span>
+                                                </div>
+                                            </div>` : ''}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="visits-table-card">
+                                        <div class="card-header">
+                                            <i class='bx bx-calendar-check'></i>
+                                            <h4>Scheduled Visits</h4>
+                                        </div>
+                                        <div class="table-container">
+                                            <table class="visits-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Date</th>
+                                                        <th>Time</th>
+                                                        <th>Technician</th>
+                                                        <th>Status</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    ${visitsHtml || '<tr><td colspan="4" class="no-data">No visits scheduled</td></tr>'}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <style>
+                                    .plan-schedule-modal {
+                                        font-family: 'Poppins', sans-serif;
+                                        color: #333;
+                                    }
+                                    .plan-details-card, .visits-table-card {
+                                        background-color: #fff;
+                                        border-radius: 8px;
+                                        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                                        margin-bottom: 20px;
+                                        overflow: hidden;
+                                    }
+                                    .card-header {
+                                        background-color: #144578;
+                                        color: white;
+                                        padding: 12px 16px;
+                                        display: flex;
+                                        align-items: center;
+                                        gap: 10px;
+                                    }
+                                    .card-header h4 {
+                                        margin: 0;
+                                        font-size: 16px;
+                                        font-weight: 600;
+                                    }
+                                    .plan-details-content {
+                                        padding: 16px;
+                                    }
+                                    .details-row {
+                                        display: flex;
+                                        margin-bottom: 12px;
+                                        flex-wrap: wrap;
+                                        gap: 15px;
+                                    }
+                                    .detail-item {
+                                        flex: 1 1 45%;
+                                        min-width: 200px;
+                                    }
+                                    .detail-item.full-width {
+                                        flex: 1 1 100%;
+                                    }
+                                    .detail-label {
+                                        font-weight: 600;
+                                        color: #555;
+                                        display: flex;
+                                        align-items: center;
+                                        gap: 6px;
+                                        margin-bottom: 4px;
+                                    }
+                                    .detail-value {
+                                        color: #333;
+                                    }
+                                    .detail-value.notes {
+                                        display: block;
+                                        background-color: #f9f9f9;
+                                        border-left: 3px solid #144578;
+                                        padding: 8px 12px;
+                                        margin-top: 6px;
+                                        font-style: italic;
+                                    }
+                                    .notes-row {
+                                        margin-top: 16px;
+                                        border-top: 1px dashed #ddd;
+                                        padding-top: 16px;
+                                    }
+                                    .table-container {
+                                        padding: 16px;
+                                        max-height: 300px;
+                                        overflow-y: auto;
+                                    }
+                                    .visits-table {
+                                        width: 100%;
+                                        border-collapse: collapse;
+                                    }
+                                    .visits-table th, .visits-table td {
+                                        padding: 10px;
+                                        text-align: left;
+                                        border-bottom: 1px solid #eee;
+                                    }
+                                    .visits-table th {
+                                        background-color: #f5f5f5;
+                                        font-weight: 600;
+                                        color: #144578;
+                                    }
+                                    .visits-table tr:hover {
+                                        background-color: #f9f9f9;
+                                    }
+                                    .status-badge {
+                                        display: inline-block;
+                                        padding: 4px 8px;
+                                        border-radius: 12px;
+                                        font-size: 12px;
+                                        font-weight: 500;
+                                        text-transform: capitalize;
+                                    }
+                                    .badge-primary {
+                                        background-color: #5c87af;
+                                        color: white;
+                                    }
+                                    .badge-success {
+                                        background-color: #4CAF50;
+                                        color: white;
+                                    }
+                                    .badge-danger {
+                                        background-color: #f44336;
+                                        color: white;
+                                    }
+                                    .no-data {
+                                        text-align: center;
+                                        padding: 20px;
+                                        color: #777;
+                                        font-style: italic;
+                                    }
+                                    
+                                    /* Responsive styling for smaller screens */
+                                    @media screen and (max-width: 576px) {
+                                        .detail-item {
+                                            flex: 1 1 100%;
+                                        }
+                                    }
+                                </style>
                             `,
                             width: '800px',
                             confirmButtonText: 'Close',
-                            confirmButtonColor: '#144578'
+                            confirmButtonColor: '#144578',
+                            customClass: {
+                                container: 'plan-schedule-modal-container',
+                                popup: 'plan-schedule-modal-popup',
+                                title: 'plan-schedule-modal-title'
+                            }
                         });
                     })
                     .catch(error => {
