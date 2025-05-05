@@ -44,25 +44,9 @@ try {
         throw new Exception("Invalid or unverified technician");
     }
 
-    // First, add the technician to appointment_technicians table
-    $insertTechStmt = $db->prepare("INSERT INTO appointment_technicians (appointment_id, technician_id) 
-                                   VALUES (?, ?) 
-                                   ON DUPLICATE KEY UPDATE technician_id = VALUES(technician_id)");
-    $insertSuccess = $insertTechStmt->execute([
-        $data['appointment_id'],
-        $data['technician_id']
-    ]);
+    // Update to include status change in the same query
+    $updateStmt = $db->prepare("UPDATE appointments SET technician_id = ?, status = 'Confirmed' WHERE id = ?");
     
-    if (!$insertSuccess) {
-        throw new Exception("Failed to insert into appointment_technicians");
-    }
-
-    // Then update the main appointment record
-    $updateStmt = $db->prepare("UPDATE appointments 
-                               SET technician_id = ?, 
-                                   status = 'Confirmed' 
-                               WHERE id = ?");
-
     $success = $updateStmt->execute([
         $data['technician_id'],
         $data['appointment_id']
