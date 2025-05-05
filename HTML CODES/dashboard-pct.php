@@ -876,6 +876,7 @@ try {
                 input.style.display = 'flex';
                 input.style.alignItems = 'center';
                 input.style.gap = '4px';
+                input.className = 'input-group';
 
                 const textInput = document.createElement('input');
                 textInput.type = 'text';
@@ -896,6 +897,9 @@ try {
                 input.appendChild(textInput);
                 input.appendChild(removeBtn);
                 container.appendChild(input);
+                
+                // Focus the new input
+                textInput.focus();
             }
         </script>
     </section>

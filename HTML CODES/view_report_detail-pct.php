@@ -605,21 +605,81 @@ try {
                         </div>
                         
                         <div class="treatment-description">
-                            <div class="info-label">Treatment Method/Description</div>
-                            <div class="info-value"><?php echo nl2br(htmlspecialchars($report['treatment_method'])); ?></div>
+                            <div class="info-label">Treatment Method</div>
+                            <div class="info-value method-items">
+                                <?php 
+                                $treatment_methods = [];
+                                try {
+                                    if (!empty($report['treatment_method'])) {
+                                        $treatment_methods = json_decode($report['treatment_method'], true);
+                                        // If it's not a valid JSON or not an array, treat it as a single value
+                                        if (json_last_error() !== JSON_ERROR_NONE || !is_array($treatment_methods)) {
+                                            $treatment_methods = [$report['treatment_method']];
+                                        }
+                                    }
+                                } catch (Exception $e) {
+                                    $treatment_methods = [$report['treatment_method']];
+                                }
+                                
+                                if (!empty($treatment_methods)): 
+                                    foreach ($treatment_methods as $method): ?>
+                                    <div class="item-entry"><?php echo htmlspecialchars($method); ?></div>
+                                    <?php endforeach; 
+                                else: ?>
+                                    <div class="item-entry">Not specified</div>
+                                <?php endif; ?>
+                            </div>
                         </div>
-                        
+
                         <?php if(!empty($report['device_installation'])): ?>
                         <div class="treatment-description">
                             <div class="info-label">Device Installation</div>
-                            <div class="info-value"><?php echo nl2br(htmlspecialchars($report['device_installation'])); ?></div>
+                            <div class="info-value device-items">
+                                <?php 
+                                $devices = [];
+                                try {
+                                    $devices = json_decode($report['device_installation'], true);
+                                    if (json_last_error() !== JSON_ERROR_NONE || !is_array($devices)) {
+                                        $devices = [$report['device_installation']];
+                                    }
+                                } catch (Exception $e) {
+                                    $devices = [$report['device_installation']];
+                                }
+                                
+                                if (!empty($devices)): 
+                                    foreach ($devices as $device): ?>
+                                    <div class="item-entry"><?php echo htmlspecialchars($device); ?></div>
+                                    <?php endforeach; 
+                                else: ?>
+                                    <div class="item-entry">Not specified</div>
+                                <?php endif; ?>
+                            </div>
                         </div>
                         <?php endif; ?>
-                        
+
                         <?php if(!empty($report['consumed_chemicals'])): ?>
                         <div class="treatment-description">
                             <div class="info-label">Consumed Chemicals/Products</div>
-                            <div class="info-value"><?php echo nl2br(htmlspecialchars($report['consumed_chemicals'])); ?></div>
+                            <div class="info-value chemical-items">
+                                <?php 
+                                $chemicals = [];
+                                try {
+                                    $chemicals = json_decode($report['consumed_chemicals'], true);
+                                    if (json_last_error() !== JSON_ERROR_NONE || !is_array($chemicals)) {
+                                        $chemicals = [$report['consumed_chemicals']];
+                                    }
+                                } catch (Exception $e) {
+                                    $chemicals = [$report['consumed_chemicals']];
+                                }
+                                
+                                if (!empty($chemicals)): 
+                                    foreach ($chemicals as $chemical): ?>
+                                    <div class="item-entry"><?php echo htmlspecialchars($chemical); ?></div>
+                                    <?php endforeach; 
+                                else: ?>
+                                    <div class="item-entry">Not specified</div>
+                                <?php endif; ?>
+                            </div>
                         </div>
                         <?php endif; ?>
                     </div>
