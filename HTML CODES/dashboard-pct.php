@@ -549,20 +549,35 @@ try {
                             </div>
                             
                             <div class="report-grid-2col">
-                                <!-- Treatment Method Text Input -->
-                                <div class="field-group">
-                                    <label for="treatment_method">Treatment Method</label>
-                                    <input type="text" name="treatment_method" id="treatment_method" required placeholder="Enter treatment method">
+                                <!-- Treatment Method Multiple Inputs -->
+                                <div class="field-group" id="treatment-method-group">
+                                    <label for="treatment_method[]">Treatment Method</label>
+                                    <div id="treatment-method-list">
+                                        <input type="text" name="treatment_method[]" class="treatment-method-input" required placeholder="Enter treatment method">
+                                    </div>
+                                    <button type="button" class="add-more-btn" onclick="addMoreInput('treatment-method-list','treatment_method[]','treatment-method-input')">
+                                        <i class='bx bx-plus'></i> Add More
+                                    </button>
                                 </div>
-                                <!-- Device Installation Text Input -->
-                                <div class="field-group">
-                                    <label for="device_installation">Device Installation</label>
-                                    <input type="text" name="device_installation" id="device_installation" placeholder="Enter device name">
+                                <!-- Device Installation Multiple Inputs -->
+                                <div class="field-group" id="device-installation-group">
+                                    <label for="device_installation[]">Device Installation</label>
+                                    <div id="device-installation-list">
+                                        <input type="text" name="device_installation[]" class="device-installation-input" placeholder="Enter device name">
+                                    </div>
+                                    <button type="button" class="add-more-btn" onclick="addMoreInput('device-installation-list','device_installation[]','device-installation-input')">
+                                        <i class='bx bx-plus'></i> Add More
+                                    </button>
                                 </div>
-                                <!-- Consumed Chemicals Text Input -->
-                                <div class="field-group">
-                                    <label for="consumed_chemicals">Consumed Chemicals</label>
-                                    <input type="text" name="consumed_chemicals" id="consumed_chemicals" placeholder="Enter chemical name">
+                                <!-- Consumed Chemicals Multiple Inputs -->
+                                <div class="field-group" id="consumed-chemicals-group">
+                                    <label for="consumed_chemicals[]">Consumed Chemicals</label>
+                                    <div id="consumed-chemicals-list">
+                                        <input type="text" name="consumed_chemicals[]" class="consumed-chemicals-input" placeholder="Enter chemical name">
+                                    </div>
+                                    <button type="button" class="add-more-btn" onclick="addMoreInput('consumed-chemicals-list','consumed_chemicals[]','consumed-chemicals-input')">
+                                        <i class='bx bx-plus'></i> Add More
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -616,6 +631,45 @@ try {
         .field-group.dropdown-down select[dropdown-direction="down"]:focus {
             z-index: 9999;
         }
+        /* Add More button style */
+        .add-more-btn {
+            margin-top: 8px;
+            background: #e3f2fd;
+            color: #144578;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 12px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: background 0.2s;
+        }
+        .add-more-btn:hover {
+            background: #c1e2fc;
+        }
+        /* Remove input button style */
+        .remove-input-btn {
+            background: none;
+            border: none;
+            color: #dc3545;
+            font-size: 1.2rem;
+            margin-left: 6px;
+            cursor: pointer;
+            vertical-align: middle;
+        }
+        .remove-input-btn:hover {
+            color: #b71c1c;
+        }
+        /* Space between dynamic inputs */
+        #treatment-method-list input,
+        #device-installation-list input,
+        #consumed-chemicals-list input {
+            margin-bottom: 6px;
+            width: 90%;
+            display: inline-block;
+        }
         </style>
         
         <script>
@@ -657,7 +711,7 @@ try {
                         treatmentTypeSelect.selectedIndex = 0;
                     }
 
-                    // --- Treatment Method, Device, Chemicals autofill without qty ---
+                    // --- Treatment Method, Device, Chemicals autofill as first input ---
                     // Treatment Method
                     const treatmentMethodData = selectedOption.getAttribute('data-treatments');
                     let method = '';
@@ -666,12 +720,19 @@ try {
                         if (Array.isArray(parsed) && parsed.length > 0) method = parsed[0];
                         else if (typeof parsed === 'string') method = parsed;
                     } catch { method = treatmentMethodData; }
-                    const methodSelect = document.getElementById('treatment_method');
-                    if (methodSelect) {
-                        methodSelect.value = method || '';
+                    const methodList = document.getElementById('treatment-method-list');
+                    if (methodList) {
+                        methodList.innerHTML = '';
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.name = 'treatment_method[]';
+                        input.className = 'treatment-method-input';
+                        input.required = true;
+                        input.value = method || '';
+                        input.placeholder = 'Enter treatment method';
+                        methodList.appendChild(input);
                     }
-
-                    // Device Installation (assume string or JSON array)
+                    // Device Installation
                     const deviceData = selectedOption.getAttribute('data-devices');
                     let device = '';
                     try {
@@ -679,12 +740,18 @@ try {
                         if (Array.isArray(parsed) && parsed.length > 0) device = parsed[0];
                         else if (typeof parsed === 'string') device = parsed;
                     } catch { device = deviceData; }
-                    const deviceSelect = document.getElementById('device_installation');
-                    if (deviceSelect) {
-                        deviceSelect.value = device || '';
+                    const deviceList = document.getElementById('device-installation-list');
+                    if (deviceList) {
+                        deviceList.innerHTML = '';
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.name = 'device_installation[]';
+                        input.className = 'device-installation-input';
+                        input.value = device || '';
+                        input.placeholder = 'Enter device name';
+                        deviceList.appendChild(input);
                     }
-
-                    // Consumed Chemicals (assume string or JSON array)
+                    // Consumed Chemicals
                     const chemicalData = selectedOption.getAttribute('data-chemicals');
                     let chemical = '';
                     try {
@@ -692,9 +759,16 @@ try {
                         if (Array.isArray(parsed) && parsed.length > 0) chemical = parsed[0];
                         else if (typeof parsed === 'string') chemical = parsed;
                     } catch { chemical = chemicalData; }
-                    const chemicalSelect = document.getElementById('consumed_chemicals');
-                    if (chemicalSelect) {
-                        chemicalSelect.value = chemical || '';
+                    const chemicalList = document.getElementById('consumed-chemicals-list');
+                    if (chemicalList) {
+                        chemicalList.innerHTML = '';
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.name = 'consumed_chemicals[]';
+                        input.className = 'consumed-chemicals-input';
+                        input.value = chemical || '';
+                        input.placeholder = 'Enter chemical name';
+                        chemicalList.appendChild(input);
                     }
                 } else {
                     // Clear fields if "Select an appointment" is chosen
@@ -704,9 +778,9 @@ try {
                     document.getElementById('treatment_type').selectedIndex = 0;
                     document.getElementById('time_in').value = '';
                     document.getElementById('time_out').value = '';
-                    document.getElementById('treatment_method').value = '';
-                    document.getElementById('device_installation').value = '';
-                    document.getElementById('consumed_chemicals').value = '';
+                    document.getElementById('treatment-method-list').innerHTML = '<input type="text" name="treatment_method[]" class="treatment-method-input" required placeholder="Enter treatment method">';
+                    document.getElementById('device-installation-list').innerHTML = '<input type="text" name="device_installation[]" class="device-installation-input" placeholder="Enter device name">';
+                    document.getElementById('consumed-chemicals-list').innerHTML = '<input type="text" name="consumed_chemicals[]" class="consumed-chemicals-input" placeholder="Enter chemical name">';
                 }
             });
 
@@ -795,17 +869,34 @@ try {
                 }
             });
 
-            // Optional: Show selected items as tags for multi-selects
-            function enhanceMultiSelect(selectId) {
-                const select = document.getElementById(selectId);
-                if (!select) return;
-                select.addEventListener('change', function() {
-                    // No-op: browser default multi-select is used, but you can enhance here if needed
-                });
+            // Add More Input Functionality
+            function addMoreInput(containerId, inputName, inputClass) {
+                const container = document.getElementById(containerId);
+                const input = document.createElement('div');
+                input.style.display = 'flex';
+                input.style.alignItems = 'center';
+                input.style.gap = '4px';
+
+                const textInput = document.createElement('input');
+                textInput.type = 'text';
+                textInput.name = inputName;
+                textInput.className = inputClass;
+                textInput.placeholder = 'Enter value';
+                textInput.required = (inputName === 'treatment_method[]'); // Only treatment method is required
+
+                // Remove button
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.className = 'remove-input-btn';
+                removeBtn.innerHTML = '<i class="bx bx-x"></i>';
+                removeBtn.onclick = function() {
+                    container.removeChild(input);
+                };
+
+                input.appendChild(textInput);
+                input.appendChild(removeBtn);
+                container.appendChild(input);
             }
-            enhanceMultiSelect('treatment_method');
-            enhanceMultiSelect('device_installation');
-            enhanceMultiSelect('consumed_chemicals');
         </script>
     </section>
     <!--SUBMIT SERVICE REPORT SECTION-->
