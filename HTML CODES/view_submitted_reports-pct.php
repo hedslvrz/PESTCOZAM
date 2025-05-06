@@ -397,6 +397,21 @@ try {
                 gap: 10px;
             }
         }
+        
+        .modal-item-entry {
+            background-color: #f5f7fa;
+            padding: 6px 10px;
+            margin-bottom: 5px;
+            border-radius: 4px;
+            border-left: 3px solid #144578;
+            font-size: 0.9rem;
+        }
+        
+        #treatmentMethodField, #deviceInstallationField, #chemicalsField {
+            max-height: 150px;
+            overflow-y: auto;
+            padding: 5px;
+        }
     </style>
 </head>
 <body>
@@ -514,7 +529,7 @@ try {
                         </div>
                         <div class="form-group">
                             <label>Treatment Method</label>
-                            <input type="text" id="treatmentMethodField" readonly>
+                            <div id="treatmentMethodField"></div>
                         </div>
                     </div>
                     <div class="form-row">
@@ -538,12 +553,12 @@ try {
                         </div>
                         <div class="form-group">
                             <label>Device Installation</label>
-                            <input type="text" id="deviceInstallationField" readonly>
+                            <div id="deviceInstallationField"></div>
                         </div>
                     </div>
                     <div class="form-group full-width">
                         <label>Chemicals Consumed</label>
-                        <textarea id="chemicalsField" readonly rows="3"></textarea>
+                        <div id="chemicalsField"></div>
                     </div>
                 </div>
 
@@ -614,12 +629,93 @@ try {
             document.getElementById('contactNoField').value = report.contact_no || 'N/A';
             document.getElementById('locationField').value = report.location || 'N/A';
             document.getElementById('treatmentTypeField').value = report.treatment_type || 'N/A';
-            document.getElementById('treatmentMethodField').value = report.treatment_method || 'N/A';
             document.getElementById('timeInField').value = formatTime(report.time_in) || 'N/A';
             document.getElementById('timeOutField').value = formatTime(report.time_out) || 'N/A';
             document.getElementById('pestCountField').value = report.pest_count || 'N/A';
-            document.getElementById('deviceInstallationField').value = report.device_installation || 'N/A';
-            document.getElementById('chemicalsField').value = report.consumed_chemicals || 'N/A';
+            
+            document.getElementById('treatmentMethodField').innerHTML = '';
+            document.getElementById('deviceInstallationField').innerHTML = '';
+            document.getElementById('chemicalsField').innerHTML = '';
+            
+            // Parse JSON fields and display as separate items
+            try {
+                // Treatment Methods
+                let treatmentMethods = [];
+                if (report.treatment_method) {
+                    try {
+                        treatmentMethods = JSON.parse(report.treatment_method);
+                        if (!Array.isArray(treatmentMethods)) {
+                            treatmentMethods = [report.treatment_method];
+                        }
+                    } catch(e) {
+                        treatmentMethods = [report.treatment_method];
+                    }
+                }
+                
+                const methodsContainer = document.getElementById('treatmentMethodField');
+                if (treatmentMethods.length > 0) {
+                    treatmentMethods.forEach(method => {
+                        const methodItem = document.createElement('div');
+                        methodItem.className = 'modal-item-entry';
+                        methodItem.textContent = method;
+                        methodsContainer.appendChild(methodItem);
+                    });
+                } else {
+                    methodsContainer.textContent = 'N/A';
+                }
+                
+                // Device Installation
+                let deviceInstallation = [];
+                if (report.device_installation) {
+                    try {
+                        deviceInstallation = JSON.parse(report.device_installation);
+                        if (!Array.isArray(deviceInstallation)) {
+                            deviceInstallation = [report.device_installation];
+                        }
+                    } catch(e) {
+                        deviceInstallation = [report.device_installation];
+                    }
+                }
+                
+                const devicesContainer = document.getElementById('deviceInstallationField');
+                if (deviceInstallation.length > 0) {
+                    deviceInstallation.forEach(device => {
+                        const deviceItem = document.createElement('div');
+                        deviceItem.className = 'modal-item-entry';
+                        deviceItem.textContent = device;
+                        devicesContainer.appendChild(deviceItem);
+                    });
+                } else {
+                    devicesContainer.textContent = 'N/A';
+                }
+                
+                // Consumed Chemicals
+                let consumedChemicals = [];
+                if (report.consumed_chemicals) {
+                    try {
+                        consumedChemicals = JSON.parse(report.consumed_chemicals);
+                        if (!Array.isArray(consumedChemicals)) {
+                            consumedChemicals = [report.consumed_chemicals];
+                        }
+                    } catch(e) {
+                        consumedChemicals = [report.consumed_chemicals];
+                    }
+                }
+                
+                const chemicalsContainer = document.getElementById('chemicalsField');
+                if (consumedChemicals.length > 0) {
+                    consumedChemicals.forEach(chemical => {
+                        const chemicalItem = document.createElement('div');
+                        chemicalItem.className = 'modal-item-entry';
+                        chemicalItem.textContent = chemical;
+                        chemicalsContainer.appendChild(chemicalItem);
+                    });
+                } else {
+                    chemicalsContainer.textContent = 'N/A';
+                }
+            } catch(e) {
+                console.error('Error parsing report data:', e);
+            }
             
             // Set status display
             const statusDisplay = document.getElementById('statusDisplay');

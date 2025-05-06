@@ -28,10 +28,32 @@ try {
     $time_in = $_POST['time_in'];
     $time_out = $_POST['time_out'];
     $treatment_type = trim($_POST['treatment_type']);
-    $treatment_method = trim($_POST['treatment_method']);
+    
+    // Handle treatment_method as array
+    if (isset($_POST['treatment_method']) && is_array($_POST['treatment_method'])) {
+        $treatment_method_arr = array_filter($_POST['treatment_method'], function($v) { return trim($v) !== ''; });
+        $treatment_method = json_encode(array_values($treatment_method_arr));
+    } else {
+        $treatment_method = trim((string)$_POST['treatment_method']);
+    }
     $pest_count = !empty($_POST['pest_count']) ? trim($_POST['pest_count']) : null;
-    $device_installation = !empty($_POST['device_installation']) ? trim($_POST['device_installation']) : null;
-    $consumed_chemicals = !empty($_POST['consumed_chemicals']) ? trim($_POST['consumed_chemicals']) : null;
+    
+    // Handle device_installation as array
+    if (isset($_POST['device_installation']) && is_array($_POST['device_installation'])) {
+        $device_installation_arr = array_filter($_POST['device_installation'], function($v) { return trim($v) !== ''; });
+        $device_installation = json_encode(array_values($device_installation_arr));
+    } else {
+        $device_installation = trim((string)$_POST['device_installation']);
+    }
+    
+    // Handle consumed_chemicals as array
+    if (isset($_POST['consumed_chemicals']) && is_array($_POST['consumed_chemicals'])) {
+        $consumed_chemicals_arr = array_filter($_POST['consumed_chemicals'], function($v) { return trim($v) !== ''; });
+        $consumed_chemicals = json_encode(array_values($consumed_chemicals_arr));
+    } else {
+        $consumed_chemicals = trim((string)$_POST['consumed_chemicals']);
+    }
+    
     $frequency_of_visits = !empty($_POST['frequency_of_visits']) ? trim($_POST['frequency_of_visits']) : null;
     $location = trim($_POST['location']);
     $account_name = trim($_POST['account_name']);
